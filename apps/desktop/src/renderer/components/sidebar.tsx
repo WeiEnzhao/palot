@@ -245,7 +245,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
       cacheSession(imported);
       await openSession(imported.id, { profileID: runtime?.profileID });
     } catch (error) {
-      showErrorToast("Could not import task", error);
+      showErrorToast("无法导入任务", error);
     }
   }
 
@@ -260,15 +260,15 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
         });
         toast.add({
           type: "success",
-          title: "Task settled",
+          title: "任务已归档",
           actionProps: {
-            children: "Undo",
+            children: "撤销",
             onClick: () =>
               void dispatchTriage({ type: "inbox", sessionID, at: currentTimestamp() }),
           },
         });
       } catch (error) {
-        showErrorToast("Could not settle task", error);
+        showErrorToast("无法归档任务", error);
       }
     },
     [dispatchTriage],
@@ -286,15 +286,15 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
         });
         toast.add({
           type: "success",
-          title: "Task snoozed",
-          description: `Returns ${formatSnoozeWakeTime(until)}.`,
+          title: "任务已暂停",
+          description: `将在 ${formatSnoozeWakeTime(until)} 恢复。`,
           actionProps: {
-            children: "Undo",
+            children: "撤销",
             onClick: () => void dispatchTriage({ type: "wake", sessionID, at: currentTimestamp() }),
           },
         });
       } catch (error) {
-        showErrorToast("Could not snooze task", error);
+        showErrorToast("无法暂停任务", error);
       }
     },
     [dispatchTriage],
@@ -317,7 +317,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                   />
                 }
               >
-                <span>Needs attention</span>
+                <span>需要关注</span>
                 {unseenAttentionCount > 0 ? (
                   <span className="ml-auto rounded-full bg-destructive px-1.5 text-micro leading-4 text-destructive-foreground">
                     {unseenAttentionCount}
@@ -343,7 +343,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarGroupContent className="max-h-[min(40vh,20rem)] overflow-y-auto overscroll-contain">
-                  <nav aria-label="Tasks needing attention">
+                  <nav aria-label="需要关注的任务">
                     <SidebarMenu>
                       {attentionItems.slice(0, showAllAttention ? undefined : 5).map((item) => {
                         const target =
@@ -365,7 +365,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                                 <span className="block truncate">{item.sessionTitle}</span>
                                 <span className="block truncate text-meta text-muted-foreground">
                                   {item.count === 1
-                                    ? `${item.sessionID !== item.key ? "Subagent " : ""}${item.type} · ${item.projectName}`
+                                    ? `${item.sessionID !== item.key ? "子智能体 " : ""}${item.type} · ${item.projectName}`
                                     : `${item.count} requests · ${item.types.join(" + ")}`}
                                 </span>
                               </span>
@@ -387,8 +387,8 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                           >
                             <span>
                               {showAllAttention
-                                ? "Show less"
-                                : `Show all (${attentionItems.length})`}
+                                ? "收起"
+                                : `显示全部 (${attentionItems.length})`}
                             </span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -428,7 +428,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarGroupContent>
-                <nav aria-label="Recent tasks">
+                <nav aria-label="最近任务">
                   <SidebarMenu>
                     {recentSessions.map((session) => {
                       const item = inboxItems.get(session.id);
@@ -451,7 +451,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                       );
                     })}
                     {recentSessions.length === 0 ? (
-                      <li className="px-2 py-1 text-xs text-muted-foreground">No recent tasks</li>
+                      <li className="px-2 py-1 text-xs text-muted-foreground">没有最近的任务</li>
                     ) : null}
                   </SidebarMenu>
                 </nav>
@@ -474,7 +474,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                   />
                 }
               >
-                <span>Projects</span>
+                <span>项目</span>
                 {sectionOpen("projects") ? (
                   <ChevronDown
                     className={cn("ml-auto", sidebarSectionIconVariants())}
@@ -492,7 +492,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                   render={
                     <SidebarGroupAction
                       type="button"
-                      aria-label="Add project folder"
+                      aria-label="添加项目文件夹"
                       className="pointer-events-none top-1 right-7 opacity-0 transition-opacity group-hover/projects-header:pointer-events-auto group-hover/projects-header:opacity-100 group-has-[:focus-visible]/projects-header:pointer-events-auto group-has-[:focus-visible]/projects-header:opacity-100 hover:bg-sidebar-accent/60! hover:text-sidebar-foreground/75! focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-inset [&>svg]:size-3.5!"
                       onClick={() => void addFolder()}
                     />
@@ -500,13 +500,13 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                 >
                   <Plus aria-hidden="true" />
                 </TooltipTrigger>
-                <TooltipContent>Add project folder</TooltipContent>
+                <TooltipContent>添加项目文件夹</TooltipContent>
               </Tooltip>
             </div>
             <CollapsibleContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <SidebarGroupContent className="min-h-0 flex-1">
                 <ScrollArea className="h-full min-h-0">
-                  <nav aria-label="Projects and tasks">
+                  <nav aria-label="项目和任务">
                     <SidebarMenu>
                       {groups.map(({ project, sessions: projectSessions }) => {
                         const projectKey = JSON.stringify([runtime?.profileID, project.id]);
@@ -571,7 +571,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                                               <SidebarMenuAction
                                                 type="button"
                                                 data-palot-project-action
-                                                aria-label={`Start a new task in ${displayName}`}
+                                                aria-label={`在 ${displayName} 中新建任务`}
                                                 showOnHover
                                                 className="relative! top-auto! right-auto! text-sidebar-foreground/45! hover:bg-sidebar-accent/60! hover:text-sidebar-foreground/75! focus-visible:ring-inset [&>svg]:size-3!"
                                                 onClick={(event) => {
@@ -584,7 +584,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                                             <Plus aria-hidden="true" />
                                           </TooltipTrigger>
                                           <TooltipContent side="right">
-                                            Start a new task in {displayName}
+                                            在 {displayName} 中新建任务
                                           </TooltipContent>
                                         </Tooltip>
                                       </div>
@@ -594,7 +594,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                                 <ContextMenuContent>
                                   <ContextMenuItem onClick={() => void openWorktrees(project.id)}>
                                     <FolderGit2 aria-hidden="true" />
-                                    Manage worktrees
+                                    管理工作树
                                   </ContextMenuItem>
                                 </ContextMenuContent>
                               </ContextMenu>
@@ -625,7 +625,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                                   })}
                                   {projectSessions.length === 0 ? (
                                     <li className="flex items-center justify-between gap-2 px-2 py-1 text-xs text-muted-foreground">
-                                      <span>No tasks in this project</span>
+                                      <span>此项目没有任务</span>
                                       <button
                                         type="button"
                                         className="text-foreground/70 hover:text-foreground"
@@ -635,7 +635,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                                           })
                                         }
                                       >
-                                        Import
+                                        导入
                                       </button>
                                     </li>
                                   ) : null}
@@ -652,7 +652,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                           <EmptyMedia variant="icon">
                             <FolderPlus aria-hidden="true" />
                           </EmptyMedia>
-                          <EmptyTitle>Add a project to start</EmptyTitle>
+                          <EmptyTitle>添加项目以开始</EmptyTitle>
                         </EmptyHeader>
                         <EmptyContent>
                           <div className="flex flex-wrap justify-center gap-2">
@@ -663,7 +663,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                               onClick={() => void addFolder()}
                             >
                               <FolderPlus data-icon="inline-start" aria-hidden="true" />
-                              Add project
+                              添加项目
                             </Button>
                             <Button
                               type="button"
@@ -672,7 +672,7 @@ export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentPro
                               onClick={() => void importTask()}
                             >
                               <Upload data-icon="inline-start" aria-hidden="true" />
-                              Import task
+                              导入任务
                             </Button>
                           </div>
                         </EmptyContent>
@@ -750,7 +750,7 @@ const SessionRow = memo(function SessionRow({
       {title.editing ? (
         <Input
           autoFocus
-          aria-label="Task title"
+          aria-label="任务标题"
           value={title.draft}
           maxLength={1_000}
           className={cn(
@@ -793,12 +793,12 @@ const SessionRow = memo(function SessionRow({
               title.start();
             }}
           >
-            <span className="min-w-0 flex-1 truncate">{session.title ?? "Untitled task"}</span>
+            <span className="min-w-0 flex-1 truncate">{session.title ?? "未命名任务"}</span>
             {isAdditionalCheckout ? (
               <span
                 className="flex shrink-0 text-muted-foreground"
-                title="Additional checkout"
-                aria-label="Additional checkout"
+                title="额外检出"
+                aria-label="额外检出"
               >
                 <GitBranch aria-hidden="true" />
               </span>
@@ -828,7 +828,7 @@ const SessionRow = memo(function SessionRow({
       onRename={title.start}
     >
       {canSettle && triageThrough !== undefined ? (
-        <ContextMenuItem onClick={settle}>Settle</ContextMenuItem>
+        <ContextMenuItem onClick={settle}>归档</ContextMenuItem>
       ) : null}
     </SessionContextMenu>
   );
@@ -845,14 +845,14 @@ function SessionStatusIndicator({
     return reserveSpace ? <span className="size-3.5 shrink-0" aria-hidden="true" /> : null;
   const label =
     status === "attention"
-      ? "Task needs attention"
+      ? "任务需要关注"
       : status === "running"
-        ? "Task is running"
+        ? "任务运行中"
         : status === "failed"
-          ? "Task failed"
+          ? "任务失败"
           : status === "interrupted"
-            ? "Task was interrupted"
-            : "Unread task activity";
+            ? "任务已中断"
+            : "未读任务活动";
   return (
     <span
       className={

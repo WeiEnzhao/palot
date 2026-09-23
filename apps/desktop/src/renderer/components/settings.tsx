@@ -196,56 +196,56 @@ import { SettingsEmpty, SettingsGroup, SettingsRow, SettingsSection } from "./se
 
 const CATEGORY_COPY: Record<SettingsCategory, { title: string; description: string }> = {
   general: {
-    title: "General",
-    description: "Choose how new tasks start and how much activity Palot shows.",
+    title: "通用",
+    description: "选择新任务的启动方式和 Palot 显示的活动量。",
   },
   project: {
-    title: "Project",
-    description: "Manage project details, worktree startup, and the main checkout directory.",
+    title: "项目",
+    description: "管理项目详情、worktree 启动和主检出目录。",
   },
   connections: {
-    title: "Connections",
-    description: "Choose where Palot connects and how you access OpenCode.",
+    title: "连接",
+    description: "选择 Palot 的连接位置和访问 OpenCode 的方式。",
   },
   appearance: {
-    title: "Appearance",
-    description: "Choose themes, materials, and typography for your workspace.",
+    title: "外观",
+    description: "选择工作区的主题、材质和排版。",
   },
   notifications: {
-    title: "Notifications",
-    description: "Choose when Palot uses native macOS alerts for tasks that need you.",
+    title: "通知",
+    description: "选择 Palot 何时使用 macOS 原生提醒。",
   },
   models: {
-    title: "Models",
-    description: "Choose project defaults and inspect the models OpenCode makes available.",
+    title: "模型",
+    description: "选择项目默认值并查看 OpenCode 提供的模型。",
   },
   providers: {
-    title: "Providers",
-    description: "Connect model providers and manage their authentication methods.",
+    title: "提供商",
+    description: "连接模型提供商并管理其认证方式。",
   },
   tools: {
-    title: "Tools",
-    description: "Manage plugins and MCP servers, and browse tools discovered for this project.",
+    title: "工具",
+    description: "管理插件和 MCP 服务器，浏览此项目发现的工具。",
   },
   agents: {
-    title: "Agents",
-    description: "Inspect the primary agents and subagents available in this project.",
+    title: "智能体",
+    description: "查看此项目中可用的主智能体和子智能体。",
   },
   permissions: {
-    title: "Permissions",
-    description: "Review saved approvals and the effective configured policy.",
+    title: "权限",
+    description: "查看已保存的审批和生效的配置策略。",
   },
   config: {
-    title: "Configuration",
-    description: "Inspect the configuration sources and capabilities resolved by OpenCode.",
+    title: "配置",
+    description: "查看 OpenCode 解析的配置源和功能。",
   },
   diagnostics: {
-    title: "Diagnostics",
-    description: "Inspect live renderer, Electron, GPU, and OpenCode runtime signals.",
+    title: "诊断",
+    description: "查看渲染器、Electron、GPU 和 OpenCode 运行时的实时信号。",
   },
   about: {
-    title: "About",
-    description: "View Palot build details and the connected OpenCode service.",
+    title: "关于",
+    description: "查看 Palot 构建详情和已连接的 OpenCode 服务。",
   },
 };
 
@@ -417,7 +417,7 @@ export function Settings({
   return (
     <main
       className="flex size-full min-h-0 flex-col bg-transparent md:flex-row"
-      aria-label="Settings"
+      aria-label="设置"
     >
       <aside className="palot-settings-sidebar flex max-h-[196px] shrink-0 flex-col border-b border-sidebar-border bg-sidebar pt-(--shell-header-height) md:max-h-none md:w-[248px] md:border-r md:border-b-0">
         <div className="px-3 pt-3 pb-2 md:px-3.5">
@@ -427,8 +427,8 @@ export function Settings({
               type="search"
               autoFocus
               value={query}
-              placeholder="Search settings"
-              aria-label="Search settings"
+              placeholder="搜索设置"
+              aria-label="搜索设置"
               className="h-8 bg-background/55 pr-8 pl-8"
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -437,7 +437,7 @@ export function Settings({
                 type="button"
                 size="icon-xs"
                 variant="ghost"
-                aria-label="Clear settings search"
+                aria-label="清除设置搜索"
                 className="absolute top-1/2 right-1.5 -translate-y-1/2"
                 onClick={() => setQuery("")}
               >
@@ -449,14 +449,15 @@ export function Settings({
         <ScrollArea className="min-h-0 flex-1 px-2 md:px-2.5">
           <nav
             className="flex gap-1 py-1 md:flex md:flex-col md:gap-3"
-            aria-label="Settings categories"
+            aria-label="设置分类"
           >
             {(["Palot", "OpenCode", "System"] as const).map((group) => {
               const items = visibleNav.filter((item) => item.group === group);
               if (items.length === 0) return null;
+              const groupLabel = group === "Palot" ? "Palot" : group === "OpenCode" ? "OpenCode" : "系统";
               return (
                 <div key={group} className="contents md:flex md:flex-col md:gap-px">
-                  <div className={cn("hidden md:flex", sidebarSectionLabelVariants())}>{group}</div>
+                  <div className={cn("hidden md:flex", sidebarSectionLabelVariants())}>{groupLabel}</div>
                   <div className="flex gap-1 md:flex md:flex-col md:gap-px">
                     {items.map((item) => {
                       return (
@@ -488,7 +489,7 @@ export function Settings({
             })}
             {visibleNav.length === 0 ? (
               <p className="px-3 py-5 text-center text-xs text-muted-foreground">
-                No settings match “{query}”.
+                没有匹配”{query}”的设置。
               </p>
             ) : null}
           </nav>
@@ -501,14 +502,14 @@ export function Settings({
             onClick={() => void closeSettings()}
           >
             <ArrowLeft aria-hidden="true" />
-            Back to tasks
+            返回任务
           </Button>
         </div>
       </aside>
       <section className="palot-main-surface @container/settings-page relative flex min-h-0 min-w-0 flex-1 flex-col bg-background">
         <header className="palot-main-surface-header window-drag flex h-(--shell-header-height) shrink-0 items-center gap-2 border-b border-sidebar-border bg-background px-5 pr-(--window-controls-width)">
           <div className="flex min-w-0 items-center gap-2 pl-1">
-            <span className="text-sm font-semibold">Settings</span>
+            <span className="text-sm font-semibold">设置</span>
             <span className="text-muted-foreground/45">/</span>
             <span className="truncate text-xs text-muted-foreground">{activeCopy.title}</span>
           </div>
@@ -523,13 +524,13 @@ export function Settings({
                 }}
               >
                 <SelectTrigger
-                  aria-label="Configure server"
+                  aria-label="配置服务器"
                   className="window-no-drag w-auto min-w-28 max-w-52"
                 >
-                  <SelectValue className="min-w-0 truncate" placeholder="Configure server">
+                  <SelectValue className="min-w-0 truncate" placeholder="配置服务器">
                     {server.profiles.find((profile) => profile.id === server.profileID)?.name ??
                       runtime?.profileID ??
-                      "Choose server"}
+                      "选择服务器"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -551,7 +552,7 @@ export function Settings({
                 projects={projects}
                 value={project?.id ?? null}
                 onValueChange={(value) => value && setProjectChoice(value)}
-                ariaLabel="Settings project"
+                ariaLabel="设置项目"
                 align="end"
                 variant="settings"
               />
@@ -587,8 +588,8 @@ export function Settings({
               <p role="status" className="text-sm text-muted-foreground">
                 {server.status}
                 {server.available
-                  ? " · Changes apply only to this server. Your open task stays on its server."
-                  : " · Settings are read-only. Enable and connect this server in Connections to make changes."}
+                  ? " · 更改仅适用于此服务器。你的未完成任务保留在其服务器上。"
+                  : " · 设置为只读。请在「连接」中启用并连接此服务器以进行更改。"}
               </p>
             ) : null}
             {serverScoped && server.projectError ? (
@@ -600,7 +601,7 @@ export function Settings({
               <div className="rounded-xl border border-warning/25 bg-warning/5 p-4 text-compact">
                 <div className="flex items-center gap-2 font-medium text-warning">
                   <CircleAlert className="size-4" aria-hidden="true" />
-                  Some settings need attention
+                  部分设置需要注意
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {visibleSnapshot.errors.map((item) => (
@@ -617,7 +618,7 @@ export function Settings({
             ) : null}
             {visibleSnapshot && settings.pendingCapabilities.length > 0 ? (
               <p role="status" className="text-compact text-muted-foreground">
-                Some settings are still loading. Available settings are shown below.
+                部分设置仍在加载。可用设置如下所示。
               </p>
             ) : null}
             {error ? (
@@ -625,7 +626,7 @@ export function Settings({
                 <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span className="min-w-0 flex-1">{error}</span>
                 <Button type="button" variant="ghost" size="xs" onClick={() => void refresh()}>
-                  Retry
+                  重试
                 </Button>
               </div>
             ) : null}
@@ -638,11 +639,11 @@ export function Settings({
               "diagnostics",
               "about",
             ].includes(category) ? (
-              <SettingsSection title="No project selected" icon={FolderGit2}>
+              <SettingsSection title="未选择项目" icon={FolderGit2}>
                 <p className="px-4 text-sm text-muted-foreground">
                   {server.projectsPending
-                    ? "Loading this server's projects…"
-                    : "Add a project on this server before configuring project-scoped OpenCode settings."}
+                    ? "正在加载此服务器的项目…"
+                    : "请先在此服务器上添加项目，再配置项目级 OpenCode 设置。"}
                 </p>
               </SettingsSection>
             ) : (
@@ -771,69 +772,69 @@ function SettingsContent({
 }
 
 const ACTIVITY_CATEGORY_LABELS: Record<ActivityCategory, string> = {
-  reasoning: "Reasoning",
-  read: "Reads",
-  "code-search": "Code searches",
-  edit: "Edits",
-  command: "Commands",
-  web: "Web activity",
-  delegation: "Delegation",
-  other: "Other tools",
+  reasoning: "推理",
+  read: "读取",
+  "code-search": "代码搜索",
+  edit: "编辑",
+  command: "命令",
+  web: "网页活动",
+  delegation: "委派",
+  other: "其他工具",
 };
 
 const PROJECTION_PRESET_DESCRIPTIONS: Record<SessionProjectionPreset, string> = {
-  "code-focus": "Keeps the final response prominent and activity available as summaries.",
+  "code-focus": "突出最终回复，活动以摘要形式呈现。",
   compact:
-    "Keeps the current phase open with reasoning summaries while completed work stays compact.",
-  expanded: "Shows every activity row while keeping raw tool inputs and outputs inspectable.",
+    "保持当前阶段展开并显示推理摘要，已完成的工作保持紧凑。",
+  expanded: "显示所有活动行，同时保留原始工具输入和输出可供查看。",
 };
 
 const PROJECTION_PRESET_LABELS: Record<SessionProjectionPreset, string> = {
-  "code-focus": "Focused",
-  compact: "Balanced",
-  expanded: "Detailed",
+  "code-focus": "聚焦",
+  compact: "平衡",
+  expanded: "详细",
 };
 
 const ACTIVITY_PRESENTATION_LABELS: Record<ActivityProjectionPreference["presentation"], string> = {
-  individual: "Individual",
-  grouped: "Grouped",
-  hidden: "Hidden when completed",
+  individual: "独立",
+  grouped: "分组",
+  hidden: "完成后隐藏",
 };
 
 const DETAIL_DEFAULT_LABELS: Record<ActivityProjectionPreference["details"], string> = {
-  collapsed: "Collapsed",
-  expanded: "Expanded",
+  collapsed: "收起",
+  expanded: "展开",
 };
 
 const FOLDED_TURN_LABELS: Record<ActivityProjectionPreference["foldedTurn"], string> = {
-  inside: "Inside",
-  pinned: "Keep visible",
+  inside: "内部",
+  pinned: "保持可见",
 };
 
 const GROUP_TITLE_LABELS: Record<GroupTitleMode, string> = {
-  summary: "Activity summary",
-  "latest-reasoning": "Reasoning intent",
+  summary: "活动摘要",
+  "latest-reasoning": "推理意图",
 };
 
 const SIDEBAR_MODE_LABELS = {
-  remember: "Remember",
-  project: "Projects",
-  inbox: "Inbox",
+  remember: "记住",
+  project: "项目",
+  inbox: "收件箱",
 } as const;
 
 const WORKSPACE_MODE_LABELS = {
   worktree: "Worktree",
-  current: "Current checkout",
+  current: "当前检出",
 } as const;
 
 const WORKTREE_BASE_LABELS = {
-  "repository-default": "Repository default",
-  current: "Current branch",
+  "repository-default": "仓库默认",
+  current: "当前分支",
 } as const;
 
 const DELIVERY_LABELS = {
-  steer: "Steer",
-  queue: "Queue",
+  steer: "引导",
+  queue: "排队",
 } as const;
 
 function GeneralSettings() {
@@ -881,7 +882,7 @@ function GeneralSettings() {
       .catch((error) => {
         toast.add({
           type: "error",
-          title: error instanceof Error ? error.message : "Could not load Scheduled settings",
+          title: error instanceof Error ? error.message : "无法加载定时设置",
         });
       });
     return () => {
@@ -899,26 +900,26 @@ function GeneralSettings() {
       setAutomationHostSettings(previous);
       toast.add({
         type: "error",
-        title: error instanceof Error ? error.message : "Could not update Scheduled settings",
+        title: error instanceof Error ? error.message : "无法更新定时设置",
       });
     }
   };
   return (
     <div className="space-y-8">
       <SettingsSection
-        title="Task defaults"
-        description="Starting choices for new tasks and messages sent while work is running."
+        title="任务默认值"
+        description="新任务和运行中消息的初始选择。"
       >
         <SettingsGroup>
           <SettingsRow
-            title="Default workspace"
-            description="Create isolated worktrees by default, or start in the project checkout."
+            title="默认工作区"
+            description="默认创建隔离工作树，还是在项目检出中开始。"
             control={
               <Select
                 value={workspaceMode}
                 onValueChange={(value) => setWorkspaceMode(value as typeof workspaceMode)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Default workspace">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="默认工作区">
                   <SelectValue>{WORKSPACE_MODE_LABELS[workspaceMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -929,8 +930,8 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="New worktree starting point"
-            description="Start new task worktrees from the repository default branch or your current branch."
+            title="新 worktree 起始点"
+            description="从仓库默认分支还是当前分支开始新任务的工作树。"
             control={
               <Select
                 value={worktreeBase}
@@ -950,8 +951,8 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Messages while running"
-            description="Steer updates the active turn. Queue waits and starts after the current turn finishes."
+            title="运行中的消息"
+            description="引导会更新活动轮次。排队会等待当前轮次完成后再开始。"
             control={
               <Select
                 value={delivery}
@@ -971,12 +972,12 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Automatically send blocking work to background"
-            description="If a steer stays blocked for five seconds, let supported foreground work continue in the background."
+            title="自动将阻塞工作发送到后台"
+            description="如果引导被阻塞超过五秒，让支持的前台工作在后台继续。"
             control={
               <Switch
                 checked={autoBackgroundOnSteer}
-                aria-label="Automatically send blocking work to background when steering"
+                aria-label="引导时自动将阻塞工作发送到后台"
                 onCheckedChange={(checked) => setAutoBackgroundOnSteer(Boolean(checked))}
               />
             }
@@ -984,35 +985,35 @@ function GeneralSettings() {
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Desktop behavior"
-        description="Startup, local schedules, and website icons."
+        title="桌面行为"
+        description="启动、本地计划和网站图标。"
       >
         <SettingsGroup>
           <SettingsRow
-            title="Default sidebar"
-            description="Choose which sidebar opens when Palot starts, or return to the last one you used."
+            title="默认侧边栏"
+            description="选择 Palot 启动时打开哪个侧边栏，或返回上次使用的。"
             control={
               <Select
                 value={defaultSidebarMode}
                 onValueChange={(value) => setDefaultSidebarMode(value as typeof defaultSidebarMode)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Default sidebar">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="默认侧边栏">
                   <SelectValue>{SIDEBAR_MODE_LABELS[defaultSidebarMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="remember">Remember last used</SelectItem>
-                  <SelectItem value="project">Projects</SelectItem>
-                  <SelectItem value="inbox">Inbox</SelectItem>
+                  <SelectItem value="remember">记住上次使用</SelectItem>
+                  <SelectItem value="project">项目</SelectItem>
+                  <SelectItem value="inbox">收件箱</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
-            title="Launch at login"
-            description="Start Palot when you sign in so local schedules can run."
+            title="登录时启动"
+            description="登录时启动 Palot，以便本地计划可以运行。"
             control={
               <Switch
-                aria-label="Launch at login"
+                aria-label="登录时启动"
                 checked={automationHostSettings?.launchAtLogin ?? false}
                 disabled={!automationHostSettings}
                 onCheckedChange={(checked) =>
@@ -1022,11 +1023,11 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Prevent sleep during runs"
-            description="Keep this computer awake only while a scheduled run is preparing, queued, running, or finishing."
+            title="运行期间防止睡眠"
+            description="仅在计划任务准备、排队、运行或完成时保持计算机唤醒。"
             control={
               <Switch
-                aria-label="Prevent sleep during scheduled runs"
+                aria-label="计划运行期间防止睡眠"
                 checked={automationHostSettings?.preventSleepWhileRunning ?? false}
                 disabled={!automationHostSettings}
                 onCheckedChange={(checked) =>
@@ -1038,12 +1039,12 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Website icons in links"
-            description="Load icons from DuckDuckGo for public websites linked in messages. This shares each exact hostname, including subdomains, but not its page path."
+            title="链接中的网站图标"
+            description="从 DuckDuckGo 加载消息中链接的公共网站图标。这会分享每个完整的主机名（含子域名），但不分享页面路径。"
             control={
               <Switch
                 checked={remoteMarkdownFavicons}
-                aria-label="Load website icons from DuckDuckGo"
+                aria-label="从 DuckDuckGo 加载网站图标"
                 onCheckedChange={(checked) => setRemoteMarkdownFavicons(Boolean(checked))}
               />
             }
@@ -1051,23 +1052,23 @@ function GeneralSettings() {
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Timeline"
-        description="Choose how reasoning and tool activity appear in your tasks."
+        title="时间线"
+        description="选择推理和工具活动在任务中的显示方式。"
       >
         <SettingsGroup>
           <SettingsRow
-            title="Likely cache busts"
-            description="Show a warning in the timeline when cache reuse drops unexpectedly between matching model steps. Context always includes these diagnostics."
+            title="可能的缓存失效"
+            description="当匹配模型步骤之间缓存复用意外下降时，在时间线中显示警告。上下文始终包含这些诊断信息。"
             control={
               <Switch
                 checked={showTimelineCacheBusts}
-                aria-label="Show likely cache busts in timeline"
+                aria-label="在时间线中显示可能的缓存失效"
                 onCheckedChange={(checked) => setShowTimelineCacheBusts(Boolean(checked))}
               />
             }
           />
           <SettingsRow
-            title="Timeline activity"
+            title="时间线活动"
             description={PROJECTION_PRESET_DESCRIPTIONS[projection.preset]}
             control={
               <div className="flex items-center gap-2">
@@ -1075,9 +1076,9 @@ function GeneralSettings() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label="Customize timeline activity"
+                  aria-label="自定义时间线活动"
                   aria-expanded={customizeProjection}
-                  title="Customize timeline activity"
+                  title="自定义时间线活动"
                   onClick={() => setCustomizeProjection((open) => !open)}
                 >
                   <SlidersHorizontal aria-hidden="true" />
@@ -1088,28 +1089,28 @@ function GeneralSettings() {
                     setProjection({ version: 2, preset: value as SessionProjectionPreset })
                   }
                 >
-                  <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Timeline style">
+                  <SelectTrigger className="w-full @lg/settings:w-44" aria-label="时间线样式">
                     <SelectValue>
                       {PROJECTION_PRESET_LABELS[projection.preset]}
-                      {customized ? ", customized" : ""}
+                      {customized ? "，已自定义" : ""}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent align="end">
-                    <SelectItem value="code-focus">Focused</SelectItem>
-                    <SelectItem value="compact">Balanced</SelectItem>
-                    <SelectItem value="expanded">Detailed</SelectItem>
+                    <SelectItem value="code-focus">聚焦</SelectItem>
+                    <SelectItem value="compact">平衡</SelectItem>
+                    <SelectItem value="expanded">详细</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             }
           />
           <SettingsRow
-            title="Reasoning summaries"
-            description="Show the agent's reasoning summaries inside activity groups."
+            title="推理摘要"
+            description="在活动组内显示智能体的推理摘要。"
             control={
               <Switch
                 checked={resolvedProjection.showReasoningSummaries}
-                aria-label="Show reasoning summaries in the timeline"
+                aria-label="在时间线中显示推理摘要"
                 onCheckedChange={(checked) =>
                   setProjection((current) => ({
                     ...current,
@@ -1120,12 +1121,12 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Current activity"
-            description="Keep the current activity group open while the agent works."
+            title="当前活动"
+            description="智能体工作时保持当前活动组展开。"
             control={
               <Switch
                 checked={resolvedProjection.keepCurrentActivityExpanded}
-                aria-label="Keep current activity expanded"
+                aria-label="保持当前活动展开"
                 onCheckedChange={(checked) =>
                   setProjection((current) => ({
                     ...current,
@@ -1141,11 +1142,11 @@ function GeneralSettings() {
             <div className="flex items-center justify-between gap-3 border-b bg-muted/20 px-3 py-2.5">
               <div className="text-xs font-medium">
                 {projection.preset === "code-focus"
-                  ? "Focused"
+                  ? "聚焦"
                   : projection.preset === "compact"
-                    ? "Balanced"
-                    : "Detailed"}
-                {customized ? ", customized" : ""}
+                    ? "平衡"
+                    : "详细"}
+                {customized ? "，已自定义" : ""}
               </div>
               {customized ? (
                 <Button
@@ -1154,15 +1155,15 @@ function GeneralSettings() {
                   size="xs"
                   onClick={() => setProjection({ version: 2, preset: projection.preset })}
                 >
-                  Reset
+                  重置
                 </Button>
               ) : null}
             </div>
             <div className="hidden grid-cols-[minmax(7rem,1fr)_repeat(3,minmax(7rem,auto))] gap-x-2 border-b px-4 py-2 text-meta font-medium text-muted-foreground @3xl/settings:grid">
-              <span>Activity</span>
-              <span>Display</span>
-              <span>Details</span>
-              <span>Folded turns</span>
+              <span>活动</span>
+              <span>显示</span>
+              <span>详情</span>
+              <span>折叠轮次</span>
             </div>
             {ACTIVITY_CATEGORIES.map((category) => {
               const preference = resolvedProjection.categories[category];
@@ -1236,7 +1237,7 @@ function GeneralSettings() {
               );
             })}
             <div className="flex items-center justify-between gap-3 border-t bg-muted/10 px-3 py-3">
-              <span className="text-xs font-medium">Group titles</span>
+              <span className="text-xs font-medium">组标题</span>
               <Select
                 value={resolvedProjection.groupTitle}
                 onValueChange={(value) =>
@@ -1246,17 +1247,17 @@ function GeneralSettings() {
                   }))
                 }
               >
-                <SelectTrigger className="w-44" aria-label="Group titles">
+                <SelectTrigger className="w-44" aria-label="组标题">
                   <SelectValue>{GROUP_TITLE_LABELS[resolvedProjection.groupTitle]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="summary">Activity summary</SelectItem>
-                  <SelectItem value="latest-reasoning">Reasoning intent</SelectItem>
+                  <SelectItem value="summary">活动摘要</SelectItem>
+                  <SelectItem value="latest-reasoning">推理意图</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center justify-between gap-3 border-t bg-muted/10 px-3 py-3">
-              <span className="text-xs font-medium">Repeated file reads</span>
+              <span className="text-xs font-medium">重复文件读取</span>
               <Select
                 value={resolvedProjection.groupSameFileReads ? "grouped" : "separate"}
                 onValueChange={(value) =>
@@ -1266,19 +1267,19 @@ function GeneralSettings() {
                   }))
                 }
               >
-                <SelectTrigger className="w-44" aria-label="Repeated file reads">
+                <SelectTrigger className="w-44" aria-label="重复文件读取">
                   <SelectValue>
-                    {resolvedProjection.groupSameFileReads ? "One card per file" : "Separate cards"}
+                    {resolvedProjection.groupSameFileReads ? "每个文件一张卡片" : "独立卡片"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="separate">Separate cards</SelectItem>
-                  <SelectItem value="grouped">One card per file</SelectItem>
+                  <SelectItem value="separate">独立卡片</SelectItem>
+                  <SelectItem value="grouped">每个文件一张卡片</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center justify-between gap-3 border-t bg-muted/10 px-3 py-3">
-              <span className="text-xs font-medium">Completed turns</span>
+              <span className="text-xs font-medium">已完成的轮次</span>
               <Select
                 value={resolvedProjection.foldCompletedTurns ? "folded" : "expanded"}
                 onValueChange={(value) =>
@@ -1288,14 +1289,14 @@ function GeneralSettings() {
                   }))
                 }
               >
-                <SelectTrigger className="w-36" aria-label="Completed turns">
+                <SelectTrigger className="w-36" aria-label="已完成的轮次">
                   <SelectValue>
-                    {resolvedProjection.foldCompletedTurns ? "Folded" : "Expanded"}
+                    {resolvedProjection.foldCompletedTurns ? "折叠" : "展开"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="folded">Folded</SelectItem>
-                  <SelectItem value="expanded">Expanded</SelectItem>
+                  <SelectItem value="folded">折叠</SelectItem>
+                  <SelectItem value="expanded">展开</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1307,9 +1308,9 @@ function GeneralSettings() {
 }
 
 const TURN_NOTIFICATION_LABELS: Record<DesktopNotificationSettings["turnCompletion"], string> = {
-  never: "Never",
-  unfocused: "Only when unfocused",
-  always: "Always",
+  never: "从不",
+  unfocused: "仅在非焦点时",
+  always: "始终",
 };
 
 function NotificationSettings() {
@@ -1327,7 +1328,7 @@ function NotificationSettings() {
       .then((value) => {
         if (active) setSettings(value);
       })
-      .catch((error) => showError("Could not load notification settings", error));
+      .catch((error) => showError("无法加载通知设置", error));
     return () => {
       active = false;
     };
@@ -1342,7 +1343,7 @@ function NotificationSettings() {
         .then((value) => {
           if (active) setDeliveryStatus(value);
         })
-        .catch((error) => showError("Could not check notification delivery", error));
+        .catch((error) => showError("无法检查通知投递", error));
     };
     refresh();
     window.addEventListener("focus", refresh);
@@ -1361,7 +1362,7 @@ function NotificationSettings() {
       setSettings(await palot.updateDesktopNotificationSettings(next));
     } catch (error) {
       setSettings(previous);
-      showError("Could not update notification settings", error);
+      showError("无法更新通知设置", error);
     }
   };
 
@@ -1370,7 +1371,7 @@ function NotificationSettings() {
     try {
       setDeliveryStatus(await palot.desktopNotificationDeliveryStatus());
     } catch (error) {
-      showError("Could not check notification delivery", error);
+      showError("无法检查通知投递", error);
     } finally {
       setDeliveryBusy(false);
     }
@@ -1388,7 +1389,7 @@ function NotificationSettings() {
         await palot.sendDesktopTestNotification();
       }
     } catch (error) {
-      showError("Could not update notification delivery", error);
+      showError("无法更新通知投递", error);
     } finally {
       setDeliveryBusy(false);
     }
@@ -1398,14 +1399,14 @@ function NotificationSettings() {
 
   return (
     <SettingsSection
-      title="Native alerts"
-      description="Palot uses the macOS notification center and opens the relevant task when you click an alert."
+      title="原生提醒"
+      description="Palot 使用 macOS 通知中心，点击提醒时会打开相关任务。"
       icon={Bell}
     >
       <SettingsGroup>
         {isMac ? (
           <SettingsRow
-            title="Delivery check"
+            title="投递检查"
             description={delivery.description}
             control={
               <>
@@ -1426,7 +1427,7 @@ function NotificationSettings() {
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label="Check notification delivery again"
+                  aria-label="重新检查通知投递"
                   disabled={deliveryBusy}
                   onClick={() => void refreshDeliveryStatus()}
                 >
@@ -1437,8 +1438,8 @@ function NotificationSettings() {
           />
         ) : null}
         <SettingsRow
-          title="Turn completion notifications"
-          description="Set when Palot alerts you that a task has finished."
+          title="轮次完成通知"
+          description="设置 Palot 何时提醒你任务已完成。"
           control={
             <Select
               value={settings?.turnCompletion ?? "always"}
@@ -1451,26 +1452,26 @@ function NotificationSettings() {
             >
               <SelectTrigger
                 className="w-full @lg/settings:w-48"
-                aria-label="Turn completion notifications"
+                aria-label="轮次完成通知"
               >
                 <SelectValue>
                   {TURN_NOTIFICATION_LABELS[settings?.turnCompletion ?? "always"]}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectItem value="never">Never</SelectItem>
-                <SelectItem value="unfocused">Only when unfocused</SelectItem>
-                <SelectItem value="always">Always</SelectItem>
+                <SelectItem value="never">从不</SelectItem>
+                <SelectItem value="unfocused">仅在非焦点时</SelectItem>
+                <SelectItem value="always">始终</SelectItem>
               </SelectContent>
             </Select>
           }
         />
         <SettingsRow
-          title="Permission notifications"
-          description="Show alerts when a task needs permission to continue."
+          title="权限通知"
+          description="任务需要权限才能继续时显示提醒。"
           control={
             <Switch
-              aria-label="Permission notifications"
+              aria-label="权限通知"
               checked={settings?.permissionRequests ?? false}
               disabled={!settings}
               onCheckedChange={(checked) =>
@@ -1480,11 +1481,11 @@ function NotificationSettings() {
           }
         />
         <SettingsRow
-          title="Question notifications"
-          description="Show alerts when your input is needed to continue."
+          title="问题通知"
+          description="需要你的输入才能继续时显示提醒。"
           control={
             <Switch
-              aria-label="Question notifications"
+              aria-label="问题通知"
               checked={settings?.questionRequests ?? false}
               disabled={!settings}
               onCheckedChange={(checked) =>
@@ -1507,8 +1508,8 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
 } {
   if (!status) {
     return {
-      label: "Checking",
-      description: "Reading Palot's current delivery path from macOS.",
+      label: "检查中",
+      description: "正在从 macOS 读取 Palot 当前的通知投递路径。",
       action: null,
       icon: null,
       badgeVariant: "outline",
@@ -1516,53 +1517,53 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   }
   if (status.authorization === "not-determined") {
     return {
-      label: "Not set up",
-      description: "Choose whether Palot may alert you when work needs attention.",
-      action: "Allow alerts",
+      label: "未设置",
+      description: "选择 Palot 是否可以在工作需要关注时提醒你。",
+      action: "允许提醒",
       icon: <Bell />,
       badgeVariant: "outline",
     };
   }
   if (status.authorization === "denied") {
     return {
-      label: "Blocked",
-      description: "macOS is blocking Palot alerts. Your in-app choices are still saved.",
-      action: "Open macOS Settings",
+      label: "已阻止",
+      description: "macOS 正在阻止 Palot 提醒。你的应用内选择仍会保存。",
+      action: "打开 macOS 设置",
       icon: <ExternalLink />,
       badgeVariant: "destructive",
     };
   }
   if (status.delivery === "off") {
     return {
-      label: "Paused",
-      description: "Palot is allowed, but banners and Notification Center delivery are both off.",
-      action: "Open macOS Settings",
+      label: "已暂停",
+      description: "Palot 已获允许，但横幅和通知中心投递均已关闭。",
+      action: "打开 macOS 设置",
       icon: <ExternalLink />,
       badgeVariant: "destructive",
     };
   }
   if (status.delivery === "notification-center" || status.authorization === "provisional") {
     return {
-      label: "Quiet",
-      description: "Updates land in Notification Center without interrupting your current task.",
-      action: "Send test",
+      label: "安静",
+      description: "更新会进入通知中心，不会打断你当前的任务。",
+      action: "发送测试",
       icon: <Bell />,
       badgeVariant: "outline",
     };
   }
   if (status.authorization === "authorized" || status.authorization === "ephemeral") {
     return {
-      label: "Ready",
+      label: "就绪",
       description:
-        "Banners and Notification Center are available. Verify the route whenever you like.",
-      action: "Send test",
+        "横幅和通知中心可用。你可以随时验证投递路径。",
+      action: "发送测试",
       icon: <Check />,
       badgeVariant: "secondary",
     };
   }
   return {
-    label: "Unavailable",
-    description: "Palot could not read notification delivery from macOS.",
+    label: "不可用",
+    description: "Palot 无法从 macOS 读取通知投递状态。",
     action: null,
     icon: null,
     badgeVariant: "outline",

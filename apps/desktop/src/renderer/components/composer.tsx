@@ -417,12 +417,12 @@ function ComposerView({
       ? fileSearchQuery.error instanceof Error
         ? fileSearchQuery.error.message
         : fileSearchQuery.error
-          ? "Could not search workspace files."
+          ? "无法搜索工作区文件。"
           : null
       : composerCatalogQuery.error instanceof Error
         ? composerCatalogQuery.error.message
         : composerCatalogQuery.error
-          ? "Could not load suggestions."
+          ? "无法加载建议。"
           : (discoveryCatalog.errors[0]?.message ?? null);
 
   const focusComposer = useCallback(() => {
@@ -642,8 +642,8 @@ function ComposerView({
           retry: true,
           error:
             error instanceof Error && error.message
-              ? `Could not background the blocking work: ${error.message}`
-              : "Could not background the blocking work.",
+              ? `无法将阻塞工作发送到后台：${error.message}`
+              : "无法将阻塞工作发送到后台。",
         });
       } finally {
         setBackgroundingSteer(false);
@@ -715,7 +715,7 @@ function ComposerView({
       files.length > 0 &&
       BUILTIN_COMMANDS.some((command) => command.name === submission.command.toLowerCase())
     ) {
-      setAttachmentErrors(["Remove picked attachments before running a slash command."]);
+      setAttachmentErrors(["运行斜杠命令前请先移除已附加的文件。"]);
       return;
     }
     setAttachmentErrors([]);
@@ -728,7 +728,7 @@ function ComposerView({
           await palot.compactSession(session.id);
           clearSubmittedContents();
         } catch (error) {
-          setAttachmentErrors([error instanceof Error ? error.message : "Compaction failed"]);
+          setAttachmentErrors([error instanceof Error ? error.message : "压缩失败"]);
         } finally {
           setSending(false);
         }
@@ -758,7 +758,7 @@ function ComposerView({
                 id: matched.id,
               });
             } catch (error) {
-              showErrorToast("Could not switch models", error);
+              showErrorToast("无法切换模型", error);
             }
             return;
           }
@@ -781,7 +781,7 @@ function ComposerView({
               await editPendingInput(pending);
             } catch (error) {
               if (activeDraftScopeRef.current === draftScope) {
-                setAttachmentErrors([error instanceof Error ? error.message : "Revert failed"]);
+                setAttachmentErrors([error instanceof Error ? error.message : "撤销失败"]);
               }
             }
             return;
@@ -800,7 +800,7 @@ function ComposerView({
             setFiles(target.files ?? []);
           } catch (error) {
             if (activeDraftScopeRef.current === draftScope) {
-              setAttachmentErrors([error instanceof Error ? error.message : "Revert failed"]);
+              setAttachmentErrors([error instanceof Error ? error.message : "撤销失败"]);
             }
           } finally {
             setSending(false);
@@ -836,7 +836,7 @@ function ComposerView({
           setFiles(target?.files ?? []);
         } catch (error) {
           if (activeDraftScopeRef.current === draftScope) {
-            setAttachmentErrors([error instanceof Error ? error.message : "Redo failed"]);
+            setAttachmentErrors([error instanceof Error ? error.message : "重做失败"]);
           }
         } finally {
           setSending(false);
@@ -855,7 +855,7 @@ function ComposerView({
           setDraft(emptyComposerDraft());
           setFiles([]);
         } catch (error) {
-          setAttachmentErrors([error instanceof Error ? error.message : "Restore failed"]);
+          setAttachmentErrors([error instanceof Error ? error.message : "恢复失败"]);
         } finally {
           setSending(false);
         }
@@ -1011,7 +1011,7 @@ function ComposerView({
         reportCreationError: (error) => onCreateSessionError?.(error),
         reportDispatchError: (error) =>
           setAttachmentErrors([
-            error instanceof Error ? error.message : "Palot could not send the attachment.",
+            error instanceof Error ? error.message : "Palot 无法发送附件。",
           ]),
       },
     });
@@ -1076,7 +1076,7 @@ function ComposerView({
     } catch (error) {
       if (!isCurrent()) return;
       setAttachmentErrors([
-        error instanceof Error ? error.message : "Palot could not attach the selected files.",
+        error instanceof Error ? error.message : "Palot 无法附加所选文件。",
       ]);
     } finally {
       request.unsubscribe();
@@ -1089,7 +1089,7 @@ function ComposerView({
 
   async function pickFiles() {
     if (!localAttachments) {
-      setAttachmentErrors(["Local file attachments are unavailable for remote OpenCode servers."]);
+      setAttachmentErrors(["远程 OpenCode 服务器不支持本地文件附件。"]);
       return;
     }
     const connectionID = runtime?.connectionID;
@@ -1172,7 +1172,7 @@ function ComposerView({
       <OpenCodeConnectionAlert />
       {pendingInputs.length > 0 ? (
         <section
-          aria-label="Pending messages"
+          aria-label="待发送消息"
           className="relative mx-2 -mb-4 min-w-0 rounded-t-2xl border border-b-0 border-foreground/10 bg-muted px-1 pt-1 pb-4"
         >
           <div className="palot-native-scrollbar flex max-h-[min(9rem,20cqh)] min-w-0 flex-col overflow-x-hidden overflow-y-auto overscroll-contain">
@@ -1217,14 +1217,14 @@ function ComposerView({
             <div className="relative z-10 flex min-w-0 items-center gap-2 border-b border-foreground/8 px-4 py-2 text-meta text-muted-foreground">
               <Pencil className="size-3 shrink-0" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate">
-                Editing a canceled pending message. Resubmitting adds it to the end.
+                正在编辑已取消的待发送消息。重新提交将添加到末尾。
               </span>
               <button
                 type="button"
                 className="shrink-0 font-medium text-foreground/75 hover:text-foreground"
                 onClick={restorePreviousDraft}
               >
-                Discard edit and restore draft
+                放弃编辑并恢复草稿
               </button>
             </div>
           ) : null}
@@ -1236,7 +1236,7 @@ function ComposerView({
             <InputGroupTextarea
               ref={composerRef}
               data-palot-composer-input
-              aria-label="Message Palot"
+              aria-label="给 Palot 发消息"
               aria-controls={
                 discoveryOpen
                   ? `composer-discovery-${session.id.replaceAll(/[^A-Za-z0-9_-]/g, "-")}`
@@ -1251,7 +1251,7 @@ function ComposerView({
               value={draft.text}
               rows={2}
               className="palot-native-scrollbar max-h-[clamp(3rem,25cqh,11rem)] min-h-[calc(2lh+--spacing(4))] flex-none resize-none overflow-y-auto overscroll-contain px-5 pt-3 pb-1"
-              placeholder="Do anything"
+              placeholder="输入任何内容"
               onChange={(event) => {
                 setDraft((current) => applyComposerTextChange(current, event.target.value));
                 updateSelection(event.target);
@@ -1272,7 +1272,7 @@ function ComposerView({
                   if (hasImages) {
                     event.preventDefault();
                     setAttachmentErrors([
-                      "Image attachments are unavailable for remote OpenCode servers.",
+                      "远程 OpenCode 服务器不支持图片附件。",
                     ]);
                   }
                   return;
@@ -1325,7 +1325,7 @@ function ComposerView({
           {!requestBody && files.length > 0 ? (
             <AttachmentGroup
               className="palot-native-scrollbar max-h-[min(6rem,15cqh)] shrink-0 overflow-y-auto overscroll-contain px-3 py-1"
-              aria-label="Attachments"
+              aria-label="附件"
             >
               {files.map((file) => (
                 <FileAttachment
@@ -1347,16 +1347,16 @@ function ComposerView({
             <div className="flex min-w-0 items-center gap-2 px-3 py-1 text-compact text-muted-foreground">
               <span role="status" className="min-w-0 flex-1 truncate">
                 {attachmentUpload.progress
-                  ? `Uploading ${attachmentUpload.progress.name} (${attachmentUpload.progress.index + 1}/${attachmentUpload.progress.count}) · ${Math.round((attachmentUpload.progress.loaded / Math.max(1, attachmentUpload.progress.total)) * 100)}%`
-                  : "Preparing attachments…"}
+                  ? `正在上传 ${attachmentUpload.progress.name} (${attachmentUpload.progress.index + 1}/${attachmentUpload.progress.count}) · ${Math.round((attachmentUpload.progress.loaded / Math.max(1, attachmentUpload.progress.total)) * 100)}%`
+                  : "正在准备附件…"}
               </span>
               <InputGroupButton
                 type="button"
                 size="sm"
                 onClick={cancelAttachmentUpload}
-                aria-label="Cancel attachment upload"
+                aria-label="取消附件上传"
               >
-                Cancel
+                取消
               </InputGroupButton>
             </div>
           ) : null}
@@ -1383,11 +1383,11 @@ function ComposerView({
                 <InputGroupButton
                   type="button"
                   size="sm"
-                  aria-label="Stop task"
+                  aria-label="停止任务"
                   onClick={() => void palot.interrupt(session.id)}
                 >
                   <Square className="size-3 fill-current" aria-hidden="true" />
-                  Stop
+                  停止
                 </InputGroupButton>
               )}
             </InputGroupAddon>
@@ -1402,7 +1402,7 @@ function ComposerView({
                     <InputGroupButton
                       type="button"
                       size="icon-sm"
-                      aria-label="Attach files"
+                      aria-label="附加文件"
                       disabled={sending || Boolean(attachmentUpload) || !localAttachments}
                       onClick={() => void pickFiles()}
                     />
@@ -1411,7 +1411,7 @@ function ComposerView({
                   <Plus aria-hidden="true" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  {localAttachments ? "Attach files" : "Attachments unavailable for remote servers"}
+                  {localAttachments ? "附加文件" : "远程服务器不支持附件"}
                 </TooltipContent>
               </Tooltip>
               <AgentSelector
@@ -1463,7 +1463,7 @@ function ComposerView({
                     type="button"
                     size="icon-sm"
                     className="rounded-full"
-                    aria-label="Stop task"
+                    aria-label="停止任务"
                     onClick={() => void palot.interrupt(session.id)}
                   >
                     <Square className="size-3.5 fill-current" aria-hidden="true" />
@@ -1479,8 +1479,8 @@ function ComposerView({
                             className="h-7 rounded-r-none rounded-l-full bg-primary px-2.5 text-primary-foreground hover:bg-primary/90"
                             aria-label={
                               composerDelivery === "queue"
-                                ? "Queue message after current turn"
-                                : "Steer current turn"
+                                ? "在当前轮次后排队消息"
+                                : "引导当前轮次"
                             }
                             disabled={!canSubmit}
                             onClick={() => void submit()}
@@ -1494,12 +1494,12 @@ function ComposerView({
                         ) : (
                           <Zap aria-hidden="true" />
                         )}
-                        {composerDelivery === "queue" ? "Queue" : "Steer"}
+                        {composerDelivery === "queue" ? "排队" : "引导"}
                       </TooltipTrigger>
                       <TooltipContent>
                         {composerDelivery === "queue"
-                          ? "Queue after current turn"
-                          : `Steer current turn · ${formatCommandShortcut(["Meta", "Enter"])}`}
+                          ? "在当前轮次后排队"
+                          : `引导当前轮次 · ${formatCommandShortcut(["Meta", "Enter"])}`}
                       </TooltipContent>
                     </Tooltip>
                     <DropdownMenu>
@@ -1509,7 +1509,7 @@ function ComposerView({
                             type="button"
                             size="icon-sm"
                             className="w-5 rounded-r-full rounded-l-none border-l border-primary-foreground/20 bg-primary px-0 text-primary-foreground hover:bg-primary/90"
-                            aria-label="Choose message delivery"
+                            aria-label="选择消息投递方式"
                             disabled={!canSubmit || sending}
                           />
                         }
@@ -1525,11 +1525,11 @@ function ComposerView({
                         >
                           <DropdownMenuRadioItem value="queue">
                             <Clock3 aria-hidden="true" />
-                            Queue after current turn
+                            当前轮次后排队
                           </DropdownMenuRadioItem>
                           <DropdownMenuRadioItem value="steer">
                             <Zap aria-hidden="true" />
-                            Steer current turn
+                            引导当前轮次
                             <DropdownMenuShortcut>
                               {formatCommandShortcut(["Meta", "Enter"])}
                             </DropdownMenuShortcut>
@@ -1543,7 +1543,7 @@ function ComposerView({
                     type="button"
                     size="icon-sm"
                     className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
-                    aria-label="Send message"
+                    aria-label="发送消息"
                     disabled={!canSubmit}
                     onClick={() => void submit()}
                   >
@@ -1665,14 +1665,14 @@ export const PendingInputTaskbarItem = memo(function PendingInputTaskbarItem({
   const delivery = request.delivery ?? "steer";
   const attachmentLabel = files?.length
     ? `${files[0]!.name}${files.length > 1 ? ` (+${files.length - 1} more)` : ""}`
-    : "Pending message";
+    : "待发送消息";
   const detail = request.detail?.trim() ? request.detail : attachmentLabel;
   const status =
     delivery === "queue" && queuedCount > 1 && queuedPosition
-      ? `Queued · ${queuedPosition}`
+      ? `排队中 · ${queuedPosition}`
       : delivery === "queue"
-        ? "Queued"
-        : "Steering";
+        ? "已排队"
+        : "引导中";
 
   useEffect(() => {
     if (
@@ -1700,7 +1700,7 @@ export const PendingInputTaskbarItem = memo(function PendingInputTaskbarItem({
       }
       await palot.updatePending({ sessionID, inputID: request.id, action });
     } catch (error) {
-      showErrorToast("Could not update pending message", error);
+      showErrorToast("无法更新待发送消息", error);
     } finally {
       setResponding(false);
     }
@@ -1711,7 +1711,7 @@ export const PendingInputTaskbarItem = memo(function PendingInputTaskbarItem({
       className="flex min-h-8 min-w-0 items-center gap-2 rounded-lg px-2 text-meta leading-none text-muted-foreground hover:bg-foreground/4"
       role="region"
       data-palot-request-id={request.id}
-      aria-label={`Pending message actions: ${detail}`}
+      aria-label={`待发送消息操作：${detail}`}
       aria-busy={responding}
     >
       <span className="flex shrink-0 items-center gap-1 font-medium text-foreground/70">
@@ -1730,17 +1730,17 @@ export const PendingInputTaskbarItem = memo(function PendingInputTaskbarItem({
       <button
         type="button"
         className="shrink-0 rounded-md px-1.5 py-1 font-medium text-foreground/65 hover:bg-foreground/6 hover:text-foreground"
-        aria-label={delivery === "queue" ? "Steer next" : "Run after current turn"}
+        aria-label={delivery === "queue" ? "引导下一条" : "在当前轮次后运行"}
         disabled={responding}
         onClick={() => void update(delivery === "queue" ? "steer" : "queue")}
       >
-        {delivery === "queue" ? "Steer" : "Queue"}
+        {delivery === "queue" ? "引导" : "排队"}
       </button>
       <button
         type="button"
         className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-foreground/6 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50"
-        aria-label="Cancel pending message"
-        title="Cancel pending message"
+        aria-label="取消待发送消息"
+        title="取消待发送消息"
         disabled={responding}
         onClick={() => void update("cancel")}
       >
@@ -1752,7 +1752,7 @@ export const PendingInputTaskbarItem = memo(function PendingInputTaskbarItem({
             <button
               type="button"
               className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-foreground/6 hover:text-foreground"
-              aria-label="More pending message actions"
+              aria-label="更多待发送消息操作"
               disabled={responding}
             />
           }
@@ -1762,23 +1762,23 @@ export const PendingInputTaskbarItem = memo(function PendingInputTaskbarItem({
         <DropdownMenuContent side="top" align="end" sideOffset={4} className="w-44">
           <DropdownMenuItem disabled={editDisabled || !onEdit} onClick={() => void update("edit")}>
             <Pencil aria-hidden="true" />
-            Cancel and edit
+            取消并编辑
           </DropdownMenuItem>
           <DropdownMenuItem variant="destructive" onClick={() => void update("cancel")}>
             <Trash2 aria-hidden="true" />
-            Cancel pending message
+            取消待发送消息
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setDefaultDelivery(defaultDelivery === "queue" ? "steer" : "queue")}
-            title="Changes future messages only"
+            title="仅影响后续消息"
           >
             {defaultDelivery === "queue" ? (
               <Zap aria-hidden="true" />
             ) : (
               <Clock3 aria-hidden="true" />
             )}
-            {defaultDelivery === "queue" ? "Turn off queueing" : "Turn on queueing"}
+            {defaultDelivery === "queue" ? "关闭排队" : "开启排队"}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -1805,7 +1805,7 @@ const ContextIndicator = memo(function ContextIndicator({
         : percentage >= 70
           ? "warning"
           : "normal";
-  const label = percentage === null ? "Open Context tab" : `Open Context tab, ${percentage}% used`;
+  const label = percentage === null ? "打开上下文标签页" : `打开上下文标签页，已用 ${percentage}%`;
 
   return (
     <Tooltip>
@@ -1853,8 +1853,8 @@ const ContextIndicator = memo(function ContextIndicator({
       </TooltipTrigger>
       <TooltipContent>
         {usage
-          ? `${percentage ?? "?"}% used · ${formatTokens(usage.total)} latest · ${formatTokens(totalProcessed)} total`
-          : `Context details · ${formatTokens(totalProcessed)} tokens processed`}
+          ? `${percentage ?? "?"}% 已用 · ${formatTokens(usage.total)} 最新 · ${formatTokens(totalProcessed)} 总计`
+          : `上下文详情 · 已处理 ${formatTokens(totalProcessed)} tokens`}
       </TooltipContent>
     </Tooltip>
   );
@@ -1891,13 +1891,13 @@ const ModelSelector = memo(function ModelSelector({
   const selected = selection.model;
   const usesDefault = selection.usesDefault;
   const unavailable = session.model !== null && selected === null;
-  const label = selected?.name ?? selectedRef?.id ?? "Choose model";
+  const label = selected?.name ?? selectedRef?.id ?? "选择模型";
   const variant = session.model?.variant;
   const effort =
     selected && selected.variants.length > 0
       ? variant && variant !== "default"
         ? sentenceCase(variant)
-        : "Auto"
+        : "自动"
       : null;
   const providerNames = useMemo(
     () => new Map(providers.map((provider) => [provider.id, provider.name])),
@@ -1916,7 +1916,7 @@ const ModelSelector = memo(function ModelSelector({
       onOpenChange(false);
       onSelectionComplete();
     } catch (error) {
-      showErrorToast("Could not switch models", error);
+      showErrorToast("无法切换模型", error);
     } finally {
       setSwitching(false);
     }
@@ -1930,8 +1930,8 @@ const ModelSelector = memo(function ModelSelector({
             type="button"
             size="composer"
             className="palot-model-trigger min-w-0 max-w-64 shrink gap-1.5 px-2"
-            aria-label={`Model: ${label}${unavailable ? ", unavailable" : ""}`}
-            aria-description={effort ? `Reasoning: ${effort}` : undefined}
+            aria-label={`模型：${label}${unavailable ? "，不可用" : ""}`}
+            aria-description={effort ? `推理：${effort}` : undefined}
             disabled={switching || disabled}
           />
         }
@@ -1941,7 +1941,7 @@ const ModelSelector = memo(function ModelSelector({
         </span>
         {unavailable || usesDefault ? (
           <span className="shrink-0 text-muted-foreground" data-palot-model-detail-label>
-            {unavailable ? "Unavailable" : "Default"}
+            {unavailable ? "不可用" : "默认"}
           </span>
         ) : null}
         {effort && (
@@ -1957,13 +1957,13 @@ const ModelSelector = memo(function ModelSelector({
         className="palot-model-picker w-[min(420px,calc(100vw-24px))] gap-3 p-2.5"
       >
         <PopoverHeader className="px-1">
-          <PopoverTitle>Model and reasoning</PopoverTitle>
+          <PopoverTitle>模型和推理</PopoverTitle>
           <PopoverDescription>
             {unavailable
-              ? "This task's selected model is no longer available. Choose another model to continue."
+              ? "此任务选择的模型已不可用。请选择另一个模型继续。"
               : usesDefault
-                ? "Using the default model configured for this project."
-                : "Choose the model used by this task."}
+                ? "正在使用此项目配置的默认模型。"
+                : "选择此任务使用的模型。"}
           </PopoverDescription>
         </PopoverHeader>
         <ReasoningOptions
@@ -1975,22 +1975,22 @@ const ModelSelector = memo(function ModelSelector({
           onSelectModel={onSelectVariant}
           disabled={disabled || switching}
         />
-        <Command loop label="Choose model" className="max-h-[340px] bg-transparent p-0">
-          <CommandInput placeholder="Search models..." aria-label="Search models" />
+        <Command loop label="选择模型" className="max-h-[340px] bg-transparent p-0">
+          <CommandInput placeholder="搜索模型…" aria-label="搜索模型" />
           <CommandList data-palot-model-list>
-            <CommandEmpty>No models found.</CommandEmpty>
+            <CommandEmpty>未找到模型。</CommandEmpty>
             {unavailable && selectedRef ? (
-              <CommandGroup heading="Current task" className="py-1">
+              <CommandGroup heading="当前任务" className="py-1">
                 <CommandItem
                   disabled
                   value={`${selectedRef.providerID} ${selectedRef.id} unavailable`}
                 >
                   <span className="min-w-0 flex-1 truncate">{selectedRef.id}</span>
-                  <span className="text-micro text-muted-foreground">Unavailable</span>
+                  <span className="text-micro text-muted-foreground">不可用</span>
                 </CommandItem>
               </CommandGroup>
             ) : null}
-            <CommandGroup heading="Available" className="py-1">
+            <CommandGroup heading="可用" className="py-1">
               {models.map((model) => (
                 <CommandItem
                   key={`${model.providerID}:${model.id}`}
@@ -2011,9 +2011,9 @@ const ModelSelector = memo(function ModelSelector({
                     </span>
                   </span>
                   {modelMatchesRef(model, session.model) ? (
-                    <span className="text-micro text-muted-foreground">Current</span>
+                    <span className="text-micro text-muted-foreground">当前</span>
                   ) : modelMatchesRef(model, defaultModel) ? (
-                    <span className="text-micro text-muted-foreground">Default</span>
+                    <span className="text-micro text-muted-foreground">默认</span>
                   ) : null}
                   <span className="text-micro text-muted-foreground tabular-nums">
                     {Math.round(model.contextLimit / 1_000)}K
@@ -2052,7 +2052,7 @@ const AgentSelector = memo(function AgentSelector({
     (agent) => !agent.hidden && (agent.mode === "primary" || agent.mode === "all"),
   );
   const selected = available.find((agent) => agent.id === session.agent) ?? null;
-  const label = selected?.name ?? session.agent ?? "Default agent";
+  const label = selected?.name ?? session.agent ?? "默认智能体";
   const isDefaultAgent = !session.agent;
 
   async function selectAgent(agent: PalotAgent) {
@@ -2063,7 +2063,7 @@ const AgentSelector = memo(function AgentSelector({
       onOpenChange(false);
       onSelectionComplete();
     } catch (error) {
-      showErrorToast("Could not switch agents", error);
+      showErrorToast("无法切换智能体", error);
     } finally {
       setSwitching(false);
     }
@@ -2077,7 +2077,7 @@ const AgentSelector = memo(function AgentSelector({
             type="button"
             size="composer"
             className="max-w-40 gap-1 px-2"
-            aria-label={`Agent: ${label}`}
+            aria-label={`智能体：${label}`}
             disabled={switching || disabled}
           />
         }
@@ -2092,16 +2092,16 @@ const AgentSelector = memo(function AgentSelector({
         className="w-[min(360px,calc(100vw-24px))] gap-3 p-2.5"
       >
         <PopoverHeader className="px-1">
-          <PopoverTitle>Agent</PopoverTitle>
-          <PopoverDescription>Choose the primary agent used by this task.</PopoverDescription>
+          <PopoverTitle>智能体</PopoverTitle>
+          <PopoverDescription>选择此任务使用的主智能体。</PopoverDescription>
         </PopoverHeader>
-        <Command loop label="Choose agent" className="max-h-[300px] bg-transparent p-0">
-          <CommandInput placeholder="Search agents..." aria-label="Search agents" />
+        <Command loop label="选择智能体" className="max-h-[300px] bg-transparent p-0">
+          <CommandInput placeholder="搜索智能体…" aria-label="搜索智能体" />
           <CommandList>
             <CommandEmpty>
-              {loading ? "Loading agents..." : "No primary agents found."}
+              {loading ? "正在加载智能体…" : "没有主智能体。"}
             </CommandEmpty>
-            <CommandGroup heading="Available" className="py-1">
+            <CommandGroup heading="可用" className="py-1">
               {available.map((agent) => (
                 <CommandItem
                   key={agent.id}
@@ -2119,7 +2119,7 @@ const AgentSelector = memo(function AgentSelector({
                     ) : null}
                   </span>
                   {agent.id === session.agent ? (
-                    <span className="text-micro text-muted-foreground">Current</span>
+                    <span className="text-micro text-muted-foreground">当前</span>
                   ) : null}
                 </CommandItem>
               ))}
@@ -2168,7 +2168,7 @@ const ReasoningOptions = memo(function ReasoningOptions({
       onOpenChange(false);
       onSelectionComplete();
     } catch (error) {
-      showErrorToast("Could not change reasoning effort", error);
+      showErrorToast("无法更改推理力度", error);
     } finally {
       setSwitching(false);
     }
@@ -2176,12 +2176,12 @@ const ReasoningOptions = memo(function ReasoningOptions({
 
   return (
     <div className="grid gap-2 border-b pb-3 px-1">
-      <p className="text-compact font-medium">Reasoning effort</p>
+      <p className="text-compact font-medium">推理力度</p>
       <ToggleGroup
         value={[selectedVariant ?? "model-default"]}
         spacing={1}
         className="flex-wrap justify-start"
-        aria-label="Reasoning effort"
+        aria-label="推理力度"
         onValueChange={(value) => {
           const variant = value[0];
           if (variant) void selectVariant(variant === "model-default" ? undefined : variant);
@@ -2193,7 +2193,7 @@ const ReasoningOptions = memo(function ReasoningOptions({
           variant="outline"
           disabled={switching || disabled}
         >
-          Auto
+          自动
         </ToggleGroupItem>
         {selectedModel.variants.map((variant) => (
           <ToggleGroupItem

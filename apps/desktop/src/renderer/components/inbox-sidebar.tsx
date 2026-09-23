@@ -232,8 +232,8 @@ export function InboxSidebarContent() {
       if (action === "settle" && !item.canSettle) {
         toast.add({
           type: "warning",
-          title: item.running ? "Task is still working" : "Task needs input",
-          description: "Resolve the active work before settling this task.",
+          title: item.running ? "任务仍在运行" : "任务需要输入",
+          description: "请先完成当前工作再归档此任务。",
         });
         return;
       }
@@ -257,9 +257,9 @@ export function InboxSidebarContent() {
       if (action === "settle") {
         toast.add({
           type: "success",
-          title: "Task settled",
+          title: "任务已归档",
           actionProps: {
-            children: "Undo",
+            children: "撤销",
             onClick: () =>
               void dispatch({ type: "inbox", sessionID: item.session.id, at: Date.now() }),
           },
@@ -281,10 +281,10 @@ export function InboxSidebarContent() {
       });
       toast.add({
         type: "success",
-        title: "Task snoozed",
-        description: `Returns ${formatSnoozeWakeTime(until)}.`,
+        title: "任务已暂停",
+        description: `将在 ${formatSnoozeWakeTime(until)} 恢复。`,
         actionProps: {
-          children: "Undo",
+          children: "撤销",
           onClick: () =>
             void dispatch({ type: "wake", sessionID: item.session.id, at: Date.now() }),
         },
@@ -310,22 +310,22 @@ export function InboxSidebarContent() {
           <div className="space-y-1 px-2 pt-0.5 pb-2">
             {triageError ? (
               <div className="mb-2 rounded-lg border border-destructive/30 bg-destructive/8 px-3 py-2 text-xs text-destructive">
-                Inbox state could not be saved. All loaded tasks remain visible.
+                收件箱状态保存失败，已加载的任务仍然可见。
               </div>
             ) : null}
             {attentionState !== "ready" ? (
               <div role="status" className="px-2 py-1.5 text-meta text-muted-foreground">
-                {attentionState === "syncing" ? "Syncing requests…" : "Request status unavailable"}
+                {attentionState === "syncing" ? "正在同步请求…" : "请求状态不可用"}
               </div>
             ) : null}
             {triageLoading || remoteFilter.isLoading ? (
               <div className="flex items-center gap-2 px-2 py-3 text-xs text-muted-foreground">
                 <LoaderCircle className="animate-spin" aria-hidden="true" />
-                Loading inbox
+                正在加载收件箱
               </div>
             ) : null}
             <RichSection
-              title="Pinned"
+              title="已置顶"
               open={shelves.pinned}
               onOpenChange={(value) => setShelves((current) => ({ ...current, pinned: value }))}
               items={filtered.pinned}
@@ -338,7 +338,7 @@ export function InboxSidebarContent() {
               branches={branches}
             />
             <RichSection
-              title="Inbox"
+              title="收件箱"
               open={shelves.inbox}
               onOpenChange={(value) => setShelves((current) => ({ ...current, inbox: value }))}
               items={filtered.inbox}
@@ -351,15 +351,15 @@ export function InboxSidebarContent() {
               empty={
                 attentionState === "ready"
                   ? pagination.hasNextPage
-                    ? "No loaded tasks are in the inbox"
-                    : "Inbox is clear"
+                    ? "当前没有已加载的任务在收件箱中"
+                    : "收件箱已清空"
                   : undefined
               }
               branches={branches}
             />
             {viewPreferences.showSnoozed && filtered.snoozed.length > 0 ? (
               <CompactShelf
-                title="Snoozed"
+                title="已暂停"
                 open={shelves.snoozed}
                 onOpenChange={(value) => setShelves((current) => ({ ...current, snoozed: value }))}
                 items={filtered.snoozed}
@@ -373,7 +373,7 @@ export function InboxSidebarContent() {
             ) : null}
             {viewPreferences.showSettled ? (
               <CompactShelf
-                title="Settled"
+                title="已归档"
                 open={shelves.settled}
                 onOpenChange={(value) => setShelves((current) => ({ ...current, settled: value }))}
                 items={filtered.settled}
@@ -393,15 +393,15 @@ export function InboxSidebarContent() {
 }
 
 const STATE_FILTERS: ReadonlyArray<{ value: InboxStateFilter; label: string }> = [
-  { value: "attention", label: "Needs input" },
-  { value: "running", label: "Running" },
-  { value: "failed", label: "Failed" },
-  { value: "unread", label: "Unread" },
+  { value: "attention", label: "需要输入" },
+  { value: "running", label: "运行中" },
+  { value: "failed", label: "失败" },
+  { value: "unread", label: "未读" },
 ];
 const INBOX_ORDERING_LABELS: Record<InboxViewPreferences["ordering"], string> = {
-  newest: "Newest",
-  oldest: "Oldest",
-  attention: "Needs input first",
+  newest: "最新",
+  oldest: "最早",
+  attention: "需要输入优先",
 };
 type InboxShelves = { pinned: boolean; inbox: boolean; snoozed: boolean; settled: boolean };
 
@@ -461,7 +461,7 @@ export function InboxToolbar({
                   variant="ghost"
                   size="icon"
                   className="relative text-sidebar-secondary hover:bg-(--palot-sidebar-hover) hover:text-sidebar-foreground"
-                  aria-label={activeCount ? `Filter tasks, ${activeCount} active` : "Filter tasks"}
+                  aria-label={activeCount ? `筛选任务，${activeCount} 个活跃` : "筛选任务"}
                 />
               }
             >
@@ -473,14 +473,14 @@ export function InboxToolbar({
             <DropdownMenuContent align="start" className="w-56 p-1.5">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="px-2 py-1.5 text-xs font-normal text-muted-foreground">
-                  Add filter…
+                  添加筛选…
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="min-h-9">
                   <FolderGit2 aria-hidden="true" />
-                  <span>Project</span>
+                  <span>项目</span>
                   {selectedProject ? (
                     <span className="ml-auto max-w-24 truncate text-xs text-muted-foreground">
                       {selectedProject.name}
@@ -491,7 +491,7 @@ export function InboxToolbar({
                   <ProjectPickerContent
                     projects={projects}
                     value={filters.projectID}
-                    allLabel="All projects"
+                    allLabel="所有项目"
                     onValueChange={(projectID) =>
                       onFiltersChange((current) => ({ ...current, projectID }))
                     }
@@ -501,7 +501,7 @@ export function InboxToolbar({
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="min-h-9">
                   <CircleDot aria-hidden="true" />
-                  <span>State</span>
+                  <span>状态</span>
                   {filters.states.length > 0 ? (
                     <span className="ml-auto text-xs text-muted-foreground">
                       {filters.states.length}
@@ -532,7 +532,7 @@ export function InboxToolbar({
                       onClearFilters?.();
                     }}
                   >
-                    Clear filters
+                    清除筛选
                   </DropdownMenuItem>
                 </>
               ) : null}
@@ -549,7 +549,7 @@ export function InboxToolbar({
                         variant="ghost"
                         size="icon"
                         className="text-sidebar-secondary hover:bg-(--palot-sidebar-hover) hover:text-sidebar-foreground"
-                        aria-label="Inbox view settings"
+                        aria-label="收件箱视图设置"
                       />
                     }
                   />
@@ -557,12 +557,12 @@ export function InboxToolbar({
               >
                 <SlidersHorizontal aria-hidden="true" />
               </TooltipTrigger>
-              <TooltipContent>View settings</TooltipContent>
+              <TooltipContent>视图设置</TooltipContent>
             </Tooltip>
             <PopoverContent align="start" className="w-64 gap-3 p-3">
               <div className="space-y-1.5">
                 <label htmlFor="inbox-ordering" className="text-xs font-medium">
-                  Ordering
+                  排序
                 </label>
                 <Select
                   value={viewPreferences.ordering}
@@ -575,29 +575,29 @@ export function InboxToolbar({
                     <SelectValue>{INBOX_ORDERING_LABELS[viewPreferences.ordering]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="oldest">Oldest</SelectItem>
-                    <SelectItem value="attention">Needs input first</SelectItem>
+                    <SelectItem value="newest">最新</SelectItem>
+                    <SelectItem value="oldest">最早</SelectItem>
+                    <SelectItem value="attention">需要输入优先</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="h-px bg-border/50" />
               <InboxViewToggle
-                label="Unread first"
+                label="未读优先"
                 checked={viewPreferences.unreadFirst}
                 onCheckedChange={(unreadFirst) =>
                   onViewPreferencesChange((current) => ({ ...current, unreadFirst }))
                 }
               />
               <InboxViewToggle
-                label="Show snoozed"
+                label="显示已暂停"
                 checked={viewPreferences.showSnoozed}
                 onCheckedChange={(showSnoozed) =>
                   onViewPreferencesChange((current) => ({ ...current, showSnoozed }))
                 }
               />
               <InboxViewToggle
-                label="Show settled"
+                label="显示已归档"
                 checked={viewPreferences.showSettled}
                 onCheckedChange={(showSettled) =>
                   onViewPreferencesChange((current) => ({ ...current, showSettled }))
@@ -615,14 +615,14 @@ export function InboxToolbar({
                   variant="ghost"
                   size="icon"
                   className="text-sidebar-secondary hover:bg-(--palot-sidebar-hover) hover:text-sidebar-foreground"
-                  aria-label="Add project folder"
+                  aria-label="添加项目文件夹"
                   onClick={() => setAddProjectOpen(true)}
                 />
               }
             >
               <FolderPlus aria-hidden="true" />
             </TooltipTrigger>
-            <TooltipContent>Add project folder</TooltipContent>
+            <TooltipContent>添加项目文件夹</TooltipContent>
           </Tooltip>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -632,7 +632,7 @@ export function InboxToolbar({
                   variant="ghost"
                   size="icon"
                   className="text-sidebar-secondary hover:bg-(--palot-sidebar-hover) hover:text-sidebar-foreground"
-                  aria-label="Inbox options"
+                  aria-label="收件箱选项"
                 />
               }
             >
@@ -648,7 +648,7 @@ export function InboxToolbar({
                 ) : (
                   <Archive aria-hidden="true" />
                 )}
-                {pagination.hasNextPage ? "Load older tasks" : "All tasks loaded"}
+                {pagination.hasNextPage ? "加载更多任务" : "已加载全部任务"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -656,14 +656,14 @@ export function InboxToolbar({
                   onShelvesChange({ pinned: true, inbox: true, snoozed: true, settled: true })
                 }
               >
-                Expand all sections
+                展开所有分组
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() =>
                   onShelvesChange({ pinned: false, inbox: false, snoozed: false, settled: false })
                 }
               >
-                Collapse all sections
+                收起所有分组
               </DropdownMenuItem>
               {optionItems}
             </DropdownMenuContent>
@@ -788,7 +788,7 @@ const InboxCard = memo(function InboxCard({
         title.editing ? (
           <Input
             autoFocus
-            aria-label="Task title"
+            aria-label="任务标题"
             value={title.draft}
             className="pointer-events-auto relative z-20 h-7 px-1.5 text-compact! text-sidebar-foreground/90"
             onChange={(event) => title.setDraft(event.target.value)}
@@ -811,7 +811,7 @@ const InboxCard = memo(function InboxCard({
                     variant="ghost"
                     size="icon-sm"
                     className={INBOX_ACTION_BUTTON_CLASS}
-                    aria-label="Unpin task"
+                    aria-label="取消置顶"
                     disabled={actionsDisabled}
                     onClick={() => void onAction(item, "unpin")}
                   />
@@ -819,7 +819,7 @@ const InboxCard = memo(function InboxCard({
               >
                 <PinOff aria-hidden="true" />
               </TooltipTrigger>
-              <TooltipContent>Unpin</TooltipContent>
+              <TooltipContent>取消置顶</TooltipContent>
             </Tooltip>
           ) : null}
           {item.canSettle && !actionsDisabled ? (
@@ -831,15 +831,15 @@ const InboxCard = memo(function InboxCard({
                     variant="ghost"
                     size="sm"
                     className={cn("h-6 gap-0.5 px-2 text-micro!", INBOX_ACTION_BUTTON_CLASS)}
-                    aria-label="Settle task"
+                    aria-label="归档任务"
                     onClick={() => void onAction(item, "settle")}
                   />
                 }
               >
                 <Check aria-hidden="true" />
-                Settle
+                归档
               </TooltipTrigger>
-              <TooltipContent>Settle</TooltipContent>
+              <TooltipContent>归档</TooltipContent>
             </Tooltip>
           ) : null}
           {onSnooze ? (
@@ -863,7 +863,7 @@ const InboxCard = memo(function InboxCard({
         disabled={actionsDisabled}
         onClick={() => void onAction(item, item.section === "pinned" ? "unpin" : "pin")}
       >
-        {item.section === "pinned" ? "Unpin" : "Pin"}
+        {item.section === "pinned" ? "取消置顶" : "置顶"}
       </ContextMenuItem>
     </SessionContextMenu>
   );
@@ -906,7 +906,7 @@ export function SnoozeButton({
                   variant="ghost"
                   size="icon-sm"
                   className={cn("-mr-0.5", INBOX_ACTION_BUTTON_CLASS)}
-                  aria-label="Snooze task"
+                  aria-label="暂停任务"
                   disabled={disabled}
                 />
               }
@@ -915,11 +915,11 @@ export function SnoozeButton({
         >
           <Clock3 aria-hidden="true" />
         </TooltipTrigger>
-        <TooltipContent>Snooze</TooltipContent>
+        <TooltipContent>暂停</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Snooze until</DropdownMenuLabel>
+          <DropdownMenuLabel>暂停至</DropdownMenuLabel>
           {sessionSnoozeChoices.map(([label, resolve]) => (
             <DropdownMenuItem key={label} onClick={() => void onSnooze(item, resolve(Date.now()))}>
               <span>{label}</span>
@@ -1049,16 +1049,16 @@ const CompactRow = memo(function CompactRow({
                 "absolute top-1/2 right-1.5 -translate-y-1/2 opacity-0 transition-opacity group-hover/compact:opacity-100 group-has-[:focus-visible]/compact:opacity-100",
                 INBOX_ACTION_BUTTON_CLASS,
               )}
-              aria-label={action === "wake" ? "Wake task" : "Unsettle task"}
+              aria-label={action === "wake" ? "唤醒任务" : "取消归档"}
               disabled={actionsDisabled}
               onClick={() => void onAction(item, action)}
             />
           }
         >
           {action === "wake" ? <BellRing aria-hidden="true" /> : <Undo2 aria-hidden="true" />}
-          {action === "wake" ? "Wake" : null}
+          {action === "wake" ? "唤醒" : null}
         </TooltipTrigger>
-        <TooltipContent>{action === "wake" ? "Wake" : "Unsettle"}</TooltipContent>
+        <TooltipContent>{action === "wake" ? "唤醒" : "取消归档"}</TooltipContent>
       </Tooltip>
     </InboxCompactRowSurface>
   );
@@ -1071,10 +1071,10 @@ const CompactRow = memo(function CompactRow({
       onSnooze={onSnooze ? (until) => onSnooze(item, until) : undefined}
     >
       <ContextMenuItem disabled={actionsDisabled} onClick={() => void onAction(item, "pin")}>
-        Pin
+        置顶
       </ContextMenuItem>
       <ContextMenuItem disabled={actionsDisabled} onClick={() => void onAction(item, action)}>
-        {action === "wake" ? "Wake" : "Unsettle"}
+        {action === "wake" ? "唤醒" : "取消归档"}
       </ContextMenuItem>
     </SessionContextMenu>
   );
@@ -1116,7 +1116,7 @@ export function InboxCompactRowSurface({
       >
         {item.section === "snoozed" ? <Clock3 aria-hidden="true" /> : null}
         <span className="min-w-0 flex-1 truncate text-compact font-normal">
-          {item.session.title ?? "Untitled task"}
+          {item.session.title ?? "未命名任务"}
         </span>
         {connectionBadge}
         <span className="flex min-w-0 max-w-28 shrink-0 items-center gap-1 text-right text-micro text-muted-foreground group-hover/compact:opacity-0 group-has-[:focus-visible]/compact:opacity-0">

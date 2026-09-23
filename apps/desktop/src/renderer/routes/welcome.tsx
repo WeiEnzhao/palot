@@ -153,7 +153,7 @@ function WelcomeRoute() {
       setRemotePath("");
       setStep("providers");
     } catch (error) {
-      if (isCurrent()) showErrorToast("Could not add this project", error);
+      if (isCurrent()) showErrorToast("无法添加此项目", error);
     } finally {
       if (mounted.current) setCreating(false);
     }
@@ -178,7 +178,7 @@ function WelcomeRoute() {
       await navigate();
     } catch (error) {
       setLeaving(false);
-      showErrorToast("Could not open this project", error);
+      showErrorToast("无法打开此项目", error);
     } finally {
       finishingRef.current = false;
       setFinishing(false);
@@ -219,7 +219,7 @@ function WelcomeRoute() {
           size="sm"
           onClick={() => void leaveReplay()}
         >
-          Back to Palot
+          返回 Palot
         </Button>
       ) : null}
 
@@ -297,7 +297,7 @@ function StepIndicator({ step }: { step: Step }) {
   return (
     <div
       className="mt-7 flex shrink-0 justify-center gap-1.5"
-      aria-label={`Step ${active + 1} of 3`}
+      aria-label={`第 ${active + 1} 步，共 3 步`}
     >
       {[0, 1, 2].map((index) => (
         <span
@@ -332,13 +332,12 @@ function WelcomeStep({
   return (
     <div className="my-auto flex max-w-2xl flex-col items-start">
       <PalotBeacon className="mb-6 size-14" />
-      <p className="mb-2 text-sm font-medium text-muted-foreground">Welcome to Palot</p>
+      <p className="mb-2 text-sm font-medium text-muted-foreground">欢迎使用 Palot</p>
       <h1 className="max-w-xl text-3xl/tight font-medium tracking-[-0.035em] @3xl/onboarding:text-4xl/tight">
-        Your new home for OpenCode.
+        你的 OpenCode 新家。
       </h1>
       <p className="mt-4 max-w-xl text-sm/relaxed text-muted-foreground">
-        Palot gives OpenCode a focused desktop home for long-running work. Run tasks in isolated
-        worktrees, follow their progress, review changes, and jump in whenever an agent needs you.
+        Palot 为 OpenCode 提供专注的桌面环境，适合长时间运行的工作。在隔离的工作树中运行任务，跟踪进度，审查变更，并在智能体需要你时随时介入。
       </p>
       {local ? (
         <div className="mt-4">
@@ -348,18 +347,18 @@ function WelcomeStep({
       {returning ? (
         <div className="mt-7 flex flex-wrap gap-2">
           <Badge variant="secondary">
-            {projectCount} {projectCount === 1 ? "project" : "projects"}
+            {projectCount} 个项目
           </Badge>
           <Badge variant="secondary">
-            {taskCount} {taskCount === 1 ? "task" : "tasks"}
+            {taskCount} 个任务
           </Badge>
           <Badge variant="outline">
-            <Check className="size-3" aria-hidden="true" /> Existing OpenCode setup detected
+            <Check className="size-3" aria-hidden="true" /> 检测到已有 OpenCode 配置
           </Badge>
         </div>
       ) : null}
       <Button className="mt-9" type="button" onClick={onContinue}>
-        Continue
+        继续
         <ArrowRight data-icon="inline-end" aria-hidden="true" />
       </Button>
     </div>
@@ -401,9 +400,9 @@ function ProjectStep({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <StepHeading
-        eyebrow="Choose a project"
-        title="Where should Palot start?"
-        description="Recent projects appear first. Provider connections and models are resolved for the project you choose."
+        eyebrow="选择项目"
+        title="Palot 从哪里开始？"
+        description="最近的项目排在前面。提供者连接和模型会为你选择的项目解析。"
       />
       {projects.length > 5 ? (
         <div className="relative mt-6">
@@ -414,7 +413,7 @@ function ProjectStep({
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search projects"
+            placeholder="搜索项目"
             className="pl-9"
           />
         </div>
@@ -450,7 +449,7 @@ function ProjectStep({
           ))}
           {filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No projects match this search.
+              没有匹配此搜索的项目。
             </p>
           ) : null}
         </div>
@@ -463,15 +462,15 @@ function ProjectStep({
             ) : (
               <FolderPlus aria-hidden="true" />
             )}
-            Add project folder
+            添加项目文件夹
           </Button>
         ) : (
           <div className="flex gap-2">
             <Input
               value={remotePath}
               onChange={(event) => onRemotePathChange(event.target.value)}
-              placeholder="/absolute/server/path"
-              aria-label="Server project path"
+              placeholder="/绝对/服务器/路径"
+              aria-label="服务器项目路径"
             />
             <Button
               type="button"
@@ -479,8 +478,8 @@ function ProjectStep({
               disabled={creating || !remotePath.trim()}
               onClick={onAddRemote}
             >
-              {creating ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}Add
-              path
+              {creating ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}添加
+              路径
             </Button>
           </div>
         )}
@@ -488,11 +487,11 @@ function ProjectStep({
       <div className="mt-4 flex items-center justify-between gap-3">
         <Button type="button" variant="ghost" onClick={onBack}>
           <ArrowLeft aria-hidden="true" />
-          Back
+          返回
         </Button>
         <Button type="button" variant="ghost" disabled={finishing} onClick={onSkip}>
           {finishing ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
-          Skip for now
+          暂时跳过
         </Button>
       </div>
     </div>
@@ -530,12 +529,12 @@ function ProviderStep({
     <div className="flex min-h-0 flex-1 flex-col">
       <StepHeading
         eyebrow={target.projectName}
-        title="Connect your models"
-        description="Palot uses OpenCode's provider connections. You can skip this if your environment is already configured."
+        title="连接你的模型"
+        description="Palot 使用 OpenCode 的提供者连接。如果你的环境已配置好，可以跳过此步。"
       />
       {connected.length > 0 ? (
         <div className="mt-6 rounded-xl border border-border/75 bg-muted/10 p-3 backdrop-blur-sm">
-          <div className="mb-2 text-xs font-medium">Connected already</div>
+          <div className="mb-2 text-xs font-medium">已连接</div>
           <div className="flex flex-wrap gap-2">
             {connected.map((integration) => (
               <Badge key={integration.id} variant="secondary">
@@ -554,7 +553,7 @@ function ProviderStep({
             aria-live="polite"
           >
             <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-            Loading providers from OpenCode…
+            正在从 OpenCode 加载提供者…
           </div>
         ) : null}
         {error ? (
@@ -564,13 +563,13 @@ function ProviderStep({
           >
             <div className="flex items-center gap-2 text-sm font-medium">
               <CircleAlert className="size-4 text-destructive" aria-hidden="true" />
-              Providers could not be loaded
+              无法加载提供者
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              You can retry or continue without connecting one now.
+              你可以重试或跳过连接继续。
             </p>
             <Button className="mt-3" size="sm" variant="outline" onClick={onRetry}>
-              Retry
+              重试
             </Button>
           </div>
         ) : null}
@@ -594,10 +593,10 @@ function ProviderStep({
                     <span className="block truncate text-sm font-medium">{integration.name}</span>
                     <span className="block truncate text-meta text-muted-foreground">
                       {isConnected
-                        ? `${integration.connections.length} connection${integration.connections.length === 1 ? "" : "s"}`
+                        ? `${integration.connections.length} 个连接`
                         : connectable
-                          ? "Connect with OpenCode"
-                          : "Configured through the environment"}
+                          ? "通过 OpenCode 连接"
+                          : "通过环境变量配置"}
                     </span>
                   </span>
                   {isConnected ? (
@@ -612,22 +611,22 @@ function ProviderStep({
         ) : null}
         {canShowAll ? (
           <Button className="mt-3" type="button" variant="ghost" size="sm" onClick={onShowAll}>
-            Show all providers
+            显示所有提供者
           </Button>
         ) : null}
       </ScrollFadeArea>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
         <Button type="button" variant="ghost" onClick={onBack}>
           <ArrowLeft aria-hidden="true" />
-          Back
+          返回
         </Button>
         <div className="flex items-center gap-2">
           <Button type="button" variant="ghost" disabled={finishing} onClick={() => onFinish()}>
-            Skip provider setup
+            跳过提供者配置
           </Button>
           <Button type="button" disabled={finishing} onClick={() => onFinish(true)}>
             {finishing ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
-            Start working
+            开始工作
             <ArrowRight aria-hidden="true" />
           </Button>
         </div>

@@ -257,7 +257,7 @@ const SessionThread = memo(function SessionThread({ session }: { session: PalotS
   return (
     <main
       className="palot-main-surface relative flex h-full min-h-0 flex-col bg-background"
-      aria-label="Current task"
+      aria-label="当前任务"
     >
       <SessionThreadContents key={session.id} session={session} />
     </main>
@@ -675,7 +675,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
   }, []);
   useEffect(() => {
     if (transcript.error && !transcript.isFetchNextPageError) {
-      showErrorToast(`Could not load task "${session.title || session.id}"`, transcript.error);
+      showErrorToast(`无法加载任务"${session.title || session.id}"`, transcript.error);
     }
   }, [session.id, session.title, transcript.error, transcript.isFetchNextPageError]);
 
@@ -810,7 +810,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       return true;
     } catch (error) {
       clearPrependAnchor();
-      showErrorToast("Could not load earlier messages", error);
+      showErrorToast("无法加载更早的消息", error);
       return false;
     } finally {
       olderRequestRef.current = false;
@@ -948,7 +948,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       {composerDockHeight === null || coldTranscriptLoading ? (
         <div
           className="min-h-0 flex-1"
-          aria-label={coldTranscriptLoading ? "Loading task transcript" : undefined}
+          aria-label={coldTranscriptLoading ? "正在加载任务记录" : undefined}
           aria-busy={coldTranscriptLoading || undefined}
         />
       ) : (
@@ -975,7 +975,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
             <ScrollViewport
               ref={scrollRef}
               role="region"
-              aria-label="Task transcript"
+              aria-label="任务记录"
               data-bottom-locked={bottomLocked}
               tabIndex={0}
               className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [overflow-anchor:none]"
@@ -1121,7 +1121,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                       <div className="absolute inset-x-0 top-2 flex justify-center pb-4">
                         {transcript.isFetchNextPageError ? (
                           <LoadingButton loading={loadingOlder} onClick={() => void loadOlder()}>
-                            Retry loading earlier messages
+                            重试加载更早的消息
                           </LoadingButton>
                         ) : loadingOlder ? (
                           <span
@@ -1132,7 +1132,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                               className="size-3 animate-spin motion-reduce:animate-none"
                               aria-hidden="true"
                             />
-                            Loading earlier messages…
+                            正在加载更早的消息…
                           </span>
                         ) : null}
                       </div>
@@ -1170,8 +1170,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
                 {messages.length === 0 && !loading ? (
                   <div className="mx-auto w-[calc(100%-40px)] max-w-[760px] max-[720px]:w-[calc(100%-22px)]">
                     <ThreadPrompt
-                      title="What should Palot work on?"
-                      description="Describe a change, ask about the code, or start with a plan."
+                      title="Palot 要做什么？"
+                      description="描述一个改动，询问代码问题，或者从计划开始。"
                     />
                   </div>
                 ) : null}
@@ -1225,7 +1225,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                   }}
                 >
                   <ChevronDown data-icon="inline-start" aria-hidden="true" />
-                  Scroll to bottom
+                  滚动到底部
                 </Button>
               </motion.div>
             ) : null}
@@ -1281,7 +1281,7 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
   const title = useSessionTitleEditor(session);
   useEffect(() => {
     const previous = document.title;
-    document.title = session.title ?? "Untitled task";
+    document.title = session.title ?? "未命名任务";
     return () => {
       document.title = previous;
     };
@@ -1300,7 +1300,7 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
               <button
                 type="button"
                 className="window-no-drag flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Show project details"
+                aria-label="显示项目详情"
               />
             }
           >
@@ -1310,7 +1310,7 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
             align="start"
             className="flex-col items-start gap-1 px-2.5 py-2 leading-tight"
           >
-            <span className="font-medium">{name ?? "Project"}</span>
+            <span className="font-medium">{name ?? "项目"}</span>
             <span className="max-w-72 break-all text-muted-foreground">{location}</span>
             {session.location.directory !== location ? (
               <span className="max-w-72 break-all text-muted-foreground">
@@ -1322,7 +1322,7 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
         {title.editing ? (
           <Input
             autoFocus
-            aria-label="Task title"
+            aria-label="任务标题"
             value={title.draft}
             maxLength={1_000}
             className="window-no-drag h-7 min-w-32 max-w-md border-ring bg-background px-1.5 text-compact font-semibold"
@@ -1349,7 +1349,7 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
               title.start();
             }}
           >
-            {session.title ?? "Untitled task"}
+            {session.title ?? "未命名任务"}
           </strong>
         )}
         {!title.editing ? (
@@ -1359,14 +1359,14 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
                 <button
                   type="button"
                   className="window-no-drag flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring group-hover/title:opacity-100 focus:opacity-100"
-                  aria-label="Rename task"
+                  aria-label="重命名任务"
                   onClick={title.start}
                 />
               }
             >
               <Pencil className="size-3.5" aria-hidden="true" />
             </TooltipTrigger>
-            <TooltipContent>Rename task</TooltipContent>
+            <TooltipContent>重命名任务</TooltipContent>
           </Tooltip>
         ) : null}
       </div>
@@ -1520,10 +1520,10 @@ const ParentSessionComposer = memo(function ParentSessionComposer({
         <ConnectionDestination />
         <div
           className="flex h-6 min-w-0 items-center gap-1 px-1.5 text-meta leading-none font-medium text-foreground"
-          title={isAdditionalCheckout ? "Additional checkout" : "Current checkout"}
+          title={isAdditionalCheckout ? "额外检出" : "当前检出"}
         >
           <FolderGit2 className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="truncate">{isAdditionalCheckout ? "Worktree" : "Checkout"}</span>
+          <span className="truncate">{isAdditionalCheckout ? "工作树" : "检出"}</span>
         </div>
         <div className="ml-auto flex h-6 min-w-0 items-center gap-2 px-1.5 text-meta leading-none text-muted-foreground max-[560px]:ml-0">
           <SubagentFooterControl sessionID={session.id} items={backgroundWork} />
@@ -1531,8 +1531,8 @@ const ParentSessionComposer = memo(function ParentSessionComposer({
           <GitBranch className="size-3 shrink-0" aria-hidden="true" />
           <span className="truncate">
             {branchQuery.isPending
-              ? "Loading branch"
-              : (branchQuery.data?.currentBranch ?? "Detached HEAD")}
+              ? "正在加载分支"
+              : (branchQuery.data?.currentBranch ?? "分离 HEAD")}
           </span>
         </div>
       </div>
@@ -1598,7 +1598,7 @@ const SessionRevertDock = memo(
         if (updated) cacheSession(updated);
       } catch (error) {
         showErrorToast(
-          next === "restore" ? "Could not restore reverted work" : "Could not finalize undo",
+          next === "restore" ? "无法恢复已撤销的工作" : "无法完成撤销",
           error,
         );
       } finally {
@@ -1614,11 +1614,11 @@ const SessionRevertDock = memo(
         <div className="flex min-h-10 items-center gap-2 px-3 py-2">
           <Undo2 className="size-4 shrink-0 text-warning" aria-hidden="true" />
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-medium text-foreground">Undo staged</div>
+            <div className="text-xs font-medium text-foreground">撤销暂存</div>
             <div className="truncate text-micro text-muted-foreground">
-              {affectedMessageCount} {affectedMessageCount === 1 ? "message" : "messages"}
+              {affectedMessageCount} 条消息
               {files.length > 0
-                ? ` and ${files.length} changed ${files.length === 1 ? "file" : "files"}`
+                ? `，${files.length} 个文件变更`
                 : ""}
             </div>
           </div>
@@ -1640,7 +1640,7 @@ const SessionRevertDock = memo(
             ) : (
               <RotateCcw aria-hidden="true" />
             )}
-            Restore
+            恢复
           </Button>
           <Button
             type="button"
@@ -1654,7 +1654,7 @@ const SessionRevertDock = memo(
             ) : (
               <Undo2 aria-hidden="true" />
             )}
-            Finalize undo
+            完成撤销
           </Button>
         </div>
         {files.length > 0 ? (
@@ -1670,7 +1670,7 @@ const SessionRevertDock = memo(
             ))}
             {files.length > 5 ? (
               <span className="shrink-0 px-1 py-0.5 text-micro text-muted-foreground">
-                +{files.length - 5} more
+                +{files.length - 5} 更多
               </span>
             ) : null}
           </div>
@@ -1730,12 +1730,12 @@ const TranscriptPresentationTurnItem = memo(function TranscriptPresentationTurnI
   );
   const articleLabel =
     turn.kind === "shell"
-      ? "Shell command"
+      ? "Shell 命令"
       : turn.kind !== "conversation" && turn.kind !== "subagent"
-        ? "Timeline boundary"
+        ? "时间线边界"
         : turn.kind === "subagent"
-          ? "Subagent response"
-          : "Conversation turn";
+          ? "子智能体回复"
+          : "对话轮次";
   return (
     <div
       ref={measureElement}
@@ -1879,7 +1879,7 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
   }
   if (row.kind === "shell") {
     return (
-      <div role="group" aria-label="Shell result">
+      <div role="group" aria-label="Shell 结果">
         <StandaloneShellExecution part={row.entry.part} index={row.entry.index} />
       </div>
     );
@@ -1890,7 +1890,7 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
       return (
         <div
           role="group"
-          aria-label={turn.kind === "shell" ? "Shell activity" : "Timeline activity"}
+          aria-label={turn.kind === "shell" ? "Shell 活动" : "时间线活动"}
         >
           <ActivityGroups groups={turn.activity} live={false} reveal sessionID={sessionID} />
           {showCacheBust ? (
@@ -1902,7 +1902,7 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
     return (
       <div
         role="group"
-        aria-label={turn.kind === "subagent" ? "Subagent activity" : "Turn activity"}
+        aria-label={turn.kind === "subagent" ? "子智能体活动" : "轮次活动"}
       >
         <TurnActivity
           turn={turn}
@@ -1956,14 +1956,14 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
   ) : null;
 }, sameTranscriptPresentationRowContentProps);
 
-export function activeTurnLabel(turn: TranscriptTurn): "Working" | "Finishing" {
-  if (!turn.final) return "Working";
+export function activeTurnLabel(turn: TranscriptTurn): "运行中" | "收尾中" {
+  if (!turn.final) return "运行中";
   const hasToolActivity = turn.activity.some(
     (group) => group.kind === "tools" || group.kind === "subagent-tool",
   );
   const finalMessageSettled =
     turn.final.message.finish !== null && turn.final.message.finish !== "tool-calls";
-  return hasToolActivity || finalMessageSettled ? "Finishing" : "Working";
+  return hasToolActivity || finalMessageSettled ? "收尾中" : "运行中";
 }
 
 function sameTranscriptPresentationRowContentProps(
@@ -2078,7 +2078,7 @@ export const FinalMessageMeta = memo(
     return (
       <div className="mt-1 flex h-6 items-center gap-1.5 text-xs leading-none tabular-nums text-muted-foreground/55 opacity-0 transition-opacity duration-150 ease-out group-focus-within/final-message:opacity-100 group-hover/final-message:opacity-100 motion-reduce:transition-none">
         <IconButton
-          label={copied ? "Copied response" : "Copy response"}
+          label={copied ? "已复制回复" : "复制回复"}
           size="icon-sm"
           className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
           onClick={() => {
@@ -2097,7 +2097,7 @@ export const FinalMessageMeta = memo(
           onClick={() => {
             setForking(true);
             void forkSession({ sessionID, beforeMessageID: forkBeforeMessageID })
-              .catch((error) => showErrorToast("Could not fork task", error))
+              .catch((error) => showErrorToast("无法分叉任务", error))
               .finally(() => setForking(false));
           }}
         >
@@ -2109,7 +2109,7 @@ export const FinalMessageMeta = memo(
         </IconButton>
         {onOpenDetails && responseMessageID ? (
           <IconButton
-            label="Response details"
+            label="回复详情"
             size="icon-sm"
             className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
             onClick={() => onOpenDetails(responseMessageID)}
@@ -2122,7 +2122,7 @@ export const FinalMessageMeta = memo(
           <>
             {modelName ? <span aria-hidden="true">·</span> : null}
             <span
-              title="Output tokens per second over provider stream duration"
+              title="提供商流式传输期间每秒输出 token 数"
               aria-label={`${tokensPerSecond} output tokens per second over provider stream duration`}
             >
               {tokensPerSecond} tok/s
@@ -2184,10 +2184,10 @@ function useCurrentTime(active = true): number {
 
 export function ActiveTurnMeta({
   startedAt,
-  label = "Working",
+  label = "运行中",
 }: {
   startedAt: number;
-  label?: "Working" | "Finishing";
+  label?: "运行中" | "收尾中";
 }) {
   const now = useCurrentTime();
 
@@ -2678,7 +2678,7 @@ function GroupedActivityDetails({
             group={{
               id: row.id,
               kind: "compaction",
-              title: "Compacting context",
+              title: "压缩上下文",
               status:
                 row.entry.part.status === "failed"
                   ? "failed"
@@ -2729,7 +2729,7 @@ function ActivityPartDetail({
           group={{
             id: entryID(entry),
             kind: "subagent-tool",
-            title: execution.description || "Delegated work",
+            title: execution.description || "委派工作",
             status,
             entries: [entry],
           }}
@@ -3130,10 +3130,10 @@ export function ThoughtDisclosure({
   const done = completedAt !== undefined || !live;
   const presentationLabel =
     entry.part.presentation === "preamble"
-      ? "Update"
+      ? "更新"
       : entry.part.presentation === "recap"
-        ? "Recap"
-        : "Reasoning";
+        ? "回顾"
+        : "推理";
   const label = `${presentationLabel}${content.title ? `: ${content.title}` : ""}`;
   const compact = !text.includes("\n") || Boolean(content.title && !content.body);
   useEffect(() => {
@@ -3383,7 +3383,7 @@ function ExpandableUserMessageContent({
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          {expanded ? "Show less" : "Read more"}
+          {expanded ? "收起" : "展开"}
         </button>
       ) : null}
     </div>
@@ -3459,7 +3459,7 @@ function MessagePartView({
     const group: TurnActivityGroup = {
       id: part.id ?? `${message.id}:compaction:${index}`,
       kind: "compaction",
-      title: "Compacting context",
+      title: "压缩上下文",
       status:
         part.status === "failed" ? "failed" : part.status === "running" ? "running" : "completed",
       entries: [{ message, part, index }],
@@ -3472,7 +3472,7 @@ function MessagePartView({
         group={{
           id: part.id ?? `${message.id}:boundary:${index}`,
           kind: "boundary",
-          title: part.name ?? "Session update",
+          title: part.name ?? "会话更新",
           status:
             part.status === "failed"
               ? "failed"
@@ -3562,7 +3562,7 @@ export const PendingRequests = memo(function PendingRequests({
           reply: value,
           ...(message ? { message } : {}),
         }),
-      "Could not answer this request",
+      "无法回答此请求",
     );
   }
 
@@ -3597,7 +3597,7 @@ export const PendingRequests = memo(function PendingRequests({
                 className="mb-1 truncate px-1 text-meta font-medium text-warning"
                 title={request.sessionTitle}
               >
-                Subagent · {request.sessionTitle ?? "Delegated task"}
+                子智能体 · {request.sessionTitle ?? "委派任务"}
               </p>
             ) : null}
             {request.type === "question" ? (
@@ -3619,7 +3619,7 @@ export const PendingRequests = memo(function PendingRequests({
                           ]),
                         ),
                       }),
-                    "Could not submit these answers",
+                    "无法提交这些答案",
                   )
                 }
                 onDismiss={() =>
@@ -3630,7 +3630,7 @@ export const PendingRequests = memo(function PendingRequests({
                         sessionID: ownerSessionID,
                         formID: request.id,
                       }),
-                    "Could not dismiss this question",
+                    "无法忽略此问题",
                   )
                 }
               />
@@ -3648,14 +3648,14 @@ export const PendingRequests = memo(function PendingRequests({
                         formID: request.id,
                         answer,
                       }),
-                    "Could not submit this form",
+                    "无法提交此表单",
                   )
                 }
                 onCancel={() =>
                   respond(
                     responseKey,
                     () => palot.cancelForm({ sessionID: ownerSessionID, formID: request.id }),
-                    "Could not cancel this form",
+                    "无法取消此表单",
                   )
                 }
               />
@@ -3812,7 +3812,7 @@ function PermissionRequestCard({
             autoFocus
             value={reason}
             disabled={disabled}
-            placeholder="Tell OpenCode what to do differently"
+            placeholder="告诉 OpenCode 要怎么做"
             onChange={(event) => setReason(event.target.value)}
           />
           <div className="flex justify-end gap-2">
@@ -3861,8 +3861,8 @@ function PermissionRequestCard({
             disabled={disabled || request.savePatterns.length === 0}
             title={
               request.savePatterns.length === 0
-                ? "OpenCode did not provide a reusable project pattern"
-                : "Save these patterns for every task in this project"
+                ? "OpenCode 未提供可复用的项目模式"
+                : "为该项目中的每个任务保存这些模式"
             }
             onClick={() => void onReply("always")}
           >
@@ -3972,7 +3972,7 @@ function QuestionRequestCard({
           <QuestionnairePrevious size="sm" className="col-start-2" />
           <QuestionnaireNext size="sm" className="col-start-4" />
           <QuestionnaireSubmit size="sm" className="col-start-4" disabled={disabled}>
-            {disabled ? "Sending" : "Send"}
+            {disabled ? "发送中" : "发送"}
           </QuestionnaireSubmit>
         </QuestionnaireActions>
       </Questionnaire>
@@ -4122,7 +4122,7 @@ function FormRequestCard({
           disabled={disabled || !valid}
           onClick={() => void onSubmit(submittedAnswers)}
         >
-          {disabled ? "Submitting" : "Submit"}
+          {disabled ? "提交中" : "提交"}
         </Button>
       </div>
     </RequestCard>
@@ -4222,7 +4222,7 @@ function FormFieldControl({
         {field.custom ? (
           <Input
             disabled={disabled}
-            placeholder="Add a custom value and press Enter"
+            placeholder="添加自定义值并按回车"
             aria-label={`${field.title} custom value`}
             onKeyDown={(event) => {
               if (event.key !== "Enter" || !event.currentTarget.value.trim()) return;
