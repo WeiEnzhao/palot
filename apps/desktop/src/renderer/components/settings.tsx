@@ -207,64 +207,64 @@ import { DefaultShellSetting } from "./default-shell-setting";
 
 const CATEGORY_COPY: Record<SettingsCategory, { title: string; description: string }> = {
   general: {
-    title: "General",
-    description: "Choose how new tasks start and how much activity Palot shows.",
+    title: "通用",
+    description: "选择新任务如何启动以及 Palot 显示多少活动。",
   },
   browser: {
-    title: "Browser",
-    description: "Control browser access, search, link destinations, and address display.",
+    title: "浏览器",
+    description: "控制浏览器访问、搜索、链接目标和地址显示。",
   },
   project: {
-    title: "Project",
-    description: "Manage project details, worktree startup, and the main checkout directory.",
+    title: "项目",
+    description: "管理项目详情、工作树启动和主检出目录。",
   },
   connections: {
-    title: "Connections",
-    description: "Choose where Palot connects and how you access OpenCode.",
+    title: "连接",
+    description: "选择 Palot 连接位置以及如何访问 OpenCode。",
   },
   appearance: {
-    title: "Appearance",
-    description: "Choose themes, materials, and typography for your workspace.",
+    title: "外观",
+    description: "选择工作区的主题、材质和排版。",
   },
   notifications: {
-    title: "Notifications",
-    description: "Choose when Palot alerts you or plays a sound for tasks that need you.",
+    title: "通知",
+    description: "选择 Palot 何时提醒您或为需要您关注的任务播放声音。",
   },
   shortcuts: {
-    title: "Keyboard shortcuts",
-    description: "Keys Palot responds to across tasks, panels, and the composer.",
+    title: "键盘快捷键",
+    description: "Palot 在任务、面板和编辑器中响应的按键。",
   },
   models: {
-    title: "Models",
-    description: "Choose project defaults and inspect the models OpenCode makes available.",
+    title: "模型",
+    description: "选择项目默认值并查看 OpenCode 可用的模型。",
   },
   providers: {
-    title: "Providers",
-    description: "Connect model providers and manage their authentication methods.",
+    title: "提供者",
+    description: "连接模型提供者并管理其身份验证方法。",
   },
   tools: {
-    title: "Tools",
-    description: "Manage plugins and MCP servers, and browse tools discovered for this project.",
+    title: "工具",
+    description: "管理插件和 MCP 服务器，并浏览此项目发现的工具。",
   },
   agents: {
-    title: "Agents",
-    description: "Inspect the primary agents and subagents available in this project.",
+    title: "智能体",
+    description: "查看此项目中可用的主智能体和子智能体。",
   },
   permissions: {
-    title: "Permissions",
-    description: "Review saved approvals and the effective configured policy.",
+    title: "权限",
+    description: "查看已保存的批准和生效的配置策略。",
   },
   config: {
-    title: "Configuration",
-    description: "Inspect the configuration sources and capabilities resolved by OpenCode.",
+    title: "配置",
+    description: "查看 OpenCode 解析的配置源和能力。",
   },
   diagnostics: {
-    title: "Diagnostics",
-    description: "Inspect live renderer, Electron, GPU, and OpenCode runtime signals.",
+    title: "诊断",
+    description: "查看实时渲染器、Electron、GPU 和 OpenCode 运行时信号。",
   },
   about: {
-    title: "About",
-    description: "View Palot build details and the connected OpenCode service.",
+    title: "关于",
+    description: "查看 Palot 构建详情和已连接的 OpenCode 服务。",
   },
 };
 
