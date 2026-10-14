@@ -128,13 +128,13 @@ export function WorkspaceFilesTab({
 
   function openFile(path: string) {
     const result = commands.openTab({ kind: "file", location, path }, { pane });
-    setOpenError(result?.ok ? null : "Too many workbench tabs. Close a tab and try again.");
+    setOpenError(result?.ok ? null : "工作台标签页过多。请关闭一个标签页后重试。");
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-card">
       <div className="flex shrink-0 flex-col gap-2 border-b border-border bg-background p-2">
-        <nav className="flex min-w-0 items-center gap-1" aria-label="Workspace path">
+        <nav className="flex min-w-0 items-center gap-1" aria-label="工作区路径">
           <button
             ref={directory ? undefined : currentDirectoryRef}
             type="button"
@@ -170,7 +170,7 @@ export function WorkspaceFilesTab({
             variant="ghost"
             size="icon-xs"
             className="ml-auto shrink-0"
-            aria-label={searching ? "Refresh search" : "Refresh directory"}
+            aria-label={searching ? "刷新搜索" : "刷新目录"}
             disabled={!connected || (searching && debouncedSearch !== queryText)}
             onClick={() => void query.refetch()}
           >
@@ -184,8 +184,8 @@ export function WorkspaceFilesTab({
           />
           <Input
             type="search"
-            aria-label="Search workspace files"
-            placeholder="Search workspace files"
+            aria-label="搜索工作区文件"
+            placeholder="搜索工作区文件"
             className="min-w-0 pl-8 pr-8"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -202,7 +202,7 @@ export function WorkspaceFilesTab({
               variant="ghost"
               size="icon-xs"
               className="absolute right-1"
-              aria-label="Clear file search"
+              aria-label="清除文件搜索"
               onClick={() => setSearch("")}
             >
               <X aria-hidden="true" />
@@ -218,8 +218,8 @@ export function WorkspaceFilesTab({
       {!connected ? (
         <Empty className="min-h-0 flex-1 rounded-none p-5">
           <EmptyHeader>
-            <EmptyTitle>Files unavailable</EmptyTitle>
-            <EmptyDescription>Reconnect to this workspace to browse files.</EmptyDescription>
+            <EmptyTitle>文件不可用</EmptyTitle>
+            <EmptyDescription>重新连接此工作区以浏览文件。</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (searching && debouncedSearch !== queryText) || query.isPending ? (
@@ -227,30 +227,30 @@ export function WorkspaceFilesTab({
           role="status"
           className="flex min-h-0 flex-1 items-center justify-center gap-2 text-meta text-muted-foreground"
         >
-          <Spinner /> {searching ? "Searching files" : "Loading files"}
+          <Spinner /> {searching ? "正在搜索文件" : "正在加载文件"}
         </div>
       ) : query.isError ? (
         <Empty className="min-h-0 flex-1 rounded-none p-5">
           <EmptyHeader>
             <EmptyTitle>
-              {searching ? "Could not search files" : "Could not load directory"}
+              {searching ? "无法搜索文件" : "无法加载目录"}
             </EmptyTitle>
             <EmptyDescription>{query.error.message}</EmptyDescription>
           </EmptyHeader>
           <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
-            Retry
+            重试
           </Button>
         </Empty>
       ) : visible.length === 0 ? (
         <Empty className="min-h-0 flex-1 rounded-none p-5">
           <EmptyHeader>
             <EmptyTitle>
-              {searching ? "No matching files" : "No files in this directory"}
+              {searching ? "没有匹配的文件" : "此目录没有文件"}
             </EmptyTitle>
             <EmptyDescription>
               {searching
-                ? "Try a different filename."
-                : "This directory has no visible files or folders."}
+                ? "请尝试其他文件名。"
+                : "此目录没有可见的文件或文件夹。"}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -258,7 +258,7 @@ export function WorkspaceFilesTab({
         <div
           role="region"
           className="palot-native-scrollbar min-h-0 flex-1 overflow-auto py-1"
-          aria-label={searching ? "Search results" : "Directory contents"}
+          aria-label={searching ? "搜索结果" : "目录内容"}
         >
           {visible.map((entry) => {
             const name = entry.path.split("/").at(-1);
@@ -283,7 +283,7 @@ export function WorkspaceFilesTab({
           })}
           {searching && visible.length === SEARCH_LIMIT ? (
             <p className="px-3 py-2 text-meta text-muted-foreground">
-              Showing the first {SEARCH_LIMIT} files. Refine your search for more.
+              仅显示前 {SEARCH_LIMIT} 个文件。请缩小搜索范围以查看更多。
             </p>
           ) : null}
         </div>

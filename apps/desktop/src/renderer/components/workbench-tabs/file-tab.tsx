@@ -88,7 +88,7 @@ export function FileTab({
           {tab.resource.line ? `:${tab.resource.line}` : ""}
         </a>
         {preview?.kind === "markdown" ? (
-          <div className="flex shrink-0 items-center gap-0.5" aria-label="Markdown view">
+          <div className="flex shrink-0 items-center gap-0.5" aria-label="Markdown 视图">
             <Button
               type="button"
               variant={markdownSource ? "ghost" : "secondary"}
@@ -96,7 +96,7 @@ export function FileTab({
               aria-pressed={!markdownSource}
               onClick={() => setMarkdownSource(false)}
             >
-              Preview
+              预览
             </Button>
             <Button
               type="button"
@@ -105,7 +105,7 @@ export function FileTab({
               aria-pressed={markdownSource}
               onClick={() => setMarkdownSource(true)}
             >
-              Source
+              源码
             </Button>
           </div>
         ) : null}
@@ -113,8 +113,8 @@ export function FileTab({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Open in editor"
-          title="Open in editor"
+          aria-label="在编辑器中打开"
+          title="在编辑器中打开"
           disabled={
             runtime?.profileID !== tab.resource.profileID ||
             runtime?.capabilities?.localPathActions !== true
@@ -138,8 +138,8 @@ export function FileTab({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Reveal in Finder"
-          title="Reveal in Finder"
+          aria-label="在 Finder 中显示"
+          title="在 Finder 中显示"
           disabled={
             runtime?.profileID !== tab.resource.profileID ||
             runtime?.capabilities?.localPathActions !== true
@@ -154,7 +154,7 @@ export function FileTab({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Refresh file"
+          aria-label="刷新文件"
           onClick={() => void query.refetch()}
         >
           <RefreshCw className={cn(query.isFetching && "animate-spin")} aria-hidden="true" />
@@ -162,16 +162,16 @@ export function FileTab({
       </div>
       {query.isPending ? (
         <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Spinner /> Loading file
+          <Spinner /> 正在加载文件
         </div>
       ) : query.isError ? (
         <Empty className="rounded-none p-5">
           <EmptyHeader>
-            <EmptyTitle>Could not load file</EmptyTitle>
+            <EmptyTitle>无法加载文件</EmptyTitle>
             <EmptyDescription>{query.error.message}</EmptyDescription>
           </EmptyHeader>
           <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
-            <RefreshCw data-icon="inline-start" /> Retry
+            <RefreshCw data-icon="inline-start" /> 重试
           </Button>
         </Empty>
       ) : preview?.kind === "too-large" ||
@@ -182,13 +182,13 @@ export function FileTab({
             <EmptyMedia variant="icon">
               <FileCode2 aria-hidden="true" />
             </EmptyMedia>
-            <EmptyTitle>Preview unavailable</EmptyTitle>
+            <EmptyTitle>预览不可用</EmptyTitle>
             <EmptyDescription>
               {preview.kind === "too-large"
-                ? `${tab.resource.path} exceeds the ${preview.limitMiB} MiB preview limit.`
+                ? `${tab.resource.path} 超过 ${preview.limitMiB} MiB 预览限制。`
                 : preview.kind === "unsupported-office"
-                  ? "Office previews support .docx, .xlsx and .pptx. Legacy, template and macro-enabled formats are not supported."
-                  : `${tab.resource.path} is not a supported image, PDF, Office document, audio, video, or UTF-8 text file.`}
+                  ? "Office 预览支持 .docx、.xlsx 和 .pptx。不支持旧版、模板和启用宏的格式。"
+                  : `${tab.resource.path} 不是受支持的图像、PDF、Office 文档、音频、视频或 UTF-8 文本文件。`}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -205,7 +205,7 @@ export function FileTab({
         <Suspense
           fallback={
             <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-meta text-muted-foreground">
-              <Spinner /> Loading PDF preview
+              <Spinner /> 正在加载 PDF 预览
             </div>
           }
         >
@@ -279,7 +279,7 @@ function MediaFilePreview({
           src={url}
           controls
           preload="metadata"
-          aria-label={`Audio preview: ${path}`}
+          aria-label={`音频预览：${path}`}
           className="w-full max-w-xl"
           onError={() => setFailedURL(url)}
         />
@@ -289,7 +289,7 @@ function MediaFilePreview({
           src={url}
           controls
           preload="metadata"
-          aria-label={`Video preview: ${path}`}
+          aria-label={`视频预览：${path}`}
           className="max-h-full max-w-full"
           onError={() => setFailedURL(url)}
         />
@@ -317,7 +317,7 @@ function usePreviewObjectURL(
 function PreviewLoading() {
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-meta text-muted-foreground">
-      <Spinner /> Loading preview
+      <Spinner /> 正在加载预览
     </div>
   );
 }
@@ -326,8 +326,8 @@ function PreviewFailed({ path }: { path: string }) {
   return (
     <Empty className="rounded-none p-5">
       <EmptyHeader>
-        <EmptyTitle>Preview unavailable</EmptyTitle>
-        <EmptyDescription>Could not display {path}.</EmptyDescription>
+        <EmptyTitle>预览不可用</EmptyTitle>
+        <EmptyDescription>无法显示 {path}。</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

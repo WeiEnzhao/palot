@@ -38,16 +38,16 @@ describe("SessionThreadHeader", () => {
       </div>,
       createStore(),
     );
-    const actions = screen.getByRole("button", { name: "Task actions" });
+    const actions = screen.getByRole("button", { name: "任务操作" });
     actions.focus();
     await userEvent.keyboard("{Enter}");
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Export task" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "导出任务" }));
     await waitFor(() =>
       expect(exportSession).toHaveBeenCalledWith(session.id, session.title, undefined),
     );
     await userEvent.click(actions);
     await userEvent.click(
-      await screen.findByRole("menuitem", { name: "Copy conversation as Markdown" }),
+      await screen.findByRole("menuitem", { name: "复制对话为 Markdown" }),
     );
     await waitFor(() => expect(copy).toHaveBeenCalledWith(session.id, undefined));
   });

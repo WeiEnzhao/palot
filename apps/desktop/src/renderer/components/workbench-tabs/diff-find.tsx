@@ -294,12 +294,12 @@ export function DiffFindBar({ controller }: { controller: DiffFindController }) 
     : matchCount === 0
       ? controller.pending
         ? ""
-        : "No results"
-      : `${activeIndex + 1} of ${total}`;
+        : "无结果"
+      : `第 ${activeIndex + 1} 项，共 ${total} 项`;
   return (
     <div
       role="search"
-      aria-label="Find in diff"
+      aria-label="在 diff 中查找"
       className="palot-translucent-popover absolute top-2 right-4 z-30 isolate flex w-80 max-w-[calc(100%-2rem)] flex-col rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10"
     >
       <SurfaceBackdrop />
@@ -312,8 +312,8 @@ export function DiffFindBar({ controller }: { controller: DiffFindController }) 
             ref={controller.inputRef}
             type="text"
             value={query}
-            placeholder="Find in diff"
-            aria-label="Find in diff"
+            placeholder="在 diff 中查找"
+            aria-label="在 diff 中查找"
             aria-keyshortcuts={formatShortcut(shortcutKeys("changes.find"))}
             spellCheck={false}
             autoComplete="off"
@@ -339,20 +339,20 @@ export function DiffFindBar({ controller }: { controller: DiffFindController }) 
           ) : null}
         </InputGroup>
         <IconButton
-          label="Previous match"
+          label="上一处匹配"
           icon={ChevronUp}
           size="icon-sm"
           disabled={matchCount === 0}
           onClick={() => controller.step("previous")}
         />
         <IconButton
-          label="Next match"
+          label="下一处匹配"
           icon={ChevronDown}
           size="icon-sm"
           disabled={matchCount === 0}
           onClick={() => controller.step("next")}
         />
-        <IconButton label="Close find" icon={X} size="icon-sm" onClick={controller.closeFind} />
+        <IconButton label="关闭查找" icon={X} size="icon-sm" onClick={controller.closeFind} />
       </div>
       <span className="sr-only" role="status" aria-live="polite">
         {status}

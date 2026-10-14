@@ -47,7 +47,7 @@ export function ReviewCommentEditor({
   const last = Math.max(range.start, range.end);
   return (
     <form
-      aria-label={`Comment on ${path}`}
+      aria-label={`对 ${path} 的评论`}
       className="shrink-0 space-y-2 border-t border-border bg-background p-2"
       onSubmit={(event) => {
         event.preventDefault();
@@ -56,11 +56,11 @@ export function ReviewCommentEditor({
       }}
     >
       <label className="block text-meta text-muted-foreground" htmlFor="review-comment-text">
-        {path} · {first === last ? `line ${first}` : `lines ${first}–${last}`}
+        {path} · {first === last ? `第 ${first} 行` : `第 ${first}–${last} 行`}
       </label>
       <textarea
         id="review-comment-text"
-        aria-label="Line comment"
+        aria-label="行评论"
         className="w-full resize-y rounded-md border border-border bg-card p-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-ring"
         rows={2}
         value={text}
@@ -68,10 +68,10 @@ export function ReviewCommentEditor({
       />
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
+          取消
         </Button>
         <Button type="submit" size="sm" disabled={!text.trim()}>
-          Add comment
+          添加评论
         </Button>
       </div>
     </form>

@@ -173,8 +173,8 @@ const PromptRail = memo(function PromptRail({
         <button
           type="button"
           className="text-muted-foreground hover:text-foreground focus-visible:ring-ring h-7 shrink-0 rounded-sm text-meta focus-visible:ring-2 disabled:opacity-50"
-          aria-label={earlier.loading ? "Loading earlier prompts" : "Load earlier prompts"}
-          title="Load earlier prompts"
+          aria-label={earlier.loading ? "加载更早的提示" : "加载更早的提示"}
+          title="加载更早的提示"
           disabled={earlier.loading}
           onClick={() =>
             void earlier.load().catch(() => {
@@ -190,7 +190,7 @@ const PromptRail = memo(function PromptRail({
         <div
           ref={viewport}
           role="listbox"
-          aria-label="Prompt navigation"
+          aria-label="提示导航"
           aria-activedescendant={focused ? optionID(focusedID) : undefined}
           aria-describedby={focused && previewID === focusedID ? `${id}-preview` : undefined}
           tabIndex={0}

@@ -91,7 +91,7 @@ export function WorktreesPage() {
     try {
       if (target.connectionID !== runtime?.connectionID || target.projectID !== project.id)
         throw new Error(
-          "The server or project changed. Check this worktree again before removing it.",
+          "服务器或项目已变更。请在移除前重新检查此工作树。",
         );
       await removeProjectCopy.mutateAsync({
         directory: target.directory,
@@ -101,7 +101,7 @@ export function WorktreesPage() {
       setTarget(null);
       toast.add({
         type: "success",
-        title: "Worktree removed",
+        title: "工作树已移除",
         description: directoryLabel(target.directory),
       });
     } catch (error) {
@@ -110,7 +110,7 @@ export function WorktreesPage() {
         setTarget({ ...target, forceRequired: true });
         return;
       }
-      showErrorToast("Could not remove worktree", error);
+      showErrorToast("无法移除工作树", error);
     }
   }, [project, removeProjectCopy, target, runtime?.connectionID]);
 
@@ -131,7 +131,7 @@ export function WorktreesPage() {
         });
       } catch (error) {
         if (generation === removalGeneration.current)
-          showErrorToast("Could not check worktree changes", error);
+          showErrorToast("无法检查工作树变更", error);
       } finally {
         if (generation === removalGeneration.current) setCheckingDirectory(null);
       }
@@ -142,16 +142,16 @@ export function WorktreesPage() {
   return (
     <main
       className="palot-main-surface relative size-full min-h-0 min-w-0 overflow-hidden bg-background"
-      aria-label="Worktrees"
+      aria-label="工作树"
     >
       <div className="window-drag h-(--shell-header-height) shrink-0" aria-hidden="true" />
       <div className="palot-native-scrollbar h-[calc(100%-var(--shell-header-height))] overflow-y-auto px-6 pb-16 @max-[42rem]/workspace-shell:px-3">
         <div className="mx-auto w-full max-w-4xl pt-5">
           <header className="mb-7 flex flex-wrap items-start gap-4 px-2">
             <div className="min-w-0 flex-1">
-              <h1 className="text-page-title/tight font-medium tracking-[-0.035em]">Worktrees</h1>
+              <h1 className="text-page-title/tight font-medium tracking-[-0.035em]">工作树</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Manage isolated OpenCode checkouts for one project.
+                管理一个项目的隔离 OpenCode 检出。
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -159,13 +159,13 @@ export function WorktreesPage() {
                 projects={projects}
                 value={project?.id ?? null}
                 onValueChange={updateProject}
-                ariaLabel="Select worktree project"
+                ariaLabel="选择工作树项目"
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Refresh worktrees"
+                aria-label="刷新工作树"
                 disabled={!project || runtime?.connected !== true || worktreesQuery.isFetching}
                 onClick={() => void worktreesQuery.refetch()}
               >
@@ -178,32 +178,32 @@ export function WorktreesPage() {
           {project && runtime?.connected === false ? (
             <Alert>
               <AlertTriangle aria-hidden="true" />
-              <AlertTitle>OpenCode is disconnected</AlertTitle>
-              <AlertDescription>Reconnect to inspect or remove managed worktrees.</AlertDescription>
+              <AlertTitle>OpenCode 已断开连接</AlertTitle>
+              <AlertDescription>请重新连接以检查或移除受管工作树。</AlertDescription>
             </Alert>
           ) : null}
           {project && worktreesQuery.error ? (
             <Alert variant="destructive">
               <AlertTriangle aria-hidden="true" />
-              <AlertTitle>Could not load worktrees</AlertTitle>
+              <AlertTitle>无法加载工作树</AlertTitle>
               <AlertDescription>{worktreesQuery.error.message}</AlertDescription>
             </Alert>
           ) : null}
           {project && !worktreesQuery.data && worktreesQuery.isPending ? (
             <div className="flex items-center gap-2 px-3 py-8 text-sm text-muted-foreground">
               <LoaderCircle className="animate-spin" aria-hidden="true" />
-              Loading worktrees
+              正在加载工作树
             </div>
           ) : null}
           {project && worktreesQuery.data ? (
             <section
               className="overflow-hidden rounded-xl border bg-card/45"
-              aria-label="Project worktrees"
+              aria-label="项目工作树"
             >
               <WorktreeRow
                 directory={project.canonical}
-                label="Main checkout"
-                detail="Primary project directory"
+                label="主检出"
+                detail="主项目目录"
               />
               {managed.map((item) => {
                 const attached = sessions.filter(
@@ -228,7 +228,7 @@ export function WorktreesPage() {
                     <EmptyMedia variant="icon">
                       <FolderGit2 aria-hidden="true" />
                     </EmptyMedia>
-                    <EmptyTitle>No managed worktrees</EmptyTitle>
+                    <EmptyTitle>无受管工作树</EmptyTitle>
                   </EmptyHeader>
                 </Empty>
               ) : null}
@@ -253,7 +253,7 @@ function ProjectRequired({ projects }: { projects: PalotProject[] }) {
         <EmptyMedia variant="icon">
           <FolderGit2 aria-hidden="true" />
         </EmptyMedia>
-        <EmptyTitle>{projects.length ? "Select a project" : "No projects available"}</EmptyTitle>
+        <EmptyTitle>{projects.length ? "选择一个项目" : "无可用项目"}</EmptyTitle>
       </EmptyHeader>
     </Empty>
   );
@@ -286,13 +286,13 @@ function WorktreeRow({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="min-w-0 break-all font-medium">{label}</span>
-            {!onRemove ? <Badge variant="secondary">Primary</Badge> : null}
+            {!onRemove ? <Badge variant="secondary">主要</Badge> : null}
             {onRemove && attachedTasks.length > 0 ? (
               <CollapsibleTrigger
                 render={<Button variant="ghost" size="sm" />}
-                aria-label={`Tasks in ${label}`}
+                aria-label={`${label} 中的任务`}
               >
-                {attachedTasks.length} {attachedTasks.length === 1 ? "task" : "tasks"}
+                {attachedTasks.length} 个任务
                 <ChevronDown
                   className="transition-transform in-data-open:rotate-180"
                   aria-hidden="true"
@@ -310,10 +310,10 @@ function WorktreeRow({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={`Remove ${label}`}
+              aria-label={`移除 ${label}`}
               title={
                 attachedTasks.length > 0
-                  ? "Move these tasks before removing the worktree"
+                  ? "请先移走这些任务再移除工作树"
                   : undefined
               }
               disabled={removalBlocked}
@@ -326,7 +326,7 @@ function WorktreeRow({
       </div>
       {attachedTasks.length > 0 ? (
         <CollapsibleContent>
-          <ul className="min-w-0 space-y-1 px-4 pb-3" aria-label={`Tasks in ${label}`}>
+          <ul className="min-w-0 space-y-1 px-4 pb-3" aria-label={`${label} 中的任务`}>
             {attachedTasks.map((session) => (
               <AttachedTaskLink key={session.id} session={session} />
             ))}
@@ -342,14 +342,14 @@ function AttachedTaskLink({ session }: { session: PalotSession }) {
   const status = activity.execution.get(session.id)?.status;
   const statusLabel = status
     ? {
-        inactive: "Idle",
-        running: "Running",
-        succeeded: "Finished",
-        failed: "Failed",
-        interrupted: "Interrupted",
+        inactive: "空闲",
+        running: "运行中",
+        succeeded: "已完成",
+        failed: "已失败",
+        interrupted: "已中断",
       }[status]
     : null;
-  const title = session.title?.trim() || "Untitled task";
+  const title = session.title?.trim() || "未命名任务";
   return (
     <li className="min-w-0">
       <Link
@@ -361,7 +361,7 @@ function AttachedTaskLink({ session }: { session: PalotSession }) {
       >
         <span className="min-w-0 flex-1 truncate">{title}</span>
         {statusLabel ? <Badge variant="secondary">{statusLabel}</Badge> : null}
-        {session.archivedAt !== null ? <Badge variant="outline">Archived</Badge> : null}
+        {session.archivedAt !== null ? <Badge variant="outline">已归档</Badge> : null}
       </Link>
     </li>
   );
@@ -386,14 +386,14 @@ function RemovalDialog({
             <Trash2 aria-hidden="true" />
           </AlertDialogMedia>
           <AlertDialogTitle>
-            Remove {target ? directoryLabel(target.directory) : "worktree"}?
+            移除 {target ? directoryLabel(target.directory) : "工作树"}？
           </AlertDialogTitle>
           <AlertDialogDescription>
             {target?.forceRequired
               ? target.files.length
-                ? `This permanently discards ${target.files.length} changed ${target.files.length === 1 ? "file" : "files"} and removes the managed worktree.`
-                : "The worktree changed after it was checked. Removing it now permanently discards its uncommitted changes."
-              : "This removes the managed worktree. The main checkout is not affected."}
+                ? `这将永久丢弃 ${target.files.length} 个已变更${target.files.length === 1 ? "文件" : "文件"}并移除受管工作树。`
+                : "工作树在检查后发生了变更。现在移除将永久丢弃其未提交的变更。"
+              : "这将移除受管工作树。主检出不受影响。"}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {target?.files.length ? (
@@ -403,17 +403,17 @@ function RemovalDialog({
                 {file}
               </div>
             ))}
-            {target.files.length > 20 ? <div>+{target.files.length - 20} more</div> : null}
+            {target.files.length > 20 ? <div>+{target.files.length - 20} 个更多</div> : null}
           </div>
         ) : null}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>取消</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={pending}
             onClick={() => void onRemove()}
           >
-            {pending ? "Removing..." : "Remove worktree"}
+            {pending ? "正在移除..." : "移除工作树"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -45,7 +45,7 @@ import {
 } from "./pull-request-presentation";
 import { useArmedConfirm } from "./use-armed-confirm";
 
-const UNSUPPORTED_FALLBACK = "Pull requests are only available for tasks on this computer.";
+const UNSUPPORTED_FALLBACK = "拉取请求仅在此计算机上的任务中可用。";
 
 /**
  * The task header's "Pull request" control: linked PRs with state and checks, and the
@@ -71,7 +71,7 @@ export function PullRequestControl({ session }: { session: PalotSession }) {
               variant="ghost"
               size="icon-sm"
               aria-disabled="true"
-              aria-label={`Pull request unavailable: ${unsupportedReason}`}
+              aria-label={`拉取请求不可用：${unsupportedReason}`}
               className="window-no-drag shrink-0 text-muted-foreground/60 hover:bg-transparent hover:text-muted-foreground/60"
             />
           }
@@ -93,7 +93,7 @@ export function PullRequestControl({ session }: { session: PalotSession }) {
             variant="ghost"
             size={primary ? "sm" : "icon-sm"}
             className="window-no-drag shrink-0 text-muted-foreground tabular-nums"
-            aria-label={primary ? describePullRequest(primary) : "Pull request"}
+            aria-label={primary ? describePullRequest(primary) : "拉取请求"}
             data-pull-request-control
           />
         }
@@ -101,7 +101,7 @@ export function PullRequestControl({ session }: { session: PalotSession }) {
         {primary ? <TriggerContent link={primary} more={linked.length - 1} /> : null}
         {!primary ? <GitPullRequest aria-hidden="true" /> : null}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 gap-3 p-3" aria-label="Pull request">
+      <PopoverContent align="end" className="w-80 gap-3 p-3" aria-label="拉取请求">
         {open ? (
           <PullRequestPanel
             session={session}
@@ -171,13 +171,13 @@ function PullRequestPanel({
   return (
     <div className="flex flex-col gap-3 text-sm">
       <div className="flex items-center gap-2">
-        <span className="flex-1 font-medium">Pull request</span>
+        <span className="flex-1 font-medium">拉取请求</span>
         {links.length > 0 ? (
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Refresh pull requests"
+            aria-label="刷新拉取请求"
             disabled={refresh.isPending || !authenticated}
             onClick={() => void run(() => refresh.mutateAsync({ sessionID: session.id }))}
           >
@@ -187,13 +187,13 @@ function PullRequestPanel({
       </div>
       {!authenticated ? (
         <p className="text-meta text-muted-foreground">
-          GitHub is not signed in. {GITHUB_SIGN_IN_HINT}
+          GitHub 未登录。{GITHUB_SIGN_IN_HINT}
         </p>
       ) : null}
       {loading ? (
         <div className="flex items-center gap-2 text-meta text-muted-foreground">
           <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />
-          Loading
+          加载中
         </div>
       ) : null}
       {links.map((link) => (
@@ -242,7 +242,7 @@ function LinkedPullRequest({
     PULL_REQUEST_STATE_LABEL[pullRequest.state],
     pullRequest.checks === "none" ? null : CHECKS_LABEL[pullRequest.checks],
     pullRequest.reviewDecision ? REVIEW_LABEL[pullRequest.reviewDecision] : null,
-    pullRequest.mergeable === "conflicting" ? "Conflicts" : null,
+    pullRequest.mergeable === "conflicting" ? "冲突" : null,
   ].filter(Boolean);
   return (
     <section
@@ -272,7 +272,7 @@ function LinkedPullRequest({
       </div>
       {link.syncError ? (
         <p className="text-meta text-muted-foreground" title={link.syncError}>
-          Last refresh failed: {link.syncError}
+          上次刷新失败：{link.syncError}
         </p>
       ) : null}
       {!link.watch && link.watchEnded ? (
@@ -292,7 +292,7 @@ function LinkedPullRequest({
           }}
         >
           <PanelsTopLeft data-icon="inline-start" aria-hidden="true" />
-          Open in Pull requests
+          在拉取请求中打开
         </Button>
         <Button
           type="button"
@@ -301,7 +301,7 @@ function LinkedPullRequest({
           onClick={() => void palot.openExternalUrl(pullRequest.url)}
         >
           <ExternalLink data-icon="inline-start" aria-hidden="true" />
-          Open on GitHub
+          在 GitHub 上打开
         </Button>
         {watchable || link.watch ? (
           <Button
@@ -326,7 +326,7 @@ function LinkedPullRequest({
             ) : (
               <Eye data-icon="inline-start" aria-hidden="true" />
             )}
-            {link.watch ? "Stop watching" : "Watch"}
+            {link.watch ? "取消关注" : "关注"}
           </Button>
         ) : null}
         <Button
@@ -338,7 +338,7 @@ function LinkedPullRequest({
           {...confirmUnlink.buttonProps}
         >
           <Unlink data-icon="inline-start" aria-hidden="true" />
-          {confirmUnlink.armed ? "Confirm unlink" : "Unlink"}
+          {confirmUnlink.armed ? "确认取消关联" : "取消关联"}
         </Button>
       </div>
     </section>
@@ -370,7 +370,7 @@ function LinkForm({
         onClick={() => setExpanded(true)}
       >
         <GitPullRequest data-icon="inline-start" aria-hidden="true" />
-        Link another pull request…
+        关联另一个拉取请求…
       </Button>
     );
   }
@@ -384,10 +384,10 @@ function LinkForm({
     });
   };
   return (
-    <form className="flex flex-col gap-2" onSubmit={submit} aria-label="Link pull request">
+    <form className="flex flex-col gap-2" onSubmit={submit} aria-label="关联拉取请求">
       {!hasLinks ? (
         <p className="text-meta text-muted-foreground">
-          No pull request is linked to this task. Detect it from the task's branch or paste its URL.
+          没有拉取请求关联到此任务。从任务的分支检测或粘贴其 URL。
         </p>
       ) : null}
       <Button
@@ -403,11 +403,11 @@ function LinkForm({
         ) : (
           <GitBranch data-icon="inline-start" aria-hidden="true" />
         )}
-        Detect from branch
+        从分支检测
       </Button>
       <div className="flex items-center gap-1.5">
         <Input
-          aria-label="Pull request URL"
+          aria-label="拉取请求 URL"
           placeholder="https://github.com/owner/repo/pull/123"
           value={url}
           disabled={disabled}
@@ -415,7 +415,7 @@ function LinkForm({
           onChange={(event) => setURL(event.target.value)}
         />
         <Button type="submit" size="sm" disabled={disabled || link.isPending || !url.trim()}>
-          Link
+          关联
         </Button>
       </div>
     </form>

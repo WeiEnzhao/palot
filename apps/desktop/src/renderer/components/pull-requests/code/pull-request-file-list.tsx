@@ -3,12 +3,12 @@ import { cn } from "../../../lib/cn";
 import { Checkbox } from "../../ui/checkbox";
 
 const STATUS: Record<PullRequestFile["status"], { letter: string; label: string; tone: string }> = {
-  added: { letter: "A", label: "Added", tone: "text-success" },
-  modified: { letter: "M", label: "Modified", tone: "text-info" },
-  changed: { letter: "M", label: "Changed", tone: "text-info" },
-  removed: { letter: "D", label: "Deleted", tone: "text-destructive" },
-  renamed: { letter: "R", label: "Renamed", tone: "text-info" },
-  copied: { letter: "C", label: "Copied", tone: "text-info" },
+  added: { letter: "A", label: "新增", tone: "text-success" },
+  modified: { letter: "M", label: "修改", tone: "text-info" },
+  changed: { letter: "M", label: "变更", tone: "text-info" },
+  removed: { letter: "D", label: "删除", tone: "text-destructive" },
+  renamed: { letter: "R", label: "重命名", tone: "text-info" },
+  copied: { letter: "C", label: "复制", tone: "text-info" },
 };
 
 export function fileStatusLabel(status: PullRequestFile["status"]) {
@@ -36,11 +36,11 @@ export function PullRequestFileList({
 }) {
   if (files.length === 0) {
     return (
-      <p className="px-3 py-4 text-meta text-muted-foreground">Every file is marked viewed.</p>
+      <p className="px-3 py-4 text-meta text-muted-foreground">所有文件均已查看。</p>
     );
   }
   return (
-    <ul aria-label="Changed files" className="flex flex-col py-1">
+    <ul aria-label="已更改的文件" className="flex flex-col py-1">
       {files.map((file) => {
         const status = STATUS[file.status];
         const { directory, name } = filePathParts(file.path);
@@ -54,7 +54,7 @@ export function PullRequestFileList({
             )}
           >
             <Checkbox
-              aria-label={`Viewed ${file.path}`}
+              aria-label={`已查看 ${file.path}`}
               checked={viewed}
               onCheckedChange={(checked) => onViewedChange(file.path, checked)}
             />
@@ -95,14 +95,14 @@ export function ChangedSinceViewed({ compact = false }: { compact?: boolean }) {
   return (
     <span
       className="shrink-0 rounded-sm bg-warning/15 px-1 text-tag font-medium text-warning"
-      title="This file changed since you marked it viewed"
+      title="此文件在你标记为已查看后发生了变更"
     >
       {compact ? (
         <>
-          Changed<span className="sr-only"> since viewed</span>
+          已变更<span className="sr-only">（自上次查看以来）</span>
         </>
       ) : (
-        "Changed since viewed"
+        "自上次查看以来已变更"
       )}
     </span>
   );

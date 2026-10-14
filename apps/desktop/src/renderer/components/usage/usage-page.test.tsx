@@ -13,7 +13,7 @@ import { renderWithRouter, seedCatalog } from "../../test-utils/render-with-rout
 import { UsagePage } from "./usage-page";
 
 vi.mock("./usage-activity-chart", () => ({
-  UsageActivityChart: () => <div aria-label="Daily OpenCode steps" />,
+  UsageActivityChart: () => <div aria-label="每日 OpenCode 步骤" />,
 }));
 
 const stats: SessionStatsInfo = {
@@ -114,19 +114,19 @@ describe("UsagePage", () => {
 
     expect(await screen.findByText("$12.34")).toBeTruthy();
     expect(screen.getAllByText("gpt-5").length).toBeGreaterThan(0);
-    expect(screen.getByText("Token composition")).toBeTruthy();
-    expect(screen.getByText("Input", { exact: true })).toBeTruthy();
-    expect(screen.getByText("Output", { exact: true })).toBeTruthy();
-    expect(screen.getByText("Reasoning", { exact: true })).toBeTruthy();
-    expect(screen.getAllByText("Cache read", { exact: true }).length).toBeGreaterThan(0);
-    expect(screen.getByText("Providers")).toBeTruthy();
+    expect(screen.getByText("令牌构成")).toBeTruthy();
+    expect(screen.getByText("输入", { exact: true })).toBeTruthy();
+    expect(screen.getByText("输出", { exact: true })).toBeTruthy();
+    expect(screen.getByText("推理", { exact: true })).toBeTruthy();
+    expect(screen.getAllByText("缓存读取", { exact: true }).length).toBeGreaterThan(0);
+    expect(screen.getByText("提供者")).toBeTruthy();
     expect(screen.getAllByText("openai").length).toBeGreaterThan(0);
-    expect(screen.getByLabelText("Daily OpenCode steps")).toBeTruthy();
-    const toolDetails = screen.getByRole("button", { name: "Show details" });
+    expect(screen.getByLabelText("每日 OpenCode 步骤")).toBeTruthy();
+    const toolDetails = screen.getByRole("button", { name: "显示详情" });
     expect(toolDetails.getAttribute("aria-expanded")).toBe("false");
     await userEvent.click(toolDetails);
     expect(toolDetails.getAttribute("aria-expanded")).toBe("true");
-    expect(await screen.findByText("Tool details loaded for 1 tool.")).toBeTruthy();
+    expect(await screen.findByText("已加载 1 个工具的详情。")).toBeTruthy();
     expect(screen.getByText("read")).toBeTruthy();
     expect(sessionStats).toHaveBeenCalledWith(
       expect.objectContaining({ tools: "detail", project: "project-1" }),
@@ -145,7 +145,7 @@ describe("UsagePage", () => {
       "connection",
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "7 days" }));
+    await userEvent.click(screen.getByRole("button", { name: "7 天" }));
     expect(await screen.findByText("$12.34")).toBeTruthy();
   });
 
@@ -165,15 +165,15 @@ describe("UsagePage", () => {
     renderWithRouter(<UsagePage />, store, "/usage?days=30&projectID=project-1", queryClient);
 
     expect(await screen.findByText("$12.34")).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "7 days" }));
+    await userEvent.click(screen.getByRole("button", { name: "7 天" }));
     expect(
-      await screen.findByText("Showing the previous selection while this usage scope updates."),
+      await screen.findByText("此用量范围更新时，显示上一次的选择。"),
     ).toBeTruthy();
 
     resolveNext?.(stats);
     await waitFor(() =>
       expect(
-        screen.queryByText("Showing the previous selection while this usage scope updates."),
+        screen.queryByText("此用量范围更新时，显示上一次的选择。"),
       ).toBeNull(),
     );
   });
@@ -195,7 +195,7 @@ describe("UsagePage", () => {
 
     expect(await screen.findByText("$12.34")).toBeTruthy();
     expect(sessionStats).toHaveBeenCalledTimes(1);
-    const compare = screen.getByRole("button", { name: "Compare periods" });
+    const compare = screen.getByRole("button", { name: "对比时段" });
     expect(compare.getAttribute("aria-pressed")).toBe("false");
     await userEvent.click(compare);
 
@@ -212,10 +212,10 @@ describe("UsagePage", () => {
       "connection",
     );
     expect(compare.getAttribute("aria-pressed")).toBe("true");
-    expect(await screen.findByRole("region", { name: "Period comparison" })).toBeTruthy();
-    expect(await screen.findByText("+54% vs previous")).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "时段对比" })).toBeTruthy();
+    expect(await screen.findByText("+54% 对比上期")).toBeTruthy();
     await userEvent.click(compare);
-    expect(screen.queryByRole("region", { name: "Period comparison" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "时段对比" })).toBeNull();
   });
 
   it("refreshes open tool details and invalidates closed details for the next expansion", async () => {
@@ -231,17 +231,17 @@ describe("UsagePage", () => {
     renderWithRouter(<UsagePage />, store, "/usage?days=7", queryClient);
 
     await screen.findByText("$12.34");
-    await userEvent.click(screen.getByRole("button", { name: "Show details" }));
-    await screen.findByText("Tool details loaded for 1 tool.");
+    await userEvent.click(screen.getByRole("button", { name: "显示详情" }));
+    await screen.findByText("已加载 1 个工具的详情。");
     expect(sessionStats.mock.calls.filter(([input]) => input.tools === "detail")).toHaveLength(1);
 
-    await userEvent.click(screen.getByRole("button", { name: "Refresh usage" }));
+    await userEvent.click(screen.getByRole("button", { name: "刷新用量" }));
     await waitFor(() =>
       expect(sessionStats.mock.calls.filter(([input]) => input.tools === "detail")).toHaveLength(2),
     );
-    await userEvent.click(screen.getByRole("button", { name: "Hide details" }));
-    await userEvent.click(screen.getByRole("button", { name: "Refresh usage" }));
-    await userEvent.click(screen.getByRole("button", { name: "Show details" }));
+    await userEvent.click(screen.getByRole("button", { name: "隐藏详情" }));
+    await userEvent.click(screen.getByRole("button", { name: "刷新用量" }));
+    await userEvent.click(screen.getByRole("button", { name: "显示详情" }));
     await waitFor(() =>
       expect(sessionStats.mock.calls.filter(([input]) => input.tools === "detail")).toHaveLength(3),
     );
@@ -255,11 +255,11 @@ describe("UsagePage", () => {
     renderWithRouter(<UsagePage />, store, "/usage?days=7", queryClient);
 
     await screen.findByText("$12.34");
-    await userEvent.click(screen.getByRole("button", { name: "Compare periods" }));
-    await screen.findByRole("region", { name: "Period comparison" });
+    await userEvent.click(screen.getByRole("button", { name: "对比时段" }));
+    await screen.findByRole("region", { name: "时段对比" });
     act(() => store.set(runtimeAtom, { ...store.get(runtimeAtom)!, connected: false }));
-    await userEvent.click(screen.getByRole("button", { name: "30 days" }));
+    await userEvent.click(screen.getByRole("button", { name: "30 天" }));
 
-    expect(await screen.findByText("Reconnect OpenCode to load the previous period.")).toBeTruthy();
+    expect(await screen.findByText("重新连接 OpenCode 以加载上一时段。")).toBeTruthy();
   });
 });

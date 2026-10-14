@@ -32,7 +32,7 @@ function ThreadCard({ thread }: { thread: ReviewThread }) {
   const first = thread.comments[0];
   return (
     <article
-      aria-label={`Review thread by ${first?.author?.login ?? "unknown"}${thread.isResolved ? ", resolved" : ""}`}
+      aria-label={`评审线程，来自 ${first?.author?.login ?? "未知"}${thread.isResolved ? "，已解决" : ""}`}
       className={cn(
         "max-w-3xl rounded-md border border-border bg-card",
         thread.isResolved && "opacity-60",
@@ -41,7 +41,7 @@ function ThreadCard({ thread }: { thread: ReviewThread }) {
       {thread.isResolved ? (
         <div className="flex items-center gap-1 border-b border-border px-2 py-1 text-micro text-muted-foreground">
           <CheckCircle2 className="size-3" aria-hidden="true" />
-          Resolved
+          已解决
         </div>
       ) : null}
       <ol className="flex flex-col divide-y divide-border">
@@ -57,7 +57,7 @@ function ThreadCard({ thread }: { thread: ReviewThread }) {
                 />
               ) : null}
               <span className="font-medium text-foreground">
-                {comment.author?.login ?? "Unknown"}
+                {comment.author?.login ?? "未知"}
               </span>
               <time
                 className="text-muted-foreground"
@@ -70,7 +70,7 @@ function ThreadCard({ thread }: { thread: ReviewThread }) {
                 target="_blank"
                 rel="noreferrer"
                 className="ml-auto text-muted-foreground hover:text-foreground"
-                aria-label="Open comment on GitHub"
+                aria-label="在 GitHub 上打开评论"
               >
                 <ExternalLink className="size-3" aria-hidden="true" />
               </a>
@@ -92,18 +92,18 @@ function PendingCard({
 }) {
   return (
     <article
-      aria-label="Pending comment"
+      aria-label="待审评论"
       className="flex max-w-3xl items-start gap-2 rounded-md border border-dashed border-border bg-card px-2 py-1.5"
     >
       <span className="mt-0.5 shrink-0 rounded-sm bg-warning/15 px-1 text-tag font-medium text-warning">
-        Pending
+        待审
       </span>
       <p className="min-w-0 flex-1 break-words whitespace-pre-wrap">{comment.body}</p>
       <Button
         type="button"
         variant="ghost"
         size="icon-xs"
-        aria-label="Remove pending comment"
+        aria-label="移除此待审评论"
         onClick={() => onRemove(comment.id)}
       >
         <Trash2 />

@@ -59,29 +59,29 @@ const SUGGESTIONS: Array<{
   color: string;
 }> = [
   {
-    name: "Daily brief",
-    description: "Summarize current project activity, changes, and priorities.",
+    name: "每日简报",
+    description: "总结当前项目活动、变更和优先级。",
     schedule: "weekdays",
     prompt:
-      "Review the current project state and recent activity. Produce a concise daily brief with completed work, open risks, and the three most important next actions.",
+      "查看当前项目状态和最近活动。生成一份简洁的每日简报，包括已完成工作、未解决风险和最重要的三个下一步行动。",
     icon: BellRing,
     color: "text-blue-500",
   },
   {
-    name: "Weekly review",
-    description: "Turn the week’s work into a clear status update.",
+    name: "每周回顾",
+    description: "将本周工作整理为清晰的状态更新。",
     schedule: "weekly",
     prompt:
-      "Review the project work from the last week. Summarize shipped changes, unresolved issues, risks, and recommended priorities for next week.",
+      "回顾上周的项目工作。总结已发布的变更、未解决的问题、风险和下周建议的优先级。",
     icon: CalendarClock,
     color: "text-violet-500",
   },
   {
-    name: "Regression monitor",
-    description: "Run focused checks and flag anything that needs attention.",
+    name: "回归监控",
+    description: "运行针对性检查并标记需要关注的问题。",
     schedule: "daily",
     prompt:
-      "Inspect the current project for recent regressions. Run the narrowest meaningful validation, investigate failures, and report only actionable findings with evidence.",
+      "检查当前项目是否有近期回归。运行最窄范围的有效验证，调查失败，仅报告有证据支持的可操作发现。",
     icon: CircleAlert,
     color: "text-emerald-500",
   },
@@ -246,9 +246,9 @@ function ScheduledProfilePage() {
     if (
       type === "delete" &&
       !window.confirm(
-        `Delete “${automation.name}”? Previous OpenCode sessions will remain${
-          automation.activeRunID ? ", and the current run will continue" : ""
-        }.`,
+        `删除「${automation.name}」？之前的 OpenCode 会话将保留${
+          automation.activeRunID ? "，当前运行将继续" : ""
+        }。`,
       )
     ) {
       return;
@@ -302,7 +302,7 @@ function ScheduledProfilePage() {
     <main
       className="palot-main-surface relative grid size-full min-h-0 min-w-0 overflow-hidden bg-background data-[detail=true]:grid-cols-[minmax(420px,1fr)_minmax(440px,560px)] max-[1320px]:data-[detail=true]:grid-cols-1"
       data-detail={detailOpen}
-      aria-label="Scheduled tasks"
+      aria-label="计划任务"
     >
       <section
         className="flex min-h-0 min-w-0 flex-col overflow-hidden max-[1320px]:data-[detail=true]:hidden"
@@ -314,10 +314,10 @@ function ScheduledProfilePage() {
             <header className="mb-5 flex items-start gap-4 px-2 max-[560px]:flex-col">
               <div className="min-w-0 flex-1">
                 <h1 className="text-page-title/tight font-medium tracking-[-0.035em]">
-                  Scheduled tasks
+                  计划任务
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Run OpenCode tasks on a schedule, even when no Palot window is open.
+                  按计划运行 OpenCode 任务，即使没有打开 Palot 窗口。
                 </p>
               </div>
               <Button
@@ -327,14 +327,14 @@ function ScheduledProfilePage() {
                 onClick={() => createTask()}
                 className="max-[560px]:self-start"
               >
-                <Plus aria-hidden="true" /> Create
+                <Plus aria-hidden="true" /> 新建
               </Button>
             </header>
 
             {!schedulingAvailable ? (
               <div className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
-                Scheduled tasks are paused for this remote OpenCode server. Existing definitions and
-                due times are preserved.
+                此远程 OpenCode 服务器的计划任务已暂停。现有定义和
+                到期时间将被保留。
               </div>
             ) : null}
 
@@ -346,7 +346,7 @@ function ScheduledProfilePage() {
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search scheduled tasks"
+                placeholder="搜索计划任务"
                 className="h-9 rounded-full bg-muted/55 pl-9"
               />
             </div>
@@ -359,10 +359,10 @@ function ScheduledProfilePage() {
                   variant={filter === value ? "secondary" : "ghost"}
                   aria-pressed={filter === value}
                   size="sm"
-                  className="h-7 rounded-full px-3 capitalize"
+                  className="h-7 rounded-full px-3"
                   onClick={() => setFilter(value)}
                 >
-                  {value}
+                  {value === "all" ? "全部" : value === "active" ? "运行中" : "已暂停"}
                 </Button>
               ))}
               {unreadCount > 0 ? (
@@ -373,7 +373,7 @@ function ScheduledProfilePage() {
                   className="ml-auto text-muted-foreground"
                   onClick={() => void dispatch({ type: "mark-all-read" })}
                 >
-                  <Check aria-hidden="true" /> Mark all as read
+                  <Check aria-hidden="true" /> 全部标为已读
                 </Button>
               ) : null}
             </div>
@@ -388,11 +388,11 @@ function ScheduledProfilePage() {
                   <EmptyMedia variant="icon">
                     <CircleAlert />
                   </EmptyMedia>
-                  <EmptyTitle>Scheduled tasks did not load</EmptyTitle>
+                  <EmptyTitle>计划任务加载失败</EmptyTitle>
                   <EmptyDescription>{error}</EmptyDescription>
                 </EmptyHeader>
                 <Button type="button" variant="outline" onClick={() => void refresh()}>
-                  Try again
+                  重试
                 </Button>
               </Empty>
             ) : (
@@ -431,15 +431,15 @@ function ScheduledProfilePage() {
                             {currentRun ? (
                               <LoaderCircle
                                 className="size-4 animate-spin text-info"
-                                aria-label="Running"
+                                aria-label="运行中"
                               />
                             ) : attention ? (
                               <CircleAlert
                                 className="size-4 text-destructive"
-                                aria-label="Needs review"
+                                aria-label="需要审查"
                               />
                             ) : automation.status === "paused" ? (
-                              <Pause className="size-4 text-muted-foreground" aria-label="Paused" />
+                              <Pause className="size-4 text-muted-foreground" aria-label="已暂停" />
                             ) : (
                               <Circle className="size-4 text-muted-foreground" aria-hidden="true" />
                             )}
@@ -455,7 +455,7 @@ function ScheduledProfilePage() {
                             </span>
                             {latestRun ? (
                               <span className="mt-0.5 block truncate text-meta text-muted-foreground">
-                                Latest: {automationRunStateLabel(latestRun)} ·{" "}
+                                最近：{automationRunStateLabel(latestRun)} ·{" "}
                                 {runTimestamp(latestRun)}
                               </span>
                             ) : null}
@@ -463,7 +463,7 @@ function ScheduledProfilePage() {
                           {unread > 0 ? (
                             <span
                               className="mt-2 size-2 shrink-0 rounded-full bg-info"
-                              aria-label={`${unread} unread runs`}
+                              aria-label={`${unread} 个未读运行`}
                             />
                           ) : null}
                         </button>
@@ -473,7 +473,7 @@ function ScheduledProfilePage() {
                             variant="ghost"
                             size="icon-sm"
                             className="mt-2 shrink-0 text-muted-foreground"
-                            aria-label={`${automationRunActionLabel(latestRun)} for ${automation.name}`}
+                            aria-label={`${automation.name}：${automationRunActionLabel(latestRun)}`}
                             onClick={() => runAction(latestRun, "open")}
                           >
                             <ExternalLink aria-hidden="true" />
@@ -487,7 +487,7 @@ function ScheduledProfilePage() {
                                 variant="ghost"
                                 size="icon-sm"
                                 className="mt-2 mr-2 shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-                                aria-label={`Actions for ${automation.name}`}
+                                aria-label={`${automation.name} 的操作`}
                               />
                             }
                           >
@@ -504,7 +504,7 @@ function ScheduledProfilePage() {
                               onClick={() => void automationAction(automation, "run-now")}
                             >
                               <Play aria-hidden="true" />
-                              {currentRun ? "Open current run" : "Run now"}
+                              {currentRun ? "打开当前运行" : "立即运行"}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -520,7 +520,7 @@ function ScheduledProfilePage() {
                               ) : (
                                 <Play aria-hidden="true" />
                               )}
-                              {automation.status === "active" ? "Pause" : "Resume"}
+                              {automation.status === "active" ? "暂停" : "恢复"}
                             </DropdownMenuItem>
                             {unread > 0 ? (
                               <DropdownMenuItem
@@ -532,7 +532,7 @@ function ScheduledProfilePage() {
                                   }
                                 }}
                               >
-                                <Check aria-hidden="true" /> Mark runs read
+                                <Check aria-hidden="true" /> 标记运行为已读
                               </DropdownMenuItem>
                             ) : null}
                           </DropdownMenuContent>
@@ -550,7 +550,7 @@ function ScheduledProfilePage() {
                   id="deleted-runs-heading"
                   className="mb-1 px-3 text-meta font-medium uppercase tracking-wide text-muted-foreground"
                 >
-                  Deleted task runs
+                  已删除的任务运行
                 </h2>
                 {orphanedRuns.map((run) => (
                   <button
@@ -562,7 +562,7 @@ function ScheduledProfilePage() {
                   >
                     <Circle className="size-4 text-muted-foreground" aria-hidden="true" />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-medium">Deleted scheduled task</span>
+                      <span className="block text-sm font-medium">已删除的计划任务</span>
                       <span className="block truncate text-xs text-muted-foreground">
                         {automationRunStateLabel(run)} ·{" "}
                         {run.summary ?? run.error?.message ?? runTimestamp(run)}
@@ -576,14 +576,14 @@ function ScheduledProfilePage() {
             {!loading && orderedAutomations.length === 0 && orphanedRuns.length === 0 ? (
               <p className="px-3 py-8 text-center text-sm text-muted-foreground">
                 {query
-                  ? "No scheduled tasks match this search."
-                  : "No scheduled tasks in this view."}
+                  ? "没有匹配此搜索的计划任务。"
+                  : "此视图中没有计划任务。"}
               </p>
             ) : null}
 
             <section className="mt-8 border-t pt-4" aria-labelledby="suggestions-heading">
               <h2 id="suggestions-heading" className="mb-2 px-2 text-sm font-medium">
-                Suggestions
+                建议
               </h2>
               <div className="divide-y">
                 {SUGGESTIONS.map((suggestion) => {
@@ -605,10 +605,10 @@ function ScheduledProfilePage() {
                         <span className="text-sm font-medium">{suggestion.name}</span>
                         <span className="ml-2 text-xs text-muted-foreground">
                           {suggestion.schedule === "weekdays"
-                            ? "Weekdays at 9:00 AM"
+                            ? "工作日上午 9:00"
                             : suggestion.schedule === "weekly"
-                              ? "Fridays at 4:00 PM"
-                              : "Daily at 9:00 AM"}
+                              ? "周五下午 4:00"
+                              : "每天上午 9:00"}
                         </span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
                           {suggestion.description}
@@ -739,20 +739,20 @@ function nextHour(): number {
   return value.getTime();
 }
 
-function automationSection(runs: AutomationRun[]): "Needs attention" | "Running" | "Scheduled" {
+function automationSection(runs: AutomationRun[]): "需要关注" | "运行中" | "已计划" {
   if (
     runs.some(
       (run) => run.state === "needs-attention" || (run.readAt === null && runNeedsReview(run)),
     )
   ) {
-    return "Needs attention";
+    return "需要关注";
   }
-  if (runs.some(runIsActive)) return "Running";
-  return "Scheduled";
+  if (runs.some(runIsActive)) return "运行中";
+  return "已计划";
 }
 
 function sectionPriority(section: ReturnType<typeof automationSection>): number {
-  if (section === "Needs attention") return 0;
-  if (section === "Running") return 1;
+  if (section === "需要关注") return 0;
+  if (section === "运行中") return 1;
   return 2;
 }

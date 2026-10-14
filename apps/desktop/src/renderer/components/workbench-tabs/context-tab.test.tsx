@@ -115,7 +115,7 @@ describe("ContextTab", () => {
     expect(palotMock.loadSessionContext).not.toHaveBeenCalled();
     expect(screen.queryByText("message-1")).toBeNull();
 
-    await userEvent.click(screen.getByRole("button", { name: /Post-compaction context/ }));
+    await userEvent.click(screen.getByRole("button", { name: /压缩后上下文/ }));
     await waitFor(() =>
       expect(palotMock.loadSessionContext).toHaveBeenCalledWith(
         session.id,
@@ -125,7 +125,7 @@ describe("ContextTab", () => {
     );
     expect(await screen.findByText(/retained-message/)).toBeTruthy();
 
-    await userEvent.click(screen.getByRole("button", { name: /Projected message records/ }));
+    await userEvent.click(screen.getByRole("button", { name: /预测消息记录/ }));
     expect(screen.getByText(/message-1/)).toBeTruthy();
     expect(screen.queryByText(/"text": "Done"/)).toBeNull();
 

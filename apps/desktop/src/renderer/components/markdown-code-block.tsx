@@ -28,7 +28,7 @@ export function MarkdownCodeBlock({
     <div className="group/markdown-code relative">
       {filename ? <div className="markdown-code-filename">{filename}</div> : null}
       <IconButton
-        label={copied ? "Copied" : "Copy code"}
+        label={copied ? "已复制" : "复制代码"}
         className="absolute top-2 right-2 z-10 opacity-0 transition-opacity group-hover/markdown-code:opacity-100 focus-visible:opacity-100"
         onClick={() => void copy(code, "code")}
       >

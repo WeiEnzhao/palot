@@ -58,14 +58,14 @@ function ConnectionContext({ onProfileChange }: { onProfileChange?(profileID: st
       >
         <CloudOff className="size-3.5 shrink-0" aria-hidden="true" />
         <span className="max-w-40 truncate">{profile.name}</span>
-        <span className="shrink-0"> · Offline</span>
+        <span className="shrink-0"> · 离线</span>
       </span>
     );
   }
   return (
     <span
       className="inline-flex h-6 min-w-0 items-center px-1.5"
-      aria-label={`Execution connection: ${profile.name}`}
+      aria-label={`执行连接：${profile.name}`}
     >
       <ConnectionBadge profile={profile} connected />
     </span>
@@ -96,7 +96,7 @@ function ConnectionSelector({ onProfileChange }: { onProfileChange(profileID: st
             variant="ghost"
             size="context"
             role="combobox"
-            aria-label={`Server: ${profile.name}`}
+            aria-label={`服务器：${profile.name}`}
             aria-expanded={open}
             title={connectionDescription(profile)}
           />
@@ -107,15 +107,15 @@ function ConnectionSelector({ onProfileChange }: { onProfileChange(profileID: st
           aria-hidden="true"
         />
         <span className="max-w-40 truncate">{profile.name}</span>
-        {!runtime?.connected ? <span className="text-warning">Offline</span> : null}
+        {!runtime?.connected ? <span className="text-warning">离线</span> : null}
         <ChevronDown aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 gap-0 p-1">
-        <Command label="Search servers" className="bg-transparent p-0">
-          <CommandInput placeholder="Search servers…" aria-label="Search servers" autoFocus />
+        <Command label="搜索服务器" className="bg-transparent p-0">
+          <CommandInput placeholder="搜索服务器…" aria-label="搜索服务器" autoFocus />
           <CommandList className="max-h-72">
-            <CommandEmpty>No servers found</CommandEmpty>
-            <CommandGroup heading="Run this task on">
+            <CommandEmpty>未找到服务器</CommandEmpty>
+            <CommandGroup heading="在此任务上运行">
               {connections.map((entry) => {
                 const isDisabled = disabled.includes(entry.profile.id);
                 const EntryIcon = entry.profile.kind === "local" ? Monitor : Cloud;
@@ -134,7 +134,7 @@ function ConnectionSelector({ onProfileChange }: { onProfileChange(profileID: st
                       <span className="block truncate">{entry.profile.name}</span>
                       <span className="block truncate text-meta text-muted-foreground">
                         {connectionDescription(entry.profile)}
-                        {isDisabled ? " · Disabled" : !entry.runtime?.connected ? " · Offline" : ""}
+                        {isDisabled ? " · 已禁用" : !entry.runtime?.connected ? " · 离线" : ""}
                       </span>
                     </span>
                     {entry.profile.id === runtime?.profileID ? <Check aria-hidden="true" /> : null}

@@ -155,10 +155,10 @@ describe("subagent activity", () => {
     const user = userEvent.setup();
     renderCatalog(<TurnActivity turn={turn} sessionID="parent" />, createStore(), [child]);
 
-    const cardName = "Explore subagent finished: Map the timeline";
+    const cardName = "Explore 子智能体 已完成：Map the timeline";
     const oneVisibleCard = () =>
       expect(screen.getAllByRole("button", { name: cardName })).toHaveLength(1);
-    const turnSummary = screen.getByRole("button", { name: "Completed in 1s" });
+    const turnSummary = screen.getByRole("button", { name: "完成耗时 1s" });
     expect(turnSummary.getAttribute("aria-expanded")).toBe("false");
     oneVisibleCard();
 
@@ -205,7 +205,7 @@ describe("subagent activity", () => {
     );
 
     const card = screen.getByRole("button", {
-      name: "Explore subagent finished: Map the timeline",
+      name: "Explore 子智能体 已完成：Map the timeline",
     });
     expect(screen.getByText("20s")).toBeTruthy();
     await userEvent.click(card);
@@ -250,7 +250,7 @@ describe("subagent activity", () => {
     );
 
     const card = screen.getByRole("button", {
-      name: "Explore subagent running: Map the timeline",
+      name: "Explore 子智能体 运行中：Map the timeline",
     });
     expect(screen.queryByText("Reviewing the timeline projection")).toBeNull();
     expect(screen.getByText(/\d+s/)).toBeTruthy();
@@ -307,7 +307,7 @@ describe("subagent activity", () => {
 
     expect(screen.queryByText("1 shell")).toBeNull();
     expect(interval).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole("button", { name: "View 1 active subagent" }));
+    await userEvent.click(screen.getByRole("button", { name: "查看 1 个活跃子智能体" }));
     expect(interval).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole("button", { name: /Map the timeline/ }));
     expect(mocks.openSession).toHaveBeenCalledWith(child.id);
@@ -360,7 +360,7 @@ describe("subagent activity", () => {
       [child],
       new Map([[child.id, running]]),
     );
-    await screen.findByRole("button", { name: "Explore subagent running: Map the timeline" });
+    await screen.findByRole("button", { name: "Explore 子智能体 运行中：Map the timeline" });
     act(() => {
       setSessionRequestSnapshot(queryClient, "disconnected", child.id, {
         permissions: [],
@@ -377,7 +377,7 @@ describe("subagent activity", () => {
         ],
       });
     });
-    await screen.findByRole("button", { name: "Explore subagent needs input: Map the timeline" });
+    await screen.findByRole("button", { name: "Explore 子智能体 需要输入：Map the timeline" });
     // Flush initial subscriptions before counting stream-driven commits.
     await act(async () => {});
     commits.mockClear();
@@ -410,7 +410,7 @@ describe("subagent activity", () => {
         errors: [],
       });
     });
-    await screen.findByRole("button", { name: "Explore subagent running: Map the timeline" });
+    await screen.findByRole("button", { name: "Explore 子智能体 运行中：Map the timeline" });
     act(() => {
       openCodeReconciler(queryClient).replaceActivity("disconnected", {
         activeIDs: new Set(),
@@ -420,7 +420,7 @@ describe("subagent activity", () => {
         ]),
       });
     });
-    await screen.findByRole("button", { name: "Explore subagent finished: Map the timeline" });
+    await screen.findByRole("button", { name: "Explore 子智能体 已完成：Map the timeline" });
     expect(screen.getAllByText("20s")).toHaveLength(2);
     expect(commits).toHaveBeenCalled();
   });
@@ -547,12 +547,12 @@ describe("subagent activity", () => {
 
     expect(
       screen.getByText(
-        "The subagent 'Map the timeline' is blocking your message from steering this turn.",
+        "子智能体 'Map the timeline' 正在阻止你的消息引导此回合。",
       ),
     ).toBeTruthy();
     await userEvent.click(
       screen.getByRole("button", {
-        name: "Send blocking work to background so the message can steer this turn",
+        name: "将阻塞的工作发送到后台以便消息可以引导此回合",
       }),
     );
     expect(onBackground).toHaveBeenCalledOnce();
@@ -590,10 +590,10 @@ describe("subagent activity", () => {
       execution,
     );
 
-    expect(screen.getByText(/Explore subagent · 1 of 2/)).toBeTruthy();
-    expect(screen.getByText(/Read-only session/)).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Parent task" }));
-    await userEvent.click(screen.getByRole("button", { name: "Next subagent" }));
+    expect(screen.getByText(/Explore 子智能体 · 第 1 个，共 2 个/)).toBeTruthy();
+    expect(screen.getByText(/只读会话/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "父任务" }));
+    await userEvent.click(screen.getByRole("button", { name: "下一个子智能体" }));
     expect(mocks.openSession).toHaveBeenCalledWith(parent.id);
     expect(mocks.openSession).toHaveBeenCalledWith(second.id);
   });
@@ -622,12 +622,12 @@ describe("subagent activity", () => {
       execution,
     );
 
-    expect(screen.getByText(/subagent · 2 of 3/)).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Previous subagent" }));
+    expect(screen.getByText(/子智能体 · 第 2 个，共 3 个/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "上一个子智能体" }));
     expect(mocks.openSession).toHaveBeenLastCalledWith(first.id);
-    await userEvent.click(screen.getByRole("button", { name: "Next subagent" }));
+    await userEvent.click(screen.getByRole("button", { name: "下一个子智能体" }));
     expect(mocks.openSession).toHaveBeenLastCalledWith(last.id);
-    await userEvent.click(screen.getByRole("button", { name: "Parent task" }));
+    await userEvent.click(screen.getByRole("button", { name: "父任务" }));
     expect(mocks.openSession).toHaveBeenLastCalledWith("parent");
   });
 });

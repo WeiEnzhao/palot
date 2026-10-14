@@ -51,21 +51,21 @@ export function PullRequestSummaryTab({
   return (
     <div className="flex flex-col gap-6 px-4 pt-4 pb-10">
       <MergeBox detail={detail} />
-      <SummarySection title="Description">
+      <SummarySection title="描述">
         {detail.body.trim() ? (
           <MarkdownContent value={detail.body} baseUrl={detail.url} className="text-sm" />
         ) : (
-          <p className="text-sm text-muted-foreground">No description.</p>
+          <p className="text-sm text-muted-foreground">暂无描述。</p>
         )}
       </SummarySection>
       <ChecksSection detail={detail} />
       <ReviewersSection detail={detail} knownLogins={knownLogins} />
       {detail.labels.length || detail.assignees.length ? (
-        <SummarySection title="Details">
+        <SummarySection title="详情">
           <dl className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-2 gap-y-1.5 text-meta">
             {detail.labels.length ? (
               <>
-                <dt className="text-muted-foreground">Labels</dt>
+                <dt className="text-muted-foreground">标签</dt>
                 <dd className="flex min-w-0 flex-wrap gap-1">
                   {detail.labels.map((label) => (
                     <span
@@ -85,7 +85,7 @@ export function PullRequestSummaryTab({
             ) : null}
             {detail.assignees.length ? (
               <>
-                <dt className="text-muted-foreground">Assignees</dt>
+                <dt className="text-muted-foreground">指派人</dt>
                 <dd className="flex min-w-0 flex-wrap gap-x-3 gap-y-1">
                   {detail.assignees.map((assignee) => (
                     <PullRequestPersonLabel key={assignee.login} person={assignee} />
@@ -150,17 +150,17 @@ function MergeBox({ detail }: { detail: PullRequestDetail }) {
           <CircleX className="size-4 text-destructive" aria-hidden="true" />
         )}
         {detail.state === "merged"
-          ? `Merged${detail.mergedAt ? ` ${formatPullRequestTime(detail.mergedAt)}` : ""}`
-          : "Closed without merging"}
+          ? `已合并${detail.mergedAt ? ` ${formatPullRequestTime(detail.mergedAt)}` : ""}`
+          : "已关闭，未合并"}
       </div>
     );
   }
 
-  const label = method ? MERGE_METHOD_LABEL[method] : "Merge";
+  const label = method ? MERGE_METHOD_LABEL[method] : "合并";
   const disabled = Boolean(availability.blocked) || !method || merge.isPending;
   return (
     <section
-      aria-label="Merge"
+      aria-label="合并"
       className="flex flex-col gap-2 rounded-lg border border-border/70 p-3"
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -171,7 +171,7 @@ function MergeBox({ detail }: { detail: PullRequestDetail }) {
               if (next) setMethod(next as PullRequestMergeMethod);
             }}
           >
-            <SelectTrigger aria-label="Merge method" className="h-7 min-w-44">
+            <SelectTrigger aria-label="合并方式" className="h-7 min-w-44">
               <SelectValue>{label}</SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -195,7 +195,7 @@ function MergeBox({ detail }: { detail: PullRequestDetail }) {
           ) : (
             <GitMerge data-icon="inline-start" aria-hidden="true" />
           )}
-          {confirm.armed ? `Confirm ${label.toLowerCase()}` : label}
+          {confirm.armed ? `确认${label.toLowerCase()}` : label}
         </Button>
       </div>
       {availability.blocked ? (
@@ -211,8 +211,8 @@ function MergeBox({ detail }: { detail: PullRequestDetail }) {
       ) : null}
       {detail.autoMerge ? (
         <p className="text-meta text-muted-foreground">
-          Auto-merge is on ({MERGE_METHOD_LABEL[detail.autoMerge.method].toLowerCase()}). GitHub
-          merges once every requirement passes.
+          自动合并已开启（{MERGE_METHOD_LABEL[detail.autoMerge.method].toLowerCase()}）。GitHub
+          会在所有要求通过后自动合并。
         </p>
       ) : null}
       {error ? (
@@ -230,9 +230,9 @@ function MergeBox({ detail }: { detail: PullRequestDetail }) {
 // ---------------------------------------------------------------------------------------------
 
 const CHECK_GROUP_LABEL: Record<CheckGroup, string> = {
-  failing: "Failing",
-  pending: "Running",
-  passing: "Passing",
+  failing: "失败",
+  pending: "运行中",
+  passing: "通过",
 };
 
 function ChecksSection({ detail }: { detail: PullRequestDetail }) {
@@ -244,18 +244,18 @@ function ChecksSection({ detail }: { detail: PullRequestDetail }) {
     .join(", ");
   return (
     <SummarySection
-      title="Checks"
+      title="检查"
       aside={summary ? <span className="text-meta text-muted-foreground">{summary}</span> : null}
     >
       {detail.checkRuns.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No checks reported.</p>
+        <p className="text-sm text-muted-foreground">暂无检查记录。</p>
       ) : (
         <div className="flex flex-col gap-2">
           {order.map((group) =>
             groups[group].length ? (
               <ul
                 key={group}
-                aria-label={`${CHECK_GROUP_LABEL[group]} checks`}
+                aria-label={`${CHECK_GROUP_LABEL[group]}的检查`}
                 className="flex flex-col"
               >
                 {groups[group].map((check) => (
@@ -272,8 +272,7 @@ function ChecksSection({ detail }: { detail: PullRequestDetail }) {
       )}
       {!detail.checksComplete ? (
         <p className="mt-2 text-meta text-muted-foreground">
-          This list is incomplete: GitHub reported more checks than Palot read. Open the pull
-          request on GitHub for the rest.
+          此列表不完整：GitHub 报告的检查比 Palot 读取的更多。请在 GitHub 上打开此拉取请求查看其余部分。
         </p>
       ) : null}
     </SummarySection>
@@ -297,7 +296,7 @@ function CheckRow({ check, group }: { check: PullRequestCheck; group: CheckGroup
       </span>
       {check.required ? (
         <Badge variant="outline" className="h-4 px-1.5">
-          Required
+          必需
         </Badge>
       ) : null}
       <span className="shrink-0 text-muted-foreground tabular-nums">
@@ -309,7 +308,7 @@ function CheckRow({ check, group }: { check: PullRequestCheck; group: CheckGroup
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label={`Open ${check.name} details`}
+          aria-label={`打开 ${check.name} 详情`}
           onClick={() => void palot.openExternalUrl(check.url!)}
         >
           <ExternalLink aria-hidden="true" />
@@ -343,7 +342,7 @@ function ReviewersSection({
   const open = detail.state === "open" || detail.state === "draft";
   return (
     <SummarySection
-      title="Reviewers"
+      title="评审人"
       aside={
         open && detail.viewer.canUpdate ? (
           <ReviewerPicker detail={detail} knownLogins={knownLogins} />
@@ -351,7 +350,7 @@ function ReviewersSection({
       }
     >
       {detail.reviewers.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No reviewers yet.</p>
+        <p className="text-sm text-muted-foreground">暂无评审人。</p>
       ) : (
         <ul className="flex flex-col gap-1">
           {detail.reviewers.map((reviewer) => (
@@ -438,9 +437,9 @@ function ReviewerPicker({
         }
       >
         <UserPlus data-icon="inline-start" aria-hidden="true" />
-        Request reviewers
+        请求评审
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 gap-2 p-2.5" aria-label="Request reviewers">
+      <PopoverContent align="end" className="w-72 gap-2 p-2.5" aria-label="请求评审">
         <form className="flex flex-col gap-2" onSubmit={submit}>
           {chosen.length ? (
             <div className="flex flex-wrap gap-1">
@@ -452,7 +451,7 @@ function ReviewerPicker({
                   {login}
                   <button
                     type="button"
-                    aria-label={`Remove ${login}`}
+                    aria-label={`移除 ${login}`}
                     className="rounded-full text-muted-foreground hover:text-foreground"
                     onClick={() =>
                       setChosen((current) => current.filter((candidate) => candidate !== login))
@@ -466,8 +465,8 @@ function ReviewerPicker({
           ) : null}
           <Input
             autoFocus
-            aria-label="Reviewer login or team"
-            placeholder="login or org/team"
+            aria-label="评审人用户名或团队"
+            placeholder="用户名或 组织/团队"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
@@ -478,7 +477,7 @@ function ReviewerPicker({
             }}
           />
           {suggestions.length ? (
-            <ul aria-label="Suggestions" className="flex flex-col">
+            <ul aria-label="建议" className="flex flex-col">
               {suggestions.map((login) => (
                 <li key={login}>
                   <button
@@ -506,7 +505,7 @@ function ReviewerPicker({
             {request.isPending ? (
               <LoaderCircle data-icon="inline-start" className="animate-spin" aria-hidden="true" />
             ) : null}
-            Request
+            请求
           </Button>
         </form>
       </PopoverContent>

@@ -48,29 +48,29 @@ export function SessionHistoryDialog({
     >
       <DialogContent className="max-h-[80vh] sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{mode === "fork" ? "Fork from prompt" : "Prompt timeline"}</DialogTitle>
+          <DialogTitle>{mode === "fork" ? "从提示词分叉" : "提示词时间线"}</DialogTitle>
           <DialogDescription>
             {mode === "fork"
-              ? "Copy history before a prompt and restore it as an unsent, editable draft. File comments become text; unavailable attachments are noted."
-              : "Find a user prompt and jump to its turn."}
+              ? "复制某个提示词之前的历史，并将其恢复为可编辑的未发送草稿。文件注释将转为文本；不可用的附件会标注说明。"
+              : "查找用户提示词并跳转到对应回合。"}
           </DialogDescription>
         </DialogHeader>
         <Input
-          aria-label="Search prompts"
-          placeholder="Search prompts…"
+          aria-label="搜索提示词"
+          placeholder="搜索提示词…"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
         <p role="status" className="text-meta text-muted-foreground">
           {loading
-            ? "Loading earlier prompts…"
+            ? "正在加载更早的提示词…"
             : hasMore
-              ? `Searching ${prompts.length} loaded prompts. Earlier history is not searched yet.`
-              : `Searching all ${prompts.length} prompts.`}
+              ? `正在搜索已加载的 ${prompts.length} 条提示词。更早的历史尚未搜索。`
+              : `正在搜索全部 ${prompts.length} 条提示词。`}
         </p>
         <div
           className="flex min-h-0 max-h-80 flex-col gap-1 overflow-y-auto"
-          aria-label="Prompt results"
+          aria-label="提示词结果"
         >
           {matches.map((message) => (
             <Button
@@ -82,7 +82,7 @@ export function SessionHistoryDialog({
                 setSelecting(true);
                 void Promise.resolve()
                   .then(() => onSelect(message))
-                  .catch((cause) => showErrorToast("Could not open prompt", cause))
+                  .catch((cause) => showErrorToast("无法打开提示词", cause))
                   .finally(() => setSelecting(false));
               }}
             >
@@ -98,19 +98,19 @@ export function SessionHistoryDialog({
           {!matches.length ? (
             <p className="p-3 text-sm text-muted-foreground">
               {hasMore
-                ? "No matching loaded prompts. Load earlier history to search more."
-                : "No matching prompts."}
+                ? "没有匹配的已加载提示词。加载更早的历史以搜索更多。"
+                : "没有匹配的提示词。"}
             </p>
           ) : null}
         </div>
         {error ? (
           <p role="alert" className="text-meta">
-            Could not load earlier prompts. Try again.
+            无法加载更早的提示词。请重试。
           </p>
         ) : null}
         {hasMore || error ? (
           <Button variant="outline" disabled={loading || selecting} onClick={onLoadMore}>
-            {error ? "Retry loading history" : "Load earlier prompts"}
+            {error ? "重试加载历史" : "加载更早的提示词"}
           </Button>
         ) : null}
       </DialogContent>

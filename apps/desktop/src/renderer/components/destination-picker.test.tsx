@@ -59,12 +59,12 @@ afterEach(cleanup);
 describe("destination picker", () => {
   it("searches name, path, and server and selects colliding IDs atomically", async () => {
     const { onChange } = setup();
-    await userEvent.click(screen.getByRole("combobox", { name: "Task destination" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "任务目标" }));
     expect(screen.getAllByRole("option")).toHaveLength(2);
     expect(screen.getByText("/repo/same")).toBeTruthy();
     expect(screen.getByText("/srv/same")).toBeTruthy();
     await userEvent.type(
-      screen.getByRole("combobox", { name: "Search destinations" }),
+      screen.getByRole("combobox", { name: "搜索目标" }),
       "build.example",
     );
     await userEvent.keyboard("{Enter}");
@@ -73,7 +73,7 @@ describe("destination picker", () => {
   it("does not select or enable a disabled owner", async () => {
     const { onChange, store } = setup();
     act(() => store.set(includedProfileIDsAtom, ["local"]));
-    await userEvent.click(screen.getByRole("combobox", { name: "Task destination" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "任务目标" }));
     const option = screen.getByRole("option", { name: /\/srv\/same/ });
     expect(option.getAttribute("aria-disabled")).toBe("true");
     await userEvent.click(option);
@@ -82,19 +82,19 @@ describe("destination picker", () => {
   });
   it("retains an offline selection instead of displaying the local collision", () => {
     setup([local, remote], "remote");
-    expect(screen.getByRole("combobox", { name: "Task destination" }).textContent).toContain(
-      "Build serverOffline",
+    expect(screen.getByRole("combobox", { name: "任务目标" }).textContent).toContain(
+      "Build server离线",
     );
   });
   it("uses the focused catalog during cold overview hydration", async () => {
     setup([{ ...local, projects: [] }, remote], "local", [project]);
-    await userEvent.click(screen.getByRole("combobox", { name: "Task destination" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "任务目标" }));
     expect(screen.getByRole("option", { name: /\/repo\/same/ })).toBeTruthy();
   });
   it("keeps server-only choice for an empty project inventory", async () => {
     const { onChange } = setup([local, { ...remote, projects: [] }]);
-    await userEvent.click(screen.getByRole("combobox", { name: "Task destination" }));
-    await userEvent.click(screen.getByRole("option", { name: /Choose server/ }));
+    await userEvent.click(screen.getByRole("combobox", { name: "任务目标" }));
+    await userEvent.click(screen.getByRole("option", { name: /选择服务器/ }));
     expect(onChange).toHaveBeenCalledExactlyOnceWith({ profileID: "remote", projectID: null });
   });
 });

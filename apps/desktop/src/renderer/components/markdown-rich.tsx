@@ -109,7 +109,7 @@ export function MermaidDiagram({ code }: { code: string }) {
   if (!renderable) {
     return (
       <div className="markdown-mermaid-source">
-        <p>Diagram source is too large to render safely.</p>
+        <p>图表源码过大，无法安全渲染。</p>
         <pre>{code}</pre>
       </div>
     );
@@ -117,12 +117,12 @@ export function MermaidDiagram({ code }: { code: string }) {
   if (error) {
     return (
       <div className="markdown-mermaid-error">
-        <p>Could not render this diagram.</p>
+        <p>无法渲染此图表。</p>
         <pre>{code}</pre>
       </div>
     );
   }
-  if (!svg) return <div className="markdown-mermaid-loading">Rendering diagram…</div>;
+  if (!svg) return <div className="markdown-mermaid-loading">正在渲染图表…</div>;
   return <MermaidDiagramPreview svg={svg} />;
 }
 
@@ -134,7 +134,7 @@ function MermaidDiagramPreview({ svg }: { svg: string }) {
       <div className="group/markdown-mermaid relative">
         <button
           type="button"
-          aria-label="Open Mermaid diagram preview"
+          aria-label="打开 Mermaid 图表预览"
           onClick={() => setOpen(true)}
           className="markdown-mermaid w-full cursor-zoom-in border-0 bg-transparent text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring"
           dangerouslySetInnerHTML={{ __html: svg }}
@@ -143,7 +143,7 @@ function MermaidDiagramPreview({ svg }: { svg: string }) {
           type="button"
           variant="outline"
           size="icon-sm"
-          aria-label="Open Mermaid diagram preview"
+          aria-label="打开 Mermaid 图表预览"
           onClick={() => setOpen(true)}
           className="absolute top-2 right-11 opacity-0 shadow-sm transition-opacity group-hover/markdown-mermaid:opacity-100 focus-visible:opacity-100"
         >
@@ -244,9 +244,9 @@ export function MermaidLightbox({
         >
           <div className="pointer-events-none relative z-10 flex items-center justify-between gap-3 px-3 pt-9 pb-3 sm:px-4">
             <div className="palot-promoted-blur pointer-events-auto rounded-lg border bg-popover/95 px-2.5 py-1.5 shadow-sm backdrop-blur-sm">
-              <DialogTitle className="text-xs">Mermaid diagram</DialogTitle>
+              <DialogTitle className="text-xs">Mermaid 图表</DialogTitle>
               <DialogDescription className="text-micro!">
-                Pinch to zoom · Two-finger scroll to pan
+                双指缩放 · 双指滚动平移
               </DialogDescription>
             </div>
             <div className="palot-promoted-blur pointer-events-auto flex items-center gap-1 rounded-lg border bg-popover/95 p-1 shadow-sm backdrop-blur-sm">
@@ -254,7 +254,7 @@ export function MermaidLightbox({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Zoom out"
+                aria-label="缩小"
                 disabled={zoom <= MIN_MERMAID_ZOOM}
                 onClick={() => updateZoom(zoom - MERMAID_ZOOM_STEP)}
               >
@@ -264,7 +264,7 @@ export function MermaidLightbox({
                 type="button"
                 variant="ghost"
                 size="sm"
-                aria-label="Fit diagram to window"
+                aria-label="图表适应窗口"
                 onClick={() => updateZoom(1)}
                 className="min-w-14 tabular-nums"
               >
@@ -274,7 +274,7 @@ export function MermaidLightbox({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Zoom in"
+                aria-label="放大"
                 disabled={zoom >= MAX_MERMAID_ZOOM}
                 onClick={() => updateZoom(zoom + MERMAID_ZOOM_STEP)}
               >
@@ -285,7 +285,7 @@ export function MermaidLightbox({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Close Mermaid diagram preview"
+                aria-label="关闭 Mermaid 图表预览"
                 onClick={close}
               >
                 <X aria-hidden="true" />

@@ -57,7 +57,7 @@ export function DestinationPicker({
             variant="ghost"
             size="context"
             role="combobox"
-            aria-label="Task destination"
+            aria-label="任务目标"
             aria-expanded={open}
             title={project?.canonical}
           />
@@ -69,34 +69,34 @@ export function DestinationPicker({
           <Cloud aria-hidden="true" />
         )}
         <span className="max-w-48 truncate">
-          {project ? projectName(project) : "Choose destination"}
+          {project ? projectName(project) : "选择目标"}
         </span>
         <span className="max-w-32 truncate text-muted-foreground">
           {selected?.profile.name ?? value.profileID}
         </span>
         {disabled.includes(value.profileID) || offline ? (
           <span className="text-warning">
-            {disabled.includes(value.profileID) ? "Disabled" : "Offline"}
+            {disabled.includes(value.profileID) ? "已禁用" : "离线"}
           </span>
         ) : null}
         <ChevronDown aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-96 max-w-[calc(100vw-2rem)] gap-0 p-1">
-        <Command label="Search destinations" className="bg-transparent p-0">
+        <Command label="搜索目标" className="bg-transparent p-0">
           <CommandInput
-            placeholder="Search projects, paths, or servers…"
-            aria-label="Search destinations"
+            placeholder="搜索项目、路径或服务器…"
+            aria-label="搜索目标"
             autoFocus
           />
           <CommandList className="max-h-80">
-            <CommandEmpty>No destinations found</CommandEmpty>
+            <CommandEmpty>未找到目标</CommandEmpty>
             {groups.map((entry) => {
               const isDisabled = disabled.includes(entry.profile.id);
               const connected =
                 entry.profile.id === runtime?.profileID
                   ? runtime.connected
                   : entry.runtime?.connected;
-              const status = isDisabled ? "Disabled" : connected ? "" : "Offline";
+              const status = isDisabled ? "已禁用" : connected ? "" : "离线";
               const rows: (PalotProject | null)[] = entry.projects.length ? entry.projects : [null];
               return (
                 <CommandGroup
@@ -110,7 +110,7 @@ export function DestinationPicker({
                       keywords={[
                         entry.profile.name,
                         connectionDescription(entry.profile),
-                        item ? projectName(item) : "Choose server",
+                        item ? projectName(item) : "选择服务器",
                         item?.canonical ?? "",
                       ]}
                       disabled={isDisabled || !onChange}
@@ -122,7 +122,7 @@ export function DestinationPicker({
                     >
                       <span className="min-w-0 flex-1">
                         <span className="block truncate">
-                          {item ? projectName(item) : "Choose server"}
+                          {item ? projectName(item) : "选择服务器"}
                         </span>
                         {item ? (
                           <span className="block truncate text-meta text-muted-foreground">

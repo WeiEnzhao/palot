@@ -394,13 +394,13 @@ export function TranscriptFindBar({
     : matchCount === 0
       ? controller.pending
         ? ""
-        : "No results"
-      : `${activeIndex + 1} of ${total}`;
+        : "无结果"
+      : `${activeIndex + 1} / ${total}`;
   const findShortcut = formatShortcut(shortcutKeys("task.find"));
   return (
     <div
       role="search"
-      aria-label="Find in task"
+      aria-label="在任务中查找"
       className="palot-translucent-popover absolute top-2 right-4 z-30 isolate flex w-80 max-w-[calc(100%-2rem)] flex-col rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10"
     >
       <SurfaceBackdrop />
@@ -413,8 +413,8 @@ export function TranscriptFindBar({
             ref={controller.inputRef}
             type="text"
             value={query}
-            placeholder="Find in task"
-            aria-label="Find in task"
+            placeholder="在任务中查找"
+            aria-label="在任务中查找"
             aria-keyshortcuts={findShortcut}
             spellCheck={false}
             autoComplete="off"
@@ -440,27 +440,27 @@ export function TranscriptFindBar({
           ) : null}
         </InputGroup>
         <IconButton
-          label="Previous match"
+          label="上一个匹配"
           icon={ChevronUp}
           size="icon-sm"
           disabled={matchCount === 0}
           onClick={() => controller.step("previous")}
         />
         <IconButton
-          label="Next match"
+          label="下一个匹配"
           icon={ChevronDown}
           size="icon-sm"
           disabled={matchCount === 0}
           onClick={() => controller.step("next")}
         />
-        <IconButton label="Close find" icon={X} size="icon-sm" onClick={controller.closeFind} />
+        <IconButton label="关闭查找" icon={X} size="icon-sm" onClick={controller.closeFind} />
       </div>
       <span className="sr-only" role="status" aria-live="polite">
         {status}
       </span>
       {hasOlder ? (
         <div className="flex items-center justify-between gap-2 border-t border-foreground/10 py-0.5 pr-1 pl-2.5 text-meta text-muted-foreground">
-          <span>Searching loaded messages</span>
+          <span>正在搜索已加载的消息</span>
           <Button
             type="button"
             variant="ghost"
@@ -469,7 +469,7 @@ export function TranscriptFindBar({
             aria-busy={loadingOlder || undefined}
             onClick={onLoadOlder}
           >
-            {loadingOlder ? "Loading…" : "Load earlier"}
+            {loadingOlder ? "正在加载…" : "加载更早的"}
           </Button>
         </div>
       ) : null}

@@ -239,12 +239,12 @@ describe("NewTask", () => {
     fireEvent.change(draft, { target: { value: "edited draft" } });
     fireEvent.click(screen.getByRole("button", { name: "Fail creation" }));
     expect(screen.getByRole("alert").textContent).toContain("Creation failed");
-    expect(screen.getByRole("button", { name: "Work in: Current checkout" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "工作于：当前检出" })).toBeTruthy();
 
     act(() => store.set(defaultWorkspaceModeAtom, "worktree"));
 
-    expect(screen.getByRole("button", { name: "Work in: New worktree" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Source branch: main" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "工作于：新工作树" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "源分支：main" })).toBeTruthy();
     expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.getByRole<HTMLInputElement>("textbox", { name: "Draft" }).value).toBe(
       "edited draft",
@@ -261,7 +261,7 @@ describe("NewTask", () => {
       </Provider>,
     );
 
-    expect(screen.getByRole("button", { name: "Source branch: release" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "源分支：release" })).toBeTruthy();
   });
 
   it("creates an untouched new worktree from the repository default branch", async () => {

@@ -153,8 +153,8 @@ export function WorkbenchPane({
     async (action: Parameters<typeof palot.browserCommand>[1], placement?: WorkbenchPaneID) => {
       if (!browser?.bindingID) {
         showErrorToast(
-          "Browser unavailable",
-          new Error(browser?.error ?? "Browser is still connecting to this task"),
+          "浏览器不可用",
+          new Error(browser?.error ?? "浏览器仍在连接到此任务"),
         );
         return;
       }
@@ -163,7 +163,7 @@ export function WorkbenchPane({
           ? await palot.browserCommand(browser.bindingID, action, placement)
           : await palot.browserCommand(browser.bindingID, action);
       } catch (error) {
-        showErrorToast("Could not control browser", error);
+        showErrorToast("无法控制浏览器", error);
       }
     },
     [browser?.bindingID, browser?.error],
@@ -177,7 +177,7 @@ export function WorkbenchPane({
             tabID: tab.resource.browserTabID as Browser.TabID,
           });
         } else {
-          showErrorToast("Browser unavailable", new Error("Browser page is still connecting"));
+          showErrorToast("浏览器不可用", new Error("浏览器页面仍在连接中"));
         }
       } else commands.closeTab(pane, tab.id);
     },
@@ -453,7 +453,7 @@ function WorkbenchSurfaceMenu({
             variant="ghost"
             size="icon-sm"
             className="window-no-drag ml-1 size-7 shrink-0 [&_svg]:size-4"
-            aria-label="Open workbench surface"
+            aria-label="打开工作台面板"
           />
         }
       >
@@ -462,29 +462,29 @@ function WorkbenchSurfaceMenu({
       <DropdownMenuContent align="end" className="w-64">
         {!contextOpen ? (
           <DropdownMenuItem onClick={openContext}>
-            <Gauge /> Context
+            <Gauge /> 上下文
           </DropdownMenuItem>
         ) : null}
         {!filesOpen ? (
           <DropdownMenuItem onClick={openFiles}>
-            <Files /> Files
+            <Files /> 文件
           </DropdownMenuItem>
         ) : null}
         {openBrowser ? (
           <DropdownMenuItem onClick={openBrowser}>
-            <Globe2 /> Browser
+            <Globe2 /> 浏览器
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem
           onClick={() =>
-            void openTerminal().catch((error) => showErrorToast("Could not open terminal", error))
+            void openTerminal().catch((error) => showErrorToast("无法打开终端", error))
           }
         >
-          <SquareTerminal /> Terminal
+          <SquareTerminal /> 终端
         </DropdownMenuItem>
         {!changesOpen ? (
           <DropdownMenuItem onClick={openChanges}>
-            <GitCompareArrows /> Changes
+            <GitCompareArrows /> 变更
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuSeparator />
@@ -492,12 +492,12 @@ function WorkbenchSurfaceMenu({
           disabled={!recentlyClosed.length}
           onClick={() => reopenTab()}
           aria-keyshortcuts="Control+Shift+T Meta+Shift+T"
-          title="Ctrl/Cmd+Shift+T while focused in the workbench"
+          title="在工作台聚焦时按 Ctrl/Cmd+Shift+T"
         >
-          <RotateCcw /> Reopen closed tab
+          <RotateCcw /> 重新打开关闭的标签
         </DropdownMenuItem>
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Recently closed in this task</DropdownMenuLabel>
+          <DropdownMenuLabel>此任务中最近关闭的</DropdownMenuLabel>
           {recentlyClosed.length ? (
             recentlyClosed.map((entry) => (
               <DropdownMenuItem
@@ -511,16 +511,16 @@ function WorkbenchSurfaceMenu({
               >
                 <span className="min-w-0 flex-1 truncate">{workbenchTabTitle(entry.tab)}</span>
                 <span className="text-meta text-muted-foreground">
-                  {entry.pane === "right" ? "Right" : "Bottom"}
+                  {entry.pane === "right" ? "右侧" : "底部"}
                 </span>
               </DropdownMenuItem>
             ))
           ) : (
-            <DropdownMenuItem disabled>No recently closed tabs</DropdownMenuItem>
+            <DropdownMenuItem disabled>没有最近关闭的标签</DropdownMenuItem>
           )}
         </DropdownMenuGroup>
         <p className="px-2 py-1.5 text-meta text-muted-foreground">
-          Browser pages cannot be reopened. Terminals reconnect only if still available.
+          浏览器页面无法重新打开。终端仅在仍可用时重连。
         </p>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -732,49 +732,49 @@ function WorkbenchEmpty({
   return (
     <Empty className="min-h-0 flex-1 rounded-none p-5">
       <EmptyHeader>
-        <EmptyTitle>Open a surface</EmptyTitle>
+        <EmptyTitle>打开面板</EmptyTitle>
         <EmptyDescription>
-          Choose what to show in the {pane === "right" ? "right" : "bottom"} panel.
+          选择要在{pane === "right" ? "右侧" : "底部"}面板中显示的内容。
         </EmptyDescription>
       </EmptyHeader>
       <div className="grid w-full max-w-xl grid-cols-1 gap-2 @min-[34rem]/workbench:grid-cols-2">
         {!contextOpen ? (
           <WorkbenchSurfaceCard
             icon={<Gauge aria-hidden="true" />}
-            title="Context"
-            description="Inspect context usage and projected messages."
+            title="上下文"
+            description="查看上下文使用和预计消息。"
             onClick={openContext}
           />
         ) : null}
         {!filesOpen ? (
           <WorkbenchSurfaceCard
             icon={<Files aria-hidden="true" />}
-            title="Files"
-            description="Browse and search workspace files."
+            title="文件"
+            description="浏览和搜索工作区文件。"
             onClick={openFiles}
           />
         ) : null}
         {openBrowser ? (
           <WorkbenchSurfaceCard
             icon={<Globe2 aria-hidden="true" />}
-            title="Browser"
-            description="View browser pages for this task."
+            title="浏览器"
+            description="查看此任务的浏览器页面。"
             onClick={openBrowser}
           />
         ) : null}
         <WorkbenchSurfaceCard
           icon={<SquareTerminal aria-hidden="true" />}
-          title="Terminal"
-          description="Start a shell in this workspace."
+          title="终端"
+          description="在此工作区启动 Shell。"
           onClick={() =>
-            void openTerminal().catch((error) => showErrorToast("Could not open terminal", error))
+            void openTerminal().catch((error) => showErrorToast("无法打开终端", error))
           }
         />
         {!changesOpen ? (
           <WorkbenchSurfaceCard
             icon={<FileDiff aria-hidden="true" />}
-            title="Changes"
-            description="Review working changes in this workspace."
+            title="变更"
+            description="查看此工作区的工作变更。"
             onClick={openChanges}
           />
         ) : null}

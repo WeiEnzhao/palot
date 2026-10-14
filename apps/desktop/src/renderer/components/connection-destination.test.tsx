@@ -50,23 +50,23 @@ describe("composer connection destination", () => {
   it("lets a new draft choose the local server without disconnecting the remote", async () => {
     const onProfileChange = vi.fn();
     setup(remote, true, onProfileChange);
-    await userEvent.click(screen.getByRole("combobox", { name: "Server: Build server" }));
-    await userEvent.type(screen.getByRole("combobox", { name: "Search servers" }), "Local");
+    await userEvent.click(screen.getByRole("combobox", { name: "服务器：Build server" }));
+    await userEvent.type(screen.getByRole("combobox", { name: "搜索服务器" }), "Local");
     await userEvent.keyboard("{Enter}");
     expect(onProfileChange).toHaveBeenCalledExactlyOnceWith(local.id);
-    expect(screen.queryByPlaceholderText("Search servers…")).toBeNull();
+    expect(screen.queryByPlaceholderText("搜索服务器…")).toBeNull();
   });
 
   it("keeps local execution explicit for drafts when multiple servers are available", () => {
     setup(local, true, vi.fn());
-    expect(screen.getByRole("combobox", { name: "Server: Local OpenCode" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "服务器：Local OpenCode" })).toBeTruthy();
   });
 
   it("does not silently enable a disabled server through the draft picker", async () => {
     const onProfileChange = vi.fn();
     const { store } = setup(local, true, onProfileChange);
     act(() => store.set(includedProfileIDsAtom, [local.id]));
-    await userEvent.click(screen.getByRole("combobox", { name: "Server: Local OpenCode" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "服务器：Local OpenCode" }));
     const option = screen.getByRole("option", { name: /Build server/ });
     expect(option.getAttribute("aria-disabled")).toBe("true");
     await userEvent.click(option);
@@ -92,7 +92,7 @@ describe("composer connection destination", () => {
 
   it.each([local, remote])("warns when $kind is offline and clears on reconnect", (profile) => {
     const { store, runtime } = setup(profile, false);
-    expect(screen.getByRole("status").textContent).toBe(`${profile.name} · Offline`);
+    expect(screen.getByRole("status").textContent).toBe(`${profile.name} · 离线`);
     act(() => store.set(runtimeAtom, { ...runtime, connected: true }));
     expect(screen.queryByRole("status")).toBeNull();
   });

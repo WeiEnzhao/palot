@@ -67,8 +67,8 @@ export function App() {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Close window"
-                  title="Close window"
+                  aria-label="关闭窗口"
+                  title="关闭窗口"
                   className="pointer-events-auto hover:bg-destructive/10 hover:text-destructive [-webkit-app-region:no-drag]"
                   onClick={() => void palot.closeWindow()}
                 >

@@ -23,24 +23,24 @@ describe("NavigationRail", () => {
     store.set(sidebarModeAtom, "inbox");
     const { router } = renderWithRouter(<NavigationRail />, store, "/settings/general");
 
-    expect(screen.getByRole("button", { name: "Settings" }).getAttribute("aria-current")).toBe(
+    expect(screen.getByRole("button", { name: "设置" }).getAttribute("aria-current")).toBe(
       "page",
     );
     // Outside the workspace no column is visible, so neither view reads as pressed.
-    expect(screen.getByRole("button", { name: "Show inbox" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "显示收件箱" }).getAttribute("aria-pressed")).toBe(
       "false",
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "Show projects" }));
+    await userEvent.click(screen.getByRole("button", { name: "显示项目" }));
 
     expect(store.get(sidebarModeAtom)).toBe("project");
     expect(store.get(navigationOpenAtom)).toBe(true);
     await waitFor(() => expect(router.state.location.pathname).toBe("/new"));
-    expect(screen.getByRole("button", { name: "Show projects" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "显示项目" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
     expect(
-      screen.getByRole("button", { name: "Settings" }).getAttribute("aria-current"),
+      screen.getByRole("button", { name: "设置" }).getAttribute("aria-current"),
     ).toBeNull();
   });
 
@@ -63,25 +63,25 @@ describe("NavigationRail", () => {
     renderWithRouter(<Harness />, store, "/new");
 
     // A hidden column reads as no view selected; choosing one opens it in that view.
-    expect(screen.getByRole("button", { name: "Show inbox" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "显示收件箱" }).getAttribute("aria-pressed")).toBe(
       "false",
     );
-    await userEvent.click(screen.getByRole("button", { name: "Show projects" }));
+    await userEvent.click(screen.getByRole("button", { name: "显示项目" }));
     expect(store.get(sidebarModeAtom)).toBe("project");
     expect(changes).toEqual([true]);
-    expect(screen.getByRole("button", { name: "Show projects" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "显示项目" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
 
     // Another view switches content without closing the column.
-    await userEvent.click(screen.getByRole("button", { name: "Show inbox" }));
+    await userEvent.click(screen.getByRole("button", { name: "显示收件箱" }));
     expect(store.get(sidebarModeAtom)).toBe("inbox");
     expect(changes).toEqual([true]);
 
     // The active view closes the column again.
-    await userEvent.click(screen.getByRole("button", { name: "Show inbox" }));
+    await userEvent.click(screen.getByRole("button", { name: "显示收件箱" }));
     expect(changes).toEqual([true, false]);
-    expect(screen.getByRole("button", { name: "Show inbox" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "显示收件箱" }).getAttribute("aria-pressed")).toBe(
       "false",
     );
   });

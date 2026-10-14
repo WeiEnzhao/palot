@@ -228,7 +228,7 @@ describe("GlobalCommandPalette", () => {
 
     const option = await screen.findByRole("option", { name: /Global commander/ });
     expect(option.querySelector("svg")).toBeTruthy();
-    expect(within(option).getByLabelText("Unread task activity")).toBeTruthy();
+    expect(within(option).getByLabelText("未读任务活动")).toBeTruthy();
     expect(option.textContent).toContain(formatRelativeTime(value.updatedAt));
   });
 
@@ -244,8 +244,8 @@ describe("GlobalCommandPalette", () => {
     store.set(commandPaletteOpenAtom, true);
 
     const option = await screen.findByRole("option", { name: /Global commander/ });
-    expect(within(option).getByLabelText("Running")).toBeTruthy();
-    expect(within(option).queryByLabelText("Unread task activity")).toBeNull();
+    expect(within(option).getByLabelText("运行中")).toBeTruthy();
+    expect(within(option).queryByLabelText("未读任务活动")).toBeNull();
     expect(option.textContent).toContain(formatRelativeTime(value.updatedAt));
   });
 
@@ -258,7 +258,7 @@ describe("GlobalCommandPalette", () => {
     const { queryClient, router, store } = setup();
     store.set(commandPaletteOpenAtom, true);
 
-    const input = await screen.findByRole("combobox", { name: "Search tasks and commands" });
+    const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     await userEvent.type(input, "archived");
 
     expect(await screen.findByText("Archived command palette")).toBeTruthy();
@@ -377,17 +377,17 @@ describe("GlobalCommandPalette", () => {
       { ...project, id: "project-2", canonical: "/other", name: "Other" },
     ]);
     store.set(commandPaletteOpenAtom, true);
-    await screen.findByText("New task");
-    await userEvent.click(screen.getByRole("option", { name: /^Choose project for a new task/ }));
+    await screen.findByText("新建任务");
+    await userEvent.click(screen.getByRole("option", { name: /^为新任务选择项目/ }));
 
     expect(await screen.findByRole("dialog")).toBeTruthy();
-    expect(screen.getByText("New task / Choose project")).toBeTruthy();
-    expect(screen.getByRole("option", { name: /New task in Palot/ })).toBeTruthy();
+    expect(screen.getByText("新建任务 / 选择项目")).toBeTruthy();
+    expect(screen.getByRole("option", { name: /在 Palot 中新建任务/ })).toBeTruthy();
 
     await userEvent.keyboard("{Escape}");
 
     expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: "Search tasks and commands" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "搜索任务和命令" })).toBeTruthy();
   });
 
   it("uses the same navigation toggle for the global shortcut", () => {
@@ -420,7 +420,7 @@ describe("GlobalCommandPalette", () => {
     setup();
 
     fireEvent.keyDown(window, { key: "k", metaKey: true });
-    const input = await screen.findByRole("combobox", { name: "Search tasks and commands" });
+    const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     await userEvent.type(input, "focus composer");
     await userEvent.click(screen.getByRole("option", { name: /Focus composer/ }));
 
@@ -437,57 +437,57 @@ describe("GlobalCommandPalette", () => {
     const { store } = setup();
     store.set(commandPaletteOpenAtom, true);
 
-    const listbox = await screen.findByRole("listbox", { name: "Command results" });
+    const listbox = await screen.findByRole("listbox", { name: "命令结果" });
     const headings = [...listbox.querySelectorAll('[data-slot="command-group-heading"]')].map(
       (heading) => heading.textContent,
     );
-    expect(headings.slice(0, 3)).toEqual(["Recent tasksAlt+1–9", "Quick actions", "Settings"]);
+    expect(headings.slice(0, 3)).toEqual(["最近任务Alt+1–9", "快速操作", "设置"]);
     expect(screen.getAllByRole("option")[0]?.textContent).toContain("Global commander");
-    expect(screen.getByRole("option", { name: /^Keyboard shortcuts/ })).toBeTruthy();
+    expect(screen.getByRole("option", { name: /^键盘快捷键/ })).toBeTruthy();
   });
 
   it("filters results by tab and switches tabs with arrows only at the caret edges", async () => {
     const { router, store } = setup();
     store.set(commandPaletteOpenAtom, true);
-    const input = await screen.findByRole("combobox", { name: "Search tasks and commands" });
+    const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     const selectedTab = () =>
-      within(screen.getByRole("tablist", { name: "Filter results" }))
+      within(screen.getByRole("tablist", { name: "筛选结果" }))
         .getAllByRole("tab")
         .find((tab) => tab.getAttribute("aria-selected") === "true")?.textContent;
-    expect(selectedTab()).toBe("All");
+    expect(selectedTab()).toBe("全部");
 
     // An empty field hands ← and → to the tabs.
     expect(fireEvent.keyDown(input, { key: "ArrowRight" })).toBe(false);
-    await waitFor(() => expect(selectedTab()).toBe("Tasks"));
+    await waitFor(() => expect(selectedTab()).toBe("任务"));
     expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
       expect.stringContaining("Global commander"),
     ]);
 
-    await userEvent.click(screen.getByRole("tab", { name: "Settings" }));
-    expect(selectedTab()).toBe("Settings");
+    await userEvent.click(screen.getByRole("tab", { name: "设置" }));
+    expect(selectedTab()).toBe("设置");
     expect(document.activeElement).toBe(input);
     expect(screen.queryByRole("option", { name: /Global commander/ })).toBeNull();
-    expect(screen.queryByRole("option", { name: /^New task/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /^新建任务/ })).toBeNull();
 
-    await userEvent.type(input, "appearance");
+    await userEvent.type(input, "外观");
     const caret = (position: number) =>
       (input as HTMLInputElement).setSelectionRange(position, position);
     // Mid-text arrows move the caret; a modified arrow keeps extending the selection.
-    caret(3);
+    caret(1);
     expect(fireEvent.keyDown(input, { key: "ArrowRight" })).toBe(true);
     expect(fireEvent.keyDown(input, { key: "ArrowLeft" })).toBe(true);
-    caret("appearance".length);
+    caret("外观".length);
     expect(fireEvent.keyDown(input, { key: "ArrowRight", shiftKey: true })).toBe(true);
-    expect(selectedTab()).toBe("Settings");
+    expect(selectedTab()).toBe("设置");
 
     // At the end, → wraps to All; at the start, ← comes back.
     expect(fireEvent.keyDown(input, { key: "ArrowRight" })).toBe(false);
-    await waitFor(() => expect(selectedTab()).toBe("All"));
+    await waitFor(() => expect(selectedTab()).toBe("全部"));
     caret(0);
     expect(fireEvent.keyDown(input, { key: "ArrowLeft" })).toBe(false);
-    await waitFor(() => expect(selectedTab()).toBe("Settings"));
+    await waitFor(() => expect(selectedTab()).toBe("设置"));
 
-    const appearance = await screen.findByRole("option", { name: /^Appearance/ });
+    const appearance = await screen.findByRole("option", { name: /^外观/ });
     await waitFor(() => expect(appearance.hasAttribute("data-highlighted")).toBe(true));
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(router.state.location.pathname).toBe("/settings/appearance"));
@@ -496,7 +496,7 @@ describe("GlobalCommandPalette", () => {
   it("names the Enter hint after the highlighted row and moves the fluid fill with the keyboard", async () => {
     const { store } = setup();
     store.set(commandPaletteOpenAtom, true);
-    const listbox = await screen.findByRole("listbox", { name: "Command results" });
+    const listbox = await screen.findByRole("listbox", { name: "命令结果" });
     const results = listbox.parentElement;
     expect(results).toBeTruthy();
     if (!results) return;
@@ -514,10 +514,10 @@ describe("GlobalCommandPalette", () => {
     expect(listbox.querySelectorAll("[data-highlighted]")).toHaveLength(1);
     expect(enterHint()).toContain("Run command");
 
-    await userEvent.type(screen.getByRole("combobox"), "appearance");
+    await userEvent.type(screen.getByRole("combobox"), "外观");
     await waitFor(() => expect(enterHint()).toContain("Open settings"));
     const highlighted = listbox.querySelector("[data-highlighted]");
-    expect(highlighted?.textContent).toContain("Appearance");
+    expect(highlighted?.textContent).toContain("外观");
     expect(highlighted?.hasAttribute("data-fluid-hover-active")).toBe(true);
   });
 
@@ -620,7 +620,7 @@ describe("GlobalCommandPalette", () => {
   it("offers task actions only while a task is open and runs them for that task", async () => {
     const first = setup("/new");
     first.store.set(commandPaletteOpenAtom, true);
-    const input = await screen.findByRole("combobox", { name: "Search tasks and commands" });
+    const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     await userEvent.type(input, "compact");
     expect(screen.queryByRole("option", { name: /^Compact task/ })).toBeNull();
     first.unmount();
@@ -694,16 +694,16 @@ describe("GlobalCommandPalette", () => {
     });
     store.set(workbenchStateAtom, createWorkbenchState());
     store.set(commandPaletteOpenAtom, true);
-    const input = await screen.findByRole("combobox", { name: "Search tasks and commands" });
+    const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     const selectedTab = () =>
-      within(screen.getByRole("tablist", { name: "Filter results" }))
+      within(screen.getByRole("tablist", { name: "筛选结果" }))
         .getAllByRole("tab")
         .find((tab) => tab.getAttribute("aria-selected") === "true")?.textContent;
 
     // ← and → cycle through Files, right after Tasks.
     fireEvent.keyDown(input, { key: "ArrowRight" });
     fireEvent.keyDown(input, { key: "ArrowRight" });
-    await waitFor(() => expect(selectedTab()).toBe("Files"));
+    await waitFor(() => expect(selectedTab()).toBe("文件"));
     await screen.findByRole("option", { name: /README\.md/ });
     expect(screen.queryByRole("option", { name: /Global commander/ })).toBeNull();
 
@@ -739,7 +739,7 @@ describe("GlobalCommandPalette", () => {
     const { router, store } = setup("/sessions/session-1");
     await router.load();
     store.set(commandPaletteOpenAtom, true);
-    const listbox = await screen.findByRole("listbox", { name: "Command results" });
+    const listbox = await screen.findByRole("listbox", { name: "命令结果" });
     expect(mocks.findWorkspaceFiles).not.toHaveBeenCalled();
 
     await userEvent.type(screen.getByRole("combobox"), "global");

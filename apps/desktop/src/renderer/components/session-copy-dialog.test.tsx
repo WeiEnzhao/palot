@@ -90,7 +90,7 @@ function setup() {
 
 async function chooseServer(id: string) {
   const user = userEvent.setup();
-  await user.click(screen.getByRole("combobox", { name: "Destination server" }));
+  await user.click(screen.getByRole("combobox", { name: "目标服务器" }));
   await user.click(screen.getByRole("option", { name: `Server ${id.toUpperCase()}` }));
 }
 
@@ -115,20 +115,20 @@ describe("SessionCopyDialog", () => {
     const { onClose, rerender } = setup();
     await chooseServer("b");
     const user = userEvent.setup();
-    await user.type(screen.getByRole("textbox", { name: "Destination folder" }), "/srv/b");
-    await user.click(screen.getByRole("button", { name: "Copy task" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("task was copied to Server B");
+    await user.type(screen.getByRole("textbox", { name: "目标文件夹" }), "/srv/b");
+    await user.click(screen.getByRole("button", { name: "复制任务" }));
+    expect((await screen.findByRole("alert")).textContent).toContain("任务已复制到 Server B");
     expect(screen.getByRole("alert").textContent).toContain("Destination is offline");
     expect(onClose).not.toHaveBeenCalled();
     expect(
-      (screen.getByRole("combobox", { name: "Destination server" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("combobox", { name: "目标服务器" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(
-      (screen.getByRole("textbox", { name: "Destination folder" }) as HTMLInputElement).disabled,
+      (screen.getByRole("textbox", { name: "目标文件夹" }) as HTMLInputElement).disabled,
     ).toBe(true);
     fixtures.connections = [destination("a"), destination("b", false), destination("c")];
     rerender(runtime("c"));
-    await user.click(screen.getByRole("button", { name: "Open copied task" }));
+    await user.click(screen.getByRole("button", { name: "打开已复制的任务" }));
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
     expect(fixtures.copy).toHaveBeenCalledOnce();
     expect(fixtures.cache).toHaveBeenCalledOnce();
@@ -141,13 +141,13 @@ describe("SessionCopyDialog", () => {
   it("selects the destination server and its project without reusing the source path", async () => {
     const { onClose } = setup();
     await chooseServer("b");
-    const input = screen.getByRole("textbox", { name: "Destination folder" }) as HTMLInputElement;
+    const input = screen.getByRole("textbox", { name: "目标文件夹" }) as HTMLInputElement;
     expect(input.value).toBe("");
     const user = userEvent.setup();
-    await user.click(screen.getByRole("combobox", { name: "Destination project" }));
+    await user.click(screen.getByRole("combobox", { name: "目标项目" }));
     await user.click(screen.getByRole("option", { name: "Project B" }));
     expect(input.value).toBe("/srv/b");
-    await user.click(screen.getByRole("button", { name: "Copy task" }));
+    await user.click(screen.getByRole("button", { name: "复制任务" }));
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
     expect(fixtures.copy).toHaveBeenCalledWith({
       sessionID: session.id,
@@ -163,12 +163,12 @@ describe("SessionCopyDialog", () => {
     setup();
     await chooseServer("b");
     const user = userEvent.setup();
-    await user.type(screen.getByRole("textbox", { name: "Destination folder" }), "/only-on-b");
+    await user.type(screen.getByRole("textbox", { name: "目标文件夹" }), "/only-on-b");
     await chooseServer("c");
     expect(
-      (screen.getByRole("textbox", { name: "Destination folder" }) as HTMLInputElement).value,
+      (screen.getByRole("textbox", { name: "目标文件夹" }) as HTMLInputElement).value,
     ).toBe("");
-    expect((screen.getByRole("button", { name: "Copy task" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "复制任务" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
     expect(fixtures.copy).not.toHaveBeenCalled();
@@ -179,16 +179,16 @@ describe("SessionCopyDialog", () => {
     async (state) => {
       const { rerender } = setup();
       const user = userEvent.setup();
-      await user.click(screen.getByRole("combobox", { name: "Destination server" }));
+      await user.click(screen.getByRole("combobox", { name: "目标服务器" }));
       expect(screen.queryByRole("option", { name: "Server A" })).toBeNull();
       expect(screen.queryByRole("option", { name: "Server DISABLED" })).toBeNull();
       expect(screen.queryByRole("option", { name: "Server OFFLINE" })).toBeNull();
       await user.click(screen.getByRole("option", { name: "Server B" }));
-      await user.type(screen.getByRole("textbox", { name: "Destination folder" }), "/srv/b");
+      await user.type(screen.getByRole("textbox", { name: "目标文件夹" }), "/srv/b");
       if (state === "disabled") fixtures.included = ["a", "c"];
       else fixtures.connections = [destination("a"), destination("b", false), destination("c")];
       rerender();
-      const button = screen.getByRole("button", { name: "Copy task" }) as HTMLButtonElement;
+      const button = screen.getByRole("button", { name: "复制任务" }) as HTMLButtonElement;
       expect(button.disabled).toBe(true);
       await user.click(button);
       expect(fixtures.copy).not.toHaveBeenCalled();
@@ -201,15 +201,15 @@ describe("SessionCopyDialog", () => {
     const { rerender, onClose } = setup();
     await chooseServer("b");
     const user = userEvent.setup();
-    await user.type(screen.getByRole("textbox", { name: "Destination folder" }), "/srv/b");
-    await user.click(screen.getByRole("button", { name: "Copy task" }));
+    await user.type(screen.getByRole("textbox", { name: "目标文件夹" }), "/srv/b");
+    await user.click(screen.getByRole("button", { name: "复制任务" }));
     expect(
-      (screen.getByRole("combobox", { name: "Destination server" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("combobox", { name: "目标服务器" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(
-      (screen.getByRole("textbox", { name: "Destination folder" }) as HTMLInputElement).disabled,
+      (screen.getByRole("textbox", { name: "目标文件夹" }) as HTMLInputElement).disabled,
     ).toBe(true);
-    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "取消" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
     fixtures.connections = [
@@ -236,12 +236,12 @@ describe("SessionCopyDialog", () => {
     const { onClose } = setup();
     await chooseServer("b");
     const user = userEvent.setup();
-    await user.type(screen.getByRole("textbox", { name: "Destination folder" }), "/srv/b");
-    await user.click(screen.getByRole("button", { name: "Copy task" }));
+    await user.type(screen.getByRole("textbox", { name: "目标文件夹" }), "/srv/b");
+    await user.click(screen.getByRole("button", { name: "复制任务" }));
     expect((await screen.findByRole("alert")).textContent).toContain("already exists");
-    expect(screen.getByRole("dialog", { name: "Copy task to server" })).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "复制任务到服务器" })).toBeTruthy();
     expect(
-      (screen.getByRole("textbox", { name: "Destination folder" }) as HTMLInputElement).value,
+      (screen.getByRole("textbox", { name: "目标文件夹" }) as HTMLInputElement).value,
     ).toBe("/srv/b");
     expect(onClose).not.toHaveBeenCalled();
     expect(fixtures.cache).not.toHaveBeenCalled();

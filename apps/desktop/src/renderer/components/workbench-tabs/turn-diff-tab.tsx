@@ -72,15 +72,15 @@ export function TurnDiffTab({
     if (!scrollContainer) return;
     scrollContainer.tabIndex = 0;
     scrollContainer.setAttribute("role", "region");
-    scrollContainer.setAttribute("aria-label", "Turn diff review");
+    scrollContainer.setAttribute("aria-label", "轮次 diff 审查");
   }, [scrollContainer]);
 
   let content;
   if (!query.available) {
     content = (
       <TurnDiffEmpty
-        title="Connection unavailable"
-        description="Reconnect to this task's connection to view its changes."
+        title="连接不可用"
+        description="重新连接到此任务的连接以查看其更改。"
       />
     );
   } else if (query.isPending) {
@@ -89,26 +89,26 @@ export function TurnDiffTab({
         role="status"
         className="flex min-h-0 flex-1 items-center justify-center gap-2 text-meta text-muted-foreground"
       >
-        <Spinner /> Loading turn changes
+        <Spinner /> 正在加载轮次更改
       </div>
     );
   } else if (query.isError) {
     content = (
       <Empty className="min-h-0 flex-1 rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Could not load turn changes</EmptyTitle>
+          <EmptyTitle>无法加载轮次更改</EmptyTitle>
           <EmptyDescription>{query.error.message}</EmptyDescription>
         </EmptyHeader>
         <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
-          <RefreshCw data-icon="inline-start" /> Retry
+          <RefreshCw data-icon="inline-start" /> 重试
         </Button>
       </Empty>
     );
   } else if (!diffs?.length) {
     content = (
       <TurnDiffEmpty
-        title="No changes in this turn"
-        description="OpenCode reported no file changes for this response."
+        title="此轮次无更改"
+        description="OpenCode 未报告此响应有文件变更。"
       />
     );
   } else {
@@ -144,11 +144,11 @@ export function TurnDiffTab({
     >
       <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border bg-background px-2">
         <FileDiff className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="min-w-0 flex-1 truncate text-compact font-medium">Turn changes</span>
+        <span className="min-w-0 flex-1 truncate text-compact font-medium">轮次更改</span>
         {diffs?.length ? (
           <span className="flex shrink-0 items-center gap-2 font-mono text-diff tabular-nums">
             <span className="text-muted-foreground">
-              {diffs.length} {diffs.length === 1 ? "file" : "files"}
+              {diffs.length} 个文件
             </span>
             <span className="text-success">+{totals.additions}</span>
             <span className="text-destructive">-{totals.deletions}</span>
@@ -159,7 +159,7 @@ export function TurnDiffTab({
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label="Refresh turn changes"
+          aria-label="刷新一轮更改"
           disabled={!query.available || query.isFetching}
           onClick={() => void query.refetch()}
         >
@@ -195,7 +195,7 @@ function toReviewItem(file: PresentedFileDiff): CodeViewItem<undefined> {
     type: "file",
     file: {
       name: file.file,
-      contents: file.whitespaceOnly ? "Whitespace changes hidden" : "Patch unavailable",
+      contents: file.whitespaceOnly ? "空白变更已隐藏" : "补丁不可用",
       cacheKey: file.whitespaceOnly ? `whitespace:${cacheKey}` : cacheKey,
     },
     version: file.whitespaceOnly ? (version ^ 1) >>> 0 : version,

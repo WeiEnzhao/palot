@@ -125,22 +125,22 @@ describe("Settings inventory", () => {
     renderTools();
     const tabs = screen.getAllByRole("tab");
     expect(tabs.map((tab) => tab.textContent)).toEqual([
-      "Plugins",
+      "插件",
       "MCP",
-      "Skills",
-      "Commands",
-      "References",
-      "Web search",
+      "技能",
+      "命令",
+      "参考资料",
+      "网络搜索",
     ]);
     expect(tabs[0]!.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("tabpanel", { name: "Plugins" })).toBeTruthy();
+    expect(screen.getByRole("tabpanel", { name: "插件" })).toBeTruthy();
     tabs[0]!.focus();
     const user = userEvent.setup();
     await user.keyboard("{ArrowRight}");
     expect(screen.getByRole("tab", { name: "MCP" }).getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("tabpanel", { name: "MCP" })).toBeTruthy();
-    expect(screen.queryByRole("tabpanel", { name: "Plugins" })).toBeNull();
-    expect(screen.getByRole("searchbox", { name: "Search mcp" })).toBeTruthy();
+    expect(screen.queryByRole("tabpanel", { name: "插件" })).toBeNull();
+    expect(screen.getByRole("searchbox", { name: "搜索mcp" })).toBeTruthy();
   });
 
   it("hides built-ins by default, lists them last when shown, and scopes search to the toggle", async () => {
@@ -151,34 +151,34 @@ describe("Settings inventory", () => {
     };
     renderTools(toolsSnapshot({ plugins: [builtin, plugin] }));
     const user = userEvent.setup();
-    const toggle = screen.getByRole("switch", { name: "Show built-in plugins" });
+    const toggle = screen.getByRole("switch", { name: "显示内置插件" });
     expect(toggle.getAttribute("aria-checked")).toBe("false");
-    expect(screen.queryByRole("group", { name: "Built-in tools plugin" })).toBeNull();
-    expect(screen.getByText("1 plugin · 1 built-in hidden")).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "Built-in tools 插件" })).toBeNull();
+    expect(screen.getByText("1 个插件 · 1 个内置已隐藏")).toBeTruthy();
     await user.click(toggle);
     expect(screen.getAllByRole("group").map((row) => row.getAttribute("aria-label"))).toEqual([
-      "Example plugin plugin",
-      "Built-in tools plugin",
+      "Example plugin 插件",
+      "Built-in tools 插件",
     ]);
-    await user.click(screen.getByRole("tab", { name: "Skills" }));
-    await user.click(screen.getByRole("tab", { name: "Plugins" }));
+    await user.click(screen.getByRole("tab", { name: "技能" }));
+    await user.click(screen.getByRole("tab", { name: "插件" }));
     expect(toggle.getAttribute("aria-checked")).toBe("true");
-    await user.type(screen.getByRole("searchbox", { name: "Search plugins" }), "Built-in tools");
-    expect(screen.getByText("1 of 2 plugins")).toBeTruthy();
+    await user.type(screen.getByRole("searchbox", { name: "搜索插件" }), "Built-in tools");
+    expect(screen.getByText("2 个中的 1 个")).toBeTruthy();
     await user.click(toggle);
-    expect(screen.queryByRole("group", { name: "Built-in tools plugin" })).toBeNull();
-    expect(screen.getByText("No plugins match this search.")).toBeTruthy();
-    expect(screen.getByText("0 of 1 plugins · 1 built-in hidden")).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "Built-in tools 插件" })).toBeNull();
+    expect(screen.getByText("没有插件匹配此搜索。")).toBeTruthy();
+    expect(screen.getByText("1 个中的 0 个 · 1 个内置已隐藏")).toBeTruthy();
   });
 
   it("explains an inventory containing only hidden built-ins and lets users reveal it", async () => {
     renderTools(toolsSnapshot({ plugins: [{ ...plugin, source: { type: "builtin" } }] }));
     expect(
-      screen.getByText("No added plugins. Show built-in plugins to browse OpenCode defaults."),
+      screen.getByText("没有已添加的插件。显示内置插件以浏览 OpenCode 默认值。"),
     ).toBeTruthy();
-    await userEvent.setup().click(screen.getByRole("switch", { name: "Show built-in plugins" }));
-    expect(screen.getByRole("group", { name: "Example plugin plugin" })).toBeTruthy();
-    expect(screen.queryByText(/No added plugins/)).toBeNull();
+    await userEvent.setup().click(screen.getByRole("switch", { name: "显示内置插件" }));
+    expect(screen.getByRole("group", { name: "Example plugin 插件" })).toBeTruthy();
+    expect(screen.queryByText(/没有已添加的插件/)).toBeNull();
   });
 
   it("filters by source and description, distinguishes no matches, and keeps searches scoped without fetching", async () => {
@@ -198,28 +198,28 @@ describe("Settings inventory", () => {
       }),
     );
     const user = userEvent.setup();
-    const search = screen.getByRole("searchbox", { name: "Search plugins" });
+    const search = screen.getByRole("searchbox", { name: "搜索插件" });
     await user.type(search, "acme/workflow");
-    expect(screen.getByRole("group", { name: "Example plugin plugin" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Example plugin 插件" })).toBeTruthy();
     await user.clear(search);
     await user.type(search, "missing-source");
-    expect(screen.getByText("No plugins match this search.")).toBeTruthy();
-    expect(screen.queryByText("No plugins were returned.")).toBeNull();
-    await user.click(screen.getByRole("tab", { name: "References" }));
-    const referencesSearch = screen.getByRole("searchbox", { name: "Search references" });
+    expect(screen.getByText("没有插件匹配此搜索。")).toBeTruthy();
+    expect(screen.queryByText("没有返回任何插件。")).toBeNull();
+    await user.click(screen.getByRole("tab", { name: "参考资料" }));
+    const referencesSearch = screen.getByRole("searchbox", { name: "搜索参考资料" });
     expect((referencesSearch as HTMLInputElement).value).toBe("");
     await user.type(referencesSearch, "team/operations");
     expect(
-      within(screen.getByRole("tabpanel", { name: "References" })).getByText("Handbook"),
+      within(screen.getByRole("tabpanel", { name: "参考资料" })).getByText("Handbook"),
     ).toBeTruthy();
     await user.clear(referencesSearch);
     await user.type(referencesSearch, "Deployment procedures");
     expect(
-      within(screen.getByRole("tabpanel", { name: "References" })).getByText("Handbook"),
+      within(screen.getByRole("tabpanel", { name: "参考资料" })).getByText("Handbook"),
     ).toBeTruthy();
-    await user.click(screen.getByRole("tab", { name: "Plugins" }));
+    await user.click(screen.getByRole("tab", { name: "插件" }));
     expect(
-      (screen.getByRole("searchbox", { name: "Search plugins" }) as HTMLInputElement).value,
+      (screen.getByRole("searchbox", { name: "搜索插件" }) as HTMLInputElement).value,
     ).toBe("missing-source");
     expect(load).not.toHaveBeenCalled();
     expect(refresh).not.toHaveBeenCalled();
@@ -239,18 +239,18 @@ describe("Settings inventory", () => {
       }),
     );
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Check for updates" }));
+    await user.click(screen.getByRole("button", { name: "检查更新" }));
     await waitFor(() => expect(check).toHaveBeenCalledTimes(1));
-    await user.click(screen.getByRole("tab", { name: "Skills" }));
-    await user.click(screen.getByRole("tab", { name: "Plugins" }));
-    expect(screen.getByRole("button", { name: "Check for updates" }).hasAttribute("disabled")).toBe(
+    await user.click(screen.getByRole("tab", { name: "技能" }));
+    await user.click(screen.getByRole("tab", { name: "插件" }));
+    expect(screen.getByRole("button", { name: "检查更新" }).hasAttribute("disabled")).toBe(
       true,
     );
-    expect(screen.getByRole("button", { name: "Update" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "更新" }).hasAttribute("disabled")).toBe(true);
     await act(async () => pending.resolve([plugin]));
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: "Check for updates" }).hasAttribute("disabled"),
+        screen.getByRole("button", { name: "检查更新" }).hasAttribute("disabled"),
       ).toBe(false),
     );
   });
@@ -265,28 +265,28 @@ describe("Settings inventory", () => {
     );
     const user = userEvent.setup();
     expect(
-      within(screen.getByRole("tabpanel", { name: "Plugins" })).getByRole("alert").textContent,
+      within(screen.getByRole("tabpanel", { name: "插件" })).getByRole("alert").textContent,
     ).toContain("Inventory request failed");
-    expect(screen.queryByText("No plugins were returned.")).toBeNull();
-    await user.click(screen.getByRole("tab", { name: "Skills" }));
+    expect(screen.queryByText("没有返回任何插件。")).toBeNull();
+    await user.click(screen.getByRole("tab", { name: "技能" }));
     expect(
-      within(screen.getByRole("tabpanel", { name: "Skills" })).getByRole("status").textContent,
-    ).toContain("Loading skills");
-    expect(screen.queryByText("No skills were returned.")).toBeNull();
-    await user.click(screen.getByRole("tab", { name: "Commands" }));
+      within(screen.getByRole("tabpanel", { name: "技能" })).getByRole("status").textContent,
+    ).toContain("正在加载技能");
+    expect(screen.queryByText("没有返回任何技能。")).toBeNull();
+    await user.click(screen.getByRole("tab", { name: "命令" }));
     expect(
-      within(screen.getByRole("tabpanel", { name: "Commands" })).getByText(
-        "No commands were returned.",
+      within(screen.getByRole("tabpanel", { name: "命令" })).getByText(
+        "没有返回任何命令。",
       ),
     ).toBeTruthy();
     cleanup();
     renderTools(toolsSnapshot({ plugins: [] }), [], { plugins: { status: "unavailable" } });
     expect(
-      within(screen.getByRole("tabpanel", { name: "Plugins" })).getByText(
-        /Plugins are unavailable/,
+      within(screen.getByRole("tabpanel", { name: "插件" })).getByText(
+        /插件不可用/,
       ),
     ).toBeTruthy();
-    expect(screen.queryByText("No plugins were returned.")).toBeNull();
+    expect(screen.queryByText("没有返回任何插件。")).toBeNull();
   });
 
   it("keeps a successful plugin list usable when SDK diagnostics differ from the failed plugin error", () => {
@@ -315,15 +315,15 @@ describe("Settings inventory", () => {
         ],
       }),
     );
-    const panel = within(screen.getByRole("tabpanel", { name: "Plugins" }));
-    expect(panel.queryByText("Could not load plugins.")).toBeNull();
-    expect(panel.getByRole("group", { name: "Example plugin plugin" })).toBeTruthy();
-    expect(panel.getByRole("button", { name: "Check for updates" }).hasAttribute("disabled")).toBe(
+    const panel = within(screen.getByRole("tabpanel", { name: "插件" }));
+    expect(panel.queryByText("无法加载插件。")).toBeNull();
+    expect(panel.getByRole("group", { name: "Example plugin 插件" })).toBeTruthy();
+    expect(panel.getByRole("button", { name: "检查更新" }).hasAttribute("disabled")).toBe(
       false,
     );
-    expect(panel.getByRole("button", { name: "Update" }).hasAttribute("disabled")).toBe(false);
-    const failed = within(panel.getByRole("group", { name: "Workflow plugin" }));
-    expect(failed.getByText("Failed")).toBeTruthy();
+    expect(panel.getByRole("button", { name: "更新" }).hasAttribute("disabled")).toBe(false);
+    const failed = within(panel.getByRole("group", { name: "Workflow 插件" }));
+    expect(failed.getByText("失败")).toBeTruthy();
     const details = failed.getByText(activationError).closest("details");
     expect(details).not.toBeNull();
     expect(details?.open).toBe(false);
@@ -333,20 +333,20 @@ describe("Settings inventory", () => {
     const message =
       "Error: Connection reset at request (/sdk/plugin/list.js:401:9)\n    at async refreshPlugins (/sdk/client.js:93:4)";
     renderTools(toolsSnapshot(), [], { plugins: { status: "error", message } });
-    const panel = within(screen.getByRole("tabpanel", { name: "Plugins" }));
-    expect(panel.getByRole("group", { name: "Example plugin plugin" })).toBeTruthy();
-    expect(panel.getByRole("button", { name: "Check for updates" }).hasAttribute("disabled")).toBe(
+    const panel = within(screen.getByRole("tabpanel", { name: "插件" }));
+    expect(panel.getByRole("group", { name: "Example plugin 插件" })).toBeTruthy();
+    expect(panel.getByRole("button", { name: "检查更新" }).hasAttribute("disabled")).toBe(
       false,
     );
     expect(
-      panel.getByText("Could not refresh plugins. Showing the last loaded inventory."),
+      panel.getByText("无法刷新插件。显示上次加载的清单。"),
     ).toBeTruthy();
     const details = panel.getByText(/Error: Connection reset/).closest("details");
     expect(details).not.toBeNull();
     expect(details?.open).toBe(false);
-    await userEvent.setup().click(panel.getByText("Error details for plugins"));
+    await userEvent.setup().click(panel.getByText("插件的错误详情"));
     expect(details?.open).toBe(true);
-    expect(panel.queryByText("No plugins were returned.")).toBeNull();
+    expect(panel.queryByText("没有返回任何插件。")).toBeNull();
   });
 
   it("shows labeled plugin status and expandable error details without claiming update checks succeeded", async () => {
@@ -364,11 +364,11 @@ describe("Settings inventory", () => {
         ],
       }),
     );
-    const row = screen.getByRole("group", { name: "Example plugin plugin" });
-    expect(within(row).getByText("Failed")).toBeTruthy();
-    expect(within(row).queryByRole("button", { name: "Update" })).toBeNull();
-    expect(screen.queryByText("Up to date")).toBeNull();
-    const details = within(row).getByText("Error details for Example plugin");
+    const row = screen.getByRole("group", { name: "Example plugin 插件" });
+    expect(within(row).getByText("失败")).toBeTruthy();
+    expect(within(row).queryByRole("button", { name: "更新" })).toBeNull();
+    expect(screen.queryByText("已是最新")).toBeNull();
+    const details = within(row).getByText("Example plugin 的错误详情");
     expect(details.closest("details")?.open).toBe(false);
     await userEvent.setup().click(details);
     expect(details.closest("details")?.open).toBe(true);
@@ -459,14 +459,14 @@ describe("Settings inventory", () => {
       });
     });
     await waitFor(() => expect(list).toHaveBeenCalledTimes(2));
-    await user.click(screen.getByRole("button", { name: "Check for updates" }));
-    await screen.findByText("Update available");
+    await user.click(screen.getByRole("button", { name: "检查更新" }));
+    await screen.findByText("有更新");
     await act(async () => {
       pendingList.resolve({ location, data: inventory });
       await refresh;
     });
-    expect(screen.getByText("Update available")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Update" }).hasAttribute("disabled")).toBe(false);
+    expect(screen.getByText("有更新")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "更新" }).hasAttribute("disabled")).toBe(false);
     expect(list).toHaveBeenCalledTimes(2);
 
     async function publishInventoryChange() {
@@ -489,10 +489,10 @@ describe("Settings inventory", () => {
     await publishInventoryChange();
     await screen.findByText("2.0.0");
     expect(screen.queryByText("1.0.0")).toBeNull();
-    expect(screen.queryByText("Update available")).toBeNull();
+    expect(screen.queryByText("有更新")).toBeNull();
     inventory = [];
     await publishInventoryChange();
-    await screen.findByText("No plugins were returned.");
+    await screen.findByText("没有返回任何插件。");
     expect(screen.queryByText("example")).toBeNull();
   });
 
@@ -566,7 +566,7 @@ describe("Settings inventory", () => {
         </Provider>,
       );
       expect(
-        screen.getByRole("switch", { name: "Enable Direct reasoner" }).getAttribute("aria-checked"),
+        screen.getByRole("switch", { name: "启用 Direct reasoner" }).getAttribute("aria-checked"),
       ).toBe("false");
       view.rerender(
         <Provider store={store}>
@@ -582,11 +582,11 @@ describe("Settings inventory", () => {
       for (const alias of aliases) {
         expect(
           screen
-            .getByRole("switch", { name: `Disable ${alias.name}` })
+            .getByRole("switch", { name: `禁用 ${alias.name}` })
             .getAttribute("aria-checked"),
         ).toBe("true");
       }
-      const control = screen.getByRole("switch", { name: "Disable Other model" });
+      const control = screen.getByRole("switch", { name: "禁用 Other model" });
       const user = userEvent.setup();
       await user.click(control);
       await waitFor(() => expect(control.getAttribute("aria-checked")).toBe("false"));
@@ -594,11 +594,11 @@ describe("Settings inventory", () => {
         "openai/reasoner",
         "anthropic/other",
       ]);
-      await user.click(screen.getByRole("button", { name: "Deselect all" }));
+      await user.click(screen.getByRole("button", { name: "取消全选" }));
       expect(store.get(modelPickerPreferencesAtom)[preferenceScope]?.hidden).toEqual(
         expect.arrayContaining(["openai/reasoner", "anthropic/other", "company-openai/reasoner"]),
       );
-      await user.click(screen.getByRole("button", { name: "Select all" }));
+      await user.click(screen.getByRole("button", { name: "全选" }));
       expect(store.get(modelPickerPreferencesAtom)[preferenceScope]?.hidden).toEqual([
         "openai/reasoner",
       ]);
@@ -608,17 +608,17 @@ describe("Settings inventory", () => {
         </Provider>,
       );
       expect(
-        screen.getByRole("switch", { name: "Enable Direct reasoner" }).getAttribute("aria-checked"),
+        screen.getByRole("switch", { name: "启用 Direct reasoner" }).getAttribute("aria-checked"),
       ).toBe("false");
       for (const alias of aliases) {
         expect(
           screen
-            .getByRole("switch", { name: `Disable ${alias.name}` })
+            .getByRole("switch", { name: `禁用 ${alias.name}` })
             .getAttribute("aria-checked"),
         ).toBe("true");
       }
       expect(
-        screen.getByRole("switch", { name: "Disable Other model" }).getAttribute("aria-checked"),
+        screen.getByRole("switch", { name: "禁用 Other model" }).getAttribute("aria-checked"),
       ).toBe("true");
     },
   );

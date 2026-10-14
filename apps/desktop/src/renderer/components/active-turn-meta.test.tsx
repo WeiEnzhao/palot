@@ -35,20 +35,20 @@ describe("ActiveTurnMeta", () => {
 
     render(<ActiveTurnMeta startedAt={Date.now() - 5_000} />);
 
-    expect(screen.getByRole("status", { name: "Working for 5s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "工作中 for 5s" })).toBeTruthy();
     act(() => {
       vi.advanceTimersByTime(61_000);
     });
-    expect(screen.getByRole("status", { name: "Working for 1m 06s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "工作中 for 1m 06s" })).toBeTruthy();
   });
 
   it("distinguishes execution cleanup after the final response", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-12T12:00:05.000Z"));
 
-    render(<ActiveTurnMeta startedAt={Date.now() - 5_000} label="Finishing" />);
+    render(<ActiveTurnMeta startedAt={Date.now() - 5_000} label="收尾中" />);
 
-    expect(screen.getByRole("status", { name: "Finishing for 5s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "收尾中 for 5s" })).toBeTruthy();
   });
 
   it("does not call streaming preamble text final before tool activity appears", () => {
@@ -67,7 +67,7 @@ describe("ActiveTurnMeta", () => {
     };
     const final = { message, part: { type: "text" as const, text: message.text }, index: 0 };
 
-    expect(activeTurnLabel(turn({ final }))).toBe("Working");
+    expect(activeTurnLabel(turn({ final }))).toBe("工作中");
     expect(
       activeTurnLabel(
         turn({
@@ -83,6 +83,6 @@ describe("ActiveTurnMeta", () => {
           ],
         }),
       ),
-    ).toBe("Finishing");
+    ).toBe("收尾中");
   });
 });

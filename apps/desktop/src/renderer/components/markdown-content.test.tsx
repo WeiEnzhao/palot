@@ -229,12 +229,12 @@ describe("MarkdownContent", () => {
     });
     const view = render(<MarkdownContent value={"```ts\nconst value = 1\n```"} />);
 
-    fireEvent.click(view.container.querySelector('button[aria-label="Copy code"]')!);
+    fireEvent.click(view.container.querySelector('button[aria-label="复制代码"]')!);
 
     expect(writeClipboardText).toHaveBeenCalledWith("const value = 1");
     expect(browserWriteText).not.toHaveBeenCalled();
     await waitFor(() =>
-      expect(view.container.querySelector('button[aria-label="Copied"]')).toBeTruthy(),
+      expect(view.container.querySelector('button[aria-label="已复制"]')).toBeTruthy(),
     );
   });
 
@@ -313,11 +313,11 @@ describe("MarkdownContent", () => {
     });
     const view = render(<MarkdownContent value={"| Name | Value |\n| --- | --- |\n| One | 1 |"} />);
 
-    fireEvent.click(view.container.querySelector('button[aria-label="Copy table"]')!);
-    await waitFor(() => expect(document.body.textContent).toContain("Copy as TSV"));
+    fireEvent.click(view.container.querySelector('button[aria-label="复制表格"]')!);
+    await waitFor(() => expect(document.body.textContent).toContain("复制为 TSV"));
     fireEvent.click(
       [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find(
-        (item) => item.textContent === "Copy as TSV",
+        (item) => item.textContent === "复制为 TSV",
       )!,
     );
 

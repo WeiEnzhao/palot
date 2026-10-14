@@ -181,15 +181,15 @@ describe("MultiConnectionSidebar", () => {
       expect(row.getAttribute("data-session-drag-handle")).toBe("same-session");
       fireEvent.contextMenu(row);
       for (const name of [
-        "Open in new window",
-        "Fork",
-        "Fork from prompt…",
-        "Schedule follow-up",
-        "Delete task",
+        "在新窗口中打开",
+        "分叉",
+        "从提示词分叉…",
+        "安排后续任务",
+        "删除任务",
       ]) {
         expect(await screen.findByRole("menuitem", { name })).toBeTruthy();
       }
-      await userEvent.click(screen.getByRole("menuitem", { name: "Open in new window" }));
+      await userEvent.click(screen.getByRole("menuitem", { name: "在新窗口中打开" }));
       expect(openWindow).toHaveBeenCalledExactlyOnceWith("same-session", "connection-beta");
       expect(store.get(runtimeAtom)?.profileID).toBe("alpha");
       expect(mocks.openSession).not.toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe("MultiConnectionSidebar", () => {
     fireEvent.contextMenu(
       screen.getByRole("button", { name: "Same task · Same server · beta.example" }),
     );
-    const open = await screen.findByRole("menuitem", { name: "Open in new window" });
+    const open = await screen.findByRole("menuitem", { name: "在新窗口中打开" });
     expect(open.getAttribute("aria-disabled")).toBe("true");
     await userEvent.click(open);
     expect(openWindow).not.toHaveBeenCalled();
@@ -373,7 +373,7 @@ describe("MultiConnectionSidebar", () => {
     const card = screen
       .getByRole("button", { name: "Same task · Same server · beta.example" })
       .closest<HTMLElement>("[data-inbox-card]")!;
-    fireEvent.click(within(card).getByRole("button", { name: "Settle task" }));
+    fireEvent.click(within(card).getByRole("button", { name: "归档任务" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({ type: "settle", sessionID: "same-session" }),
@@ -450,7 +450,7 @@ describe("MultiConnectionSidebar", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Actions for Same task on Same server · beta.example" }),
     );
-    await userEvent.click(screen.getByRole("menuitem", { name: "Pin" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "置顶" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({ type: "pin", sessionID: "same-session" }),
@@ -594,13 +594,13 @@ describe("MultiConnectionSidebar", () => {
     const actionName = "Actions for Same task on Same server · beta.example";
     await userEvent.click(screen.getByRole("button", { name: actionName }));
     await userEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "Task title" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "任务标题" }), {
       target: { value: "Renamed remotely" },
     });
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(overview.rename).toHaveBeenCalledWith("beta", "same-session", "Renamed remotely");
     await userEvent.click(screen.getByRole("button", { name: actionName }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Settle" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "归档" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({
@@ -650,7 +650,7 @@ describe("MultiConnectionSidebar", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Actions for Same task on Same server · beta.example" }),
     );
-    expect(screen.getByRole("menuitem", { name: "Pin" }).getAttribute("aria-disabled")).toBe(
+    expect(screen.getByRole("menuitem", { name: "置顶" }).getAttribute("aria-disabled")).toBe(
       "true",
     );
   });

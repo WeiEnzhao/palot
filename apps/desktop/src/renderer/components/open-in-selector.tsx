@@ -76,7 +76,7 @@ export function OpenInSelector({ sessionID }: { sessionID: string }) {
           }));
         });
       } catch (error) {
-        showErrorToast("Could not open this checkout", error);
+        showErrorToast("无法打开此检出", error);
         await loadTargets();
       } finally {
         setOpening(false);
@@ -95,7 +95,7 @@ export function OpenInSelector({ sessionID }: { sessionID: string }) {
         className="rounded-none border-0 bg-transparent pr-1.5 focus-visible:ring-inset"
         disabled={opening || loading}
         onClick={() => void open()}
-        aria-label={`Open checkout in ${preferred.label}`}
+        aria-label={`在 ${preferred.label} 中打开检出`}
       >
         <TargetIcon target={preferred} />
         <span className="hidden @[430px]/thread-header:inline">{preferred.label}</span>
@@ -108,7 +108,7 @@ export function OpenInSelector({ sessionID }: { sessionID: string }) {
               size="icon-sm"
               className="rounded-none border-y-0 border-r-0 border-l border-border bg-transparent focus-visible:ring-inset"
               disabled={opening || loading}
-              aria-label="Choose an application"
+              aria-label="选择应用程序"
             />
           }
         >
@@ -119,7 +119,7 @@ export function OpenInSelector({ sessionID }: { sessionID: string }) {
             <DropdownMenuItem key={target.id} onClick={() => void open(target.id)}>
               <TargetIcon target={target} />
               <span className="min-w-0 flex-1 truncate">{target.label}</span>
-              {target.preferred ? <Check className="ml-auto" aria-label="Preferred" /> : null}
+              {target.preferred ? <Check className="ml-auto" aria-label="首选" /> : null}
             </DropdownMenuItem>
           ))}
           {editors.length > 0 && utilities.length > 0 ? <DropdownMenuSeparator /> : null}

@@ -152,7 +152,7 @@ export function BrowserTab({
           })
           .catch((cause: unknown) => {
             if (visible)
-              setError(cause instanceof Error ? cause.message : "Could not display browser page");
+              setError(cause instanceof Error ? cause.message : "无法显示浏览器页面");
           });
       });
     };
@@ -193,7 +193,7 @@ export function BrowserTab({
       setError(null);
       await palot.browserCommand(bindingID, action);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Browser command failed");
+      setError(cause instanceof Error ? cause.message : "浏览器命令失败");
     }
   };
 
@@ -204,7 +204,7 @@ export function BrowserTab({
       const value = await palot.browserPageControl(bindingID, pageID, action);
       if (typeof value === "number") setZoom(value);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Browser page control failed");
+      setError(cause instanceof Error ? cause.message : "浏览器页面控制失败");
     }
   };
 
@@ -225,7 +225,7 @@ export function BrowserTab({
           size="icon-xs"
           variant="ghost"
           disabled={!page?.canGoBack}
-          aria-label="Browser back"
+          aria-label="浏览器后退"
           onClick={() => page && void command({ type: "back", tabID: pageID })}
         >
           <ArrowLeft aria-hidden="true" />
@@ -235,7 +235,7 @@ export function BrowserTab({
           size="icon-xs"
           variant="ghost"
           disabled={!page?.canGoForward}
-          aria-label="Browser forward"
+          aria-label="浏览器前进"
           onClick={() => page && void command({ type: "forward", tabID: pageID })}
         >
           <ArrowRight aria-hidden="true" />
@@ -245,7 +245,7 @@ export function BrowserTab({
           size="icon-xs"
           variant="ghost"
           disabled={!page}
-          aria-label={page?.loading ? "Stop loading" : "Reload page"}
+          aria-label={page?.loading ? "停止加载" : "重新加载页面"}
           onClick={() =>
             page && void command({ type: page.loading ? "stop" : "reload", tabID: pageID })
           }
@@ -266,7 +266,7 @@ export function BrowserTab({
           size="icon-xs"
           variant={inspecting ? "secondary" : "ghost"}
           disabled={!page || !active || !focused || !bindingID}
-          aria-label={inspecting ? "Cancel element picker" : "Comment on page element"}
+          aria-label={inspecting ? "取消元素选择器" : "对页面元素添加评论"}
           aria-pressed={inspecting}
           onClick={() => void control({ type: "inspect", enabled: !inspecting })}
         >
@@ -275,14 +275,14 @@ export function BrowserTab({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button type="button" size="icon-xs" variant="ghost" aria-label="Browser options" />
+              <Button type="button" size="icon-xs" variant="ghost" aria-label="浏览器选项" />
             }
           >
             <Ellipsis aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuItem disabled={!page} onClick={() => setFindOpen(true)}>
-              <Search /> Find in page
+              <Search /> 在页面中查找
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!page?.url}
@@ -291,11 +291,11 @@ export function BrowserTab({
                 void navigator.clipboard
                   .writeText(page.url)
                   .catch((cause: unknown) =>
-                    setError(cause instanceof Error ? cause.message : "Could not copy URL"),
+                    setError(cause instanceof Error ? cause.message : "无法复制 URL"),
                   );
               }}
             >
-              <Copy /> Copy page URL
+              <Copy /> 复制页面 URL
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!page || !/^https?:\/\//i.test(page.url)}
@@ -304,37 +304,37 @@ export function BrowserTab({
                 const url = new URL(page.url);
                 if (isLocalBrowserURL(url) && runtime?.topology !== "same-machine") {
                   setError(
-                    "This address belongs to the task's server. A desktop browser would open localhost on this computer instead.",
+                    "此地址属于任务的服务器。桌面浏览器会在本机上打开 localhost。",
                   );
                   return;
                 }
                 void palot
                   .openExternalUrl(page.url)
                   .catch((cause: unknown) =>
-                    setError(cause instanceof Error ? cause.message : "Could not open URL"),
+                    setError(cause instanceof Error ? cause.message : "无法打开 URL"),
                   );
               }}
             >
-              <ExternalLink /> Open in desktop browser
+              <ExternalLink /> 在桌面浏览器中打开
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               disabled={!page}
               onClick={() => void control({ type: "zoom", direction: -1 })}
             >
-              <ZoomOut /> Zoom out
+              <ZoomOut /> 缩小
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!page}
               onClick={() => void control({ type: "zoom", direction: 0 })}
             >
-              Reset zoom ({zoom}%)
+              重置缩放（{zoom}%）
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!page}
               onClick={() => void control({ type: "zoom", direction: 1 })}
             >
-              <ZoomIn /> Zoom in
+              <ZoomIn /> 放大
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -342,7 +342,7 @@ export function BrowserTab({
                 window.location.hash = "#/settings/browser";
               }}
             >
-              Browser settings
+              浏览器设置
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -352,12 +352,12 @@ export function BrowserTab({
           role="status"
           className="border-b border-border px-3 py-2 text-meta text-muted-foreground"
         >
-          Select an element on the page. Escape cancels.
+          选择页面上的元素。按 Escape 取消。
         </p>
       ) : null}
       {selection ? (
         <form
-          aria-label="Browser element comment"
+          aria-label="浏览器元素评论"
           className="flex shrink-0 flex-col gap-2 border-b border-border p-3"
           onSubmit={(event) => {
             event.preventDefault();
@@ -387,7 +387,7 @@ export function BrowserTab({
             {selection.preview ? (
               <img
                 src={selection.preview}
-                alt="Selected page preview"
+                alt="所选页面预览"
                 className="h-16 w-24 shrink-0 rounded-md object-cover"
               />
             ) : null}
@@ -400,7 +400,7 @@ export function BrowserTab({
               </p>
               {page?.generation !== selection.generation || page.url !== selection.url ? (
                 <p className="text-meta text-warning">
-                  Page changed. Only the saved description will be attached.
+                  页面已更改。仅附加保存的描述。
                 </p>
               ) : null}
             </div>
@@ -408,7 +408,7 @@ export function BrowserTab({
               type="button"
               size="icon-sm"
               variant="ghost"
-              aria-label="Discard browser comment"
+              aria-label="丢弃浏览器评论"
               onClick={() => setSelection(null)}
             >
               <X aria-hidden="true" />
@@ -416,19 +416,19 @@ export function BrowserTab({
           </div>
           <Textarea
             autoFocus
-            aria-label="Comment about selected element"
-            placeholder="What should change here?"
+            aria-label="关于所选元素的评论"
+            placeholder="此处需要更改什么？"
             value={comment}
             maxLength={8000}
             onChange={(event) => setComment(event.target.value)}
           />
           {commentCount >= 10 ? (
             <p role="status" className="text-meta text-warning">
-              Send or remove a comment before attaching more.
+              发送或移除评论后再附加更多。
             </p>
           ) : null}
           <Button type="submit" size="sm" disabled={!comment.trim() || commentCount >= 10}>
-            Attach comment to prompt
+            将评论附加到提示
           </Button>
         </form>
       ) : null}
@@ -442,8 +442,8 @@ export function BrowserTab({
         >
           <Input
             autoFocus
-            aria-label="Find in page"
-            placeholder="Find in page"
+            aria-label="在页面中查找"
+            placeholder="在页面中查找"
             value={findQuery}
             className="min-w-0 flex-1"
             onChange={(event) => {
@@ -464,7 +464,7 @@ export function BrowserTab({
             type="button"
             size="icon-sm"
             variant="ghost"
-            aria-label="Close find"
+            aria-label="关闭查找"
             onClick={() => {
               setFindOpen(false);
               void control({ type: "find.stop" });
@@ -481,7 +481,7 @@ export function BrowserTab({
           </p>
           {browser?.error && !bindingID ? (
             <Button type="button" size="sm" variant="outline" onClick={reconnect}>
-              Reconnect browser
+              重新连接浏览器
             </Button>
           ) : null}
         </div>
@@ -490,42 +490,42 @@ export function BrowserTab({
         {popup ? (
           <Empty className="size-full">
             <EmptyHeader>
-              <EmptyTitle>Open in a separate browser window</EmptyTitle>
+              <EmptyTitle>在单独的浏览器窗口中打开</EmptyTitle>
             </EmptyHeader>
             <Button
               type="button"
               variant="outline"
               onClick={() => void command({ type: "tabs.focus", tabID: pageID })}
             >
-              Focus popup window
+              聚焦弹出窗口
             </Button>
           </Empty>
         ) : !page ? (
           <Empty className="size-full">
             <EmptyHeader>
               <Globe2 className="mx-auto size-5" aria-hidden="true" />
-              <EmptyTitle>Browser</EmptyTitle>
+              <EmptyTitle>浏览器</EmptyTitle>
               <EmptyDescription>
                 {browser?.error
-                  ? "Browser is unavailable on this connection."
+                  ? "此连接上浏览器不可用。"
                   : bindingID
-                    ? "Open a tab to get started."
-                    : "Connecting to the browser plugin…"}
+                    ? "打开标签页以开始。"
+                    : "正在连接浏览器插件…"}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : active && !focused ? (
           <Empty className="size-full">
             <EmptyHeader>
-              <EmptyTitle>Browser page is focused in another pane</EmptyTitle>
-              <EmptyDescription>Only one page per task can be visible at a time.</EmptyDescription>
+              <EmptyTitle>浏览器页面已在另一窗格中聚焦</EmptyTitle>
+              <EmptyDescription>每个任务同时只能显示一个页面。</EmptyDescription>
             </EmptyHeader>
             <Button
               type="button"
               variant="outline"
               onClick={() => void command({ type: "tabs.focus", tabID: pageID })}
             >
-              Show this page
+              显示此页面
             </Button>
           </Empty>
         ) : null}

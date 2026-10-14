@@ -54,23 +54,23 @@ function ScopedRunningWorkControl({
   const agents = items.filter((item): item is SubagentWorkItem => item.kind === "subagent");
   const active = agents.length + processes.commands;
   const label = active
-    ? `${active} running${processes.terminals ? ` · ${processCountLabel(0, processes.terminals)}` : ""}`
+    ? `${active} 个运行中${processes.terminals ? ` · ${processCountLabel(0, processes.terminals)}` : ""}`
     : processes.terminals
       ? processCountLabel(0, processes.terminals)
       : processes.rows.length
-        ? "Recently finished"
-        : "Running work";
+        ? "最近完成"
+        : "运行中的工作";
   if (!open && agents.length === 0 && processes.rows.length === 0 && !processes.error) return null;
   const groups = [
     {
-      title: "Running commands",
+      title: "运行中的命令",
       rows: processes.rows.filter((row) => row.kind === "command" && row.active),
     },
     {
-      title: "Terminals",
+      title: "终端",
       rows: processes.rows.filter((row) => row.kind === "terminal" && row.active),
     },
-    { title: "Recently finished", rows: processes.rows.filter((row) => !row.active) },
+    { title: "最近完成", rows: processes.rows.filter((row) => !row.active) },
   ];
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -79,7 +79,7 @@ function ScopedRunningWorkControl({
           <button
             type="button"
             className="flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={`Running work: ${label}`}
+            aria-label={`运行中的工作：${label}`}
           />
         }
       >
@@ -89,7 +89,7 @@ function ScopedRunningWorkControl({
       </PopoverTrigger>
       <PopoverContent side="top" align="end" className="w-[340px] gap-1 p-1.5">
         <PopoverHeader className="px-2 py-1">
-          <PopoverTitle>Running work</PopoverTitle>
+          <PopoverTitle>运行中的工作</PopoverTitle>
         </PopoverHeader>
         {processes.error || openError ? (
           <div className="px-2 py-1">
@@ -98,21 +98,21 @@ function ScopedRunningWorkControl({
             </p>
             {processes.error ? (
               <Button variant="ghost" size="sm" onClick={() => void processes.retry()}>
-                Retry
+                重试
               </Button>
             ) : null}
           </div>
         ) : null}
         {!processes.terminalsSupported ? (
           <p className="px-2 py-1 text-meta text-muted-foreground">
-            Terminal discovery is unavailable on this runtime.
+            此运行时不支持终端发现。
           </p>
         ) : null}
         <div className="flex max-h-72 flex-col overflow-y-auto">
           {agents.length ? (
-            <section aria-label="Active subagents">
+            <section aria-label="活跃的子智能体">
               <h3 className="px-2 pb-1 pt-2 text-micro font-medium text-muted-foreground">
-                Agents
+                智能体
               </h3>
               {agents.map((item) => (
                 <RunningAgentRow
@@ -139,7 +139,7 @@ function ScopedRunningWorkControl({
                   <RunningWorkRow
                     key={`${row.kind}:${row.id}`}
                     title={row.kind === "command" ? row.command : row.title || row.command}
-                    detail={`${row.sessionID === session.id ? "This conversation" : processes.owners.get(row.sessionID ?? "")?.title || "Child task"} · ${processStatus(row)}`}
+                    detail={`${row.sessionID === session.id ? "此对话" : processes.owners.get(row.sessionID ?? "")?.title || "子任务"} · ${processStatus(row)}`}
                     available={Boolean(available)}
                     owner={owner}
                     process={row}
@@ -165,7 +165,7 @@ function ScopedRunningWorkControl({
                         { pane: "bottom" },
                       );
                       if (!result?.ok) {
-                        setOpenError("Close a workbench tab before opening another process.");
+                        setOpenError("请先关闭一个工作区标签页再打开新进程。");
                         return;
                       }
                       setOpenError(null);
@@ -195,7 +195,7 @@ function RunningAgentRow({
     <RunningWorkRow
       {...props}
       title={item.description}
-      detail={`${item.agent} · ${needsInput ? "Needs input" : item.background ? "Background" : "Running"}`}
+      detail={`${item.agent} · ${needsInput ? "需要输入" : item.background ? "后台" : "运行中"}`}
       childID={item.id}
     />
   );
@@ -234,7 +234,7 @@ function RunningWorkRow({
     if (!current() || pending.current) return;
     if (
       process?.kind === "command" &&
-      !window.confirm("Stop and remove this command? This also deletes its stored output.")
+      !window.confirm("停止并移除此命令？这也会删除其存储的输出。")
     )
       return;
     if (!current()) return;
@@ -249,7 +249,7 @@ function RunningWorkRow({
           location: { directory: process.location.directory },
         });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not stop work.");
+      setError(cause instanceof Error ? cause.message : "无法停止工作。");
     } finally {
       pending.current = false;
       setBusy(false);
@@ -283,7 +283,7 @@ function RunningWorkRow({
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label={`Stop ${title}`}
+            aria-label={`停止 ${title}`}
             disabled={!available || busy}
             onClick={() => void stop()}
           >

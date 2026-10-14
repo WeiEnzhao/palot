@@ -258,17 +258,17 @@ function MarkdownTable({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button type="button" variant="ghost" size="icon-xs" aria-label="Copy table">
+              <Button type="button" variant="ghost" size="icon-xs" aria-label="复制表格">
                 {copiedKey ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
               </Button>
             }
           />
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => copyTable("tsv")}>Copy as TSV</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => copyTable("tsv")}>复制为 TSV</DropdownMenuItem>
             <DropdownMenuItem onClick={() => copyTable("markdown")}>
-              Copy as Markdown
+              复制为 Markdown
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => copyTable("csv")}>Copy as CSV</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => copyTable("csv")}>复制为 CSV</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

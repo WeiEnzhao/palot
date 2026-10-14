@@ -158,7 +158,7 @@ describe("independent settings server", () => {
       ),
     );
     const user = userEvent.setup();
-    await user.click(screen.getByRole("combobox", { name: "Configure server" }));
+    await user.click(screen.getByRole("combobox", { name: "配置服务器" }));
     await user.click(screen.getByRole("option", { name: "Server B" }));
     await waitFor(() =>
       expect(load).toHaveBeenCalledWith(
@@ -177,7 +177,7 @@ describe("independent settings server", () => {
     const { store, load, activate, projectReads } = setup();
     await screen.findByText("Secondary");
     act(() => store.set(runtimeAtom, runtime("b")));
-    expect(screen.getByRole("combobox", { name: "Configure server" }).textContent).toContain(
+    expect(screen.getByRole("combobox", { name: "配置服务器" }).textContent).toContain(
       "Server A",
     );
     await userEvent.setup().click(screen.getByRole("button", { name: "Use" }));
@@ -195,7 +195,7 @@ describe("independent settings server", () => {
     const { store, load, projectReads } = setup();
     await screen.findByText("Secondary");
     const user = userEvent.setup();
-    await user.click(screen.getByRole("combobox", { name: "Configure server" }));
+    await user.click(screen.getByRole("combobox", { name: "配置服务器" }));
     await user.click(screen.getByRole("option", { name: "Server B" }));
     await waitFor(() =>
       expect(load).toHaveBeenCalledWith(
@@ -207,25 +207,25 @@ describe("independent settings server", () => {
     expect(store.get(runtimeAtom)?.connectionID).toBe("connection-a");
     act(() => store.set(includedProfileIDsAtom, ["a"]));
     expect(screen.getByText(/Disabled · Settings are read-only/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Refresh settings" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "刷新设置" }).hasAttribute("disabled")).toBe(
       true,
     );
     const before = load.mock.calls.length;
-    await user.click(screen.getByRole("button", { name: "Refresh settings" }));
+    await user.click(screen.getByRole("button", { name: "刷新设置" }));
     expect(load.mock.calls).toHaveLength(before);
     expect(fixtures.navigate).not.toHaveBeenCalled();
   });
 
   it("does not expose a server selector or load server settings for app preferences", () => {
     const { load, projectReads } = setup("appearance");
-    expect(screen.queryByRole("combobox", { name: "Configure server" })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "配置服务器" })).toBeNull();
     expect(load).not.toHaveBeenCalled();
     expect(projectReads).toEqual([]);
   });
 
   it("edits A's project details while the task is on B", async () => {
     const { store, projectUpdates } = setup("project");
-    const name = await screen.findByLabelText("Project name");
+    const name = await screen.findByLabelText("项目名称");
     act(() => store.set(runtimeAtom, runtime("b")));
     const user = userEvent.setup();
     await user.clear(name);
@@ -250,7 +250,7 @@ describe("independent settings server", () => {
     // A store change lets the view observe the updated registry fixture.
     act(() => store.set(runtimeAtom, { ...runtime("a") }));
     const user = userEvent.setup();
-    await user.click(screen.getByRole("combobox", { name: "Configure server" }));
+    await user.click(screen.getByRole("combobox", { name: "配置服务器" }));
     await user.click(screen.getByRole("option", { name: "Server B" }));
     expect(screen.getByText(/Offline · Settings are read-only/)).toBeTruthy();
     expect(screen.queryByText("Secondary")).toBeNull();

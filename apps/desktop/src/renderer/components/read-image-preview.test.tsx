@@ -22,8 +22,8 @@ describe("ImageLightbox", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Copy image address" }));
-    fireEvent.click(screen.getByRole("button", { name: "Download image" }));
+    fireEvent.click(screen.getByRole("button", { name: "复制图片地址" }));
+    fireEvent.click(screen.getByRole("button", { name: "下载图片" }));
 
     await waitFor(() =>
       expect(writeClipboardText).toHaveBeenCalledWith("https://example.com/preview.png"),
@@ -45,13 +45,13 @@ describe("ImageLightbox", () => {
     );
     const view = render(renderLightbox(true));
 
-    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
-    expect(screen.getByRole("button", { name: "Zoom out" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "放大" }));
+    expect(screen.getByRole("button", { name: "缩小" })).toBeTruthy();
 
     view.rerender(renderLightbox(false));
     view.rerender(renderLightbox(true));
 
-    expect(screen.getByRole("button", { name: "Zoom in" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "放大" })).toBeTruthy();
   });
 
   it("stays closable while its parent receives streaming updates", async () => {
@@ -61,12 +61,12 @@ describe("ImageLightbox", () => {
       </div>
     );
     const view = render(renderPreview(0));
-    fireEvent.click(screen.getByRole("button", { name: "Open preview of preview.png" }));
+    fireEvent.click(screen.getByRole("button", { name: "打开预览：preview.png" }));
 
     for (let revision = 1; revision <= 10; revision += 1) {
       view.rerender(renderPreview(revision));
     }
-    fireEvent.click(screen.getByRole("button", { name: "Close image preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭图片预览" }));
     view.rerender(renderPreview(11));
 
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());

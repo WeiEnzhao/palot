@@ -148,7 +148,7 @@ export function AutomationEditor({
         .catch((error) => {
           if (cancelled) return;
           setPreview(null);
-          setPreviewError(error instanceof Error ? error.message : "This schedule is invalid");
+          setPreviewError(error instanceof Error ? error.message : "此计划无效");
         });
     }, 180);
     return () => {
@@ -168,7 +168,7 @@ export function AutomationEditor({
   function focusSetup() {
     detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(() => {
-      detailsRef.current?.querySelector<HTMLElement>('[aria-label="Run destination"]')?.focus();
+      detailsRef.current?.querySelector<HTMLElement>('[aria-label="运行目标"]')?.focus();
     }, 250);
   }
 
@@ -186,18 +186,18 @@ export function AutomationEditor({
     try {
       await onSave({ ...draft, trigger });
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Could not save this scheduled task");
+      setSaveError(error instanceof Error ? error.message : "无法保存此计划任务");
     }
   }
 
   return (
     <aside
       className="flex h-full min-h-0 flex-col border-l bg-background"
-      aria-label="Scheduled task editor"
+      aria-label="计划任务编辑器"
     >
       <header className="window-drag flex h-(--shell-header-height) shrink-0 items-center gap-2 border-b px-4">
         <span className="text-xs text-muted-foreground">
-          {automation ? "Scheduled task" : "New"}
+          {automation ? "计划任务" : "新建"}
         </span>
         <div className="ml-auto flex items-center gap-1">
           {automation ? (
@@ -206,9 +206,9 @@ export function AutomationEditor({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                title={automation.status === "active" ? "Pause" : "Resume"}
+                title={automation.status === "active" ? "暂停" : "恢复"}
                 aria-label={
-                  automation.status === "active" ? "Pause scheduled task" : "Resume scheduled task"
+                  automation.status === "active" ? "暂停计划任务" : "恢复计划任务"
                 }
                 onClick={() => void onAction(automation.status === "active" ? "pause" : "resume")}
               >
@@ -221,7 +221,7 @@ export function AutomationEditor({
                       type="button"
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="More scheduled task actions"
+                      aria-label="更多计划任务操作"
                     />
                   }
                 >
@@ -229,11 +229,11 @@ export function AutomationEditor({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => void onAction("run-now")}>
-                    <Play /> Run now
+                    <Play /> 立即运行
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={() => void onAction("delete")}>
-                    <Trash2 /> Delete
+                    <Trash2 /> 删除
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -243,7 +243,7 @@ export function AutomationEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Close editor"
+            aria-label="关闭编辑器"
             onClick={onClose}
           >
             <X />
@@ -259,9 +259,9 @@ export function AutomationEditor({
               onChange={(event) =>
                 setDraft((current) => ({ ...current, name: event.target.value }))
               }
-              placeholder="Scheduled task title"
+              placeholder="计划任务标题"
               className="h-9 border-0 bg-transparent px-0 text-base font-medium shadow-none focus-visible:ring-0"
-              aria-label="Scheduled task title"
+              aria-label="计划任务标题"
             />
             <Textarea
               value={draft.action.prompt}
@@ -271,15 +271,15 @@ export function AutomationEditor({
                   action: { ...current.action, prompt: event.target.value },
                 }))
               }
-              placeholder="Describe what OpenCode should do"
+              placeholder="描述 OpenCode 应该做什么"
               className="min-h-28 resize-y rounded-xl bg-muted/35 p-3 text-sm/relaxed"
-              aria-label="Scheduled task prompt"
+              aria-label="计划任务提示"
             />
           </section>
 
           <div ref={detailsRef}>
-            <EditorSection title="Details">
-              <EditorRow label="Runs in">
+            <EditorSection title="详情">
+              <EditorRow label="运行于">
                 <Select
                   value={draft.destination.type === "standalone" ? "standalone" : "session"}
                   onValueChange={(value) => {
@@ -303,21 +303,21 @@ export function AutomationEditor({
                     }));
                   }}
                 >
-                  <EditorSelect label="Run destination">
+                  <EditorSelect label="运行目标">
                     <SelectValue>
-                      {draft.destination.type === "standalone" ? "New task" : "Existing task"}
+                      {draft.destination.type === "standalone" ? "新任务" : "现有任务"}
                     </SelectValue>
                   </EditorSelect>
                   <SelectContent align="end">
-                    <SelectItem value="standalone">New task</SelectItem>
-                    <SelectItem value="session">Existing task</SelectItem>
+                    <SelectItem value="standalone">新任务</SelectItem>
+                    <SelectItem value="session">现有任务</SelectItem>
                   </SelectContent>
                 </Select>
               </EditorRow>
 
               {draft.destination.type === "standalone" ? (
                 <>
-                  <EditorRow label="Project">
+                  <EditorRow label="项目">
                     <Select
                       value={draft.destination.projectID}
                       onValueChange={(value) => {
@@ -334,9 +334,9 @@ export function AutomationEditor({
                         }));
                       }}
                     >
-                      <EditorSelect label="Project">
+                      <EditorSelect label="项目">
                         <SelectValue>
-                          {selectedProject ? projectName(selectedProject) : "Choose project"}
+                          {selectedProject ? projectName(selectedProject) : "选择项目"}
                         </SelectValue>
                       </EditorSelect>
                       <SelectContent align="end">
@@ -348,7 +348,7 @@ export function AutomationEditor({
                       </SelectContent>
                     </Select>
                   </EditorRow>
-                  <EditorRow label="Workspace">
+                  <EditorRow label="工作区">
                     <Select
                       value={
                         draft.destination.workspace.type === "existing-worktree"
@@ -374,18 +374,18 @@ export function AutomationEditor({
                         });
                       }}
                     >
-                      <EditorSelect label="Workspace">
+                      <EditorSelect label="工作区">
                         <SelectValue>
                           {draft.destination.workspace.type === "new-worktree"
-                            ? "New worktree"
+                            ? "新建工作树"
                             : draft.destination.workspace.type === "current"
-                              ? "Current checkout"
-                              : "Existing worktree"}
+                              ? "当前检出"
+                              : "已有工作树"}
                         </SelectValue>
                       </EditorSelect>
                       <SelectContent align="end">
-                        <SelectItem value="new-worktree">New worktree</SelectItem>
-                        <SelectItem value="current">Current checkout</SelectItem>
+                        <SelectItem value="new-worktree">新建工作树</SelectItem>
+                        <SelectItem value="current">当前检出</SelectItem>
                         {worktrees.map((directory) => (
                           <SelectItem key={directory} value={`existing:${directory}`}>
                             {directory.split("/").at(-1) ?? directory}
@@ -394,7 +394,7 @@ export function AutomationEditor({
                       </SelectContent>
                     </Select>
                   </EditorRow>
-                  <EditorRow label="Agent">
+                  <EditorRow label="智能体">
                     <Select
                       value={draft.action.agent ?? "default"}
                       onValueChange={(value) =>
@@ -407,14 +407,14 @@ export function AutomationEditor({
                         }))
                       }
                     >
-                      <EditorSelect label="Agent">
+                      <EditorSelect label="智能体">
                         <SelectValue>
                           {agents.find((agent) => agent.id === draft.action.agent)?.name ??
-                            "Project default"}
+                            "项目默认"}
                         </SelectValue>
                       </EditorSelect>
                       <SelectContent align="end">
-                        <SelectItem value="default">Project default</SelectItem>
+                        <SelectItem value="default">项目默认</SelectItem>
                         {agents.map((agent) => (
                           <SelectItem key={agent.id} value={agent.id}>
                             {agent.name}
@@ -423,7 +423,7 @@ export function AutomationEditor({
                       </SelectContent>
                     </Select>
                   </EditorRow>
-                  <EditorRow label="Model">
+                  <EditorRow label="模型">
                     <Select
                       value={modelValue}
                       onValueChange={(value) => {
@@ -441,7 +441,7 @@ export function AutomationEditor({
                         }));
                       }}
                     >
-                      <EditorSelect label="Model">
+                      <EditorSelect label="模型">
                         <SelectValue>
                           {models.find(
                             (model) =>
@@ -460,14 +460,14 @@ export function AutomationEditor({
                       </SelectContent>
                     </Select>
                   </EditorRow>
-                  <EditorRow label="Skills">
+                  <EditorRow label="技能">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={
                           <Button type="button" variant="ghost" size="sm" className="font-normal">
                             {draft.action.skills.length
-                              ? `${draft.action.skills.length} selected`
-                              : "No skills"}
+                              ? `${draft.action.skills.length} 已选`
+                              : "无技能"}
                           </Button>
                         }
                       />
@@ -496,7 +496,7 @@ export function AutomationEditor({
                             </DropdownMenuCheckboxItem>
                           ))
                         ) : (
-                          <DropdownMenuItem disabled>No project skills</DropdownMenuItem>
+                          <DropdownMenuItem disabled>无项目技能</DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -504,7 +504,7 @@ export function AutomationEditor({
                 </>
               ) : (
                 <>
-                  <EditorRow label="Task">
+                  <EditorRow label="任务">
                     <Select
                       value={sessionDestination?.sessionID ?? ""}
                       onValueChange={(value) =>
@@ -514,33 +514,33 @@ export function AutomationEditor({
                         }))
                       }
                     >
-                      <EditorSelect label="Existing task">
-                        <SelectValue>{selectedSession?.title ?? "Choose task"}</SelectValue>
+                      <EditorSelect label="已有任务">
+                        <SelectValue>{selectedSession?.title ?? "选择任务"}</SelectValue>
                       </EditorSelect>
                       <SelectContent align="end">
                         {rootSessions.map((session) => (
                           <SelectItem key={session.id} value={session.id}>
-                            {session.title ?? "Untitled task"}
+                            {session.title ?? "未命名任务"}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </EditorRow>
-                  <EditorRow label="Location">
+                  <EditorRow label="位置">
                     <span className="block max-w-64 truncate text-xs text-muted-foreground">
-                      {selectedSession?.location.directory ?? "Unavailable"}
+                      {selectedSession?.location.directory ?? "不可用"}
                     </span>
                   </EditorRow>
-                  <EditorRow label="Agent">
+                  <EditorRow label="智能体">
                     <span className="text-xs text-muted-foreground">
-                      {selectedSession?.agent ?? "Task default"}
+                      {selectedSession?.agent ?? "任务默认"}
                     </span>
                   </EditorRow>
-                  <EditorRow label="Model">
+                  <EditorRow label="模型">
                     <span className="text-xs text-muted-foreground">
                       {selectedSession?.model
                         ? `${selectedSession.model.providerID}/${selectedSession.model.id}`
-                        : "Task default"}
+                        : "任务默认"}
                     </span>
                   </EditorRow>
                 </>
@@ -573,51 +573,51 @@ export function AutomationEditor({
             </p>
           </section>
 
-          <EditorSection title="Frequency">
-            <EditorRow label="Repeat">
+          <EditorSection title="频率">
+            <EditorRow label="重复">
               <Select value={frequency} onValueChange={(value) => setFrequency(value as Frequency)}>
-                <EditorSelect label="Repeat">
+                <EditorSelect label="重复">
                   <SelectValue>{frequencyLabel(frequency)}</SelectValue>
                 </EditorSelect>
                 <SelectContent align="end">
-                  <SelectItem value="once">Once</SelectItem>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekdays">Weekdays</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                  <SelectItem value="once">一次</SelectItem>
+                  <SelectItem value="hourly">每小时</SelectItem>
+                  <SelectItem value="daily">每天</SelectItem>
+                  <SelectItem value="weekdays">工作日</SelectItem>
+                  <SelectItem value="weekly">每周</SelectItem>
+                  <SelectItem value="monthly">每月</SelectItem>
+                  <SelectItem value="custom">自定义</SelectItem>
                 </SelectContent>
               </Select>
             </EditorRow>
             {frequency === "once" || frequency === "weekly" || frequency === "monthly" ? (
-              <EditorRow label={frequency === "once" ? "Date" : "Starting"}>
+              <EditorRow label={frequency === "once" ? "日期" : "起始"}>
                 <Input
                   type="date"
                   value={date}
                   onChange={(event) => setDate(event.target.value)}
                   className="h-7 w-36 text-xs"
-                  aria-label={frequency === "once" ? "Date" : "Starting date"}
+                  aria-label={frequency === "once" ? "日期" : "起始日期"}
                 />
               </EditorRow>
             ) : null}
             {frequency !== "hourly" ? (
-              <EditorRow label="At">
+              <EditorRow label="在">
                 <Input
                   type="time"
                   value={time}
                   onChange={(event) => setTime(event.target.value)}
                   className="h-7 w-28 text-xs"
-                  aria-label="Run time"
+                  aria-label="运行时间"
                 />
               </EditorRow>
             ) : null}
-            <EditorRow label="Timezone">
+            <EditorRow label="时区">
               <Input
                 value={timezone}
                 onChange={(event) => setTimezone(event.target.value)}
                 className="h-7 w-48 text-right text-xs"
-                aria-label="Timezone"
+                aria-label="时区"
               />
             </EditorRow>
             {frequency === "custom" ? (
@@ -634,7 +634,7 @@ export function AutomationEditor({
                 />
               </div>
             ) : null}
-            <EditorRow label="Missed runs">
+            <EditorRow label="错过的运行">
               <Select
                 value={draft.missedRuns.type}
                 onValueChange={(value) =>
@@ -647,18 +647,18 @@ export function AutomationEditor({
                   }))
                 }
               >
-                <EditorSelect label="Missed runs">
+                <EditorSelect label="错过的运行">
                   <SelectValue>
-                    {draft.missedRuns.type === "skip" ? "Skip" : "Run once when Palot returns"}
+                    {draft.missedRuns.type === "skip" ? "跳过" : "Palot 恢复后运行一次"}
                   </SelectValue>
                 </EditorSelect>
                 <SelectContent align="end">
-                  <SelectItem value="catch-up-once">Run once when Palot returns</SelectItem>
-                  <SelectItem value="skip">Skip</SelectItem>
+                  <SelectItem value="catch-up-once">Palot 恢复后运行一次</SelectItem>
+                  <SelectItem value="skip">跳过</SelectItem>
                 </SelectContent>
               </Select>
             </EditorRow>
-            <EditorRow label="Notifications">
+            <EditorRow label="通知">
               <Select
                 value={draft.notifications}
                 onValueChange={(value) =>
@@ -668,25 +668,25 @@ export function AutomationEditor({
                   }))
                 }
               >
-                <EditorSelect label="Notifications">
+                <EditorSelect label="通知">
                   <SelectValue>
                     {draft.notifications === "all-runs"
-                      ? "All runs"
+                      ? "所有运行"
                       : draft.notifications === "failures-only"
-                        ? "Failures only"
-                        : "When Palot is in the background"}
+                        ? "仅失败"
+                        : "Palot 在后台时"}
                   </SelectValue>
                 </EditorSelect>
                 <SelectContent align="end">
-                  <SelectItem value="background-only">When Palot is in the background</SelectItem>
-                  <SelectItem value="all-runs">All runs</SelectItem>
-                  <SelectItem value="failures-only">Failures only</SelectItem>
+                  <SelectItem value="background-only">Palot 在后台时</SelectItem>
+                  <SelectItem value="all-runs">所有运行</SelectItem>
+                  <SelectItem value="failures-only">仅失败</SelectItem>
                 </SelectContent>
               </Select>
             </EditorRow>
           </EditorSection>
 
-          <section aria-label="Schedule preview">
+          <section aria-label="计划预览">
             <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
               <Clock3 className="size-3.5" aria-hidden="true" />
               <span>{preview?.summary ?? automationScheduleLabel(trigger)}</span>
@@ -781,7 +781,7 @@ export function AutomationEditor({
                                   variant="ghost"
                                   size="icon-sm"
                                   className="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
-                                  aria-label="Run actions"
+                                  aria-label="运行操作"
                                 />
                               }
                             >
@@ -855,7 +855,7 @@ export function AutomationEditor({
           ) : null}
         </div>
         <Button type="button" disabled={!canSave || saving} onClick={() => void save()}>
-          {saving ? "Saving…" : automation ? "Save changes" : "Create"}
+          {saving ? "正在保存…" : automation ? "保存更改" : "创建"}
         </Button>
         {automation ? (
           <Button

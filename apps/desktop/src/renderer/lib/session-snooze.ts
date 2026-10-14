@@ -1,8 +1,8 @@
 export const sessionSnoozeChoices = [
-  ["In 1 hour", (now: number) => now + 60 * 60 * 1_000],
-  ["In 3 hours", (now: number) => now + 3 * 60 * 60 * 1_000],
-  ["Tomorrow", tomorrowAtNine],
-  ["Next week", nextWeekAtNine],
+  ["1 小时后", (now: number) => now + 60 * 60 * 1_000],
+  ["3 小时后", (now: number) => now + 3 * 60 * 60 * 1_000],
+  ["明天", tomorrowAtNine],
+  ["下周", nextWeekAtNine],
 ] as const;
 
 export function formatSnoozeMenuTime(value: number): string {

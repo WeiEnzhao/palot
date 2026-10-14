@@ -145,7 +145,7 @@ describe("Composer discovery", () => {
       <Composer session={session} messages={[]} isWorking onMessageAdmitted={admitted} />,
       store,
     );
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "/btw Why this approach?" } });
     fireEvent.keyDown(input, { key: "Enter" });
     expect(generate).toHaveBeenCalledOnce();
@@ -173,7 +173,7 @@ describe("Composer discovery", () => {
     setOpenCodeClientForTest(client({ session: { generate } }));
     const send = vi.spyOn(palot, "sendComposerPrompt");
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "/btw " } });
     fireEvent.keyDown(input, { key: "Enter" });
     expect(screen.getByText("Enter a question after /btw.")).toBeTruthy();
@@ -198,11 +198,11 @@ describe("Composer discovery", () => {
     const cancel = vi.spyOn(palot, "cancelAttachmentUpload").mockResolvedValue(undefined);
     const send = vi.spyOn(palot, "sendComposerPrompt");
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     await userEvent.type(input, "Keep this draft");
-    await userEvent.click(screen.getByRole("button", { name: "Attach files" }));
+    await userEvent.click(screen.getByRole("button", { name: "附加文件" }));
     expect(screen.getByRole("status").textContent).toBe("Preparing attachments…");
-    expect(screen.getByRole("button", { name: "Send message" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "发送消息" }).hasAttribute("disabled")).toBe(
       true,
     );
     fireEvent.keyDown(input, { key: "Enter" });
@@ -220,7 +220,7 @@ describe("Composer discovery", () => {
       }),
     );
     expect(screen.getByRole("status").textContent).toContain("50%");
-    await userEvent.click(screen.getByRole("button", { name: "Cancel attachment upload" }));
+    await userEvent.click(screen.getByRole("button", { name: "取消上传附件" }));
     expect(cancel).toHaveBeenCalledWith(requestID);
     expect(unsubscribe).toHaveBeenCalled();
     await act(async () => complete({ files: [], errors: ["Stale error"] }));
@@ -240,7 +240,7 @@ describe("Composer discovery", () => {
     const cancel = vi.spyOn(palot, "cancelAttachmentUpload").mockResolvedValue(undefined);
     const store = createStore();
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />, store);
-    await userEvent.click(screen.getByRole("button", { name: "Attach files" }));
+    await userEvent.click(screen.getByRole("button", { name: "附加文件" }));
     act(() =>
       store.set(runtimeAtom, {
         ...store.get(runtimeAtom)!,
@@ -259,7 +259,7 @@ describe("Composer discovery", () => {
     );
     expect(screen.queryByText("stale.png")).toBeNull();
     expect(screen.queryByText("Old error")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Cancel attachment upload" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "取消上传附件" })).toBeNull();
   });
 
   it("blocks sending during clipboard preparation and never uploads after unmount", async () => {
@@ -269,7 +269,7 @@ describe("Composer discovery", () => {
     const cancel = vi.spyOn(palot, "cancelAttachmentUpload").mockResolvedValue(undefined);
     vi.spyOn(palot, "onAttachmentProgress").mockReturnValue(() => undefined);
     const view = renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     await userEvent.type(input, "Keep the screenshot");
     fireEvent.paste(input, {
       clipboardData: {
@@ -298,7 +298,7 @@ describe("Composer discovery", () => {
       .mockResolvedValue({ files: [], errors: [] });
     vi.spyOn(palot, "onAttachmentProgress").mockReturnValue(() => undefined);
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     const data = new ArrayBuffer(2);
     fireEvent.paste(input, {
       clipboardData: {
@@ -342,20 +342,20 @@ describe("Composer discovery", () => {
         onCreateSession={createSession}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: "Approvals: Defaults" }));
+    await userEvent.click(screen.getByRole("button", { name: "审批：默认" }));
     await userEvent.click(await screen.findByRole("menuitemradio", { name: /^Full access/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "Enable Full access" }));
-    await screen.findByRole("button", { name: "Approvals: Full access" });
+    await userEvent.click(await screen.findByRole("button", { name: "启用完全访问" }));
+    await screen.findByRole("button", { name: "审批：完全访问" });
     await userEvent.type(
-      screen.getByRole("textbox", { name: "Message Palot" }),
+      screen.getByRole("textbox", { name: "向 Palot 发送消息" }),
       "Inspect the project",
     );
-    await userEvent.click(screen.getByRole("button", { name: "Send message" }));
+    await userEvent.click(screen.getByRole("button", { name: "发送消息" }));
     await waitFor(() =>
       expect(createSession).toHaveBeenCalledWith(expect.objectContaining({ approvalMode: "full" })),
     );
     await waitFor(() => expect(send).toHaveBeenCalledOnce());
-    expect(screen.getByRole("button", { name: "Approvals: Defaults" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "审批：默认" })).toBeTruthy();
   });
 
   it("does not memoize away external session permission updates", () => {
@@ -369,15 +369,15 @@ describe("Composer discovery", () => {
       </QueryClientProvider>
     );
     const view = render(wrap(session));
-    expect(screen.getByRole("button", { name: "Approvals: Defaults" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "审批：默认" })).toBeTruthy();
     view.rerender(
       wrap({ ...session, permissions: [{ action: "*", resource: "*", effect: "allow" }] }),
     );
-    expect(screen.getByRole("button", { name: "Approvals: Full access" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "审批：完全访问" })).toBeTruthy();
     view.rerender(
       wrap({ ...session, permissions: [{ action: "edit", resource: "*", effect: "deny" }] }),
     );
-    expect(screen.getByRole("button", { name: "Approvals: Custom" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "审批：自定义" })).toBeTruthy();
   });
 
   it("shows hydrated canonical default reasoning as selected Auto without changing the session", async () => {
@@ -407,12 +407,12 @@ describe("Composer discovery", () => {
       model: { id: "reasoner", providerID: "openai", variant: "default" },
     };
     renderComposer(<Composer session={hydratedSession} messages={[]} isWorking={false} />);
-    const trigger = await screen.findByRole("button", { name: "Model: Reasoner" });
+    const trigger = await screen.findByRole("button", { name: "模型：Reasoner" });
     expect(trigger.getAttribute("aria-description")).toBe("Reasoning: Auto");
     expect(screen.queryByRole("button", { name: /^Reasoning:/ })).toBeNull();
     await userEvent.click(trigger);
-    expect(screen.getByRole("button", { name: "Auto", pressed: true })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "High", pressed: false })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "自动", pressed: true })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "高", pressed: false })).toBeTruthy();
     expect(hydratedSession.model.variant).toBe("default");
     expect(switchModel).not.toHaveBeenCalled();
   });
@@ -460,9 +460,9 @@ describe("Composer discovery", () => {
       />,
       store,
     );
-    await screen.findByRole("button", { name: "Model: Global model" });
+    await screen.findByRole("button", { name: "模型：全局模型" });
     await userEvent.type(
-      screen.getByRole("textbox", { name: "Message Palot" }),
+      screen.getByRole("textbox", { name: "向 Palot 发送消息" }),
       "Use the server defaults{Enter}",
     );
     await waitFor(() => expect(send).toHaveBeenCalled());
@@ -518,8 +518,8 @@ describe("Composer discovery", () => {
         onCreateSession={createSession}
       />,
     );
-    await screen.findByRole("button", { name: "Model: Reasoner" });
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    await screen.findByRole("button", { name: "模型：Reasoner" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     await userEvent.type(input, "Plan the change{Enter}");
     expect(createSession).not.toHaveBeenCalled();
     await act(async () =>
@@ -537,10 +537,10 @@ describe("Composer discovery", () => {
       }),
     );
     // OpenCode lists its resolved default agent first; the draft shows it by name.
-    await userEvent.click(await screen.findByRole("button", { name: "Agent: Plan (default)" }));
+    await userEvent.click(await screen.findByRole("button", { name: "智能体：Plan（默认）" }));
     await userEvent.click(await screen.findByRole("option", { name: "Plan" }));
-    await userEvent.click(screen.getByRole("button", { name: "Model: Reasoner" }));
-    await userEvent.click(screen.getByRole("button", { name: "High" }));
+    await userEvent.click(screen.getByRole("button", { name: "模型：Reasoner" }));
+    await userEvent.click(screen.getByRole("button", { name: "高" }));
     await userEvent.click(input);
     await userEvent.keyboard("{Enter}");
     expect(createSession).toHaveBeenCalledWith({
@@ -558,8 +558,8 @@ describe("Composer discovery", () => {
         isWorking={false}
       />,
     );
-    expect(await screen.findByRole("button", { name: "Model: retired, unavailable" })).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Model: retired, unavailable" }));
+    expect(await screen.findByRole("button", { name: "模型：retired，不可用" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "模型：retired，不可用" }));
     expect(
       screen.getByText(
         "This task's selected model is no longer available. Choose another model to continue.",
@@ -606,10 +606,10 @@ describe("Composer discovery", () => {
     });
 
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    await screen.findByRole("button", { name: "Model: Fast" });
+    await screen.findByRole("button", { name: "模型：Fast" });
     modelNameReads = 0;
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Message Palot" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), {
       target: { value: "Typing should stay local" },
     });
 
@@ -706,9 +706,9 @@ describe("Composer discovery", () => {
     const firstSession = { ...session, id: "new:project-1" };
     const view = render(renderTree(firstSession));
 
-    await userEvent.click(await screen.findByRole("button", { name: "Model: Fast" }));
+    await userEvent.click(await screen.findByRole("button", { name: "模型：Fast" }));
     await userEvent.click(screen.getByRole("option", { name: /Deep/ }));
-    expect(screen.getByRole("button", { name: "Model: Deep" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "模型：Deep" })).toBeTruthy();
 
     view.rerender(
       renderTree({
@@ -719,7 +719,7 @@ describe("Composer discovery", () => {
       }),
     );
 
-    expect(await screen.findByRole("button", { name: "Model: Fast" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "模型：Fast" })).toBeTruthy();
   });
 
   it("changes draft reasoning without overwriting the explicit project default", async () => {
@@ -780,8 +780,8 @@ describe("Composer discovery", () => {
       store,
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "Model: Reasoner" }));
-    await userEvent.click(screen.getByRole("button", { name: "High" }));
+    await userEvent.click(await screen.findByRole("button", { name: "模型：Reasoner" }));
+    await userEvent.click(screen.getByRole("button", { name: "高" }));
 
     expect(
       store.get(defaultModelsAtom)[modelProjectPreferenceKey("test-profile", session.projectID)],
@@ -791,7 +791,7 @@ describe("Composer discovery", () => {
       variant: "low",
     });
     expect(
-      screen.getByRole("button", { name: "Model: Reasoner" }).getAttribute("aria-description"),
+      screen.getByRole("button", { name: "模型：Reasoner" }).getAttribute("aria-description"),
     ).toBe("Reasoning: High");
   });
 
@@ -853,7 +853,7 @@ describe("Composer discovery", () => {
         <Composer session={{ ...session, projectID }} messages={[]} isWorking={false} />,
         store,
       );
-      await userEvent.click(await screen.findByRole("button", { name: "Model: Fast" }));
+      await userEvent.click(await screen.findByRole("button", { name: "模型：Fast" }));
 
       const options = screen.getAllByRole("option").map((option) => option.textContent);
       expect(options).toEqual([
@@ -986,7 +986,7 @@ describe("Composer discovery", () => {
       );
 
       expect(await screen.findByRole("button", { name: `Model: ${expectedName}` })).toBeTruthy();
-      await userEvent.type(screen.getByRole("textbox", { name: "Message Palot" }), "Start here");
+      await userEvent.type(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), "Start here");
       await userEvent.keyboard("{Enter}");
 
       expect(createSession).toHaveBeenCalledWith({
@@ -1022,7 +1022,7 @@ describe("Composer discovery", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "/rev");
     await user.click(await screen.findByRole("option", { name: /\/review/i }));
     expect(input.value).toBe("/review ");
@@ -1095,7 +1095,7 @@ describe("Composer discovery", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const agentSelector = screen.getByRole("button", { name: "Agent: Default" });
+    const agentSelector = screen.getByRole("button", { name: "智能体：默认" });
     await user.click(agentSelector);
     const buildOption = await screen.findByRole("option", { name: "Build" });
     expect(screen.queryByRole("option", { name: "Explore" })).toBeNull();
@@ -1124,7 +1124,7 @@ describe("Composer discovery", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "Check @auth");
     await waitFor(() =>
       expect(findWorkspaceFiles).toHaveBeenCalledWith(
@@ -1194,10 +1194,10 @@ describe("Composer discovery", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "Ask @");
-    const agents = await screen.findByRole("group", { name: "Agents" });
-    const references = screen.getByRole("group", { name: "References" });
+    const agents = await screen.findByRole("group", { name: "智能体" });
+    const references = screen.getByRole("group", { name: "引用" });
     expect(
       references.compareDocumentPosition(agents) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -1238,7 +1238,7 @@ describe("Composer discovery", () => {
     Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
     const send = vi.spyOn(palot, "sendComposerPrompt");
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />, store);
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
 
     for (const [name, commandID] of [
       ["fork", "task.fork"],
@@ -1279,7 +1279,7 @@ describe("Composer discovery", () => {
         requestedAt: Date.now(),
       }),
     );
-    expect(await screen.findByText("Model and reasoning")).toBeTruthy();
+    expect(await screen.findByText("模型与推理")).toBeTruthy();
     expect(store.get(composerActionRequestAtom)).toBeNull();
 
     // Another task's request is left for its own composer.
@@ -1325,7 +1325,7 @@ describe("Composer discovery", () => {
     );
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "/");
     await screen.findByRole("option", { name: /\/alpha/i });
     const bravo = screen.getByRole("option", { name: /\/bravo/i });
@@ -1354,7 +1354,7 @@ describe("Composer discovery", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "/comp");
     await user.click(await screen.findByRole("option", { name: /\/compact/i }));
     expect(input.value).toBe("/compact ");
@@ -1415,7 +1415,7 @@ describe("Composer discovery", () => {
 
     renderComposer(<Composer session={session} messages={[message]} isWorking={false} />);
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "/und");
     await user.click(await screen.findByRole("option", { name: /\/undo/i }));
     await user.keyboard("{Enter}");
@@ -1491,7 +1491,7 @@ describe("Composer discovery", () => {
       />,
     );
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "/red");
     await user.click(await screen.findByRole("option", { name: /\/redo/i }));
     await user.keyboard("{Enter}");
@@ -1538,7 +1538,7 @@ describe("Composer discovery", () => {
       renderComposer(
         <Composer session={{ ...session, revert }} messages={messages} isWorking={false} />,
       );
-      const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+      const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
       fireEvent.change(input, { target: { value: `/${command}` } });
       await userEvent.click(
         await screen.findByRole("option", { name: new RegExp(`/${command}`, "i") }),
@@ -1624,7 +1624,7 @@ describe("Composer discovery", () => {
       );
       const mounted = render(view(session));
       const input = () =>
-        screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+        screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
       fireEvent.change(input(), { target: { value: "/undo" } });
       await userEvent.click(await screen.findByRole("option", { name: /\/undo/i }));
       fireEvent.keyDown(input(), { key: "Enter" });
@@ -1692,7 +1692,7 @@ describe("Composer discovery", () => {
           isWorking
         />,
       );
-      const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+      const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
       fireEvent.change(input, { target: { value: `/${command}` } });
       await userEvent.click(
         await screen.findByRole("option", { name: new RegExp(`/${command}`, "i") }),
@@ -1720,7 +1720,7 @@ describe("Composer text entry", () => {
     setOpenCodeClientForTest(client({ session: { prompt } }));
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" }) as HTMLTextAreaElement;
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" }) as HTMLTextAreaElement;
     await userEvent.type(input, "First line{Shift>}{Enter}{/Shift}Second line");
     expect(input.value).toBe("First line\nSecond line");
     expect(prompt).not.toHaveBeenCalled();
@@ -1732,7 +1732,7 @@ describe("Composer text entry", () => {
     fireEvent.compositionEnd(input);
     expect(prompt).not.toHaveBeenCalled();
 
-    await userEvent.click(screen.getByRole("button", { name: "Send message" }));
+    await userEvent.click(screen.getByRole("button", { name: "发送消息" }));
     await waitFor(() =>
       expect(prompt).toHaveBeenCalledWith(
         expect.objectContaining({ text: "First line\nSecond line 日本語" }),
@@ -1756,9 +1756,9 @@ describe("Composer steering", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking />);
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "Run this next" } });
-    expect(screen.getByRole("button", { name: "Choose message delivery" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "选择消息投递方式" })).toBeTruthy();
     fireEvent.keyDown(input, { key: "Enter" });
 
     await waitFor(() =>
@@ -1775,15 +1775,15 @@ describe("Composer steering", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking />);
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Message Palot" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), {
       target: { value: "Change course" },
     });
-    expect(screen.getByRole("button", { name: "Queue message after current turn" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "在当前回合后排队消息" })).toBeTruthy();
     expect(screen.getByText("Queue", { exact: true })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Choose message delivery" }));
+    await user.click(screen.getByRole("button", { name: "选择消息投递方式" }));
     await user.click(await screen.findByRole("menuitemradio", { name: /Steer current turn/i }));
 
-    expect(screen.getByRole("button", { name: "Steer current turn" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "引导当前回合" })).toBeTruthy();
     expect(screen.getByText("Steer", { exact: true })).toBeTruthy();
   });
 
@@ -1800,7 +1800,7 @@ describe("Composer steering", () => {
 
     renderComposer(<Composer session={session} messages={[]} isWorking />);
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "Correct course" } });
     fireEvent.keyDown(input, { key: "Enter", metaKey: true });
 
@@ -1876,7 +1876,7 @@ describe("Composer steering", () => {
       store,
     );
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "Change course" } });
     fireEvent.keyDown(input, { key: "Enter" });
     await act(async () => undefined);
@@ -1948,21 +1948,21 @@ describe("Composer steering", () => {
       store,
     );
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "Change course" } });
     fireEvent.keyDown(input, { key: "Enter" });
     await act(async () => undefined);
     await act(() => vi.advanceTimersByTimeAsync(4_999));
     expect(
       screen.queryByRole("button", {
-        name: "Send blocking work to background so the message can steer this turn",
+        name: "将阻塞的工作发送到后台，以便消息可以引导当前回合",
       }),
     ).toBeNull();
 
     await act(() => vi.advanceTimersByTimeAsync(1));
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Send blocking work to background so the message can steer this turn",
+        name: "将阻塞的工作发送到后台，以便消息可以引导当前回合",
       }),
     );
     await act(async () => undefined);
@@ -2006,7 +2006,7 @@ describe("Composer steering", () => {
       store,
     );
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "Change course" } });
     fireEvent.keyDown(input, { key: "Enter" });
     await act(async () => undefined);
@@ -2078,7 +2078,7 @@ describe("Composer steering", () => {
       store,
     );
 
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "Change course" } });
     fireEvent.keyDown(input, { key: "Enter" });
     await act(async () => undefined);
@@ -2094,7 +2094,7 @@ describe("Composer steering", () => {
       screen.getByText(/Could not background the blocking work: No background capacity/),
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Retry sending blocking work to background" }),
+      screen.getByRole("button", { name: "重试发送阻塞的工作到后台" }),
     ).toBeTruthy();
   });
   it("interrupts a working task from the stop control", async () => {
@@ -2106,7 +2106,7 @@ describe("Composer steering", () => {
     setOpenCodeClientForTest(client({ session: { interrupt } }));
 
     renderComposer(<Composer session={session} messages={[]} isWorking />);
-    await userEvent.click(screen.getByRole("button", { name: "Stop task" }));
+    await userEvent.click(screen.getByRole("button", { name: "停止任务" }));
 
     await waitFor(() => expect(interrupt).toHaveBeenCalledWith({ sessionID: session.id }));
   });
@@ -2179,18 +2179,18 @@ describe("Composer pending inputs", () => {
   }
 
   function input() {
-    return screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    return screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
   }
 
   async function writeOriginalDraft() {
     fireEvent.change(input(), { target: { value: "Original unsent draft" } });
-    await userEvent.click(screen.getByRole("button", { name: "Attach files" }));
+    await userEvent.click(screen.getByRole("button", { name: "附加文件" }));
     expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
   }
 
   async function editQueuedDraft() {
-    await userEvent.click(screen.getByRole("button", { name: "More pending message actions" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Cancel and edit" }));
+    await userEvent.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "取消并编辑" }));
   }
 
   it.each(["queue", "steer"] as const)(
@@ -2245,7 +2245,7 @@ describe("Composer pending inputs", () => {
       expect(
         screen.getByText(delivery === "queue" ? "Queue" : "Steer", { exact: true }),
       ).toBeTruthy();
-      await userEvent.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+      await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
       expect(input().value).toBe("Original unsent draft");
       expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
       expect(interrupt).not.toHaveBeenCalled();
@@ -2307,7 +2307,7 @@ describe("Composer pending inputs", () => {
     const returned = mount();
     expect(input().value).toBe("First profile edit");
     expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input().value).toBe("Original unsent draft");
     expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
     returned.unmount();
@@ -2335,7 +2335,7 @@ describe("Composer pending inputs", () => {
       await act(async () => result.resolve(receipt));
       expect(input().value).toBe("Other profile edit");
       expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
-      await userEvent.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+      await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
       expect(input().value).toBe("Original unsent draft");
       expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
       other.unmount();
@@ -2357,7 +2357,7 @@ describe("Composer pending inputs", () => {
     mount();
     expect(input().value).toBe("Revised queued draft");
     expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input().value).toBe("Original unsent draft");
     expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
@@ -2442,7 +2442,7 @@ describe("Composer pending inputs", () => {
       if (editing) {
         expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
         await userEvent.click(
-          screen.getByRole("button", { name: "Discard edit and restore draft" }),
+          screen.getByRole("button", { name: "放弃编辑并恢复原稿" }),
         );
         expect(input().value).toBe("Original unsent draft");
       }
@@ -2483,7 +2483,7 @@ describe("Composer pending inputs", () => {
     await editQueuedDraft();
     fireEvent.keyDown(input(), { key: "Enter" });
     await waitFor(() => expect(send).toHaveBeenCalledTimes(1));
-    await userEvent.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     fireEvent.change(input(), { target: { value: "Updated original draft" } });
     await act(async () => result.reject(new Error("Send failed")));
     expect(input().value).toBe("Updated original draft");
@@ -2503,7 +2503,7 @@ describe("Composer pending inputs", () => {
     fireEvent.change(input(), { target: { value: "Typed while canceling" } });
     await act(async () => result.resolve());
     expect(input().value).toBe("Queued draft");
-    await userEvent.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input().value).toBe("Typed while canceling");
     expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
     expect(cancel).toHaveBeenCalledTimes(1);
@@ -2560,7 +2560,7 @@ describe("Composer pending inputs", () => {
     );
 
     const pending = screen.getByRole("region", { name: `Pending message actions: ${detail}` });
-    const rail = screen.getByRole("region", { name: "Pending messages" });
+    const rail = screen.getByRole("region", { name: "待发送的消息" });
     const inputGroup = input().closest('[data-slot="input-group"]');
     expect(rail.contains(pending)).toBe(true);
     expect(pending.closest('[data-slot="input-group"]')).toBeNull();
@@ -2573,8 +2573,8 @@ describe("Composer pending inputs", () => {
     expect(screen.getByText(detail).className).toContain("truncate");
     expect(screen.getByText("Queued")).toBeTruthy();
     expect(screen.getByText("Steering")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Steer next" })).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "More pending message actions" })).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "引导下一个" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "更多待发送消息操作" })).toHaveLength(2);
   });
 
   it.each(["success", "failure"])(
@@ -2586,7 +2586,7 @@ describe("Composer pending inputs", () => {
       mount();
       await writeOriginalDraft();
       const button = screen.getByRole<HTMLButtonElement>("button", {
-        name: "Cancel pending message",
+        name: "取消待发送的消息",
       });
       await userEvent.click(button);
       expect(cancel).toHaveBeenCalledExactlyOnceWith({
@@ -2619,12 +2619,12 @@ describe("Composer pending inputs", () => {
       const { mount, cancel, send, store } = draftHarness();
       store.set(defaultDeliveryAtom, initial);
       mount();
-      await userEvent.click(screen.getByRole("button", { name: "More pending message actions" }));
+      await userEvent.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
       await userEvent.click(screen.getByRole("menuitem", { name: action }));
       expect(store.get(defaultDeliveryAtom)).toBe(next);
       expect(cancel).not.toHaveBeenCalled();
       expect(screen.getByText("Queued")).toBeTruthy();
-      expect(screen.getByRole("button", { name: "Steer next" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "引导下一个" })).toBeTruthy();
       fireEvent.change(input(), { target: { value: "Next follow-up" } });
       fireEvent.keyDown(input(), { key: "Enter" });
       await waitFor(() =>
@@ -2641,11 +2641,11 @@ describe("Composer pending inputs", () => {
     mount();
     await writeOriginalDraft();
     await editQueuedDraft();
-    await userEvent.click(screen.getByRole("button", { name: "More pending message actions" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Turn off queueing" }));
+    await userEvent.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "关闭排队" }));
     expect(store.get(defaultDeliveryAtom)).toBe("steer");
     expect(cancel).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "Queue message after current turn" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "在当前回合后排队消息" })).toBeTruthy();
     fireEvent.keyDown(input(), { key: "Enter" });
     await waitFor(() =>
       expect(send).toHaveBeenCalledWith(
@@ -2689,7 +2689,7 @@ describe("Composer pending inputs", () => {
 
   it("does not reserve a rail when there are no pending inputs", () => {
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    expect(screen.queryByRole("region", { name: "Pending messages" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "待发送的消息" })).toBeNull();
     expect(input()).toBeTruthy();
   });
 
@@ -2738,10 +2738,10 @@ describe("Composer pending inputs", () => {
       />,
     );
 
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "Existing composer draft");
-    await user.click(screen.getByRole("button", { name: "More pending message actions" }));
-    await user.click(screen.getByRole("menuitem", { name: "Cancel and edit" }));
+    await user.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
+    await user.click(screen.getByRole("menuitem", { name: "取消并编辑" }));
 
     await waitFor(() =>
       expect(cancel).toHaveBeenCalledWith({ sessionID: session.id, inboxID: message.id }),
@@ -2749,7 +2749,7 @@ describe("Composer pending inputs", () => {
     expect(input.value).toBe("Pending message to revise");
     expect(screen.getByText(/Resubmitting adds it to the end/)).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: "Discard edit and restore draft" }));
+    await user.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input.value).toBe("Existing composer draft");
   });
 });
@@ -2772,20 +2772,20 @@ describe("Composer blocking requests", () => {
       />,
     );
 
-    expect(screen.getByRole("region", { name: "Blocking question" })).toBeTruthy();
-    const rail = screen.getByRole("region", { name: "Pending messages" });
-    const question = screen.getByRole("region", { name: "Blocking question" });
+    expect(screen.getByRole("region", { name: "阻塞问题" })).toBeTruthy();
+    const rail = screen.getByRole("region", { name: "待发送的消息" });
+    const question = screen.getByRole("region", { name: "阻塞问题" });
     expect(rail.closest('[data-slot="input-group"]')).toBeNull();
     expect(rail.nextElementSibling?.contains(question)).toBe(true);
     expect(question.closest('[data-slot="input-group"]')).toBeTruthy();
-    expect(within(rail).getByRole("button", { name: "Run after current turn" })).toBeTruthy();
-    expect(screen.queryByRole("textbox", { name: "Message Palot" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Attach files" })).toBeNull();
+    expect(within(rail).getByRole("button", { name: "在当前回合后运行" })).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: "向 Palot 发送消息" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "附加文件" })).toBeNull();
     expect(screen.queryByRole("button", { name: /^Model:/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /^Agent:/ })).toBeNull();
-    expect(screen.getByRole("button", { name: "Approvals: Defaults" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Open Context tab" })).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Stop task" }));
+    expect(screen.getByRole("button", { name: "审批：默认" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "打开上下文标签" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "停止任务" }));
     expect(interrupt).toHaveBeenCalledWith(session.id);
   });
 });
@@ -2835,14 +2835,14 @@ describe("Composer shell mode", () => {
     setOpenCodeClientForTest(client({ session: { shell, prompt } }));
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
 
-    await user.type(screen.getByRole("textbox", { name: "Message Palot" }), "!");
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Shell command" });
+    await user.type(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), "!");
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Shell 命令" });
     expect(input.value).toBe("");
     expect(input.placeholder).toBe("Run a shell command");
-    expect(screen.getByRole("button", { name: "Exit shell mode" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "退出 Shell 模式" })).toBeTruthy();
 
     await user.type(input, "/bin/ls @src $HOME");
-    expect(screen.queryByRole("listbox", { name: "Composer suggestions" })).toBeNull();
+    expect(screen.queryByRole("listbox", { name: "编辑器建议" })).toBeNull();
     await user.keyboard("{Enter}");
 
     await waitFor(() =>
@@ -2853,35 +2853,35 @@ describe("Composer shell mode", () => {
     );
     expect(prompt).not.toHaveBeenCalled();
     await waitFor(() => expect(input.value).toBe(""));
-    expect(screen.getByRole("textbox", { name: "Shell command" })).toBe(input);
+    expect(screen.getByRole("textbox", { name: "Shell 命令" })).toBe(input);
   });
 
   it("leaves with Backspace on an empty command or Escape, and toggles with Mod+Shift+X/E", async () => {
     const user = userEvent.setup();
     Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
 
     await user.type(input, "!");
     await user.type(input, "ls");
     await user.keyboard("{Backspace}{Backspace}");
-    expect(screen.getByRole("textbox", { name: "Shell command" })).toBe(input);
+    expect(screen.getByRole("textbox", { name: "Shell 命令" })).toBe(input);
     await user.keyboard("{Backspace}");
-    expect(screen.getByRole("textbox", { name: "Message Palot" })).toBe(input);
+    expect(screen.getByRole("textbox", { name: "向 Palot 发送消息" })).toBe(input);
     expect(input.value).toBe("");
 
     fireEvent.keyDown(input, { key: "X", code: "KeyX", ctrlKey: true, shiftKey: true });
-    expect(screen.getByRole("textbox", { name: "Shell command" })).toBe(input);
+    expect(screen.getByRole("textbox", { name: "Shell 命令" })).toBe(input);
     await user.keyboard("{Escape}");
-    expect(screen.getByRole("textbox", { name: "Message Palot" })).toBe(input);
+    expect(screen.getByRole("textbox", { name: "向 Palot 发送消息" })).toBe(input);
 
     await user.type(input, "keep this text");
     fireEvent.keyDown(input, { key: "X", code: "KeyX", ctrlKey: true, shiftKey: true });
-    expect(screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Shell command" }).value).toBe(
+    expect(screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Shell 命令" }).value).toBe(
       "keep this text",
     );
     fireEvent.keyDown(input, { key: "E", code: "KeyE", ctrlKey: true, shiftKey: true });
-    expect(screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" }).value).toBe(
+    expect(screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" }).value).toBe(
       "keep this text",
     );
   });
@@ -2906,11 +2906,11 @@ describe("Composer shell mode", () => {
         onCreateSession={createSession}
       />,
     );
-    await screen.findByRole("button", { name: "Model: Fast" });
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    await screen.findByRole("button", { name: "模型：Fast" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     await userEvent.type(input, "!");
     await userEvent.type(
-      screen.getByRole("textbox", { name: "Shell command" }),
+      screen.getByRole("textbox", { name: "Shell 命令" }),
       "git status{Enter}",
     );
 
@@ -2941,7 +2941,7 @@ describe("Composer prompt history", () => {
   it("recalls prompts newest first from an empty composer and restores the empty draft", async () => {
     Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
     renderComposer(<Composer session={session} messages={messages} isWorking={false} />);
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
 
     press(input, "ArrowUp", 0);
     expect(input.value).toBe("Second prompt");
@@ -2961,7 +2961,7 @@ describe("Composer prompt history", () => {
     const user = userEvent.setup();
     Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
     renderComposer(<Composer session={session} messages={messages} isWorking={false} />);
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "Work in progress");
 
     press(input, "ArrowUp", input.value.length);
@@ -2980,7 +2980,7 @@ describe("Composer prompt history", () => {
     Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
     setOpenCodeClientForTest(client({ session: { shell } }));
     renderComposer(<Composer session={session} messages={messages} isWorking={false} />);
-    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message Palot" });
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
 
     await user.type(input, "!");
     await user.type(input, "ls -la{Enter}");
@@ -3016,14 +3016,14 @@ describe("Composer shortcuts", () => {
       code: "Quote",
       ctrlKey: true,
     });
-    expect(screen.queryByText("Model and reasoning")).toBeNull();
+    expect(screen.queryByText("模型与推理")).toBeNull();
 
-    fireEvent.keyDown(screen.getByRole("textbox", { name: "Message Palot" }), {
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), {
       key: "'",
       code: "Quote",
       ctrlKey: true,
     });
-    expect(await screen.findByText("Model and reasoning")).toBeTruthy();
+    expect(await screen.findByText("模型与推理")).toBeTruthy();
   });
 
   it("cycles primary agents forward and backward, loading them on demand", async () => {
@@ -3051,7 +3051,7 @@ describe("Composer shortcuts", () => {
       errors: [],
     });
     renderComposer(<Composer session={session} messages={[]} isWorking={false} />);
-    const input = screen.getByRole("textbox", { name: "Message Palot" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     expect(list).not.toHaveBeenCalled();
 
     fireEvent.keyDown(input, { key: ".", code: "Period", ctrlKey: true });

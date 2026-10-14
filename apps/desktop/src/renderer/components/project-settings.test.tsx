@@ -72,7 +72,7 @@ describe("Project settings", () => {
     client.setQueryData(oldKey, {});
     client.setQueryData(newKey, {});
     client.setQueryData(unrelated, {});
-    const input = await screen.findByLabelText("Main checkout directory");
+    const input = await screen.findByLabelText("主检出目录");
     await user.clear(input);
     await user.type(input, "/new");
     await user.click(screen.getByRole("button", { name: "Save project" }));
@@ -84,7 +84,7 @@ describe("Project settings", () => {
     await act(async () => {
       resolve({ ...first, canonical: "/new" });
     });
-    expect((screen.getByLabelText("Main checkout directory") as HTMLInputElement).value).toBe(
+    expect((screen.getByLabelText("主检出目录") as HTMLInputElement).value).toBe(
       "/second",
     );
     expect(screen.queryByText("Project settings saved.")).toBeNull();
@@ -104,7 +104,7 @@ describe("Project settings", () => {
       .mockRejectedValueOnce(new Error("Permission denied"))
       .mockResolvedValue({ ...first, name: "Edited" });
     setup(update);
-    const input = await screen.findByLabelText("Project name");
+    const input = await screen.findByLabelText("项目名称");
     await user.clear(input);
     await user.type(input, "Edited");
     await user.click(screen.getByRole("button", { name: "Save project" }));
@@ -121,14 +121,14 @@ describe("Project settings", () => {
   it("keeps unsaved input through refresh and discards it when switching projects", async () => {
     const user = userEvent.setup();
     const { client, switchProject, update } = setup();
-    const input = await screen.findByLabelText("Project name");
+    const input = await screen.findByLabelText("项目名称");
     await user.clear(input);
     await user.type(input, "Unsaved");
     await client.invalidateQueries({ queryKey: projectDetailsKey("connection-1", "first") });
     expect((input as HTMLInputElement).value).toBe("Unsaved");
     switchProject();
     await waitFor(() =>
-      expect((screen.getByLabelText("Project name") as HTMLInputElement).value).toBe("Second"),
+      expect((screen.getByLabelText("项目名称") as HTMLInputElement).value).toBe("Second"),
     );
     expect(
       (screen.getByRole("button", { name: "Save project" }) as HTMLButtonElement).disabled,

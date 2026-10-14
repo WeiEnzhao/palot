@@ -15,9 +15,9 @@ import { describeLines, toDraftComments } from "./pull-request-code-model";
 type ReviewEvent = PullRequestReviewInput["event"];
 
 const SUBMIT_LABEL: Record<ReviewEvent, string> = {
-  comment: "Comment",
-  approve: "Approve",
-  "request-changes": "Request changes",
+  comment: "评论",
+  approve: "批准",
+  "request-changes": "请求更改",
 };
 
 /** Toolbar trigger and popover holding the pending line comments. */
@@ -47,19 +47,19 @@ export function PendingCommentsTray({
             type="button"
             variant="ghost"
             size="sm"
-            aria-label={`${count} pending ${count === 1 ? "comment" : "comments"}`}
+            aria-label={`${count} 条待审${count === 1 ? "评论" : "评论"}`}
           />
         }
       >
         <MessageSquare data-icon="inline-start" aria-hidden="true" />
         <span className="tabular-nums">{count}</span>
-        <span className="hidden @min-[40rem]/pr-code:inline">pending</span>
+        <span className="hidden @min-[40rem]/pr-code:inline">待审</span>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-96 max-w-[calc(100vw-2rem)] gap-2">
         <div className="text-meta font-medium text-muted-foreground">
-          Pending comments ({count})
+          待审评论 ({count})
         </div>
-        <ul aria-label="Pending comments" className="flex max-h-80 flex-col gap-1.5 overflow-auto">
+        <ul aria-label="待审评论" className="flex max-h-80 flex-col gap-1.5 overflow-auto">
           {comments.map((comment) => {
             const isEditing = editing?.id === comment.id;
             return (
@@ -77,7 +77,7 @@ export function PendingCommentsTray({
                   }}
                 >
                   {comment.path} · {describeLines(comment)}
-                  {comment.side === "LEFT" ? " (old)" : ""}
+                  {comment.side === "LEFT" ? "（旧）" : ""}
                 </button>
                 {isEditing ? (
                   <form
@@ -90,7 +90,7 @@ export function PendingCommentsTray({
                     }}
                   >
                     <Textarea
-                      aria-label="Edit comment"
+                      aria-label="编辑评论"
                       rows={3}
                       value={editing.text}
                       autoFocus
@@ -103,10 +103,10 @@ export function PendingCommentsTray({
                         size="sm"
                         onClick={() => setEditing(null)}
                       >
-                        Cancel
+                        取消
                       </Button>
                       <Button type="submit" size="sm" disabled={!editing.text.trim()}>
-                        Save
+                        保存
                       </Button>
                     </div>
                   </form>
@@ -119,7 +119,7 @@ export function PendingCommentsTray({
                       type="button"
                       variant="ghost"
                       size="icon-xs"
-                      aria-label={`Edit comment on ${comment.path} ${describeLines(comment)}`}
+                      aria-label={`编辑评论 ${comment.path} ${describeLines(comment)}`}
                       onClick={() => setEditing({ id: comment.id, text: comment.body })}
                     >
                       <Pencil />
@@ -128,7 +128,7 @@ export function PendingCommentsTray({
                       type="button"
                       variant="ghost"
                       size="icon-xs"
-                      aria-label={`Remove comment on ${comment.path} ${describeLines(comment)}`}
+                      aria-label={`移除评论 ${comment.path} ${describeLines(comment)}`}
                       onClick={() => pending.removeComment(comment.id)}
                     >
                       <Trash2 />
@@ -202,7 +202,7 @@ export function PullRequestReviewPopover({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={<Button type="button" size="sm" />}>
         <FileDiff data-icon="inline-start" aria-hidden="true" />
-        Review
+        评审
         {count > 0 ? (
           <span className="ml-0.5 rounded-sm bg-primary-foreground/20 px-1 tabular-nums">
             {count}
@@ -211,7 +211,7 @@ export function PullRequestReviewPopover({
       </PopoverTrigger>
       <PopoverContent align="end" className="w-96 max-w-[calc(100vw-2rem)] gap-2">
         <form
-          aria-label="Submit review"
+          aria-label="提交评审"
           className="flex flex-col gap-2"
           onSubmit={(event) => {
             event.preventDefault();
@@ -219,8 +219,8 @@ export function PullRequestReviewPopover({
           }}
         >
           <Textarea
-            aria-label="Review summary"
-            placeholder="Leave a summary (required to request changes)"
+            aria-label="评审摘要"
+            placeholder="留下摘要（请求更改时必填）"
             rows={4}
             value={body}
             disabled={submit.isPending}
@@ -234,19 +234,19 @@ export function PullRequestReviewPopover({
           />
           <p className="text-meta text-muted-foreground">
             {count === 0
-              ? "No line comments. Select lines in the diff to add some."
-              : `${count} line ${count === 1 ? "comment" : "comments"} will be sent with this review.`}
+              ? "没有行评论。在 diff 中选择行来添加。"
+              : `${count} 条行${count === 1 ? "评论" : "评论"}将随此评审一起提交。`}
           </p>
           {isAuthor ? (
             <p className="text-meta text-muted-foreground">
-              You opened this pull request, so you can only comment on it.
+              你是此拉取请求的创建者，只能评论。
             </p>
           ) : null}
           {submit.isError ? (
             <p role="alert" className="text-meta text-destructive">
               {submit.error instanceof Error && submit.error.message
                 ? submit.error.message
-                : "The review could not be submitted."}
+                : "评审无法提交。"}
             </p>
           ) : null}
           <div className="flex flex-wrap justify-end gap-1.5">

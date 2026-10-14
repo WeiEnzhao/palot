@@ -49,8 +49,8 @@ describe("PDF canvas preview", () => {
     const fixture = documentFixture(300);
     const data = bytes("%PDF-1.7");
     const view = render(<PdfPreview data={data} path="report.pdf" />);
-    expect(await screen.findByRole("img", { name: "PDF page 1 of report.pdf" })).toBeTruthy();
-    expect(screen.getByText(/Page 1 of 200 \(first 200 of 300\)/)).toBeTruthy();
+    expect(await screen.findByRole("img", { name: "PDF 第 1 页，report.pdf" })).toBeTruthy();
+    expect(screen.getByText(/第 1 页，共 200 页（前 200 页，共 300 页）/)).toBeTruthy();
     // Page loads follow the placeholder by a tick; wait rather than race it under load.
     await waitFor(() => expect(fixture.getPage).toHaveBeenCalledWith(1));
     expect(fixture.getPage).toHaveBeenCalledTimes(1);
@@ -61,10 +61,10 @@ describe("PDF canvas preview", () => {
     expect(mocks.workerOptions.workerSrc).toContain("pdf.worker.min.mjs");
     expect(document.querySelector("iframe, object, embed, script")).toBeNull();
 
-    await userEvent.setup().click(screen.getByRole("button", { name: "Next page" }));
-    await screen.findByRole("img", { name: "PDF page 2 of report.pdf" });
+    await userEvent.setup().click(screen.getByRole("button", { name: "下一页" }));
+    await screen.findByRole("img", { name: "PDF 第 2 页，report.pdf" });
     await waitFor(() => expect(fixture.getPage).toHaveBeenCalledWith(2));
-    await userEvent.setup().click(screen.getByRole("button", { name: "Zoom in" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "放大" }));
     await screen.findByText("125%");
     await waitFor(() => expect(fixture.renderPage).toHaveBeenCalledTimes(3));
 
@@ -86,8 +86,8 @@ describe("PDF canvas preview", () => {
     view.rerender(<PdfPreview data={nextData} path="report.pdf" />);
     expect(oldDestroy).toHaveBeenCalledOnce();
     resolveFirst?.({ numPages: 99, getPage: vi.fn() });
-    expect(await screen.findByRole("img", { name: "PDF page 1 of report.pdf" })).toBeTruthy();
-    expect(screen.getByText("Page 1 of 2")).toBeTruthy();
+    expect(await screen.findByRole("img", { name: "PDF 第 1 页，report.pdf" })).toBeTruthy();
+    expect(screen.getByText("第 1 页，共 2 页")).toBeTruthy();
     // The page render starts after the image placeholder mounts; unmount must cancel it.
     await waitFor(() => expect(next.renderPage).toHaveBeenCalledOnce());
     view.unmount();
@@ -101,8 +101,8 @@ describe("PDF canvas preview", () => {
     fixture.renderPage.mockReturnValueOnce(pendingRender);
     render(<PdfPreview data={bytes("%PDF-pages")} path="report.pdf" />);
     await waitFor(() => expect(fixture.renderPage).toHaveBeenCalledOnce());
-    await userEvent.setup().click(screen.getByRole("button", { name: "Next page" }));
-    await screen.findByRole("img", { name: "PDF page 2 of report.pdf" });
+    await userEvent.setup().click(screen.getByRole("button", { name: "下一页" }));
+    await screen.findByRole("img", { name: "PDF 第 2 页，report.pdf" });
     expect(pendingRender.cancel).toHaveBeenCalledOnce();
   });
 
@@ -112,10 +112,10 @@ describe("PDF canvas preview", () => {
       destroy: vi.fn(async () => undefined),
     });
     const view = render(<PdfPreview data={bytes("%PDF-bad")} path="broken.pdf" />);
-    expect(await screen.findByText("Could not open broken.pdf as a PDF.")).toBeTruthy();
+    expect(await screen.findByText("无法将 broken.pdf 作为 PDF 打开。")).toBeTruthy();
     const huge = documentFixture(1, 90_000, 90_000);
     view.rerender(<PdfPreview data={bytes("%PDF-huge")} path="huge.pdf" />);
-    expect(await screen.findByText("This PDF page is too large to preview.")).toBeTruthy();
+    expect(await screen.findByText("此 PDF 页面太大，无法预览。")).toBeTruthy();
     expect(huge.renderPage).not.toHaveBeenCalled();
   });
 });

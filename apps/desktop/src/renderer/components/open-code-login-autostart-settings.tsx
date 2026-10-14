@@ -134,8 +134,8 @@ export function OpenCodeLoginAutostartSettings({
       if (result.supported && result.enabled === enabled && (!enabled || result.owned)) {
         setNotice(
           enabled
-            ? "Login startup enabled for future logins. The running service is unchanged."
-            : "Login startup disabled for future logins. Any running service stays running.",
+            ? "登录启动已为后续登录启用。运行中的服务不受影响。"
+            : "登录启动已为后续登录禁用。任何运行中的服务继续运行。",
         );
       } else {
         setError(
@@ -163,8 +163,8 @@ export function OpenCodeLoginAutostartSettings({
 
   return (
     <SettingsSection
-      title="Start OpenCode at login"
-      description="Run the local OpenCode service when you sign in, independently of Palot. This does not open the Palot window."
+      title="登录时启动 OpenCode"
+      description="登录时运行本地 OpenCode 服务，独立于 Palot。这不会打开 Palot 窗口。"
       action={
         <Badge variant="outline">
           {!status
@@ -224,7 +224,7 @@ export function OpenCodeLoginAutostartSettings({
           ) : null}
           {error && !consent ? (
             <Alert variant="destructive">
-              <AlertTitle>Login startup action failed</AlertTitle>
+              <AlertTitle>登录启动操作失败</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
@@ -302,7 +302,7 @@ export function OpenCodeLoginAutostartSettings({
                   disabled={disabled || busy !== null}
                   onValueChange={setSelectedID}
                 >
-                  <SelectTrigger aria-label="OpenCode installation">
+                  <SelectTrigger aria-label="OpenCode 安装">
                     <SelectValue>
                       {selected ? `OpenCode ${selected.version}` : "Choose installation"}
                     </SelectValue>
@@ -337,7 +337,7 @@ export function OpenCodeLoginAutostartSettings({
           ) : null}
           {error ? (
             <Alert variant="destructive">
-              <AlertTitle>Installation inspection failed</AlertTitle>
+              <AlertTitle>安装检查失败</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}

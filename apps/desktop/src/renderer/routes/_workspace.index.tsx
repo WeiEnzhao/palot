@@ -74,7 +74,7 @@ function WorkspaceIndex() {
   return (
     <main
       className="palot-main-surface h-full min-h-0 bg-background"
-      aria-label="Loading task destination"
+      aria-label="加载任务目标"
       aria-busy="true"
     />
   );

@@ -186,7 +186,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
   const projectOwnerReady =
     projectOwner?.runtime?.connected === true && projectOwner.phase === "ready";
   const hydrateProject = useEffectEvent((profileID: string, projectID: string) => {
-    void attempt("Could not load project tasks", () => overview.loadProject(profileID, projectID));
+    void attempt("无法加载项目任务", () => overview.loadProject(profileID, projectID));
   });
   useEffect(() => {
     if (
@@ -556,7 +556,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                     className="size-1.5 shrink-0 rounded-full bg-info"
                     role="img"
                     aria-label={
-                      item.attention ? "Needs attention" : item.running ? "Working" : "Failed"
+                      item.attention ? "需要关注" : item.running ? "工作中" : "已失败"
                     }
                   />
                 ) : null}
@@ -912,7 +912,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   );
                   setRenameItem(null);
                 } catch (error) {
-                  showErrorToast("Could not rename task", error);
+                  showErrorToast("无法重命名任务", error);
                 } finally {
                   setSaving(false);
                 }
@@ -920,7 +920,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
             }}
           >
             <Input
-              aria-label="Task title"
+              aria-label="任务标题"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               disabled={saving}

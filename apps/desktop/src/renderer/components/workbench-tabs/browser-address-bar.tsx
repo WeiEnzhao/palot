@@ -31,7 +31,7 @@ export function BrowserAddressBar({
     <form
       className="relative min-w-0 flex-1"
       role="search"
-      aria-label="Browser navigation"
+      aria-label="浏览器导航"
       onSubmit={(event) => {
         event.preventDefault();
         if (disabled || !draft?.trim()) return;
@@ -39,23 +39,23 @@ export function BrowserAddressBar({
           onNavigate(resolveBrowserAddress(draft, searchEngine));
           input.current?.blur();
         } catch (cause) {
-          onError(cause instanceof Error ? cause.message : "Invalid browser address");
+          onError(cause instanceof Error ? cause.message : "浏览器地址无效");
         }
       }}
     >
       <span
         className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-muted-foreground"
-        title={editing ? "Search or enter a URL" : https ? "HTTPS site" : "Page address"}
+        title={editing ? "搜索或输入网址" : https ? "HTTPS 站点" : "页面地址"}
       >
         <Icon className="size-3" aria-hidden="true" />
       </span>
       <Input
         ref={input}
-        aria-label="Browser address"
+        aria-label="浏览器地址"
         title={url}
         value={draft ?? (showFullURL ? url : displayBrowserAddress(url))}
         disabled={disabled}
-        placeholder="Search or enter a URL"
+        placeholder="搜索或输入网址"
         className="pl-7 text-meta"
         autoComplete="off"
         autoCapitalize="off"

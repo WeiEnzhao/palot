@@ -63,7 +63,7 @@ function titleCase(value: string): string {
 }
 
 function sessionPresentation(session: PalotSession | undefined) {
-  const title = session?.title?.trim() || "Delegated task";
+  const title = session?.title?.trim() || "已委托的任务";
   const match = title.match(/^(.*?)\s+\(@([^()]+) subagent\)$/i);
   return {
     agent: titleCase(match?.[2] ?? session?.agent ?? "subagent"),
@@ -76,25 +76,25 @@ function statusPresentation(
   fallback: SubagentExecution["status"] | TurnActivityGroup["status"],
 ) {
   if (state?.status === "running") {
-    return { label: "Running", running: true, failed: false };
+    return { label: "运行中", running: true, failed: false };
   }
   if (state?.status === "failed") {
-    return { label: "Failed", running: false, failed: true };
+    return { label: "失败", running: false, failed: true };
   }
   if (state?.status === "interrupted") {
-    return { label: "Stopped", running: false, failed: false };
+    return { label: "已停止", running: false, failed: false };
   }
   if (state?.status === "succeeded" || state?.status === "inactive") {
-    return { label: "Finished", running: false, failed: false };
+    return { label: "已完成", running: false, failed: false };
   }
   if (fallback === "running" || fallback === "pending") {
-    return { label: "Running", running: true, failed: false };
+    return { label: "运行中", running: true, failed: false };
   }
   if (fallback === "failed" || fallback === "error") {
-    return { label: "Failed", running: false, failed: true };
+    return { label: "失败", running: false, failed: true };
   }
-  if (fallback === "interrupted") return { label: "Stopped", running: false, failed: false };
-  return { label: "Finished", running: false, failed: false };
+  if (fallback === "interrupted") return { label: "已停止", running: false, failed: false };
+  return { label: "已完成", running: false, failed: false };
 }
 
 function subagentExecution(group: TurnActivityGroup): SubagentExecution | null {
@@ -148,8 +148,8 @@ export function SubagentLaunch({
   if (!view) return null;
   const agent = titleCase(view.agent || presentation.agent);
   const description = view.description || presentation.description;
-  const statusLabel = needsInput ? "needs input" : status.label.toLowerCase();
-  const visibleStatus = needsInput || status.failed || status.label === "Stopped";
+  const statusLabel = needsInput ? "需要输入" : status.label.toLowerCase();
+  const visibleStatus = needsInput || status.failed || status.label === "已停止";
   const connectionID = runtime && canFetchOpenCode(runtime) ? runtime.connectionID : null;
   const stop = async () => {
     if (!childID || !connectionID || stopping) return;
@@ -158,7 +158,7 @@ export function SubagentLaunch({
     try {
       await interruptChildSession(connectionID, childID);
     } catch (cause) {
-      setStopError(cause instanceof Error ? cause.message : "Could not stop the subagent.");
+      setStopError(cause instanceof Error ? cause.message : "无法停止子智能体。");
     } finally {
       setStopping(false);
     }
@@ -174,7 +174,7 @@ export function SubagentLaunch({
             if (childID) void openSession(childID);
           }}
           className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md pr-2 pl-2.5 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-80"
-          aria-label={`${agent} subagent ${statusLabel}: ${description}`}
+          aria-label={`${agent} 子智能体 ${statusLabel}：${description}`}
           data-palot-subagent-launch={childID ?? group.id}
         >
           <BrainCircuit
@@ -202,7 +202,7 @@ export function SubagentLaunch({
           </span>
           {view.background ? (
             <span className="shrink-0 rounded-sm bg-muted px-1 py-0.5 text-micro leading-none text-muted-foreground">
-              background
+              后台
             </span>
           ) : null}
           <span className="flex shrink-0 items-center gap-1.5 tabular-nums text-muted-foreground/70">
@@ -216,7 +216,7 @@ export function SubagentLaunch({
               completedAt={state?.completedAt ?? null}
               running={status.running}
               fallbackDurationMs={view.background ? null : view.durationMs}
-              titlePrefix={status.running ? "Running for" : "Ran for"}
+              titlePrefix={status.running ? "已运行" : "运行了"}
             />
             {childID ? <ChevronRight className="size-3.5" aria-hidden="true" /> : null}
           </span>
@@ -227,7 +227,7 @@ export function SubagentLaunch({
             variant="ghost"
             size="icon-sm"
             className="mr-1 shrink-0"
-            aria-label={`Stop ${agent} subagent`}
+            aria-label={`停止 ${agent} 子智能体`}
             disabled={!connectionID || stopping}
             onClick={() => void stop()}
           >
@@ -284,7 +284,7 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
         render={
           <button
             type="button"
-            aria-label={`${agent} ${status.failed ? "failed" : "returned"}: ${description}`}
+            aria-label={`${agent} ${status.failed ? "失败" : "已返回"}：${description}`}
             className="flex h-8 w-full min-w-0 items-center gap-2 rounded-md pr-2 pl-2.5 text-left text-xs outline-none transition-colors hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           />
         }
@@ -300,7 +300,7 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
           <span
             className={cn("font-medium", status.failed ? "text-destructive" : "text-foreground/85")}
           >
-            {agent} {status.failed ? "failed" : "returned"}
+            {agent} {status.failed ? "失败" : "已返回"}
           </span>
           <span className="text-muted-foreground"> · {description}</span>
         </span>
@@ -310,7 +310,7 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
             completedAt={state?.completedAt ?? null}
             running={status.running}
             fallbackDurationMs={sessionDuration}
-            titlePrefix="Returned after"
+            titlePrefix="返回于"
           />
           {open ? (
             <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -326,7 +326,7 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
             className="max-h-[32rem] overflow-y-auto pr-2 text-xs/relaxed text-foreground/80"
           />
         ) : (
-          <p className="m-0 text-xs text-muted-foreground">No response content was provided.</p>
+          <p className="m-0 text-xs text-muted-foreground">未提供响应内容。</p>
         )}
         {response || childID ? (
           <div className="mt-3 flex items-center gap-1 border-t border-border/40 pt-2.5">
@@ -335,11 +335,11 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
                 type="button"
                 variant="ghost"
                 size="xs"
-                aria-label={`Open ${agent} subagent task`}
+                aria-label={`打开 ${agent} 子智能体任务`}
                 onClick={() => void openSession(childID)}
               >
                 <ArrowRight data-icon="inline-start" aria-hidden="true" />
-                Open task
+                打开任务
               </Button>
             ) : null}
             {response ? (
@@ -353,7 +353,7 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
                 }}
               >
                 <Copy data-icon="inline-start" aria-hidden="true" />
-                {copied ? "Copied" : "Copy response"}
+                {copied ? "已复制" : "复制响应"}
               </Button>
             ) : null}
           </div>
@@ -487,7 +487,7 @@ function shellItems(
     if (!active) continue;
     items.set(id, {
       id,
-      command: serverShells.get(id)?.command ?? string(data.command) ?? "Shell command",
+      command: serverShells.get(id)?.command ?? string(data.command) ?? "Shell 命令",
       startedAt: serverShells.get(id)?.startedAt ?? message.createdAt,
       background: backgroundIDs.has(id),
     });
@@ -497,7 +497,7 @@ function shellItems(
     items.set(id, {
       id,
       command:
-        shell.command || commandsByID.get(id) || unmatchedCommands.shift() || "Shell command",
+        shell.command || commandsByID.get(id) || unmatchedCommands.shift() || "Shell 命令",
       startedAt: shell.startedAt,
       background: backgroundIDs.has(id),
     });
@@ -553,21 +553,21 @@ export const SubagentFooterControl = memo(function SubagentFooterControl({
               <button
                 type="button"
                 className="flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={`View ${subagents.length} active ${subagents.length === 1 ? "subagent" : "subagents"}`}
+                aria-label={`查看 ${subagents.length} 个活跃子智能体`}
               />
             }
           >
             <BrainCircuit className="size-3" aria-hidden="true" />
             <span>
-              {subagents.length} {subagents.length === 1 ? "agent" : "agents"}
+              {subagents.length} 个智能体
             </span>
             <ChevronDown className="size-3" aria-hidden="true" />
           </PopoverTrigger>
           <PopoverContent side="top" align="end" className="w-[340px] gap-1 p-1.5">
             <PopoverHeader className="px-2 py-1">
-              <PopoverTitle>Active subagents</PopoverTitle>
+              <PopoverTitle>活跃的子智能体</PopoverTitle>
               <PopoverDescription>
-                Open a delegated task to inspect its live session.
+                打开已委托的任务以查看其实时会话。
               </PopoverDescription>
             </PopoverHeader>
             <SubagentWorkList subagents={subagents} onClose={() => setOpen(false)} />
@@ -627,7 +627,7 @@ function SubagentWorkRow({
           )}
         >
           {item.agent} ·{" "}
-          {needsInput ? "Needs input" : item.background ? "Background" : status.label}
+          {needsInput ? "需要输入" : item.background ? "后台" : status.label}
         </span>
       </span>
       <span className="flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground/70">
@@ -651,11 +651,11 @@ function describeBackgroundableWork(items: BackgroundWorkItem[]): string {
   const shells = items.filter((item) => item.kind === "shell").length;
   const subagents = items.length - shells;
   return [
-    shells > 0 ? `${shells} ${shells === 1 ? "shell command" : "shell commands"}` : null,
-    subagents > 0 ? `${subagents} ${subagents === 1 ? "subagent" : "subagents"}` : null,
+    shells > 0 ? `${shells} 个 Shell 命令` : null,
+    subagents > 0 ? `${subagents} 个子智能体` : null,
   ]
     .filter((label): label is string => label !== null)
-    .join(" and ");
+    .join(" 和 ");
 }
 
 export const BackgroundWorkPrompt = memo(function BackgroundWorkPrompt({
@@ -675,11 +675,11 @@ export const BackgroundWorkPrompt = memo(function BackgroundWorkPrompt({
   const singleItem = items.length === 1 ? items[0] : null;
   const blocker = singleItem
     ? singleItem.kind === "shell"
-      ? singleItem.command === "Shell command"
-        ? "The shell command is"
-        : `The shell command '${singleItem.command}' is`
-      : `The subagent '${singleItem.description}' is`
-    : `${describeBackgroundableWork(items)} are`;
+      ? singleItem.command === "Shell 命令"
+        ? "该 Shell 命令正在"
+        : `Shell 命令 '${singleItem.command}' 正在`
+      : `子智能体 '${singleItem.description}' 正在`
+    : `${describeBackgroundableWork(items)} 正在`;
 
   return (
     <div
@@ -687,7 +687,7 @@ export const BackgroundWorkPrompt = memo(function BackgroundWorkPrompt({
       data-palot-background-work-prompt
     >
       <span className="min-w-0 flex-1 text-xs font-medium text-foreground/85">
-        {blocker} blocking your message from steering this turn.
+        {blocker}阻止你的消息引导此回合。
         {error ? <span className="ml-1 text-destructive">{error}</span> : null}
       </span>
       <Button
@@ -697,8 +697,8 @@ export const BackgroundWorkPrompt = memo(function BackgroundWorkPrompt({
         className="shrink-0"
         aria-label={
           retry
-            ? "Retry sending blocking work to background"
-            : "Send blocking work to background so the message can steer this turn"
+            ? "重试将阻塞的工作发送到后台"
+            : "将阻塞的工作发送到后台以便消息可以引导此回合"
         }
         disabled={backgrounding}
         onClick={onBackground}
@@ -708,7 +708,7 @@ export const BackgroundWorkPrompt = memo(function BackgroundWorkPrompt({
         ) : (
           <SendToBack data-icon="inline-start" aria-hidden="true" />
         )}
-        {retry ? "Try again" : "Send to background"}
+        {retry ? "重试" : "发送到后台"}
       </Button>
     </div>
   );
@@ -734,11 +734,11 @@ export function SubagentSessionDock({ session }: { session: PalotSession }) {
         <BrainCircuit className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-xs font-medium text-foreground/85">
-            {presentation.agent} subagent
-            {siblings.length > 0 && index >= 0 ? ` · ${index + 1} of ${siblings.length}` : ""}
+            {presentation.agent} 子智能体
+            {siblings.length > 0 && index >= 0 ? ` · 第 ${index + 1} 个，共 ${siblings.length} 个` : ""}
           </span>
           <span className="block truncate text-micro text-muted-foreground">
-            {presentation.description} · Read-only session
+            {presentation.description} · 只读会话
           </span>
         </span>
         <Button
@@ -748,7 +748,7 @@ export function SubagentSessionDock({ session }: { session: PalotSession }) {
           onClick={() => void openSession(parentID)}
         >
           <ArrowUpLeft data-icon="inline-start" aria-hidden="true" />
-          Parent task
+          父任务
         </Button>
         {index >= 0 && siblings.length > 1 ? (
           <>
@@ -757,7 +757,7 @@ export function SubagentSessionDock({ session }: { session: PalotSession }) {
               variant="ghost"
               size="icon-sm"
               disabled={!previous}
-              aria-label="Previous subagent"
+              aria-label="上一个子智能体"
               onClick={() => {
                 if (previous) void openSession(previous.id);
               }}
@@ -769,7 +769,7 @@ export function SubagentSessionDock({ session }: { session: PalotSession }) {
               variant="ghost"
               size="icon-sm"
               disabled={!next}
-              aria-label="Next subagent"
+              aria-label="下一个子智能体"
               onClick={() => {
                 if (next) void openSession(next.id);
               }}

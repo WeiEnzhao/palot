@@ -107,8 +107,8 @@ export function NavigationRail({
       >
         <RailButton
           tooltipDisabled={peeking}
-          label={attentionCount > 0 ? `Show inbox, ${attentionCount} need attention` : "Show inbox"}
-          tooltip={attentionCount > 0 ? `Inbox · ${attentionCount} need attention` : "Inbox"}
+          label={attentionCount > 0 ? `显示收件箱，${attentionCount} 条需要关注` : "显示收件箱"}
+          tooltip={attentionCount > 0 ? `收件箱 · ${attentionCount} 条需要关注` : "收件箱"}
           pressed={workspaceRoute && columnVisible && mode === "inbox"}
           selected={workspaceRoute && columnVisible && mode === "inbox" && !routeDestinationActive}
           indicator={attentionCount > 0}
@@ -119,8 +119,8 @@ export function NavigationRail({
         </RailButton>
         <RailButton
           tooltipDisabled={peeking}
-          label="Show projects"
-          tooltip="Projects"
+          label="显示项目"
+          tooltip="项目"
           pressed={workspaceRoute && columnVisible && mode === "project"}
           selected={
             workspaceRoute && columnVisible && mode === "project" && !routeDestinationActive
@@ -135,10 +135,10 @@ export function NavigationRail({
           tooltipDisabled={peeking}
           label={
             scheduledUnreadCount > 0
-              ? `Scheduled, ${scheduledUnreadCount} unread ${scheduledUnreadCount === 1 ? "run" : "runs"}`
-              : "Scheduled"
+              ? `已安排，${scheduledUnreadCount} 条未读`
+              : "已安排"
           }
-          tooltip="Scheduled"
+          tooltip="已安排"
           current={scheduledActive}
           selected={scheduledActive}
           indicator={scheduledUnreadCount > 0}
@@ -148,7 +148,7 @@ export function NavigationRail({
         </RailButton>
         <RailButton
           tooltipDisabled={peeking}
-          label="Usage"
+          label="用量"
           current={usageActive}
           selected={usageActive}
           onClick={() => void openUsage()}
@@ -157,7 +157,7 @@ export function NavigationRail({
         </RailButton>
         <RailButton
           tooltipDisabled={peeking}
-          label="Worktrees"
+          label="工作树"
           current={worktreesActive}
           selected={worktreesActive}
           onClick={() => void openWorktrees()}
@@ -166,7 +166,7 @@ export function NavigationRail({
         </RailButton>
         <RailButton
           tooltipDisabled={peeking}
-          label="Pull requests"
+          label="拉取请求"
           current={pullRequestsActive}
           selected={pullRequestsActive}
           onClick={() => void openPullRequests()}
@@ -175,8 +175,8 @@ export function NavigationRail({
         </RailButton>
         <RailButton
           tooltipDisabled={peeking}
-          label="Settings"
-          tooltip={`Settings (${settingsShortcut})`}
+          label="设置"
+          tooltip={`设置（${settingsShortcut}）`}
           className="mt-auto"
           current={settingsActive}
           selected={settingsActive}

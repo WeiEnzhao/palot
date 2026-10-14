@@ -172,7 +172,7 @@ export function useGlobalCommands({
 
   const projectCommands: GlobalCommand[] = projects.map((project) => ({
     id: `project.newTask:${project.id}`,
-    title: `New task in ${projectName(project)}`,
+    title: `在 ${projectName(project)} 中新建任务`,
     description: projectLocation(project),
     group: "projects",
     icon: SquarePen,
@@ -336,8 +336,8 @@ export function useGlobalCommands({
   const commands: GlobalCommand[] = [];
   commands.push({
     id: "task.new",
-    title: "New task",
-    description: "Choose a server and project, then start a task",
+    title: "新建任务",
+    description: "选择服务器和项目，然后启动任务",
     group: "actions",
     icon: SquarePen,
     keywords: ["create", "conversation", "thread"],
@@ -349,7 +349,7 @@ export function useGlobalCommands({
   if (projects.length > 0) {
     commands.push({
       id: "task.choose-project",
-      title: "Choose project for a new task",
+      title: "为新任务选择项目",
       group: "actions",
       icon: SquarePen,
       keywords: ["new task", "project", "folder"],

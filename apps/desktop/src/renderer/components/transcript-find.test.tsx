@@ -68,7 +68,7 @@ async function renderThread(hasNextPage: boolean) {
   const queryClient = createRendererQueryClient();
   seedCatalog(queryClient, { sessions: [session] });
   renderWithRouter(<Thread sessionID={session.id} />, store, "/new", queryClient);
-  const viewport = await screen.findByRole("region", { name: "Task transcript" });
+  const viewport = await screen.findByRole("region", { name: "任务记录" });
   return { store, viewport, fetchNextPage };
 }
 
@@ -77,33 +77,33 @@ it("finds loaded text with Mod+F, steps through matches, and restores focus on E
   viewport.focus();
 
   fireEvent.keyDown(viewport, { key: "f", code: "KeyF", ctrlKey: true });
-  const input = await screen.findByRole("textbox", { name: "Find in task" });
+  const input = await screen.findByRole("textbox", { name: "在任务中查找" });
   await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
   expect(document.activeElement).toBe(input);
 
   fireEvent.change(input, { target: { value: "WIDGET" } });
-  const status = await screen.findByText("1 of 3", { selector: '[role="status"]' });
+  const status = await screen.findByText("1 / 3", { selector: '[role="status"]' });
   fireEvent.keyDown(input, { key: "Enter" });
-  expect(status.textContent).toBe("2 of 3");
+  expect(status.textContent).toBe("2 / 3");
   fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
   fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
-  expect(status.textContent).toBe("3 of 3");
+  expect(status.textContent).toBe("3 / 3");
 
   fireEvent.change(input, { target: { value: "missing" } });
-  expect(await screen.findByText("No results", { selector: '[role="status"]' })).toBeTruthy();
-  expect(screen.queryByText("Searching loaded messages")).toBeNull();
+  expect(await screen.findByText("无结果", { selector: '[role="status"]' })).toBeTruthy();
+  expect(screen.queryByText("正在搜索已加载的消息")).toBeNull();
 
   fireEvent.keyDown(input, { key: "Escape" });
-  expect(screen.queryByRole("search", { name: "Find in task" })).toBeNull();
+  expect(screen.queryByRole("search", { name: "在任务中查找" })).toBeNull();
   expect(document.activeElement).toBe(viewport);
 });
 
 it("opens from the exported atom and offers to load earlier history", async () => {
   const { store, fetchNextPage } = await renderThread(true);
   act(() => store.set(openTranscriptFindAtom));
-  expect(await screen.findByRole("search", { name: "Find in task" })).toBeTruthy();
-  expect(screen.getByText("Searching loaded messages")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Load earlier" }));
+  expect(await screen.findByRole("search", { name: "在任务中查找" })).toBeTruthy();
+  expect(screen.getByText("正在搜索已加载的消息")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "加载更早的" }));
   // Loading earlier history first records a scroll anchor over two frames.
   await waitFor(() => expect(fetchNextPage).toHaveBeenCalledOnce());
 });
@@ -115,7 +115,7 @@ it("leaves Mod+F to surfaces with their own find", async () => {
   terminal.tabIndex = 0;
   document.body.append(terminal);
   fireEvent.keyDown(terminal, { key: "f", code: "KeyF", ctrlKey: true });
-  expect(screen.queryByRole("search", { name: "Find in task" })).toBeNull();
+  expect(screen.queryByRole("search", { name: "在任务中查找" })).toBeNull();
   terminal.remove();
 });
 

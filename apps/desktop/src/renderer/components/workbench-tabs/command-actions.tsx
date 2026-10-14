@@ -59,7 +59,7 @@ export function CommandActions({
     if (!currentServer() || request.current) return;
     if (
       !window.confirm(
-        "Stop and remove this command? This terminates its running process and permanently deletes its stored output. Only output already loaded in this tab will remain.",
+        "停止并移除此命令？这将终止其运行中的进程并永久删除其存储的输出。仅已在此标签页中加载的输出会保留。",
       )
     )
       return;
@@ -80,7 +80,7 @@ export function CommandActions({
       await client.shell.remove(input, { signal: controller.signal });
       if (current()) onRemoved();
     } catch (cause) {
-      if (current()) setError(cause instanceof Error ? cause.message : "Could not update command.");
+      if (current()) setError(cause instanceof Error ? cause.message : "无法更新命令。");
     } finally {
       if (request.current === controller) request.current = null;
       if (current()) setBusy(false);
@@ -95,7 +95,7 @@ export function CommandActions({
             <Button
               variant="ghost"
               size="icon-xs"
-              aria-label="Command actions"
+              aria-label="命令操作"
               disabled={!available || busy}
             />
           }
@@ -108,7 +108,7 @@ export function CommandActions({
             disabled={!available || busy}
             onClick={() => void run()}
           >
-            Stop and remove command
+            停止并移除命令
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -146,16 +146,15 @@ export function ProviderConnectionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {integration ? <ProviderIcon id={integration.id} className="size-5" /> : null}
-            Add {integration?.name} credential
+            添加 {integration?.name} 凭据
           </DialogTitle>
           <DialogDescription>
-            OpenCode stores this credential for the service. Adding it makes it active across all
-            connected projects.
+            OpenCode 为此服务存储此凭据。添加它会使其在所有已连接的项目中生效。
           </DialogDescription>
         </DialogHeader>
         {integration && availableMethods.length > 1 && !attempt ? (
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-xs font-medium">Choose a connection method</legend>
+            <legend className="mb-1 text-xs font-medium">选择连接方式</legend>
             {availableMethods.map((item) => {
               const selected = methodKey(item) === methodKey(method!);
               return (
@@ -193,11 +192,11 @@ export function ProviderConnectionDialog({
           ) : (
             <div className="grid gap-3">
               <p role="status" className="text-sm text-muted-foreground">
-                No connection methods are available here. Configure this integration in OpenCode.
+                此处没有可用的连接方式。请在 OpenCode 中配置此集成。
               </p>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => void close()}>
-                  Cancel
+                  取消
                 </Button>
               </DialogFooter>
             </div>
@@ -217,7 +216,7 @@ export function ProviderConnectionDialog({
                   <CircleAlert className="size-4 text-destructive" aria-hidden="true" />
                 )}
                 <span className="font-medium">
-                  {attempt.status === "pending" ? "Waiting for authorization" : attempt.status}
+                  {attempt.status === "pending" ? "等待授权" : attempt.status}
                 </span>
               </div>
               {attempt.instructions ? (
@@ -235,7 +234,7 @@ export function ProviderConnectionDialog({
                 className="inline-flex h-9 items-center justify-center gap-2 rounded-md border bg-background px-4 text-xs font-medium hover:bg-accent"
               >
                 <ExternalLink className="size-4" aria-hidden="true" />
-                Open authorization page
+                打开授权页面
               </a>
             ) : attempt.url ? (
               <code className="block break-all rounded-lg border px-3 py-2 text-micro text-muted-foreground">
@@ -244,7 +243,7 @@ export function ProviderConnectionDialog({
             ) : null}
             {attempt.type === "oauth" && attempt.mode === "code" ? (
               <label className="grid gap-1.5 text-xs font-medium">
-                Authorization code
+                授权码
                 <Input value={code} onChange={(event) => setCode(event.target.value)} />
               </label>
             ) : null}
@@ -253,7 +252,7 @@ export function ProviderConnectionDialog({
         {attempt ? (
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => void close()}>
-              Cancel
+              取消
             </Button>
             {attempt.type === "oauth" && attempt.mode === "code" ? (
               <Button
@@ -262,7 +261,7 @@ export function ProviderConnectionDialog({
                 onClick={() => void completeOAuth()}
               >
                 {busy ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
-                Complete
+                完成
               </Button>
             ) : null}
           </DialogFooter>
@@ -293,12 +292,11 @@ function ConnectionMethodForm({
     return (
       <>
         <p role="status" className="text-sm text-muted-foreground">
-          Palot does not support the {method.label} connection method ({method.methodType}). Connect
-          it in OpenCode instead.
+          Palot 不支持 {method.label} 连接方式 ({method.methodType})。请改为在 OpenCode 中连接它。
         </p>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            取消
           </Button>
         </DialogFooter>
       </>
@@ -325,7 +323,7 @@ function ConnectionMethodForm({
         ))}
         {method.type === "key" ? (
           <label className="grid gap-1.5 text-xs font-medium">
-            API key
+            API 密钥
             <Input
               type="password"
               value={key}
@@ -335,10 +333,10 @@ function ConnectionMethodForm({
           </label>
         ) : null}
         <label className="grid gap-1.5 text-xs font-medium">
-          Credential label <span className="font-normal text-muted-foreground">Optional</span>
+          凭据标签 <span className="font-normal text-muted-foreground">可选</span>
           <Input
             value={label}
-            placeholder="Work or Personal"
+            placeholder="工作或私人"
             onChange={(event) => setLabel(event.target.value)}
           />
         </label>
@@ -350,7 +348,7 @@ function ConnectionMethodForm({
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          取消
         </Button>
         <Button
           type="button"
@@ -364,7 +362,7 @@ function ConnectionMethodForm({
           }
         >
           {busy ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
-          Add and use
+          添加并使用
         </Button>
       </DialogFooter>
     </>
@@ -394,7 +392,7 @@ function IntegrationFormField({
           >
             <ExternalLink className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
             <span>
-              <span className="block font-medium">{field.title ?? "Open instructions"}</span>
+              <span className="block font-medium">{field.title ?? "打开说明"}</span>
               {field.description ? (
                 <span className="mt-0.5 block text-muted-foreground">{field.description}</span>
               ) : null}
@@ -402,7 +400,7 @@ function IntegrationFormField({
           </a>
         ) : (
           <div className="rounded-lg border px-3 py-2 text-xs">
-            <span className="block font-medium">{field.title ?? "External step"}</span>
+            <span className="block font-medium">{field.title ?? "外部步骤"}</span>
             {field.description ? (
               <span className="mt-0.5 block text-muted-foreground">{field.description}</span>
             ) : null}
@@ -416,7 +414,7 @@ function IntegrationFormField({
             checked={answers[field.key] === true}
             onCheckedChange={(checked) => onChange(checked)}
           />
-          <span>I completed this step: {field.title ?? field.key}</span>
+          <span>我已完成此步骤：{field.title ?? field.key}</span>
         </label>
       </div>
     );
@@ -469,7 +467,7 @@ function IntegrationFormField({
           <div className="flex gap-2">
             <Input
               value={customValue}
-              placeholder="Custom value"
+              placeholder="自定义值"
               onChange={(event) => setCustomValue(event.target.value)}
             />
             <Button
@@ -482,7 +480,7 @@ function IntegrationFormField({
                 setCustomValue("");
               }}
             >
-              Add
+              添加
             </Button>
           </div>
         ) : null}
@@ -577,11 +575,11 @@ function ConnectionMethodIcon({
 function connectionMethodDescription(
   method: Exclude<PalotIntegrationMethod, { type: "env" }>,
 ): string {
-  if (method.type === "key") return "Enter an API key from the provider.";
-  if (method.type === "command") return "Authorize with the provider's command-line flow.";
-  if (method.type === "external") return "Connect credentials managed outside OpenCode.";
-  if (method.type === "unsupported") return "Not supported in Palot. Connect it in OpenCode.";
-  return "Authorize with the provider's sign-in flow.";
+  if (method.type === "key") return "输入来自提供者的 API 密钥。";
+  if (method.type === "command") return "使用提供者的命令行流程授权。";
+  if (method.type === "external") return "连接在 OpenCode 外部管理的凭据。";
+  if (method.type === "unsupported") return "Palot 不支持。请在 OpenCode 中连接它。";
+  return "使用提供者的登录流程授权。";
 }
 
 function validHttpUrl(value: string): boolean {

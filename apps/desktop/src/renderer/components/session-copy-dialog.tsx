@@ -69,10 +69,10 @@ export function SessionCopyDialog({
       await openSession(target.sessionID, { profileID: target.profileID });
       onClose();
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "The operation failed.";
+      const message = cause instanceof Error ? cause.message : "操作失败。";
       setError(
         target
-          ? `The task was copied to ${target.serverName}, but could not be opened: ${message} Retry opening the existing copy; it will not be imported again.`
+          ? `任务已复制到 ${target.serverName}，但无法打开：${message} 请重试打开已有的副本；不会重新导入。`
           : message,
       );
     } finally {
@@ -88,13 +88,9 @@ export function SessionCopyDialog({
     >
       <DialogContent className="grid-cols-[minmax(0,1fr)] max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Copy task to server</DialogTitle>
+          <DialogTitle>复制任务到服务器</DialogTitle>
           <DialogDescription>
-            Copy the current transcript as a standalone task. The original stays unchanged. Project
-            files, running tools, terminals, credentials, and child tasks are not copied. The
-            destination needs its own project files and model access. Only copy to a server you
-            trust with this conversation. An existing copy on the destination will not be
-            overwritten.
+            将当前对话复制为独立任务。原始任务保持不变。项目文件、运行中的工具、终端、凭证和子任务不会被复制。目标服务器需要自己的项目文件和模型访问权限。仅复制到你信任的服务器。目标上已有的副本不会被覆盖。
           </DialogDescription>
         </DialogHeader>
         <Select
@@ -106,8 +102,8 @@ export function SessionCopyDialog({
             setError(null);
           }}
         >
-          <SelectTrigger className="w-full min-w-0" aria-label="Destination server">
-            <SelectValue className="min-w-0 truncate" placeholder="Choose an enabled server">
+          <SelectTrigger className="w-full min-w-0" aria-label="目标服务器">
+            <SelectValue className="min-w-0 truncate" placeholder="选择已启用的服务器">
               {copiedTarget?.serverName ?? destination?.profile.name}
             </SelectValue>
           </SelectTrigger>
@@ -125,8 +121,8 @@ export function SessionCopyDialog({
             disabled={busy || Boolean(copiedTarget)}
             onValueChange={(value) => setDirectory(value ?? "")}
           >
-            <SelectTrigger className="w-full min-w-0" aria-label="Destination project">
-              <SelectValue className="min-w-0 truncate" placeholder="Choose a project">
+            <SelectTrigger className="w-full min-w-0" aria-label="目标项目">
+              <SelectValue className="min-w-0 truncate" placeholder="选择项目">
                 {destination.projects.find((project) => project.canonical === directory)?.name ||
                   directory ||
                   undefined}
@@ -142,15 +138,15 @@ export function SessionCopyDialog({
           </Select>
         ) : null}
         <Input
-          aria-label="Destination folder"
-          placeholder="Absolute folder path on the destination server"
+          aria-label="目标文件夹"
+          placeholder="目标服务器上的绝对文件夹路径"
           value={directory}
           disabled={!destination || busy || Boolean(copiedTarget)}
           onChange={(event) => setDirectory(event.target.value)}
         />
         {!destinations.length ? (
           <p className="text-sm text-muted-foreground">
-            Enable another server in Connections to copy this task.
+            在"连接"中启用另一个服务器以复制此任务。
           </p>
         ) : null}
         {error ? (
@@ -160,7 +156,7 @@ export function SessionCopyDialog({
         ) : null}
         <DialogFooter>
           <Button variant="outline" disabled={busy} onClick={onClose}>
-            {copiedTarget ? "Close" : "Cancel"}
+            {copiedTarget ? "关闭" : "取消"}
           </Button>
           <Button
             disabled={busy || (!copiedTarget && (!destination || !directory.trim()))}
@@ -168,11 +164,11 @@ export function SessionCopyDialog({
           >
             {copiedTarget
               ? busy
-                ? "Opening…"
-                : "Open copied task"
+                ? "正在打开…"
+                : "打开已复制的任务"
               : busy
-                ? "Copying…"
-                : "Copy task"}
+                ? "正在复制…"
+                : "复制任务"}
           </Button>
         </DialogFooter>
       </DialogContent>

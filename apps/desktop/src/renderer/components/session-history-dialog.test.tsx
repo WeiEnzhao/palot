@@ -24,16 +24,16 @@ it("searches newly loaded prompts without claiming partial history is complete",
   const view = render(
     <SessionHistoryDialog {...props} messages={[message("new", "New prompt")]} />,
   );
-  await user.type(screen.getByRole("textbox", { name: "Search prompts" }), "needle");
+  await user.type(screen.getByRole("textbox", { name: "搜索提示词" }), "needle");
   expect(
-    screen.getByText("No matching loaded prompts. Load earlier history to search more."),
+    screen.getByText("没有匹配的已加载提示词。加载更早的历史以搜索更多。"),
   ).toBeTruthy();
-  await user.click(screen.getByRole("button", { name: "Load earlier prompts" }));
+  await user.click(screen.getByRole("button", { name: "加载更早的提示词" }));
   expect(load).toHaveBeenCalledOnce();
   view.rerender(
     <SessionHistoryDialog {...props} loading messages={[message("new", "New prompt")]} />,
   );
-  expect(screen.getByRole("status").textContent).toBe("Loading earlier prompts…");
+  expect(screen.getByRole("status").textContent).toBe("正在加载更早的提示词…");
   const older = message("old", "The needle is here");
   view.rerender(
     <SessionHistoryDialog

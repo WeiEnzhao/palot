@@ -31,11 +31,11 @@ const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 });
 
 const BREAKDOWN = [
-  { key: "input", label: "Input", color: "bg-info" },
-  { key: "output", label: "Output", color: "bg-success" },
-  { key: "reasoning", label: "Reasoning", color: "bg-primary" },
-  { key: "cacheRead", label: "Cache read", color: "bg-warning" },
-  { key: "cacheWrite", label: "Cache write", color: "bg-destructive" },
+  { key: "input", label: "输入", color: "bg-info" },
+  { key: "output", label: "输出", color: "bg-success" },
+  { key: "reasoning", label: "推理", color: "bg-primary" },
+  { key: "cacheRead", label: "缓存读取", color: "bg-warning" },
+  { key: "cacheWrite", label: "缓存写入", color: "bg-destructive" },
 ] as const;
 
 export function ContextTab({
@@ -51,9 +51,9 @@ export function ContextTab({
     return (
       <Empty className="rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Context unavailable</EmptyTitle>
+          <EmptyTitle>上下文不可用</EmptyTitle>
           <EmptyDescription>
-            This session is no longer available in the session catalog.
+            此会话在会话目录中不再可用。
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -162,7 +162,7 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
         });
         await queryClient.invalidateQueries({ queryKey: activeContextKey });
       } catch (error) {
-        showErrorToast("Could not remove instruction entry", error);
+        showErrorToast("无法移除指令条目", error);
       } finally {
         setRemovingInstruction(null);
       }
@@ -182,7 +182,7 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
   if (transcript.isPending && messages.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Spinner /> Loading context
+        <Spinner /> 正在加载上下文
       </div>
     );
   }
@@ -191,7 +191,7 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
     return (
       <Empty className="rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Could not load context</EmptyTitle>
+          <EmptyTitle>无法加载上下文</EmptyTitle>
           <EmptyDescription>{transcript.error.message}</EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -199,47 +199,47 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
   }
 
   const overviewStats = [
-    { label: "Session", value: session.title ?? session.id },
-    { label: "Loaded messages", value: formatNumber(counts.all) },
-    { label: "Provider", value: provider?.name ?? modelRef?.providerID ?? "Unavailable" },
-    { label: "Model", value: model?.name ?? modelRef?.id ?? "Unavailable" },
-    { label: "Loaded user messages", value: formatNumber(counts.user) },
-    { label: "Loaded assistant messages", value: formatNumber(counts.assistant) },
-    { label: "Session created", value: DATE_FORMATTER.format(session.createdAt) },
+    { label: "会话", value: session.title ?? session.id },
+    { label: "已加载消息", value: formatNumber(counts.all) },
+    { label: "提供者", value: provider?.name ?? modelRef?.providerID ?? "不可用" },
+    { label: "模型", value: model?.name ?? modelRef?.id ?? "不可用" },
+    { label: "已加载用户消息", value: formatNumber(counts.user) },
+    { label: "已加载助手消息", value: formatNumber(counts.assistant) },
+    { label: "会话创建时间", value: DATE_FORMATTER.format(session.createdAt) },
     {
-      label: "Latest context step",
-      value: latest ? DATE_FORMATTER.format(latest.createdAt) : "Unavailable",
+      label: "最新上下文步骤",
+      value: latest ? DATE_FORMATTER.format(latest.createdAt) : "不可用",
     },
   ];
   const currentContextStats = [
-    { label: "Context limit", value: usage?.limit ? formatNumber(usage.limit) : "Unavailable" },
-    { label: "Context tokens", value: usage ? formatNumber(usage.total) : "Unavailable" },
+    { label: "上下文限制", value: usage?.limit ? formatNumber(usage.limit) : "不可用" },
+    { label: "上下文 token", value: usage ? formatNumber(usage.total) : "不可用" },
     {
-      label: "Usage",
-      value: usage?.percentage === null || !usage ? "Unavailable" : `${usage.percentage}%`,
+      label: "用量",
+      value: usage?.percentage === null || !usage ? "不可用" : `${usage.percentage}%`,
     },
-    { label: "Input tokens", value: tokens ? formatNumber(tokens.input) : "Unavailable" },
-    { label: "Output tokens", value: tokens ? formatNumber(tokens.output) : "Unavailable" },
-    { label: "Reasoning tokens", value: tokens ? formatNumber(tokens.reasoning) : "Unavailable" },
+    { label: "输入 token", value: tokens ? formatNumber(tokens.input) : "不可用" },
+    { label: "输出 token", value: tokens ? formatNumber(tokens.output) : "不可用" },
+    { label: "推理 token", value: tokens ? formatNumber(tokens.reasoning) : "不可用" },
     {
-      label: "Cache read / write",
+      label: "缓存读取 / 写入",
       value: tokens
         ? `${formatNumber(tokens.cache.read)} / ${formatNumber(tokens.cache.write)}`
-        : "Unavailable",
+        : "不可用",
     },
   ];
   const sessionProcessingStats = [
-    { label: "Processed tokens", value: formatNumber(processedTotal) },
-    { label: "Processed input", value: formatNumber(processedTokens.input) },
-    { label: "Processed output", value: formatNumber(processedTokens.output) },
-    { label: "Processed reasoning", value: formatNumber(processedTokens.reasoning) },
+    { label: "已处理 token", value: formatNumber(processedTotal) },
+    { label: "已处理输入", value: formatNumber(processedTokens.input) },
+    { label: "已处理输出", value: formatNumber(processedTokens.output) },
+    { label: "已处理推理", value: formatNumber(processedTokens.reasoning) },
     {
-      label: "Processed cache read / write",
+      label: "已处理缓存读取 / 写入",
       value: `${formatNumber(processedTokens.cache.read)} / ${formatNumber(processedTokens.cache.write)}`,
     },
     {
-      label: "Total cost",
-      value: session.cost === null ? "Unavailable" : CURRENCY_FORMATTER.format(session.cost),
+      label: "总费用",
+      value: session.cost === null ? "不可用" : CURRENCY_FORMATTER.format(session.cost),
     },
   ];
 
@@ -252,12 +252,12 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
           ))}
         </section>
 
-        <ContextStatsSection title="Current context" stats={currentContextStats} />
+        <ContextStatsSection title="当前上下文" stats={currentContextStats} />
 
         {breakdown.length > 0 ? (
           <section className="flex flex-col gap-2" aria-labelledby="context-token-breakdown">
             <div id="context-token-breakdown" className="text-xs text-muted-foreground">
-              Latest token breakdown
+              最新 token 细分
             </div>
             <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
               {breakdown.map((item) => (
@@ -286,11 +286,11 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
           </section>
         ) : null}
 
-        <ContextStatsSection title="Session processing" stats={sessionProcessingStats} />
+        <ContextStatsSection title="会话处理" stats={sessionProcessingStats} />
 
         <section className="flex min-w-0 flex-col gap-2" aria-labelledby="context-active-messages">
           <div id="context-active-messages" className="text-xs text-muted-foreground">
-            Context details
+            上下文详情
           </div>
           <Accordion
             value={activeContextOpen ? ["active"] : []}
@@ -301,9 +301,9 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
             <AccordionItem value="active">
               <AccordionTrigger className="px-3 py-2.5 hover:no-underline">
                 <span className="min-w-0">
-                  <span className="block text-xs font-medium">Post-compaction context</span>
+                  <span className="block text-xs font-medium">压缩后上下文</span>
                   <span className="block text-meta font-normal text-muted-foreground">
-                    The messages OpenCode currently retains for the next model call
+                    OpenCode 目前为下一次模型调用保留的消息
                   </span>
                 </span>
               </AccordionTrigger>
@@ -319,11 +319,11 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                         onClick={() => void activeContext.refetch()}
                       >
                         {activeContext.isFetching ? <Spinner /> : <RefreshCw aria-hidden="true" />}
-                        Refresh
+                        刷新
                       </Button>
                     </div>
                     {activeContext.error ? (
-                      <p className="text-xs text-destructive">Could not load active context.</p>
+                      <p className="text-xs text-destructive">无法加载活动上下文。</p>
                     ) : activeContext.data?.length ? (
                       <pre className="m-0 max-h-[32rem] overflow-auto rounded-md border border-border/70 bg-background p-3 font-mono text-code-compact/relaxed whitespace-pre-wrap break-words text-foreground/75 select-text">
                         {JSON.stringify(activeContext.data, null, 2)}
@@ -331,8 +331,8 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                     ) : (
                       <div className="rounded-md border border-dashed border-border p-4 text-xs text-muted-foreground">
                         {activeContext.isPending
-                          ? "Loading post-compaction context..."
-                          : "No post-compaction context messages."}
+                          ? "正在加载压缩后上下文…"
+                          : "无压缩后上下文消息。"}
                       </div>
                     )}
                   </div>
@@ -347,10 +347,10 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
           aria-labelledby="context-instruction-entries"
         >
           <div id="context-instruction-entries" className="text-xs text-muted-foreground">
-            Instruction entries
+            指令条目
           </div>
           {instructionEntries.error ? (
-            <p className="text-xs text-destructive">Could not load instruction entries.</p>
+            <p className="text-xs text-destructive">无法加载指令条目。</p>
           ) : instructionEntries.data?.length ? (
             <div className="overflow-hidden rounded-lg border border-border">
               {instructionEntries.data.map((entry) => (
@@ -368,7 +368,7 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`Remove instruction ${entry.key}`}
+                    aria-label={`移除指令 ${entry.key}`}
                     disabled={removingInstruction !== null}
                     onClick={() => void removeInstruction(entry.key)}
                   >
@@ -384,8 +384,8 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
           ) : (
             <div className="rounded-md border border-dashed border-border p-4 text-xs text-muted-foreground">
               {instructionEntries.isPending
-                ? "Loading instruction entries..."
-                : "No instruction entries."}
+                ? "正在加载指令条目…"
+                : "无指令条目。"}
             </div>
           )}
         </section>
@@ -393,10 +393,10 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
         <section className="flex min-w-0 flex-col gap-2" aria-labelledby="context-diagnostics">
           <div>
             <div id="context-diagnostics" className="text-xs text-muted-foreground">
-              Developer diagnostics
+              开发者诊断
             </div>
             <p className="mt-1 text-meta text-muted-foreground/80">
-              Derived cache signals and Palot's mapped message records.
+              派生的缓存信号和 Palot 映射的消息记录。
             </p>
           </div>
           <Accordion
@@ -407,7 +407,7 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
           >
             <AccordionItem value="cache">
               <AccordionTrigger className="px-3 py-2.5 text-xs hover:no-underline">
-                Cache diagnostics
+                缓存诊断
               </AccordionTrigger>
               <AccordionContent className="px-1 pb-1">
                 {diagnosticSections.includes("cache") ? (
@@ -424,13 +424,12 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                           />
                           <div className="min-w-0 flex-1">
                             <div className="font-medium">
-                              Likely cache bust: {formatNumber(warning.drop)} fewer cached tokens
-                              than the previous step
+                              可能的缓存失效：比上一步少 {formatNumber(warning.drop)} 个缓存 token
                             </div>
                             <button
                               type="button"
                               className="mt-0.5 block max-w-full truncate font-mono text-code-compact text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                              aria-label={`Open projected message ${warning.messageID}`}
+                              aria-label={`打开预测消息 ${warning.messageID}`}
                               onClick={() => {
                                 setDiagnosticSections((current) =>
                                   current.includes("projected")
@@ -449,8 +448,8 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                   ) : (
                     <div className="rounded-md border border-dashed border-border p-4 text-xs text-muted-foreground">
                       {transcript.hasNextPage
-                        ? "No likely cache busts detected in loaded messages. Load earlier records to scan more of the session."
-                        : "No likely cache busts detected in the loaded transcript."}
+                        ? "在已加载消息中未检测到可能的缓存失效。加载更早的记录以扫描更多会话。"
+                        : "在已加载的记录中未检测到可能的缓存失效。"}
                     </div>
                   )
                 ) : null}
@@ -459,9 +458,9 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
             <AccordionItem value="projected">
               <AccordionTrigger className="px-3 py-2.5 hover:no-underline">
                 <span className="min-w-0">
-                  <span className="block text-xs font-medium">Projected message records</span>
+                  <span className="block text-xs font-medium">预测消息记录</span>
                   <span className="block text-meta font-normal text-muted-foreground">
-                    PalotMessage values mapped from the OpenCode transcript
+                    从 OpenCode 记录映射的 PalotMessage 值
                   </span>
                 </span>
               </AccordionTrigger>
@@ -482,13 +481,13 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                           ) : (
                             <RefreshCw aria-hidden="true" />
                           )}
-                          Load earlier
+                          加载更早
                         </Button>
                       </div>
                     ) : null}
                     {transcript.isFetchNextPageError ? (
                       <p className="text-xs text-destructive">
-                        Could not load earlier projected records.
+                        无法加载更早的预测记录。
                       </p>
                     ) : null}
                     {messages.length > 0 ? (
@@ -528,7 +527,7 @@ function SessionContext({ session, active }: { session: PalotSession; active: bo
                       </Accordion>
                     ) : (
                       <div className="rounded-md border border-dashed border-border p-4 text-xs text-muted-foreground">
-                        Projected records will appear after the session starts.
+                        预测记录将在会话开始后出现。
                       </div>
                     )}
                   </div>

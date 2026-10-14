@@ -60,8 +60,8 @@ describe("PullRequestControl", () => {
   it("links by branch detection or by a pasted URL when nothing is linked", async () => {
     const { api } = installSourceControl();
     renderControl();
-    await userEvent.click(await screen.findByRole("button", { name: "Pull request" }));
-    await userEvent.click(await screen.findByRole("button", { name: "Detect from branch" }));
+    await userEvent.click(await screen.findByRole("button", { name: "拉取请求" }));
+    await userEvent.click(await screen.findByRole("button", { name: "从分支检测" }));
     await waitFor(() =>
       expect(api.linkPullRequest).toHaveBeenCalledWith({
         profileID: "profile",
@@ -70,10 +70,10 @@ describe("PullRequestControl", () => {
     );
 
     await userEvent.type(
-      screen.getByRole("textbox", { name: "Pull request URL" }),
+      screen.getByRole("textbox", { name: "拉取请求 URL" }),
       "https://github.com/acme/web/pull/9",
     );
-    await userEvent.click(screen.getByRole("button", { name: "Link" }));
+    await userEvent.click(screen.getByRole("button", { name: "关联" }));
     await waitFor(() =>
       expect(api.linkPullRequest).toHaveBeenLastCalledWith({
         profileID: "profile",
@@ -91,8 +91,8 @@ describe("PullRequestControl", () => {
       })),
     });
     renderControl();
-    await userEvent.click(await screen.findByRole("button", { name: "Pull request" }));
-    await userEvent.click(await screen.findByRole("button", { name: "Detect from branch" }));
+    await userEvent.click(await screen.findByRole("button", { name: "拉取请求" }));
+    await userEvent.click(await screen.findByRole("button", { name: "从分支检测" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
       "No pull request was found for this task's branch.",
     );
@@ -113,9 +113,9 @@ describe("PullRequestControl", () => {
     );
     expect(screen.getByText(/Wakes the agent when checks fail or pass/)).toBeTruthy();
     expect(screen.getByText("Stopped watching after 10 comment-only wake-ups")).toBeTruthy();
-    expect(screen.getByText("Last refresh failed: GitHub timed out")).toBeTruthy();
+    expect(screen.getByText("上次刷新失败：GitHub timed out")).toBeTruthy();
 
-    await userEvent.click(screen.getByRole("button", { name: "Watch" }));
+    await userEvent.click(screen.getByRole("button", { name: "关注" }));
     await waitFor(() =>
       expect(api.watchPullRequest).toHaveBeenCalledWith({
         profileID: "profile",
@@ -125,12 +125,12 @@ describe("PullRequestControl", () => {
       }),
     );
 
-    const unlink = screen.getByRole("button", { name: "Unlink" });
+    const unlink = screen.getByRole("button", { name: "取消关联" });
     await userEvent.click(unlink);
     expect(api.unlinkPullRequest).not.toHaveBeenCalled();
-    expect(unlink.textContent).toBe("Confirm unlink");
+    expect(unlink.textContent).toBe("确认取消关联");
     fireEvent.keyDown(unlink, { key: "Escape" });
-    expect(unlink.textContent).toBe("Unlink");
+    expect(unlink.textContent).toBe("取消关联");
 
     await userEvent.click(unlink);
     await userEvent.click(unlink);
@@ -163,9 +163,9 @@ describe("PullRequestControl", () => {
     });
     renderControl();
     await userEvent.click(await screen.findByRole("button", { name: /Pull request #4/ }));
-    const refresh = await screen.findByRole("button", { name: "Refresh pull requests" });
+    const refresh = await screen.findByRole("button", { name: "刷新拉取请求" });
     await waitFor(() => expect(refresh.hasAttribute("disabled")).toBe(false));
-    expect(screen.queryByText(/GitHub is not signed in/)).toBeNull();
+    expect(screen.queryByText(/GitHub 未登录/)).toBeNull();
     await userEvent.click(refresh);
     await waitFor(() =>
       expect(api.refreshPullRequests).toHaveBeenCalledWith({
@@ -186,10 +186,10 @@ describe("PullRequestControl", () => {
       ),
     });
     renderControl();
-    await userEvent.click(await screen.findByRole("button", { name: "Pull request" }));
-    expect(await screen.findByText(/GitHub is not signed in/)).toBeTruthy();
+    await userEvent.click(await screen.findByRole("button", { name: "拉取请求" }));
+    expect(await screen.findByText(/GitHub 未登录/)).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Detect from branch" }).hasAttribute("disabled"),
+      screen.getByRole("button", { name: "从分支检测" }).hasAttribute("disabled"),
     ).toBe(true);
   });
 
@@ -205,7 +205,7 @@ describe("PullRequestControl", () => {
     } as OpenCodeRuntimeStatus);
     const { router } = renderWithRouter(<PullRequestControl session={session} />, store);
     await userEvent.click(await screen.findByRole("button", { name: /^Pull request #12/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "Open in Pull requests" }));
+    await userEvent.click(await screen.findByRole("button", { name: "在拉取请求中打开" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/pull-requests"));
     expect(router.state.location.search).toMatchObject({ pr: "github.com/acme/web/12" });
   });
@@ -222,7 +222,7 @@ describe("PullRequestControl", () => {
     });
     renderControl();
     expect(
-      await screen.findByRole("button", { name: "Pull request unavailable: Remote connection." }),
+      await screen.findByRole("button", { name: "拉取请求不可用：Remote connection." }),
     ).toBeTruthy();
   });
 });

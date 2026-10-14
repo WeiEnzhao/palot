@@ -97,7 +97,7 @@ describe("external provider connection dialog", () => {
     const user = userEvent.setup();
     const input = props();
     render(<ProviderConnectionDialog {...input} />);
-    const submit = screen.getByRole("button", { name: "Add and use" });
+    const submit = screen.getByRole("button", { name: "添加并使用" });
     expect(submit.hasAttribute("disabled")).toBe(true);
     const instructions = screen.getByRole("link", { name: "Set up your profile" });
     expect(instructions.getAttribute("href")).toBe("https://example.com/setup");
@@ -105,7 +105,7 @@ describe("external provider connection dialog", () => {
       name: "I completed this step: Set up your profile",
     });
     expect(acknowledgment.getAttribute("aria-checked")).toBe("false");
-    expect(screen.queryByLabelText("API key")).toBeNull();
+    expect(screen.queryByLabelText("API 密钥")).toBeNull();
     expect(screen.queryByLabelText("Source")).toBeNull();
     expect(screen.queryByLabelText("Endpoint")).toBeNull();
     await user.type(screen.getByLabelText("Credential profile"), "work");
@@ -123,7 +123,7 @@ describe("external provider connection dialog", () => {
     expect(submit.hasAttribute("disabled")).toBe(true);
     await user.type(screen.getByLabelText("Endpoint"), "https://vault.example.com");
     expect(submit.hasAttribute("disabled")).toBe(false);
-    await user.type(screen.getByLabelText(/Credential label/), " Work ");
+    await user.type(screen.getByLabelText(/凭据标签/), " Work ");
     await user.click(submit);
     expect(palot.connectIntegrationExternal).toHaveBeenCalledExactlyOnceWith({
       connectionID: "server-a",
@@ -173,7 +173,7 @@ describe("external provider connection dialog", () => {
         })}
       />,
     );
-    const submit = screen.getByRole("button", { name: "Add and use" });
+    const submit = screen.getByRole("button", { name: "添加并使用" });
     expect(screen.queryByRole("link")).toBeNull();
     expect(screen.getByText("file:///setup.txt")).toBeTruthy();
     expect(submit.hasAttribute("disabled")).toBe(true);
@@ -220,9 +220,9 @@ describe("external provider connection dialog", () => {
     expect(screen.getByRole("status").textContent).toContain(
       "Palot does not support the Device sign-in connection method (device)",
     );
-    expect(screen.queryByRole("button", { name: "Add and use" })).toBeNull();
-    expect(screen.queryByLabelText("API key")).toBeNull();
-    expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "添加并使用" })).toBeNull();
+    expect(screen.queryByLabelText("API 密钥")).toBeNull();
+    expect(screen.getByRole("button", { name: "取消" })).toBeTruthy();
     expect(palot.connectIntegrationCommand).not.toHaveBeenCalled();
   });
 
@@ -236,7 +236,7 @@ describe("external provider connection dialog", () => {
       await user.click(
         screen.getByRole("checkbox", { name: "I completed this step: Set up your profile" }),
       );
-      expect(screen.getByRole("button", { name: "Add and use" }).hasAttribute("disabled")).toBe(
+      expect(screen.getByRole("button", { name: "添加并使用" }).hasAttribute("disabled")).toBe(
         false,
       );
       if (target === "owner")
@@ -256,7 +256,7 @@ describe("external provider connection dialog", () => {
           .getByRole("checkbox", { name: "I completed this step: Set up your profile" })
           .getAttribute("aria-checked"),
       ).toBe("false");
-      expect(screen.getByRole("button", { name: "Add and use" }).hasAttribute("disabled")).toBe(
+      expect(screen.getByRole("button", { name: "添加并使用" }).hasAttribute("disabled")).toBe(
         true,
       );
       expect(palot.connectIntegrationExternal).not.toHaveBeenCalled();
@@ -285,7 +285,7 @@ describe("external provider connection dialog", () => {
     expect(screen.getByLabelText("Credential profile")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: /Device sign-in/ }));
     expect(screen.getByRole("status").textContent).toContain("Connect it in OpenCode instead.");
-    expect(screen.queryByRole("button", { name: "Add and use" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "添加并使用" })).toBeNull();
   });
 
   it.each(["cancel", "change owner", "change integration"])(
@@ -299,9 +299,9 @@ describe("external provider connection dialog", () => {
         methods: [{ id: "default", type: "external", label: "Default", form: [] }],
       });
       const view = render(<ProviderConnectionDialog {...input} />);
-      await user.click(screen.getByRole("button", { name: "Add and use" }));
+      await user.click(screen.getByRole("button", { name: "添加并使用" }));
       expect(palot.connectIntegrationExternal).toHaveBeenCalledOnce();
-      if (action === "cancel") await user.click(screen.getByRole("button", { name: "Cancel" }));
+      if (action === "cancel") await user.click(screen.getByRole("button", { name: "取消" }));
       else if (action === "change owner")
         view.rerender(
           <ProviderConnectionDialog {...input} owner={{ ...owner, connectionID: "server-b" }} />,

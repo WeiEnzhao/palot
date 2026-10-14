@@ -53,7 +53,7 @@ afterEach(() => {
 it("explains null inference instead of displaying an endless diff spinner and permits manual selection", async () => {
   render(<FileDiffTab tab={tab} />);
   expect(screen.getByRole("status").textContent).toContain("No unambiguous base");
-  expect(screen.queryByText("Loading diff")).toBeNull();
+  expect(screen.queryByText("正在加载 diff")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Review base: Choose base" }));
   fireEvent.click(await screen.findByRole("button", { name: "release" }));
   expect(mocks.setManual).toHaveBeenCalledWith("release");
@@ -75,16 +75,16 @@ it("keeps the picker available through diff loading, request failure, missing fi
   mocks.query.reviewBase.ref = "release";
   mocks.query.reviewBase.manual = "release";
   const { rerender } = render(<FileDiffTab tab={tab} />);
-  expect(screen.getByText("Loading diff")).toBeTruthy();
+  expect(screen.getByText("正在加载 diff")).toBeTruthy();
   mocks.query.isPending = false;
   mocks.query.isError = true;
   rerender(<FileDiffTab tab={tab} />);
   expect(screen.getByText("bad ref")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: /^Retry$/ }));
+  fireEvent.click(screen.getByRole("button", { name: /^重试$/ }));
   expect(mocks.query.refetch).toHaveBeenCalledOnce();
   mocks.query.isError = false;
   rerender(<FileDiffTab tab={tab} />);
-  expect(screen.getByText("Diff unavailable")).toBeTruthy();
+  expect(screen.getByText("Diff 不可用")).toBeTruthy();
   mocks.query.data = [{ file: "a.txt", patch: "selected base patch", additions: 1, deletions: 0 }];
   rerender(<FileDiffTab tab={tab} />);
   expect(screen.getByText("selected base patch")).toBeTruthy();
@@ -93,6 +93,6 @@ it("keeps the picker available through diff loading, request failure, missing fi
 
 it("does not gate working diffs on branch inference", () => {
   render(<FileDiffTab tab={{ ...tab, resource: { ...tab.resource, mode: "working" } }} />);
-  expect(screen.getByText("Loading diff")).toBeTruthy();
+  expect(screen.getByText("正在加载 diff")).toBeTruthy();
   expect(screen.queryByRole("button", { name: /Review base:/ })).toBeNull();
 });

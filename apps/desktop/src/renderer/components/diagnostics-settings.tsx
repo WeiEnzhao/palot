@@ -64,7 +64,7 @@ const RESOURCE_SERIES = [
     format: (value: number) => `${value.toFixed(1)}%`,
   },
   {
-    label: "Working set",
+    label: "工作集",
     color: "var(--success)",
     read: (point: DiagnosticsHistoryPoint) => point.workingSetMiB,
     format: (value: number) => `${value.toFixed(value >= 100 ? 0 : 1)} MiB`,
@@ -73,13 +73,13 @@ const RESOURCE_SERIES = [
 
 const RESPONSIVENESS_SERIES = [
   {
-    label: "Frame p95",
+    label: "帧 p95",
     color: "var(--warning)",
     read: (point: DiagnosticsHistoryPoint) => point.frameP95Ms,
     format: formatMilliseconds,
   },
   {
-    label: "Streaming p95",
+    label: "流式 p95",
     color: "var(--info)",
     read: (point: DiagnosticsHistoryPoint) => point.streamingP95Ms,
     format: formatMilliseconds,
@@ -119,9 +119,9 @@ export function DiagnosticsSettings() {
     setPendingAction("capture");
     try {
       await diagnostics.captureNow();
-      toast.add({ type: "success", title: "Diagnostics refreshed" });
+      toast.add({ type: "success", title: "诊断已刷新" });
     } catch (error) {
-      showDiagnosticsError("Could not refresh diagnostics", error);
+      showDiagnosticsError("无法刷新诊断", error);
     } finally {
       setPendingAction(null);
     }
@@ -133,11 +133,11 @@ export function DiagnosticsSettings() {
       await diagnostics.copySafeReport(runtimeSummary);
       toast.add({
         type: "success",
-        title: "Diagnostics copied",
-        description: "The report excludes task content, paths, URLs, and credentials.",
+        title: "诊断已复制",
+        description: "报告不包含任务内容、路径、URL 和凭据。",
       });
     } catch (error) {
-      showDiagnosticsError("Could not copy diagnostics", error);
+      showDiagnosticsError("无法复制诊断", error);
     } finally {
       setPendingAction(null);
     }
@@ -146,8 +146,8 @@ export function DiagnosticsSettings() {
   return (
     <div className="flex min-w-0 flex-col gap-8" data-diagnostics-status={snapshot.phase}>
       <SettingsSection
-        title="Live signals"
-        description="Bounded, in-memory measurements collected only while this page or the overlay is open."
+        title="实时信号"
+        description="仅在打开此页面或覆盖层时收集的有界内存测量值。"
         action={
           <>
             <PhaseBadge phase={snapshot.phase} />
@@ -155,7 +155,7 @@ export function DiagnosticsSettings() {
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="Refresh diagnostics"
+              aria-label="刷新诊断"
               disabled={pendingAction !== null}
               onClick={() => void captureNow()}
             >
@@ -172,7 +172,7 @@ export function DiagnosticsSettings() {
               onClick={() => void copyReport()}
             >
               <Copy data-icon="inline-start" aria-hidden="true" />
-              Copy report
+              复制报告
             </Button>
           </>
         }
@@ -181,10 +181,10 @@ export function DiagnosticsSettings() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="size-4 text-muted-foreground" aria-hidden="true" />
-              Diagnostic session
+              诊断会话
             </CardTitle>
             <CardDescription className="text-compact">
-              Electron process counters, renderer responsiveness, and OpenCode streaming latency.
+              Electron 进程计数器、渲染器响应性和 OpenCode 流式延迟。
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 divide-x divide-y divide-border border-y border-border p-0 @xl/settings:grid-cols-4 @5xl/settings:grid-cols-8">
@@ -192,35 +192,35 @@ export function DiagnosticsSettings() {
               icon={<Cpu aria-hidden="true" />}
               label="CPU"
               value={formatCpu(snapshot)}
-              detail={snapshot.current.cpuReady ? "Electron interval" : "Warming interval"}
+              detail={snapshot.current.cpuReady ? "Electron 间隔" : "预热间隔"}
             />
             <SignalMetric
               icon={<MemoryStick aria-hidden="true" />}
-              label="Memory"
+              label="内存"
               value={formatKiB(snapshot.current.workingSetKiB)}
-              detail={`${snapshot.current.app?.processes.length ?? 0} processes`}
+              detail={`${snapshot.current.app?.processes.length ?? 0} 个进程`}
             />
             <SignalMetric
               icon={<Gauge aria-hidden="true" />}
               label="FPS"
               value={formatFps(snapshot.current.renderer?.frames.fps)}
-              detail={`${snapshot.current.renderer?.frames.count ?? 0} frame intervals`}
+              detail={`${snapshot.current.renderer?.frames.count ?? 0} 帧间隔`}
             />
             <SignalMetric
               icon={<Gauge aria-hidden="true" />}
-              label="Frame p95"
+              label="帧 p95"
               value={formatMilliseconds(snapshot.current.renderer?.frames.p95)}
-              detail={`${snapshot.current.renderer?.frames.over25Ms ?? 0} over 25 ms`}
+              detail={`${snapshot.current.renderer?.frames.over25Ms ?? 0} 超过 25 ms`}
             />
             <SignalMetric
               icon={<Clock3 aria-hidden="true" />}
-              label="Long tasks"
+              label="长任务"
               value={String(snapshot.current.renderer?.longTasks.count ?? 0)}
-              detail={`${formatMilliseconds(snapshot.current.renderer?.longTasks.max)} longest`}
+              detail={`${formatMilliseconds(snapshot.current.renderer?.longTasks.max)} 最长`}
             />
             <SignalMetric
               icon={<Activity aria-hidden="true" />}
-              label="React renders"
+              label="React 渲染"
               value={
                 snapshot.current.renderer?.reactScan
                   ? String(snapshot.current.renderer.reactScan.renderCount)
@@ -228,27 +228,27 @@ export function DiagnosticsSettings() {
               }
               detail={
                 snapshot.current.renderer?.reactScan
-                  ? `${snapshot.current.renderer.reactScan.commitCount} commits / ${formatMilliseconds(snapshot.current.renderer.reactScan.totalRenderTimeMs)}`
-                  : "React Scan off"
+                  ? `${snapshot.current.renderer.reactScan.commitCount} 次提交 / ${formatMilliseconds(snapshot.current.renderer.reactScan.totalRenderTimeMs)}`
+                  : "React Scan 已关闭"
               }
             />
             <SignalMetric
               icon={<Activity aria-hidden="true" />}
-              label="Stream p95"
+              label="流 p95"
               value={formatMilliseconds(snapshot.current.renderer?.streamingLatency.p95)}
-              detail={`${snapshot.current.renderer?.streamingLatency.count ?? 0} commits`}
+              detail={`${snapshot.current.renderer?.streamingLatency.count ?? 0} 次提交`}
             />
             <SignalMetric
               icon={<RefreshCw aria-hidden="true" />}
-              label="Collector"
+              label="采集器"
               value={formatMilliseconds(snapshot.collector.lastCollectionDurationMs)}
-              detail={`Every ${formatDuration(snapshot.collector.sampleIntervalMs)}`}
+              detail={`每 ${formatDuration(snapshot.collector.sampleIntervalMs)}`}
             />
           </CardContent>
           <CardFooter className="flex-wrap justify-between gap-2 text-meta text-muted-foreground">
             <span>{lastSampleLabel(snapshot.collector.lastSampleAt)}</span>
             <span className="font-mono tabular-nums">
-              {snapshot.collector.sampleCount} retained samples
+              {snapshot.collector.sampleCount} 个保留样本
             </span>
           </CardFooter>
         </Card>
@@ -257,38 +257,35 @@ export function DiagnosticsSettings() {
       {snapshot.preferences.reactScanActive ? (
         <Alert>
           <AlertTriangle aria-hidden="true" />
-          <AlertTitle>React Scan is instrumenting this renderer</AlertTitle>
+          <AlertTitle>React Scan 正在检测此渲染器</AlertTitle>
           <AlertDescription>
-            Render outlines and this dashboard add observer overhead. Disable them before comparing
-            benchmark results.
+            渲染轮廓和此仪表板会增加观察器开销。在比较基准测试结果之前请禁用它们。
           </AlertDescription>
         </Alert>
       ) : snapshot.preferences.reactScanStatus === "failed" ? (
         <Alert variant="destructive">
           <AlertTriangle aria-hidden="true" />
-          <AlertTitle>React Scan could not start</AlertTitle>
+          <AlertTitle>React Scan 无法启动</AlertTitle>
           <AlertDescription>
-            Palot continued without render instrumentation. Disable React Scan and reload before
-            retrying.
+            Palot 在没有渲染检测的情况下继续运行。在重试之前请禁用 React Scan 并重新加载。
           </AlertDescription>
         </Alert>
       ) : null}
 
       <SettingsSection
-        title="Instrumentation"
-        description="These controls are available in every Palot build and remain off by default."
+        title="检测"
+        description="这些控制在每个 Palot 版本中都可用，并且默认保持关闭状态。"
       >
         <SettingsGroup>
           <p className="p-4 text-compact leading-relaxed text-muted-foreground">
-            The overlay shares this page's collector. React Scan's render outlines load before React
-            and therefore require a renderer reload.
+            覆盖层共享此页面的采集器。React Scan 的渲染轮廓在 React 之前加载，因此需要重新加载渲染器。
           </p>
           <SettingsRow
-            title="Diagnostic overlay"
-            description="Show a compact always-on-top HUD with CPU, memory, frames, long tasks, and streaming latency."
+            title="诊断覆盖层"
+            description="显示一个紧凑的始终置顶的 HUD，包含 CPU、内存、帧、长任务和流式延迟。"
             control={
               <Switch
-                aria-label="Diagnostic overlay"
+                aria-label="诊断覆盖层"
                 checked={snapshot.preferences.overlayVisible}
                 onCheckedChange={(checked) => diagnostics.setOverlayVisible(Boolean(checked))}
               />
@@ -296,7 +293,7 @@ export function DiagnosticsSettings() {
           />
           <SettingsRow
             title="React Scan"
-            description="Highlight component renders. This changes runtime behavior and is not benchmark-neutral."
+            description="突出显示组件渲染。这会改变运行时行为，并且不是基准中立的。"
             control={
               <Switch
                 aria-label="React Scan"
@@ -307,27 +304,27 @@ export function DiagnosticsSettings() {
           />
           <div className="flex flex-wrap gap-2 p-4">
             <CapabilityBadge
-              label="Browser probes"
+              label="浏览器探测"
               enabled={snapshot.capabilities.animationFrames && snapshot.capabilities.longTasks}
             />
             <CapabilityBadge
-              label="Electron metrics"
+              label="Electron 指标"
               enabled={snapshot.capabilities.nativeMetrics}
             />
-            <CapabilityBadge label="Renderer heap" enabled={snapshot.capabilities.rendererHeap} />
+            <CapabilityBadge label="渲染器堆" enabled={snapshot.capabilities.rendererHeap} />
             <Badge variant={snapshot.build.reactProfiling ? "secondary" : "outline"}>
-              React profiling {snapshot.build.reactProfiling ? "on" : "off"}
+              React 性能分析 {snapshot.build.reactProfiling ? "开启" : "关闭"}
             </Badge>
             <Badge variant={snapshot.build.reactCompilerMode ? "secondary" : "outline"}>
-              Compiler {snapshot.build.reactCompilerMode ?? "off"}
+              编译器 {snapshot.build.reactCompilerMode ?? "关闭"}
             </Badge>
           </div>
         </SettingsGroup>
       </SettingsSection>
 
       <SettingsSection
-        title="Resource history"
-        description="Two minutes of renderer-local history, discarded when Palot reloads."
+        title="资源历史"
+        description="两分钟的渲染器本地历史，在 Palot 重新加载时丢弃。"
         action={
           <Button
             type="button"
@@ -335,25 +332,25 @@ export function DiagnosticsSettings() {
             size="sm"
             onClick={() => {
               diagnostics.clearHistory();
-              toast.add({ type: "success", title: "Diagnostic history cleared" });
+              toast.add({ type: "success", title: "诊断历史已清除" });
             }}
           >
             <Trash2 data-icon="inline-start" aria-hidden="true" />
-            Clear history
+            清除历史
           </Button>
         }
       >
         <div className="grid min-w-0 gap-4 @3xl/settings:grid-cols-2">
           <HistoryCard
-            title="Process footprint"
-            description="Aggregate Electron CPU and working set, each shown on its own local range. CPU starts after one warm-up sample."
+            title="进程占用"
+            description="聚合 Electron CPU 和工作集，各自显示在本地范围内。CPU 在一个预热样本后开始。"
             empty={snapshot.history.length < 2}
           >
             <ResourceHistoryChart snapshot={snapshot} />
           </HistoryCard>
           <HistoryCard
-            title="Renderer responsiveness"
-            description="Frame intervals and receive-to-commit samples share a millisecond scale."
+            title="渲染器响应性"
+            description="帧间隔和接收到提交的样本共享毫秒刻度。"
             empty={snapshot.history.length < 2}
           >
             <ResponsivenessHistoryChart snapshot={snapshot} />
@@ -362,14 +359,14 @@ export function DiagnosticsSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Electron processes"
-        description="Live process metrics from Electron. CPU values are interval-based; memory values are KiB."
+        title="Electron 进程"
+        description="来自 Electron 的实时进程指标。CPU 值基于间隔；内存值为 KiB。"
       >
         <Card className="min-w-0 rounded-xl border border-border ring-0">
           <CardHeader>
-            <CardTitle>Process table</CardTitle>
+            <CardTitle>进程表</CardTitle>
             <CardDescription className="text-compact">
-              Names are Electron service labels, not command lines or OpenCode task content.
+              名称是 Electron 服务标签，而不是命令行或 OpenCode 任务内容。
             </CardDescription>
           </CardHeader>
           <CardContent className="-mb-(--card-spacing) p-0">
@@ -378,7 +375,7 @@ export function DiagnosticsSettings() {
         </Card>
       </SettingsSection>
 
-      <SettingsSection title="System and collector">
+      <SettingsSection title="系统和采集器">
         <div className="grid min-w-0 gap-4 @3xl/settings:grid-cols-2">
           <SystemCard snapshot={snapshot} runtime={runtimeSummary} />
           <GpuCard snapshot={snapshot} />
@@ -406,9 +403,9 @@ function DataManagement() {
     setPending("support");
     try {
       const file = await palot.exportSupportBundle();
-      if (file) toast.add({ type: "success", title: "Support bundle exported" });
+      if (file) toast.add({ type: "success", title: "支持包已导出" });
     } catch (error) {
-      showDiagnosticsError("Could not export support bundle", error);
+      showDiagnosticsError("无法导出支持包", error);
     } finally {
       setPending(null);
     }
@@ -422,7 +419,7 @@ function DataManagement() {
       setPending(null);
       setConfirmation(null);
       showDiagnosticsError(
-        scope === "settings" ? "Could not reset settings" : "Could not remove Palot data",
+        scope === "settings" ? "无法重置设置" : "无法移除 Palot 数据",
         error,
       );
     }
@@ -430,21 +427,20 @@ function DataManagement() {
 
   return (
     <SettingsSection
-      title="Data and recovery"
-      description="Palot keeps its desktop state separate from OpenCode's sessions, auth, configuration, projects, and service storage."
+      title="数据和恢复"
+      description="Palot 将其桌面状态与 OpenCode 的会话、身份验证、配置、项目和服务存储分开保留。"
     >
       <Card className="@container/details min-w-0 rounded-xl border border-border ring-0">
         <CardHeader>
-          <CardTitle>Palot-owned data</CardTitle>
+          <CardTitle>Palot 拥有的数据</CardTitle>
           <CardDescription className="text-compact">
-            Inspect local locations, export a redacted support file, or reset Palot without deleting
-            OpenCode-owned data.
+            检查本地位置、导出支持包已脱敏，或重置 Palot 而不删除 OpenCode 拥有的数据。
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DetailRow label="Data" value={locations?.data ?? "Unavailable"} />
-          <DetailRow label="Logs" value={locations?.logs ?? "Unavailable"} />
-          <DetailRow label="Database backups" value={locations?.backups ?? "Unavailable"} />
+          <DetailRow label="数据" value={locations?.data ?? "不可用"} />
+          <DetailRow label="日志" value={locations?.logs ?? "不可用"} />
+          <DetailRow label="数据库备份" value={locations?.backups ?? "不可用"} />
         </CardContent>
         <CardFooter className="flex-wrap gap-2 border-t">
           <Button
@@ -452,14 +448,14 @@ function DataManagement() {
             variant="outline"
             onClick={() => void palot.revealDataLocation("data")}
           >
-            <FolderOpen data-icon="inline-start" aria-hidden="true" /> Reveal data
+            <FolderOpen data-icon="inline-start" aria-hidden="true" /> 显示数据
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => void palot.revealDataLocation("logs")}
           >
-            <FolderOpen data-icon="inline-start" aria-hidden="true" /> Reveal logs
+            <FolderOpen data-icon="inline-start" aria-hidden="true" /> 显示日志
           </Button>
           <Button
             type="button"
@@ -468,7 +464,7 @@ function DataManagement() {
             onClick={() => void exportBundle()}
           >
             <Download data-icon="inline-start" aria-hidden="true" />
-            {pending === "support" ? "Exporting…" : "Export support bundle"}
+            {pending === "support" ? "正在导出…" : "导出支持包"}
           </Button>
           <Button
             type="button"
@@ -476,7 +472,7 @@ function DataManagement() {
             disabled={pending !== null}
             onClick={() => setConfirmation("settings")}
           >
-            Reset settings
+            重置设置
           </Button>
           <Button
             type="button"
@@ -484,7 +480,7 @@ function DataManagement() {
             disabled={pending !== null}
             onClick={() => setConfirmation("all")}
           >
-            Remove Palot data
+            移除 Palot 数据
           </Button>
         </CardFooter>
       </Card>
@@ -495,26 +491,26 @@ function DataManagement() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmation === "all" ? "Remove all Palot-owned data?" : "Reset Palot settings?"}
+              {confirmation === "all" ? "移除所有 Palot 拥有的数据？" : "重置 Palot 设置？"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmation === "all"
-                ? "This permanently removes Palot's database, preferences, local UI state, logs, temporary attachments, server profiles, and encrypted server credentials. OpenCode-owned data is not deleted."
-                : "This clears Palot preferences and local UI state, then restarts. Saved OpenCode server profiles and encrypted server credentials are preserved."}
+                ? "这将永久移除 Palot 的数据库、偏好设置、本地 UI 状态、日志、临时附件、服务器配置文件和加密的服务器凭据。OpenCode 拥有的数据不会被删除。"
+                : "这将清除 Palot 偏好设置和本地 UI 状态，然后重新启动。保存的 OpenCode 服务器配置文件和加密的服务器凭据会被保留。"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={pending !== null}>取消</AlertDialogCancel>
             <AlertDialogAction
               variant={confirmation === "all" ? "destructive" : "default"}
               disabled={pending !== null}
               onClick={() => confirmation && void reset(confirmation)}
             >
               {pending
-                ? "Working…"
+                ? "正在处理…"
                 : confirmation === "all"
-                  ? "Remove Palot data"
-                  : "Reset settings"}
+                  ? "移除 Palot 数据"
+                  : "重置设置"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -568,9 +564,9 @@ function HistoryCard({
           <div className="flex min-h-48 items-center">
             <SettingsEmpty>
               <span className="mb-1 block text-sm font-medium text-foreground">
-                Collecting the first interval
+                正在收集第一个间隔
               </span>
-              History appears after the warm-up and first timed sample.
+              历史记录在预热和第一个计时样本后出现。
             </SettingsEmpty>
           </div>
         ) : (
@@ -673,9 +669,9 @@ function ProcessTable({ snapshot }: { snapshot: DiagnosticsSnapshot }) {
     return (
       <SettingsEmpty>
         <span className="mb-1 block text-sm font-medium text-foreground">
-          Waiting for Electron metrics
+          等待 Electron 指标
         </span>
-        The collector has not returned a process snapshot yet.
+        采集器尚未返回进程快照。
       </SettingsEmpty>
     );
   }
@@ -684,13 +680,13 @@ function ProcessTable({ snapshot }: { snapshot: DiagnosticsSnapshot }) {
     <Table className="text-compact">
       <TableHeader>
         <TableRow>
-          <TableHead>Process</TableHead>
-          <TableHead>Service</TableHead>
+          <TableHead>进程</TableHead>
+          <TableHead>服务</TableHead>
           <TableHead className="text-right">CPU</TableHead>
-          <TableHead className="text-right">Memory</TableHead>
-          <TableHead className="text-right">Peak</TableHead>
+          <TableHead className="text-right">内存</TableHead>
+          <TableHead className="text-right">峰值</TableHead>
           <TableHead className="text-right">PID</TableHead>
-          <TableHead className="text-right">Sandbox</TableHead>
+          <TableHead className="text-right">沙箱</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -713,7 +709,7 @@ function ProcessTable({ snapshot }: { snapshot: DiagnosticsSnapshot }) {
               {process.pid}
             </TableCell>
             <TableCell className="text-right text-muted-foreground">
-              {process.sandboxed === null ? "Unknown" : process.sandboxed ? "Yes" : "No"}
+              {process.sandboxed === null ? "未知" : process.sandboxed ? "是" : "否"}
             </TableCell>
           </TableRow>
         ))}
@@ -735,31 +731,31 @@ function SystemCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Monitor className="size-4" aria-hidden="true" />
-          Runtime
+          运行时
         </CardTitle>
         <CardDescription className="text-compact">
-          Build identity and connected service state.
+          构建标识和已连接服务状态。
         </CardDescription>
       </CardHeader>
       <CardContent>
         <DetailRow label="Palot" value={`${palotBuild.version} / ${palotBuild.channel}`} />
         <DetailRow
-          label="Build"
+          label="构建"
           value={`${palotBuild.commitSha.slice(0, 12)} / ${palotBuild.buildNumber}${palotBuild.dirty ? " / dirty" : ""}`}
         />
-        <DetailRow label="OpenCode contract" value={palotBuild.openCodeContractVersion} />
-        <DetailRow label="Electron" value={versions?.electron ?? "Unavailable"} />
-        <DetailRow label="Chromium" value={versions?.chromium ?? "Unavailable"} />
-        <DetailRow label="Node" value={versions?.node ?? "Unavailable"} />
+        <DetailRow label="OpenCode 契约" value={palotBuild.openCodeContractVersion} />
+        <DetailRow label="Electron" value={versions?.electron ?? "不可用"} />
+        <DetailRow label="Chromium" value={versions?.chromium ?? "不可用"} />
+        <DetailRow label="Node" value={versions?.node ?? "不可用"} />
         <DetailRow
-          label="Platform"
-          value={versions ? `${versions.platform} / ${versions.architecture}` : "Unavailable"}
+          label="平台"
+          value={versions ? `${versions.platform} / ${versions.architecture}` : "不可用"}
         />
         <DetailRow
           label="OpenCode"
-          value={runtime ? `${runtime.version ?? "unknown"} / ${runtime.phase}` : "Unavailable"}
+          value={runtime ? `${runtime.version ?? "unknown"} / ${runtime.phase}` : "不可用"}
         />
-        <DetailRow label="Window" value={windowStateLabel(snapshot.current.app?.window ?? null)} />
+        <DetailRow label="窗口" value={windowStateLabel(snapshot.current.app?.window ?? null)} />
       </CardContent>
     </Card>
   );
@@ -775,23 +771,23 @@ function GpuCard({ snapshot }: { snapshot: DiagnosticsSnapshot }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Gauge className="size-4" aria-hidden="true" />
-          GPU and collection
+          GPU 和采集
         </CardTitle>
         <CardDescription className="text-compact">
-          Capability status and the diagnostic observer's own cost.
+          能力状态和诊断观察器自身的开销。
         </CardDescription>
       </CardHeader>
       <CardContent>
         <DetailRow
-          label="Hardware acceleration"
-          value={app ? (app.hardwareAcceleration ? "Enabled" : "Disabled") : "Unavailable"}
+          label="硬件加速"
+          value={app ? (app.hardwareAcceleration ? "已启用" : "已禁用") : "不可用"}
         />
         <DetailRow
-          label="Collection time"
+          label="采集时间"
           value={formatMilliseconds(snapshot.collector.lastCollectionDurationMs)}
         />
         <DetailRow
-          label="Average collection"
+          label="平均采集"
           value={formatMilliseconds(snapshot.collector.averageCollectionDurationMs)}
         />
         {features.length > 0 ? (
@@ -799,7 +795,7 @@ function GpuCard({ snapshot }: { snapshot: DiagnosticsSnapshot }) {
             <DetailRow key={name} label={sentenceCase(name.replaceAll("_", " "))} value={value} />
           ))
         ) : (
-          <DetailRow label="GPU features" value="Waiting for snapshot" />
+          <DetailRow label="GPU 功能" value="等待快照" />
         )}
       </CardContent>
     </Card>
@@ -831,13 +827,13 @@ function PhaseBadge({ phase }: { phase: DiagnosticsPhase }) {
 function CapabilityBadge({ label, enabled }: { label: string; enabled: boolean }) {
   return (
     <Badge variant={enabled ? "secondary" : "destructive"}>
-      {label} {enabled ? "available" : "unavailable"}
+      {label} {enabled ? "可用" : "不可用"}
     </Badge>
   );
 }
 
 function formatCpu(snapshot: DiagnosticsSnapshot): string {
-  if (!snapshot.current.cpuReady) return "Warming";
+  if (!snapshot.current.cpuReady) return "预热中";
   return snapshot.current.cpuPercent === null ? "-" : `${snapshot.current.cpuPercent.toFixed(1)}%`;
 }
 
@@ -861,12 +857,12 @@ function formatDuration(value: number): string {
 }
 
 function lastSampleLabel(value: number | null): string {
-  if (value === null) return "Waiting for the first sample";
-  return `Sampled at ${DIAGNOSTICS_TIME_FORMATTER.format(value)}`;
+  if (value === null) return "等待第一个样本";
+  return `采样时间 ${DIAGNOSTICS_TIME_FORMATTER.format(value)}`;
 }
 
 function formatChartTime(value: unknown): string {
-  return typeof value === "number" ? DIAGNOSTICS_TIME_FORMATTER.format(value) : "Sample";
+  return typeof value === "number" ? DIAGNOSTICS_TIME_FORMATTER.format(value) : "样本";
 }
 
 function historyChartRows(
@@ -931,10 +927,10 @@ function windowStateLabel(
     ? NonNullable<DiagnosticsSnapshot["current"]["app"]>["window"]
     : never,
 ): string {
-  if (!windowState) return "Unavailable";
-  if (windowState.minimized) return "Minimized";
-  if (!windowState.visible) return "Hidden";
-  return windowState.focused ? "Visible / focused" : "Visible / inactive";
+  if (!windowState) return "不可用";
+  if (windowState.minimized) return "已最小化";
+  if (!windowState.visible) return "已隐藏";
+  return windowState.focused ? "可见 / 已聚焦" : "可见 / 非活动";
 }
 
 function sentenceCase(value: string): string {
@@ -945,6 +941,6 @@ function showDiagnosticsError(title: string, cause: unknown) {
   toast.add({
     type: "error",
     title,
-    description: cause instanceof Error ? cause.message : "The diagnostic action failed.",
+    description: cause instanceof Error ? cause.message : "诊断操作失败。",
   });
 }

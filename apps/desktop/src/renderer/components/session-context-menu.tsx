@@ -304,7 +304,7 @@ export function SessionExportMenu({
               variant="ghost"
               size="icon-sm"
               className="window-no-drag shrink-0"
-              aria-label="Task actions"
+              aria-label="任务操作"
             />
           }
         >
@@ -324,7 +324,7 @@ export function SessionExportMenu({
                 {historyActions.find ? (
                   <DropdownMenuItem onClick={historyActions.find}>
                     <Search aria-hidden="true" />
-                    Find in task
+                    在任务中查找
                     <MenuShortcut id="task.find" />
                   </DropdownMenuItem>
                 ) : null}
@@ -549,7 +549,7 @@ function SessionMoveMenu({
         toast.add({
           type: "success",
           title: "任务已移动",
-          description: `Now working in ${directoryLabel(directory)}.`,
+          description: `当前工作目录为 ${directoryLabel(directory)}。`,
         });
       } catch (error) {
         showErrorToast("无法移动任务", error);

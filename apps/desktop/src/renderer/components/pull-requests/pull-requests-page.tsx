@@ -26,7 +26,7 @@ import {
   validatePullRequestsSearch,
 } from "./pull-request-ref";
 
-const UNSUPPORTED_FALLBACK = "Linking pull requests to tasks only works on this computer.";
+const UNSUPPORTED_FALLBACK = "拉取请求关联任务仅在此计算机上可用。";
 const NARROW = "@max-[44rem]/pull-requests";
 
 /**
@@ -93,13 +93,13 @@ export function PullRequestsPage() {
   return (
     <main
       className="palot-main-surface @container/pull-requests relative flex size-full min-h-0 min-w-0 overflow-hidden bg-background"
-      aria-label="Pull requests"
+      aria-label="拉取请求"
     >
       {status.isPending ? (
         <PageMessage>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
-            Checking GitHub sign-in
+            正在检查 GitHub 登录
           </div>
         </PageMessage>
       ) : !authenticated || authRejected ? (
@@ -109,22 +109,22 @@ export function PullRequestsPage() {
               <EmptyMedia variant="icon">
                 <GitPullRequest aria-hidden="true" />
               </EmptyMedia>
-              <EmptyTitle>Sign in to GitHub</EmptyTitle>
+              <EmptyTitle>登录 GitHub</EmptyTitle>
               <EmptyDescription>
-                Run <code className="font-mono text-code-compact">gh auth login</code> in a terminal
-                or set <code className="font-mono text-code-compact">GH_TOKEN</code>, then refresh.
+                在终端中运行 <code className="font-mono text-code-compact">gh auth login</code>
+                或设置 <code className="font-mono text-code-compact">GH_TOKEN</code>，然后刷新。
               </EmptyDescription>
             </EmptyHeader>
             <Button type="button" variant="outline" size="sm" onClick={refresh}>
               <RefreshCw data-icon="inline-start" aria-hidden="true" />
-              Refresh
+              刷新
             </Button>
           </Empty>
         </PageMessage>
       ) : (
         <>
           <aside
-            aria-label="Pull request lists"
+            aria-label="拉取请求列表"
             className={cn(
               "flex w-[22.5rem] shrink-0 flex-col border-r border-border/60",
               `${NARROW}:w-full ${NARROW}:border-r-0`,
@@ -132,7 +132,7 @@ export function PullRequestsPage() {
             )}
           >
             <div className="window-drag flex h-(--shell-header-height) shrink-0 items-center gap-2 border-b border-border/60 px-4">
-              <h1 className="text-compact font-semibold">Pull requests</h1>
+              <h1 className="text-compact font-semibold">拉取请求</h1>
               {github?.login ? (
                 <span className="truncate text-meta text-muted-foreground">{github.login}</span>
               ) : null}
@@ -140,7 +140,7 @@ export function PullRequestsPage() {
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Refresh pull requests"
+                aria-label="刷新拉取请求"
                 className="window-no-drag ml-auto"
                 onClick={refresh}
               >
@@ -153,8 +153,7 @@ export function PullRequestsPage() {
                 className="mx-3 mt-3 flex items-start gap-1.5 text-meta text-muted-foreground"
               >
                 <CircleAlert className="mt-px size-3 shrink-0 text-warning" aria-hidden="true" />
-                GitHub rate limit reached. Palot will try again after {formatRetryTime(pausedUntil)}
-                .
+                GitHub 速率限制已达。Palot 将在 {formatRetryTime(pausedUntil)} 后重试。
               </p>
             ) : null}
             <PullRequestList
@@ -167,11 +166,11 @@ export function PullRequestsPage() {
             />
             {linkUnsupported ? (
               <p className="shrink-0 border-t border-border/60 px-4 py-2 text-micro text-muted-foreground">
-                Task linking is unavailable on this connection. {linkUnsupported}
+                任务关联在此连接不可用。{linkUnsupported}
               </p>
             ) : (
               <p className="shrink-0 border-t border-border/60 px-4 py-2 text-micro text-muted-foreground">
-                Hold Shift for quick actions.
+                按住 Shift 显示快捷操作。
               </p>
             )}
           </aside>
@@ -197,9 +196,9 @@ export function PullRequestsPage() {
                       <EmptyMedia variant="icon">
                         <GitPullRequest aria-hidden="true" />
                       </EmptyMedia>
-                      <EmptyTitle>Select a pull request</EmptyTitle>
+                      <EmptyTitle>选择拉取请求</EmptyTitle>
                       <EmptyDescription>
-                        Review changes, checks, and conversation, then merge without leaving Palot.
+                        评审更改、检查和对话，然后在不离开 Palot 的情况下合并。
                       </EmptyDescription>
                     </EmptyHeader>
                   </Empty>

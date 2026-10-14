@@ -45,12 +45,12 @@ export const TurnReviewOffer = memo(function TurnReviewOffer({
   const dismiss = () => setDismissed((current) => new Set(current).add(key));
   const additions = diffs.reduce((sum, file) => sum + file.additions, 0);
   const deletions = diffs.reduce((sum, file) => sum + file.deletions, 0);
-  const files = `${diffs.length} ${diffs.length === 1 ? "file" : "files"} changed`;
+  const files = `${diffs.length} 个文件已更改`;
 
   return (
     <div
       role="group"
-      aria-label="Review this turn's changes"
+      aria-label="审查此回合的更改"
       data-palot-turn-review-offer={userMessageID}
       className="mt-3 flex w-fit max-w-full flex-wrap items-center gap-x-1 gap-y-0.5 rounded-md border border-border/60 bg-muted/15 py-0.5 pr-0.5 pl-2 text-xs text-muted-foreground"
     >
@@ -61,7 +61,7 @@ export const TurnReviewOffer = memo(function TurnReviewOffer({
         <span className="text-destructive">-{deletions}</span>
       </span>
       <Button type="button" variant="ghost" size="sm" onClick={() => onReview(userMessageID)}>
-        Review changes
+        审查更改
       </Button>
       <Button
         type="button"
@@ -76,18 +76,18 @@ export const TurnReviewOffer = memo(function TurnReviewOffer({
               dismiss();
               onAsked?.();
             })
-            .catch((error) => showErrorToast("Could not ask for a review", error))
+            .catch((error) => showErrorToast("无法请求审查", error))
             .finally(() => setAsking(false));
         }}
       >
         <MessageSquareText data-icon="inline-start" aria-hidden="true" />
-        Ask for review
+        请求审查
       </Button>
       <Button
         type="button"
         variant="ghost"
         size="icon-sm"
-        aria-label="Dismiss review suggestion"
+        aria-label="忽略审查建议"
         onClick={dismiss}
       >
         <X aria-hidden="true" />

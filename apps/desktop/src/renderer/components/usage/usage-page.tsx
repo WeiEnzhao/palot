@@ -128,19 +128,19 @@ export function UsagePage() {
   return (
     <main
       className="palot-main-surface @container/usage relative size-full min-h-0 min-w-0 overflow-hidden bg-background"
-      aria-label="Usage"
+      aria-label="用量"
     >
       <div className="window-drag h-(--shell-header-height) shrink-0" aria-hidden="true" />
       <div className="palot-native-scrollbar h-[calc(100%-var(--shell-header-height))] overflow-y-auto px-6 pb-16 @max-[42rem]/usage:px-3">
         <div className="mx-auto w-full max-w-5xl pt-5">
           <header className="mb-7 flex flex-wrap items-start gap-4 px-2">
             <div className="min-w-0 flex-1">
-              <h1 className="text-page-title/tight font-medium tracking-[-0.035em]">Usage</h1>
+              <h1 className="text-page-title/tight font-medium tracking-[-0.035em]">用量</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 {data
-                  ? `${formatUsageDateRange({ ...data.range, timezone: range.timezone })} · ${updatedLabel(displayedUpdateAt, freshnessNowMs)}${runtime?.connected === false ? " · Cached" : ""}`
-                  : "Local OpenCode activity, model usage, and tool reliability."}
-                {(summary.isFetching || summary.isPlaceholderData) && data ? " · Updating" : ""}
+                  ? `${formatUsageDateRange({ ...data.range, timezone: range.timezone })} · ${updatedLabel(displayedUpdateAt, freshnessNowMs)}${runtime?.connected === false ? " · 已缓存" : ""}`
+                  : "本地 OpenCode 活动、模型用量和工具可靠性。"}
+                {(summary.isFetching || summary.isPlaceholderData) && data ? " · 更新中" : ""}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
@@ -148,8 +148,8 @@ export function UsagePage() {
                 projects={visible}
                 value={selectedProject?.id ?? null}
                 onValueChange={(projectID) => void updateSearch({ projectID })}
-                ariaLabel="Filter usage by project"
-                allLabel="All projects"
+                ariaLabel="按项目筛选用量"
+                allLabel="所有项目"
               />
               <ToggleGroup
                 value={[String(search.days)]}
@@ -162,15 +162,15 @@ export function UsagePage() {
                 }}
                 variant="outline"
                 size="sm"
-                aria-label="Usage date range"
+                aria-label="用量日期范围"
               >
                 {USAGE_RANGE_OPTIONS.map((days) => (
                   <ToggleGroupItem
                     key={days}
                     value={String(days)}
-                    aria-label={days === 1 ? "Today" : `${days} days`}
+                    aria-label={days === 1 ? "今天" : `${days} 天`}
                   >
-                    {days === 1 ? "Today" : `${days}d`}
+                    {days === 1 ? "今天" : `${days}天`}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
@@ -181,13 +181,13 @@ export function UsagePage() {
                 aria-pressed={compareOpen}
                 onClick={() => setCompareOpen((open) => !open)}
               >
-                Compare periods
+                对比时段
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Refresh usage"
+                aria-label="刷新用量"
                 disabled={
                   runtime?.connected !== true ||
                   summary.isFetching ||
@@ -230,7 +230,7 @@ export function UsagePage() {
                   role="status"
                   className="mb-5 rounded-lg border border-border/70 bg-muted/35 px-3 py-2 text-xs text-muted-foreground"
                 >
-                  Showing the previous selection while this usage scope updates.
+                  此用量范围更新时，显示上一次的选择。
                 </div>
               ) : null}
               <UsageContent
@@ -272,9 +272,9 @@ export function UsagePage() {
           {data && summary.error ? (
             <Alert className="mt-5">
               <TriangleAlert aria-hidden="true" />
-              <AlertTitle>Showing cached usage</AlertTitle>
+              <AlertTitle>显示缓存的用量</AlertTitle>
               <AlertDescription>
-                The latest background refresh failed. Refresh to try again.
+                最近的后台刷新失败。请刷新重试。
               </AlertDescription>
             </Alert>
           ) : null}
@@ -342,47 +342,47 @@ function UsageContent({
       <section className="overflow-hidden rounded-2xl border border-border/75 bg-card/55">
         <div className="grid @min-[42rem]/usage:grid-cols-2">
           <div className="border-b border-border/70 p-6 @min-[42rem]/usage:border-r">
-            <div className="text-xs text-muted-foreground">Reported cost</div>
+            <div className="text-xs text-muted-foreground">报告费用</div>
             <div className="mt-2 text-4xl font-semibold tracking-[-0.05em] tabular-nums">
               {CURRENCY.format(data.cost)}
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
-              Aggregate model cost returned by OpenCode
+              OpenCode 返回的模型费用合计
             </div>
           </div>
           <div className="border-b border-border/70 p-6">
-            <div className="text-xs text-muted-foreground">Model tokens</div>
+            <div className="text-xs text-muted-foreground">模型令牌</div>
             <div className="mt-2 text-4xl font-semibold tracking-[-0.05em] tabular-nums">
               {COMPACT.format(modelTokens)}
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
-              {NUMBER.format(modelTokens)} input, output, and reasoning tokens
+              {NUMBER.format(modelTokens)} 个输入、输出和推理令牌
             </div>
           </div>
         </div>
         <div className="border-b border-border/70 p-5">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <UsageSectionHeading
-              title="Token composition"
-              description="Cache activity is reported separately from model-token totals."
+              title="令牌构成"
+              description="缓存活动与模型令牌总量分开报告。"
             />
             <TokenCompositionBar tokens={data.tokens} />
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 @min-[34rem]/usage:grid-cols-5">
-            <UsageValue label="Input" value={COMPACT.format(data.tokens.input)} />
-            <UsageValue label="Output" value={COMPACT.format(data.tokens.output)} />
-            <UsageValue label="Reasoning" value={COMPACT.format(data.tokens.reasoning)} />
-            <UsageValue label="Cache read" value={COMPACT.format(data.tokens.cache.read)} />
-            <UsageValue label="Cache write" value={COMPACT.format(data.tokens.cache.write)} />
+            <UsageValue label="输入" value={COMPACT.format(data.tokens.input)} />
+            <UsageValue label="输出" value={COMPACT.format(data.tokens.output)} />
+            <UsageValue label="推理" value={COMPACT.format(data.tokens.reasoning)} />
+            <UsageValue label="缓存读取" value={COMPACT.format(data.tokens.cache.read)} />
+            <UsageValue label="缓存写入" value={COMPACT.format(data.tokens.cache.write)} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 p-5 @min-[42rem]/usage:grid-cols-6">
-          <UsageValue label="Sessions" value={NUMBER.format(data.sessions)} compact />
-          <UsageValue label="Prompts" value={NUMBER.format(data.prompts)} compact />
-          <UsageValue label="Subagents" value={NUMBER.format(data.subagents)} compact />
-          <UsageValue label="Active days" value={NUMBER.format(data.activeDays)} compact />
-          <UsageValue label="Day streak" value={NUMBER.format(data.streak)} compact />
-          <UsageValue label="Steps" value={NUMBER.format(data.steps)} compact />
+          <UsageValue label="会话" value={NUMBER.format(data.sessions)} compact />
+          <UsageValue label="提示" value={NUMBER.format(data.prompts)} compact />
+          <UsageValue label="子智能体" value={NUMBER.format(data.subagents)} compact />
+          <UsageValue label="活跃天数" value={NUMBER.format(data.activeDays)} compact />
+          <UsageValue label="连续天数" value={NUMBER.format(data.streak)} compact />
+          <UsageValue label="步骤" value={NUMBER.format(data.steps)} compact />
         </div>
       </section>
 
@@ -401,8 +401,8 @@ function UsageContent({
       <section className="grid gap-5 @min-[52rem]/usage:grid-cols-[minmax(15rem,0.72fr)_minmax(0,1.4fr)]">
         <div className="min-w-0 rounded-xl border border-border/75 p-5">
           <UsageSectionHeading
-            title="Providers"
-            description="Share of reported cost"
+            title="提供者"
+            description="报告费用的占比"
             className="mb-4"
           />
           {providers.length ? (
@@ -420,14 +420,14 @@ function UsageContent({
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No provider usage in this range.</p>
+            <p className="text-sm text-muted-foreground">此范围内没有提供者用量。</p>
           )}
         </div>
         <div className="min-w-0 rounded-xl border border-border/75 p-5">
           <div className="mb-3 flex items-center justify-between gap-4">
             <UsageSectionHeading
-              title="Daily activity"
-              description="Steps are the only daily series returned by OpenCode."
+              title="每日活动"
+              description="步骤是 OpenCode 返回的唯一每日序列数据。"
             />
             <BarChart3 className="size-4 text-info" aria-hidden="true" />
           </div>
@@ -443,8 +443,8 @@ function UsageContent({
       <section className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
           <UsageSectionHeading
-            title="Models"
-            description="Cost, model tokens, cache activity, and supporting step counts"
+            title="模型"
+            description="费用、模型令牌、缓存活动和支持的步骤计数"
           />
           <ToggleGroup
             value={[modelSort]}
@@ -455,22 +455,22 @@ function UsageContent({
             }}
             variant="outline"
             size="sm"
-            aria-label="Sort model usage"
+            aria-label="排序模型用量"
           >
-            <ToggleGroupItem value="cost">Cost</ToggleGroupItem>
-            <ToggleGroupItem value="tokens">Tokens</ToggleGroupItem>
-            <ToggleGroupItem value="steps">Steps</ToggleGroupItem>
+            <ToggleGroupItem value="cost">费用</ToggleGroupItem>
+            <ToggleGroupItem value="tokens">令牌</ToggleGroupItem>
+            <ToggleGroupItem value="steps">步骤</ToggleGroupItem>
           </ToggleGroup>
         </div>
         <div className="hidden overflow-x-auto rounded-xl border border-border/75 @min-[44rem]/usage:block">
           <Table className="min-w-[46rem]">
             <TableHeader>
               <TableRow>
-                <TableHead>Model</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead className="text-right">Model tokens</TableHead>
-                <TableHead className="text-right">Cache read</TableHead>
-                <TableHead className="text-right">Steps</TableHead>
+                <TableHead>模型</TableHead>
+                <TableHead className="text-right">费用</TableHead>
+                <TableHead className="text-right">模型令牌</TableHead>
+                <TableHead className="text-right">缓存读取</TableHead>
+                <TableHead className="text-right">步骤</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -488,7 +488,7 @@ function UsageContent({
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="h-20 text-center text-muted-foreground">
-                    No model usage in this range.
+                    此范围内没有模型用量。
                   </TableCell>
                 </TableRow>
               )}
@@ -509,7 +509,7 @@ function UsageContent({
             ))
           ) : (
             <div className="rounded-xl border border-border/75 p-5 text-center text-sm text-muted-foreground">
-              No model usage in this range.
+              此范围内没有模型用量。
             </div>
           )}
         </div>
@@ -518,8 +518,8 @@ function UsageContent({
       <section className="min-w-0 rounded-xl border border-border/75 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <UsageSectionHeading
-            title="Tool reliability"
-            description="Completed and unfinished tool calls"
+            title="工具可靠性"
+            description="已完成和未完成工具调用"
           />
           <Button
             type="button"
@@ -530,18 +530,18 @@ function UsageContent({
             aria-controls="usage-tool-details"
             onClick={() => onToolDetailsOpenChange(!toolDetailsOpen)}
           >
-            {toolDetailsOpen ? "Hide details" : "Show details"}
+            {toolDetailsOpen ? "隐藏详情" : "显示详情"}
           </Button>
         </div>
         {toolTotals ? (
           <div className="mt-5 grid grid-cols-2 gap-4 @min-[34rem]/usage:grid-cols-4">
-            <UsageValue label="Calls" value={NUMBER.format(toolTotals.calls)} />
-            <UsageValue label="Succeeded" value={NUMBER.format(toolTotals.succeeded)} />
-            <UsageValue label="Failed" value={NUMBER.format(toolTotals.failed)} />
-            <UsageValue label="Unfinished" value={NUMBER.format(toolTotals.unfinished)} />
+            <UsageValue label="调用" value={NUMBER.format(toolTotals.calls)} />
+            <UsageValue label="成功" value={NUMBER.format(toolTotals.succeeded)} />
+            <UsageValue label="失败" value={NUMBER.format(toolTotals.failed)} />
+            <UsageValue label="未完成" value={NUMBER.format(toolTotals.unfinished)} />
           </div>
         ) : (
-          <p className="mt-4 text-sm text-muted-foreground">Tool totals are unavailable.</p>
+          <p className="mt-4 text-sm text-muted-foreground">工具总量不可用。</p>
         )}
         <div
           id="usage-tool-details"
@@ -554,22 +554,22 @@ function UsageContent({
             <>
               <p className="sr-only" role="status">
                 {detailPending
-                  ? "Loading tool details."
+                  ? "正在加载工具详情。"
                   : detailError
-                    ? "Tool details could not be loaded."
+                    ? "无法加载工具详情。"
                     : detailData
-                      ? `Tool details loaded for ${toolUsage.length} ${toolUsage.length === 1 ? "tool" : "tools"}.`
+                      ? `已加载 ${toolUsage.length} 个工具的详情。`
                       : ""}
               </p>
               {detailPending && !detailData ? <Skeleton className="h-24 w-full" /> : null}
               {detailWaitingForConnection ? (
                 <p className="text-sm text-muted-foreground">
-                  Reconnect OpenCode to update tool details for this scope.
+                  重新连接 OpenCode 以更新此范围的工具详情。
                 </p>
               ) : null}
               {detailError ? (
                 <div className="flex items-center justify-between gap-3 text-sm text-destructive">
-                  <span>Could not load tool details.</span>
+                  <span>无法加载工具详情。</span>
                   <Button
                     type="button"
                     variant="outline"
@@ -577,7 +577,7 @@ function UsageContent({
                     disabled={detailRetryDisabled}
                     onClick={retryDetails}
                   >
-                    Retry
+                    重试
                   </Button>
                 </div>
               ) : null}
@@ -601,7 +601,7 @@ function UsageContent({
                 </div>
               ) : null}
               {!detailPending && !detailError && detailData && toolUsage.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No per-tool usage in this range.</p>
+                <p className="text-sm text-muted-foreground">此范围内没有逐工具用量。</p>
               ) : null}
             </>
           ) : null}
@@ -631,30 +631,30 @@ function UsagePeriodComparison({
   const metrics = previous
     ? [
         {
-          label: "Reported cost",
+          label: "报告费用",
           current: current.cost,
           previous: previous.cost,
           format: CURRENCY,
         },
         {
-          label: "Model tokens",
+          label: "模型令牌",
           current: modelTokenTotal(current.tokens),
           previous: modelTokenTotal(previous.tokens),
           format: COMPACT,
         },
-        { label: "Prompts", current: current.prompts, previous: previous.prompts, format: NUMBER },
-        { label: "Steps", current: current.steps, previous: previous.steps, format: NUMBER },
+        { label: "提示", current: current.prompts, previous: previous.prompts, format: NUMBER },
+        { label: "步骤", current: current.steps, previous: previous.steps, format: NUMBER },
       ]
     : [];
 
   return (
     <section
       className="min-w-0 rounded-xl border border-border/75 p-5"
-      aria-label="Period comparison"
+      aria-label="时段对比"
     >
       <UsageSectionHeading
-        title="Compared with previous period"
-        description={`Previous: ${formatUsageDateRange(range)}. Today is still in progress; the previous period is complete.`}
+        title="与上一时段对比"
+        description={`上期：${formatUsageDateRange(range)}。今天仍在进行中；上一时段已结束。`}
       />
       {previous ? (
         <div className="mt-5 grid grid-cols-2 gap-4 @min-[42rem]/usage:grid-cols-4">
@@ -665,7 +665,7 @@ function UsagePeriodComparison({
                 {metric.format.format(metric.current)}
               </div>
               <div className="text-meta text-muted-foreground tabular-nums">
-                {metric.format.format(metric.previous)} before
+                {metric.format.format(metric.previous)} 前期
               </div>
               <div className="mt-1 text-meta font-medium tabular-nums">
                 {periodChange(metric.current, metric.previous)}
@@ -677,19 +677,19 @@ function UsagePeriodComparison({
         <Skeleton className="mt-5 h-24 w-full" />
       ) : offline ? (
         <p className="mt-4 text-sm text-muted-foreground">
-          Reconnect OpenCode to load the previous period.
+          重新连接 OpenCode 以加载上一时段。
         </p>
       ) : error ? (
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-destructive">
-          <span>Could not load the previous period.</span>
+          <span>无法加载上一时段。</span>
           <Button type="button" variant="outline" size="sm" onClick={retry}>
-            Retry comparison
+            重试对比
           </Button>
         </div>
       ) : null}
       {previous && error ? (
         <p className="mt-3 text-meta text-muted-foreground">
-          The previous period is cached because its latest refresh failed.
+          上一时段已缓存，因为最近一次刷新失败。
         </p>
       ) : null}
     </section>
@@ -697,10 +697,10 @@ function UsagePeriodComparison({
 }
 
 function periodChange(current: number, previous: number): string {
-  if (current === previous) return "No change";
-  if (previous === 0) return "New activity";
+  if (current === previous) return "无变化";
+  if (previous === 0) return "新活动";
   const change = (current - previous) / previous;
-  return `${change > 0 ? "+" : ""}${PERCENT.format(change)} vs previous`;
+  return `${change > 0 ? "+" : ""}${PERCENT.format(change)} 对比上期`;
 }
 
 function ModelUsageRow({
@@ -730,25 +730,25 @@ function ModelUsageRow({
       <TableCell className="text-right tabular-nums">
         <div>{CURRENCY.format(usage.cost)}</div>
         <div className="text-micro text-muted-foreground">
-          {formatShare(usage.cost, totalCost)} of cost
+          {formatShare(usage.cost, totalCost)} 费用占比
         </div>
       </TableCell>
       <TableCell className="text-right tabular-nums">
         <div>{COMPACT.format(tokens)}</div>
         <div className="text-micro text-muted-foreground">
-          {COMPACT.format(usage.tokens.input)} in · {COMPACT.format(usage.tokens.output)} out
+          {COMPACT.format(usage.tokens.input)} 输入 · {COMPACT.format(usage.tokens.output)} 输出
           {usage.tokens.reasoning > 0
-            ? ` · ${COMPACT.format(usage.tokens.reasoning)} reasoning`
+            ? ` · ${COMPACT.format(usage.tokens.reasoning)} 推理`
             : ""}
         </div>
         <div className="text-micro text-muted-foreground">
-          {formatShare(tokens, totalModelTokens)} of model tokens
+          {formatShare(tokens, totalModelTokens)} 模型令牌占比
         </div>
       </TableCell>
       <TableCell className="text-right tabular-nums">
         <div>{COMPACT.format(usage.tokens.cache.read)}</div>
         <div className="text-micro text-muted-foreground">
-          {COMPACT.format(usage.tokens.cache.write)} write
+          {COMPACT.format(usage.tokens.cache.write)} 写入
         </div>
       </TableCell>
       <TableCell className="text-right tabular-nums">{NUMBER.format(usage.steps)}</TableCell>
@@ -784,23 +784,23 @@ function ModelUsageCard({
         <div className="shrink-0 text-right">
           <div className="text-sm font-medium tabular-nums">{CURRENCY.format(usage.cost)}</div>
           <div className="text-micro text-muted-foreground">
-            {formatShare(usage.cost, totalCost)} of cost
+            {formatShare(usage.cost, totalCost)} 费用占比
           </div>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3">
-        <UsageValue label="Model tokens" value={COMPACT.format(tokens)} compact />
+        <UsageValue label="模型令牌" value={COMPACT.format(tokens)} compact />
         <UsageValue
-          label="Cache read / write"
+          label="缓存读取 / 写入"
           value={`${COMPACT.format(usage.tokens.cache.read)} / ${COMPACT.format(usage.tokens.cache.write)}`}
           compact
         />
-        <UsageValue label="Steps" value={NUMBER.format(usage.steps)} compact />
-        <UsageValue label="Token share" value={formatShare(tokens, totalModelTokens)} compact />
+        <UsageValue label="步骤" value={NUMBER.format(usage.steps)} compact />
+        <UsageValue label="令牌占比" value={formatShare(tokens, totalModelTokens)} compact />
       </div>
       <p className="mt-3 text-meta text-muted-foreground tabular-nums">
-        {COMPACT.format(usage.tokens.input)} input · {COMPACT.format(usage.tokens.output)} output
-        {usage.tokens.reasoning > 0 ? ` · ${COMPACT.format(usage.tokens.reasoning)} reasoning` : ""}
+        {COMPACT.format(usage.tokens.input)} 输入 · {COMPACT.format(usage.tokens.output)} 输出
+        {usage.tokens.reasoning > 0 ? ` · ${COMPACT.format(usage.tokens.reasoning)} 推理` : ""}
       </p>
     </article>
   );
@@ -829,8 +829,8 @@ function ProviderUsageRow({
       </div>
       <div className="mt-1 flex items-center justify-between gap-3 text-meta text-muted-foreground">
         <span>
-          {provider.models} {provider.models === 1 ? "model" : "models"} ·{" "}
-          {COMPACT.format(provider.tokens)} tokens
+          {provider.models} 个{provider.models === 1 ? "模型" : "模型"} ·{" "}
+          {COMPACT.format(provider.tokens)} 个令牌
         </span>
         <span className="tabular-nums">{PERCENT.format(share)}</span>
       </div>
@@ -842,9 +842,9 @@ function TokenCompositionBar({ tokens }: { tokens: SessionStatsInfo["tokens"] })
   const total = modelTokenTotal(tokens);
   if (total <= 0) return null;
   const parts = [
-    { key: "input", label: "Input", value: tokens.input, className: "bg-info" },
-    { key: "output", label: "Output", value: tokens.output, className: "bg-success" },
-    { key: "reasoning", label: "Reasoning", value: tokens.reasoning, className: "bg-primary" },
+    { key: "input", label: "输入", value: tokens.input, className: "bg-info" },
+    { key: "output", label: "输出", value: tokens.output, className: "bg-success" },
+    { key: "reasoning", label: "推理", value: tokens.reasoning, className: "bg-primary" },
   ];
   return (
     <div
@@ -919,9 +919,9 @@ function UsageUnavailable() {
     <div className="flex min-h-72 items-center justify-center">
       <div className="max-w-md text-center">
         <TriangleAlert className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
-        <h2 className="mt-3 text-base font-medium">OpenCode is disconnected</h2>
+        <h2 className="mt-3 text-base font-medium">OpenCode 已断开</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Usage will load after the local OpenCode service reconnects.
+          本地 OpenCode 服务重新连接后将加载用量。
         </p>
       </div>
     </div>
@@ -933,10 +933,10 @@ function UsageError({ message, retry }: { message: string; retry(): void }) {
     <div className="flex min-h-72 items-center justify-center">
       <div className="max-w-md text-center">
         <TriangleAlert className="mx-auto size-8 text-destructive" aria-hidden="true" />
-        <h2 className="mt-3 text-base font-medium">Could not load usage</h2>
+        <h2 className="mt-3 text-base font-medium">无法加载用量</h2>
         <p className="mt-1 text-sm text-muted-foreground">{message}</p>
         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={retry}>
-          Retry
+          重试
         </Button>
       </div>
     </div>
@@ -1024,7 +1024,7 @@ function formatShare(value: number, total: number): string {
 }
 
 function updatedLabel(updatedAt: number, now: number): string {
-  if (!updatedAt) return "Not updated yet";
+  if (!updatedAt) return "尚未更新";
   const minutes = Math.min(0, Math.round((updatedAt - now) / 60_000));
-  return `Updated ${UPDATED.format(minutes, "minute")}`;
+  return `更新于 ${UPDATED.format(minutes, "minute")}`;
 }

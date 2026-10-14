@@ -41,11 +41,11 @@ export type ComposerDiscoveryItem =
     };
 
 const GROUP_LABELS: Record<ComposerDiscoveryItem["kind"], string> = {
-  command: "Commands",
-  skill: "Skills",
-  file: "Files",
-  agent: "Agents",
-  reference: "References",
+  command: "命令",
+  skill: "技能",
+  file: "文件",
+  agent: "智能体",
+  reference: "引用",
 };
 
 /** Runs of consecutive same-kind items, keeping each item's index in the full list. */
@@ -87,7 +87,7 @@ export function ComposerDiscovery({
       id={id}
       className="palot-translucent-popover absolute right-0 bottom-[calc(100%+8px)] left-0 isolate z-30 overflow-hidden rounded-xl border border-foreground/12 p-1 shadow-xl"
       role="listbox"
-      aria-label="Composer suggestions"
+      aria-label="编辑器建议"
     >
       <SurfaceBackdrop />
       <div className="max-h-80 overflow-y-auto overscroll-contain py-0.5">
@@ -118,7 +118,7 @@ export function ComposerDiscovery({
         })}
         {loading ? (
           <div className="px-3 py-3 text-xs text-muted-foreground" role="status">
-            Searching...
+            搜索中…
           </div>
         ) : null}
         {!loading && error ? (
@@ -127,7 +127,7 @@ export function ComposerDiscovery({
           </div>
         ) : null}
         {!loading && !error && items.length === 0 ? (
-          <div className="px-3 py-3 text-xs text-muted-foreground">No matches found.</div>
+          <div className="px-3 py-3 text-xs text-muted-foreground">未找到匹配项。</div>
         ) : null}
       </div>
     </div>
@@ -201,8 +201,8 @@ function DiscoveryOption({
             : item.kind === "reference"
               ? (item.description ?? item.path)
               : item.kind === "agent"
-                ? (item.description ?? "Subagent")
-                : (item.description ?? "No description")}
+                ? (item.description ?? "子智能体")
+                : (item.description ?? "无描述")}
         </span>
       </span>
     </button>

@@ -36,30 +36,30 @@ it("shows Browser access and updates its local preferences independently", async
   );
 
   const user = userEvent.setup();
-  expect(screen.getByText(/can access sites reachable from that server/).textContent).toMatch(
-    /localhost and private networks. Palot cannot require per-site approval yet/,
+  expect(screen.getByText(/可以访问从该服务器可达的站点/).textContent).toMatch(
+    /localhost 和私有网络。Palot 尚不支持逐站点审批/,
   );
-  expect(screen.queryByRole("combobox", { name: "Configure server" })).toBeNull();
-  expect(screen.getByText("Not available in Palot")).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Clear data" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.queryByRole("combobox", { name: "配置服务器" })).toBeNull();
+  expect(screen.getByText("Palot 不提供")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "清除数据" }).hasAttribute("disabled")).toBe(true);
 
-  await user.click(screen.getByRole("switch", { name: "Enable experimental browser" }));
+  await user.click(screen.getByRole("switch", { name: "启用实验性浏览器" }));
   expect(store.get(experimentalBrowserAtom)).toBe(true);
 
-  await user.click(screen.getByRole("combobox", { name: "Search engine" }));
+  await user.click(screen.getByRole("combobox", { name: "搜索引擎" }));
   await user.click(screen.getByRole("option", { name: "DuckDuckGo" }));
   expect(store.get(browserSearchEngineAtom)).toBe("duckduckgo");
 
-  await user.click(screen.getByRole("combobox", { name: "Web links" }));
-  await user.click(screen.getByRole("option", { name: "Palot Browser" }));
+  await user.click(screen.getByRole("combobox", { name: "网页链接" }));
+  await user.click(screen.getByRole("option", { name: "Palot 浏览器" }));
   expect(store.get(browserWebLinksAtom)).toBe("browser");
   expect(store.get(browserLocalLinksAtom)).toBe("browser");
 
-  await user.click(screen.getByRole("combobox", { name: "Local dev links" }));
-  await user.click(screen.getByRole("option", { name: "External browser" }));
+  await user.click(screen.getByRole("combobox", { name: "本地开发链接" }));
+  await user.click(screen.getByRole("option", { name: "外部浏览器" }));
   expect(store.get(browserLocalLinksAtom)).toBe("external");
   expect(store.get(browserWebLinksAtom)).toBe("browser");
 
-  await user.click(screen.getByRole("switch", { name: "Show full URL" }));
+  await user.click(screen.getByRole("switch", { name: "显示完整 URL" }));
   expect(store.get(browserShowFullURLAtom)).toBe(true);
 });

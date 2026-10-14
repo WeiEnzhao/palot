@@ -111,17 +111,17 @@ describe("SessionContextMenu", () => {
         </QueryClientProvider>,
       );
       if (surface === "header")
-        fireEvent.click(screen.getByRole("button", { name: "Task actions" }));
+        fireEvent.click(screen.getByRole("button", { name: "任务操作" }));
       else fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-      fireEvent.click(await screen.findByRole("menuitem", { name: "Open in new window" }));
+      fireEvent.click(await screen.findByRole("menuitem", { name: "在新窗口中打开" }));
       expect(open).toHaveBeenCalledWith(session.id, "native-owner");
     },
   );
   it.each([
-    ["Previous user turn", "previousTurn"],
-    ["Next user turn", "nextTurn"],
-    ["Prompt timeline", "openTimeline"],
-    ["Fork from prompt…", "forkFromPrompt"],
+    ["上一轮用户输入", "previousTurn"],
+    ["下一轮用户输入", "nextTurn"],
+    ["提示词时间线", "openTimeline"],
+    ["从提示词分叉…", "forkFromPrompt"],
   ] as const)("runs %s from task actions", async (label, action) => {
     const historyActions = {
       loadingOlder: false,
@@ -138,7 +138,7 @@ describe("SessionContextMenu", () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Task actions" }));
+    fireEvent.click(screen.getByRole("button", { name: "任务操作" }));
     fireEvent.click(await screen.findByRole("menuitem", { name: label }));
     expect(historyActions[action]).toHaveBeenCalledOnce();
   });
@@ -161,8 +161,8 @@ describe("SessionContextMenu", () => {
         </Provider>
       </QueryClientProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Task actions" }));
-    const previous = await screen.findByRole("menuitem", { name: "Previous user turn" });
+    fireEvent.click(screen.getByRole("button", { name: "任务操作" }));
+    const previous = await screen.findByRole("menuitem", { name: "上一轮用户输入" });
     expect(previous.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(previous);
     expect(previousTurn).not.toHaveBeenCalled();
@@ -210,10 +210,10 @@ describe("SessionContextMenu", () => {
       );
 
       fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-      const submenu = await screen.findByRole("menuitem", { name: "Move to worktree" });
+      const submenu = await screen.findByRole("menuitem", { name: "移到工作树" });
       fireEvent.mouseEnter(submenu);
       fireEvent.click(submenu);
-      fireEvent.click(await screen.findByRole("menuitem", { name: "New worktree" }));
+      fireEvent.click(await screen.findByRole("menuitem", { name: "新建工作树" }));
 
       await waitFor(() =>
         expect(create).toHaveBeenCalledWith(project.id, project.canonical, undefined, "connection"),
@@ -253,12 +253,12 @@ describe("SessionContextMenu", () => {
     );
 
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    const submenu = await screen.findByRole("menuitem", { name: "Move to worktree" });
+    const submenu = await screen.findByRole("menuitem", { name: "移到工作树" });
     fireEvent.mouseEnter(submenu);
     fireEvent.click(submenu);
 
-    const newWorktree = await screen.findByRole("menuitem", { name: "New worktree" });
-    const mainCheckout = await screen.findByRole("menuitem", { name: "Main checkout" });
+    const newWorktree = await screen.findByRole("menuitem", { name: "新建工作树" });
+    const mainCheckout = await screen.findByRole("menuitem", { name: "主检出" });
     const anotherWorktree = await screen.findByRole("menuitem", { name: "another" });
 
     expect(newWorktree.compareDocumentPosition(mainCheckout)).toBe(
@@ -284,7 +284,7 @@ describe("SessionContextMenu", () => {
 
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
     expect(screen.queryByRole("menuitem", { name: "Remove worktree" })).toBeNull();
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Fork" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "分叉" }));
 
     await waitFor(() => expect(mocks.forkSession).toHaveBeenCalledWith({ sessionID: session.id }));
   });
@@ -304,7 +304,7 @@ describe("SessionContextMenu", () => {
     );
 
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Copy conversation as Markdown" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "复制对话为 Markdown" }));
     await waitFor(() => expect(copy).toHaveBeenCalledWith(session.id, undefined));
   });
 
@@ -325,10 +325,10 @@ describe("SessionContextMenu", () => {
     );
 
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    const submenu = await screen.findByRole("menuitem", { name: "Snooze" });
+    const submenu = await screen.findByRole("menuitem", { name: "暂停" });
     fireEvent.mouseEnter(submenu);
     fireEvent.click(submenu);
-    fireEvent.click(await screen.findByRole("menuitem", { name: /^In 1 hour/ }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /^1 小时后/ }));
 
     expect(onSnooze).toHaveBeenCalledWith(3_601_000);
   });
@@ -364,20 +364,20 @@ describe("SessionContextMenu", () => {
     );
 
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete task" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Delete task" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "删除任务" }));
+    fireEvent.click(await screen.findByRole("button", { name: "删除任务" }));
 
     await waitFor(() => expect(remove).toHaveBeenCalledWith(session.id, "connection"));
     expect(mocks.openNewTask).toHaveBeenCalledWith(session.projectID, "profile");
   });
 
   it.each([
-    "Open in new window",
-    "Fork",
-    "Schedule follow-up",
-    "Export task",
-    "Copy conversation as Markdown",
-    "Import task",
+    "在新窗口中打开",
+    "分叉",
+    "安排后续任务",
+    "导出任务",
+    "复制对话为 Markdown",
+    "导入任务",
   ])("routes %s to its background owner after the active profile changes", async (label) => {
     const openWindow = vi.spyOn(palot, "openSessionWindow").mockResolvedValue(undefined);
     const exportTask = vi.spyOn(palot, "exportSession").mockResolvedValue(null);
@@ -409,23 +409,23 @@ describe("SessionContextMenu", () => {
     );
     fireEvent.click(await screen.findByRole("menuitem", { name: label }));
     await waitFor(() => {
-      if (label === "Open in new window")
+      if (label === "在新窗口中打开")
         expect(openWindow).toHaveBeenCalledWith(session.id, owner.connectionID);
-      if (label === "Fork") {
+      if (label === "分叉") {
         expect(mocks.forkOwner).toHaveBeenLastCalledWith(owner);
         expect(mocks.forkSession).toHaveBeenCalledWith({ sessionID: session.id });
       }
-      if (label === "Schedule follow-up")
+      if (label === "安排后续任务")
         expect(mocks.openScheduled).toHaveBeenCalledWith({
           mode: "create",
           sessionID: session.id,
           profileID: owner.profileID,
         });
-      if (label === "Export task")
+      if (label === "导出任务")
         expect(exportTask).toHaveBeenCalledWith(session.id, session.title, owner.connectionID);
-      if (label === "Copy conversation as Markdown")
+      if (label === "复制对话为 Markdown")
         expect(copy).toHaveBeenCalledWith(session.id, owner.connectionID);
-      if (label === "Import task") {
+      if (label === "导入任务") {
         expect(importTask).toHaveBeenCalledWith(session.location, owner.connectionID);
         expect(mocks.openSession).toHaveBeenCalledWith(imported.id, { profileID: owner.profileID });
         expect(
@@ -458,8 +458,8 @@ describe("SessionContextMenu", () => {
       </QueryClientProvider>,
     );
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete task" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Delete task" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "删除任务" }));
+    fireEvent.click(await screen.findByRole("button", { name: "删除任务" }));
     await waitFor(() => expect(remove).toHaveBeenCalledWith(session.id, owner.connectionID));
     expect(openCodeReconciler(client).sessions(owner.connectionID)).toHaveLength(0);
     expect(
@@ -509,7 +509,7 @@ describe("SessionContextMenu", () => {
     expect(load).not.toHaveBeenCalled();
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
     expect(load).not.toHaveBeenCalled();
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Fork from prompt…" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "从提示词分叉…" }));
     const prompt = await screen.findByRole("button", { name: /^Background prompt/ });
     expect(screen.queryByRole("button", { name: /^Active prompt/ })).toBeNull();
     expect(load).toHaveBeenCalledWith(
@@ -555,7 +555,7 @@ describe("SessionContextMenu", () => {
     );
     expect(list).not.toHaveBeenCalled();
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    const submenu = await screen.findByRole("menuitem", { name: "Move to worktree" });
+    const submenu = await screen.findByRole("menuitem", { name: "移到工作树" });
     fireEvent.mouseEnter(submenu);
     fireEvent.click(submenu);
     await screen.findByRole("menuitem", { name: "other" });
@@ -565,7 +565,7 @@ describe("SessionContextMenu", () => {
       expect.any(AbortSignal),
       owner.connectionID,
     );
-    fireEvent.click(await screen.findByRole("menuitem", { name: "New worktree" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "新建工作树" }));
     await waitFor(() =>
       expect(create).toHaveBeenCalledWith(
         project.id,
@@ -610,15 +610,15 @@ describe("SessionContextMenu", () => {
       );
       fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
       for (const label of [
-        "Open in new window",
-        "Fork",
-        "Fork from prompt…",
-        "Schedule follow-up",
-        "Export task",
-        "Import task",
-        "Copy conversation as Markdown",
-        "Move to worktree",
-        "Delete task",
+        "在新窗口中打开",
+        "分叉",
+        "从提示词分叉…",
+        "安排后续任务",
+        "导出任务",
+        "导入任务",
+        "复制对话为 Markdown",
+        "移到工作树",
+        "删除任务",
       ]) {
         const item = await screen.findByRole("menuitem", { name: label });
         expect(item.getAttribute("aria-disabled")).toBe("true");
@@ -666,14 +666,14 @@ describe("SessionContextMenu", () => {
       </QueryClientProvider>,
     );
     fireEvent.contextMenu(screen.getByRole("button", { name: "Task" }));
-    const schedule = await screen.findByRole("menuitem", { name: "Schedule follow-up" });
+    const schedule = await screen.findByRole("menuitem", { name: "安排后续任务" });
     expect(schedule.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(schedule);
     expect(mocks.openScheduled).not.toHaveBeenCalled();
-    const submenu = await screen.findByRole("menuitem", { name: "Move to worktree" });
+    const submenu = await screen.findByRole("menuitem", { name: "移到工作树" });
     fireEvent.mouseEnter(submenu);
     fireEvent.click(submenu);
-    const newWorktree = await screen.findByRole("menuitem", { name: "New worktree" });
+    const newWorktree = await screen.findByRole("menuitem", { name: "新建工作树" });
     expect(newWorktree.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(newWorktree);
     expect(create).not.toHaveBeenCalled();

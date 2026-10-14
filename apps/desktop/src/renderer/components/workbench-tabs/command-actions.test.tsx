@@ -45,7 +45,7 @@ function mount(full = false) {
   return { store, onRemoved, tab, ...view };
 }
 async function choose(name: string) {
-  fireEvent.click(screen.getByRole("button", { name: "Command actions" }));
+  fireEvent.click(screen.getByRole("button", { name: "命令操作" }));
   fireEvent.click(await screen.findByRole("menuitem", { name }));
 }
 beforeEach(() => {
@@ -67,7 +67,7 @@ describe("CommandActions", () => {
     (change) => {
       const { store } = mount();
       act(() => store.set(runtimeAtom, { ...runtime, ...change } as never));
-      const button = screen.getByRole("button", { name: "Command actions" });
+      const button = screen.getByRole("button", { name: "命令操作" });
       expect(button.hasAttribute("disabled")).toBe(true);
       fireEvent.click(button);
       expect(screen.queryByRole("menuitem")).toBeNull();
@@ -78,9 +78,9 @@ describe("CommandActions", () => {
   it("warns that removal kills and deletes output, and cancellation makes no request", async () => {
     vi.mocked(window.confirm).mockReturnValue(false);
     const { onRemoved } = mount();
-    await choose("Stop and remove command");
+    await choose("停止并移除命令");
     expect(window.confirm).toHaveBeenCalledWith(
-      expect.stringContaining("permanently deletes its stored output"),
+      expect.stringContaining("永久删除其存储的输出"),
     );
     expect(mocks.remove).not.toHaveBeenCalled();
     expect(onRemoved).not.toHaveBeenCalled();
@@ -89,10 +89,10 @@ describe("CommandActions", () => {
   it("keeps failed actions usable and maps confirmed removal", async () => {
     mocks.remove.mockRejectedValueOnce(new Error("Cannot remove right now"));
     const { onRemoved } = mount();
-    await choose("Stop and remove command");
+    await choose("停止并移除命令");
     expect((await screen.findByRole("alert")).textContent).toContain("Cannot remove right now");
     expect(onRemoved).not.toHaveBeenCalled();
-    await choose("Stop and remove command");
+    await choose("停止并移除命令");
     await waitFor(() => expect(onRemoved).toHaveBeenCalledOnce());
     expect(mocks.remove).toHaveBeenLastCalledWith(
       { id: "shell", location: { directory: "/repo" } },
@@ -108,13 +108,13 @@ describe("CommandActions", () => {
       }),
     );
     const { store, onRemoved } = mount();
-    await choose("Stop and remove command");
+    await choose("停止并移除命令");
     const signal = mocks.remove.mock.calls[0]?.[1].signal as AbortSignal;
     act(() => store.set(runtimeAtom, { ...runtime, connectionID: "other" } as never));
     expect(signal.aborted).toBe(true);
     await act(async () => finish());
     expect(onRemoved).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Command actions" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "命令操作" }).hasAttribute("disabled")).toBe(
       true,
     );
   });
@@ -133,13 +133,13 @@ describe("CommandActions", () => {
     await screen.findByText("loaded output");
     await waitFor(() => expect(mocks.output).toHaveBeenCalledTimes(2), { timeout: 2000 });
     const signal = mocks.output.mock.calls[1]?.[1].signal as AbortSignal;
-    await choose("Stop and remove command");
-    await screen.findByText("Command removed. Only the output already loaded here remains.");
+    await choose("停止并移除命令");
+    await screen.findByText("命令已移除。仅已加载到此处的输出会保留。");
     expect(signal.aborted).toBe(true);
     await act(async () => finish({ data: { output: "late output", cursor: 24, size: 24 } }));
     expect(screen.queryByText(/late output/)).toBeNull();
     expect(screen.getByText("loaded output")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Command actions" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "命令操作" })).toBeNull();
     view.rerender(
       <Provider store={view.store}>
         <CommandTab tab={view.tab} active={false} />
@@ -152,7 +152,7 @@ describe("CommandActions", () => {
     );
     expect(screen.getByText("loaded output")).toBeTruthy();
     expect(
-      screen.getByText("Command removed. Only the output already loaded here remains."),
+      screen.getByText("命令已移除。仅已加载到此处的输出会保留。"),
     ).toBeTruthy();
     vi.useFakeTimers();
     await act(async () => {

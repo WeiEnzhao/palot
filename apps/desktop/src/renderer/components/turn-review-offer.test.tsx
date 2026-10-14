@@ -103,35 +103,35 @@ describe("TurnReviewOffer", () => {
     mocks.sendComposerPrompt.mockResolvedValue({ id: "u2" });
     const { onReview, onAsked } = renderOffer();
 
-    const offer = await screen.findByRole("group", { name: "Review this turn's changes" });
+    const offer = await screen.findByRole("group", { name: "审查此回合的更改" });
     expect(mocks.listTurnDiffs).toHaveBeenCalledWith("session", "u1", expect.anything(), "origin");
-    expect(offer.textContent).toContain("1 file changed");
+    expect(offer.textContent).toContain("1 个文件已更改");
 
-    await userEvent.click(screen.getByRole("button", { name: "Review changes" }));
+    await userEvent.click(screen.getByRole("button", { name: "审查更改" }));
     expect(onReview).toHaveBeenCalledWith("u1");
 
-    await userEvent.click(screen.getByRole("button", { name: "Ask for review" }));
+    await userEvent.click(screen.getByRole("button", { name: "请求审查" }));
     expect(mocks.sendComposerPrompt).toHaveBeenCalledWith({
       sessionID: "session",
       text: ASK_FOR_REVIEW_PROMPT,
       delivery: "steer",
     });
     await waitFor(() => expect(onAsked).toHaveBeenCalledOnce());
-    expect(screen.queryByRole("group", { name: "Review this turn's changes" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "审查此回合的更改" })).toBeNull();
   });
 
   it("stays hidden for a turn without changed files", async () => {
     mocks.listTurnDiffs.mockResolvedValue([]);
     renderOffer();
     await waitFor(() => expect(mocks.listTurnDiffs).toHaveBeenCalled());
-    expect(screen.queryByRole("group", { name: "Review this turn's changes" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "审查此回合的更改" })).toBeNull();
   });
 
   it("can be dismissed", async () => {
     mocks.listTurnDiffs.mockResolvedValue([diff]);
     renderOffer();
-    await userEvent.click(await screen.findByRole("button", { name: "Dismiss review suggestion" }));
-    expect(screen.queryByRole("group", { name: "Review this turn's changes" })).toBeNull();
+    await userEvent.click(await screen.findByRole("button", { name: "忽略审查建议" }));
+    expect(screen.queryByRole("group", { name: "审查此回合的更改" })).toBeNull();
     expect(mocks.sendComposerPrompt).not.toHaveBeenCalled();
   });
 });

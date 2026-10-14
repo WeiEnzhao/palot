@@ -39,13 +39,13 @@ export const PULL_REQUEST_SECTIONS: ReadonlyArray<{
 }> = [
   {
     list: "review-requested",
-    title: "Review requested",
-    empty: "Nothing is waiting for your review.",
+    title: "请求评审",
+    empty: "没有等待你评审的内容。",
   },
-  { list: "assigned", title: "Assigned", empty: "Nothing is assigned to you." },
-  { list: "authored", title: "Authored", empty: "You have no open pull requests." },
-  { list: "mentioned", title: "Mentioned", empty: "No open pull requests mention you." },
-  { list: "recently-merged", title: "Recently merged", empty: "Nothing merged recently." },
+  { list: "assigned", title: "已指派", empty: "没有指派给你的内容。" },
+  { list: "authored", title: "我创建的", empty: "你没有打开的拉取请求。" },
+  { list: "mentioned", title: "提及我的", empty: "没有打开的拉取请求提及你。" },
+  { list: "recently-merged", title: "最近合并", empty: "最近没有合并的内容。" },
 ];
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -114,8 +114,8 @@ export function PullRequestList({
         />
         <Input
           type="search"
-          aria-label="Search pull requests"
-          placeholder="Search, e.g. repo:owner/name label:bug"
+          aria-label="搜索拉取请求"
+          placeholder="搜索，例如 repo:owner/name label:bug"
           value={draft}
           className="pl-7"
           onChange={(event) => setDraft(event.target.value)}
@@ -131,7 +131,7 @@ export function PullRequestList({
         {draft ? (
           <button
             type="button"
-            aria-label="Clear search"
+            aria-label="清除搜索"
             className="absolute top-1/2 right-4 mt-0.5 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
             onClick={() => setDraft("")}
           >
@@ -142,7 +142,7 @@ export function PullRequestList({
       <div
         ref={listRef}
         role="navigation"
-        aria-label="Pull request lists"
+        aria-label="拉取请求列表"
         className="palot-native-scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-6"
         onKeyDown={moveFocus}
       >
@@ -151,7 +151,7 @@ export function PullRequestList({
             key={section.list}
             list={section.list}
             title={section.title}
-            empty={query ? "No matches." : section.empty}
+            empty={query ? "无匹配。" : section.empty}
             query={query}
             enabled={enabled}
             selected={selected}
@@ -221,7 +221,7 @@ function PullRequestSection({
         />
         <span className="ml-auto text-micro font-normal tabular-nums">
           {search.isFetching && !search.isFetchingNextPage ? (
-            <LoaderCircle className="size-3 animate-spin" aria-label="Loading" />
+            <LoaderCircle className="size-3 animate-spin" aria-label="加载中" />
           ) : (
             (total ?? "")
           )}
@@ -265,7 +265,7 @@ function PullRequestSection({
             {search.isFetchingNextPage ? (
               <LoaderCircle data-icon="inline-start" className="animate-spin" aria-hidden="true" />
             ) : null}
-            Load more
+            加载更多
           </Button>
         ) : null}
       </CollapsibleContent>
@@ -293,7 +293,7 @@ const PullRequestRow = memo(function PullRequestRow({
   const Icon = PULL_REQUEST_STATE_ICON[pullRequest.state];
   const taskTitles = (links ?? []).map(
     (link) =>
-      sessions.find((session) => session.id === link.sessionID)?.title?.trim() || "Untitled task",
+      sessions.find((session) => session.id === link.sessionID)?.title?.trim() || "未命名任务",
   );
   const actions = quickActionsFor(list, pullRequest);
   const label = [
@@ -361,7 +361,7 @@ const PullRequestRow = memo(function PullRequestRow({
       {actions.length ? (
         <div
           role="group"
-          aria-label={`Quick actions for #${pullRequest.number}`}
+          aria-label={`#${pullRequest.number} 的快捷操作`}
           data-visible={quickActions || undefined}
           className="hidden shrink-0 items-center gap-1 pr-1.5 data-visible:flex has-data-armed:flex has-data-pending:flex"
         >
@@ -375,9 +375,9 @@ const PullRequestRow = memo(function PullRequestRow({
 });
 
 const QUICK_ACTION_LABEL: Record<QuickAction, { idle: string; armed: string; done: string }> = {
-  approve: { idle: "Approve", armed: "Confirm approve", done: "Approved" },
-  merge: { idle: "Merge", armed: "Confirm merge", done: "Merged" },
-  close: { idle: "Close", armed: "Confirm close", done: "Closed" },
+  approve: { idle: "批准", armed: "确认批准", done: "已批准" },
+  merge: { idle: "合并", armed: "确认合并", done: "已合并" },
+  close: { idle: "关闭", armed: "确认关闭", done: "已关闭" },
 };
 
 function QuickActionButton({
@@ -424,7 +424,7 @@ function QuickActionButton({
         {confirm.armed ? labels.armed : labels.idle}
       </TooltipTrigger>
       <TooltipContent>
-        {confirm.armed ? "Click again to confirm" : `${labels.idle} #${pullRequest.number}`}
+        {confirm.armed ? "再次点击确认" : `${labels.idle} #${pullRequest.number}`}
       </TooltipContent>
     </Tooltip>
   );

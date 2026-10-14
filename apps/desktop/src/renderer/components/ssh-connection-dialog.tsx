@@ -57,7 +57,7 @@ export function SshConnectionDialog({
           : await palot.createOpenCodeProfile(input),
       );
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "SSH connection failed");
+      setError(cause instanceof Error ? cause.message : "SSH 连接失败");
     } finally {
       setBusy(false);
     }
@@ -71,10 +71,9 @@ export function SshConnectionDialog({
     >
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{profile ? "Edit SSH connection" : "Add SSH connection"}</DialogTitle>
+          <DialogTitle>{profile ? "编辑 SSH 连接" : "添加 SSH 连接"}</DialogTitle>
           <DialogDescription>
-            Connect using your system SSH configuration. Tools and files stay on the remote
-            computer.
+            使用系统 SSH 配置连接。工具和文件保留在远程计算机上。
           </DialogDescription>
         </DialogHeader>
         <form
@@ -86,36 +85,36 @@ export function SshConnectionDialog({
         >
           <fieldset disabled={busy} className="space-y-4">
             <label className="grid gap-2 text-sm">
-              Name (optional)
+              名称（可选）
               <Input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Development server"
+                placeholder="开发服务器"
               />
             </label>
             <label className="grid gap-2 text-sm">
-              SSH target
+              SSH 目标
               <Input
                 value={target}
                 onChange={(event) => setTarget(event.target.value)}
-                placeholder="config-alias or user@host"
+                placeholder="config-alias 或 user@host"
                 autoCapitalize="none"
                 autoCorrect="off"
                 required
               />
             </label>
             <label className="grid gap-2 text-sm">
-              Port (optional)
+              端口（可选）
               <Input
                 value={port}
                 onChange={(event) => setPort(event.target.value)}
                 inputMode="numeric"
-                placeholder="Use SSH configuration"
+                placeholder="使用 SSH 配置"
                 aria-invalid={!validPort}
               />
             </label>
             <label className="grid gap-2 text-sm">
-              Identity file (optional)
+              身份文件（可选）
               <Input
                 value={identityFile}
                 onChange={(event) => setIdentityFile(event.target.value)}
@@ -126,9 +125,7 @@ export function SshConnectionDialog({
             </label>
           </fieldset>
           <p className="text-compact text-muted-foreground">
-            Palot asks before installing, starting, or replacing the required OpenCode runtime.
-            Closing the SSH tunnel leaves the remote service running. The profile is saved only
-            after a successful connection test.
+            Palot 在安装、启动或替换所需的 OpenCode 运行时会询问。关闭 SSH 隧道会使远程服务继续运行。配置文件仅在连接测试成功后才会保存。
           </p>
           {error ? (
             <p role="alert" className="text-compact text-destructive">
@@ -137,10 +134,10 @@ export function SshConnectionDialog({
           ) : null}
           <DialogFooter>
             <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
-              Cancel
+              取消
             </Button>
             <Button type="submit" disabled={busy || !target.trim() || !validPort}>
-              {busy ? "Testing connection…" : "Test and save"}
+              {busy ? "正在测试连接…" : "测试并保存"}
             </Button>
           </DialogFooter>
         </form>

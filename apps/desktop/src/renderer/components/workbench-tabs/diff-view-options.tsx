@@ -30,15 +30,15 @@ export function useDiffViewPreferences() {
 }
 
 const LAYOUTS: ReadonlyArray<{ value: DiffLayoutPreference; label: string }> = [
-  { value: "auto", label: "Auto" },
-  { value: "split", label: "Split" },
-  { value: "unified", label: "Unified" },
+  { value: "auto", label: "自动" },
+  { value: "split", label: "分栏" },
+  { value: "unified", label: "合并" },
 ];
 
 const INLINE_CHANGES: ReadonlyArray<{ value: DiffInlineChanges; label: string }> = [
-  { value: "word", label: "Words" },
-  { value: "char", label: "Characters" },
-  { value: "none", label: "Off" },
+  { value: "word", label: "词" },
+  { value: "char", label: "字符" },
+  { value: "none", label: "关闭" },
 ];
 
 /**
@@ -61,14 +61,14 @@ export function DiffViewOptionsMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="Diff view options" />
+          <Button type="button" variant="ghost" size="icon-sm" aria-label="Diff 视图选项" />
         }
       >
         {layout === "split" ? <Columns2 aria-hidden="true" /> : <Rows3 aria-hidden="true" />}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Layout</DropdownMenuLabel>
+          <DropdownMenuLabel>布局</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={preferences.layout}
             onValueChange={(value) => {
@@ -81,7 +81,7 @@ export function DiffViewOptionsMenu({
                 {option.label}
                 {option.value === "auto" && preferences.layout === "auto" ? (
                   <span className="ml-auto text-muted-foreground">
-                    {layout === "split" ? "Split" : "Unified"}
+                    {layout === "split" ? "分栏" : "合并"}
                   </span>
                 ) : null}
               </DropdownMenuRadioItem>
@@ -90,7 +90,7 @@ export function DiffViewOptionsMenu({
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Highlight changes within lines</DropdownMenuLabel>
+          <DropdownMenuLabel>行内变更高亮</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={preferences.inline}
             onValueChange={(value) => {
@@ -112,7 +112,7 @@ export function DiffViewOptionsMenu({
               checked={preferences.hideWhitespace}
               onCheckedChange={(checked) => update({ hideWhitespace: checked })}
             >
-              Hide whitespace changes
+              隐藏空白变更
             </DropdownMenuCheckboxItem>
           </>
         ) : null}
@@ -120,7 +120,7 @@ export function DiffViewOptionsMenu({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onFind}>
-              Find in diff
+              在 diff 中查找
               <DropdownMenuShortcut>
                 {formatShortcut(shortcutKeys("task.find"))}
               </DropdownMenuShortcut>

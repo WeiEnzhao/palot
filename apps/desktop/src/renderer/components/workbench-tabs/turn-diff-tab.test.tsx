@@ -29,7 +29,7 @@ vi.mock("jotai", async (importOriginal) => ({
 }));
 vi.mock("@pierre/diffs/react", () => ({
   CodeView: ({ items }: { items: Array<{ id: string; type: string }> }) => (
-    <div role="region" aria-label="Turn diff review">
+    <div role="region" aria-label="轮次 diff 审查">
       {items.map((item) => (
         <span key={item.id}>
           {item.id}: {item.type}
@@ -65,19 +65,19 @@ afterEach(() => {
 it("distinguishes offline, loading, failure, empty and structured file diffs", () => {
   mocks.query.available = false;
   const { rerender } = render(<TurnDiffTab tab={tab} />);
-  expect(screen.getByText("Connection unavailable")).toBeTruthy();
+  expect(screen.getByText("连接不可用")).toBeTruthy();
   mocks.query.available = true;
   rerender(<TurnDiffTab tab={tab} />);
-  expect(screen.getByText("Loading turn changes")).toBeTruthy();
+  expect(screen.getByText("正在加载轮次更改")).toBeTruthy();
   mocks.query.isPending = false;
   mocks.query.isError = true;
   rerender(<TurnDiffTab tab={tab} />);
   expect(screen.getByText("diff failed")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+  fireEvent.click(screen.getByRole("button", { name: "重试" }));
   expect(mocks.query.refetch).toHaveBeenCalledOnce();
   mocks.query.isError = false;
   rerender(<TurnDiffTab tab={tab} />);
-  expect(screen.getByText("No changes in this turn")).toBeTruthy();
+  expect(screen.getByText("此轮次无更改")).toBeTruthy();
   mocks.query.data = [
     {
       file: "src/a.ts",
@@ -90,7 +90,7 @@ it("distinguishes offline, loading, failure, empty and structured file diffs", (
   rerender(<TurnDiffTab tab={tab} />);
   expect(screen.getByText(/src\/a.ts: diff/)).toBeTruthy();
   expect(screen.getByText("+1")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Refresh turn changes" }));
+  fireEvent.click(screen.getByRole("button", { name: "刷新一轮更改" }));
   expect(mocks.query.refetch).toHaveBeenCalledTimes(2);
   expect(mocks.arguments).toEqual(["profile", "session", "user-1", true]);
 });

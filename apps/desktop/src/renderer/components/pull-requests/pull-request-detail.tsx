@@ -95,7 +95,7 @@ export function PullRequestDetailPane({
 
   if (!detail.data) {
     return (
-      <section aria-label="Pull request" className="flex min-h-0 flex-1 flex-col">
+      <section aria-label="拉取请求" className="flex min-h-0 flex-1 flex-col">
         <DetailTopBar pullRequest={pullRequest} onBack={onBack} />
         {detail.error ? (
           <div className="m-4 flex items-start gap-2 text-sm text-muted-foreground" role="alert">
@@ -109,14 +109,14 @@ export function PullRequestDetailPane({
                 className="mt-1 -ml-2"
                 onClick={refresh}
               >
-                Try again
+                重试
               </Button>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
             <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
-            Loading pull request
+            正在加载拉取请求
           </div>
         )}
       </section>
@@ -146,14 +146,14 @@ export function PullRequestDetailPane({
           linkingSupported={linkingSupported}
         />
         <div className="shrink-0 border-b border-border/60 px-4 py-1.5">
-          <TabsList variant="subtle" aria-label="Pull request views">
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsList variant="subtle" aria-label="拉取请求视图">
+            <TabsTrigger value="summary">摘要</TabsTrigger>
+            <TabsTrigger value="timeline">时间线</TabsTrigger>
             <TabsTrigger value="code">
-              Code
+              代码
               {total !== undefined ? (
                 <span className="text-micro font-normal text-muted-foreground tabular-nums">
-                  {viewed} of {total} viewed
+                  {viewed} / {total} 已查看
                 </span>
               ) : null}
             </TabsTrigger>
@@ -185,7 +185,7 @@ function TabLoading() {
   return (
     <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
       <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
-      Loading
+      加载中
     </div>
   );
 }
@@ -205,7 +205,7 @@ function DetailTopBar({
         type="button"
         variant="ghost"
         size="icon-sm"
-        aria-label="Back to pull requests"
+        aria-label="返回拉取请求"
         className="window-no-drag hidden @max-[44rem]/pull-requests:inline-flex"
         onClick={onBack}
       >
@@ -252,7 +252,7 @@ function DetailHeader({
   const canLinkCurrent =
     linkingSupported && currentTask !== null && !currentTask.parentID && !linkedCurrent;
   const taskTitle = (sessionID: string) =>
-    sessions.find((session) => session.id === sessionID)?.title?.trim() || "Untitled task";
+    sessions.find((session) => session.id === sessionID)?.title?.trim() || "未命名任务";
 
   return (
     <header className="shrink-0 px-4 pt-4 pb-3">
@@ -270,8 +270,8 @@ function DetailHeader({
           login={detail.authorPerson?.login ?? detail.author ?? "ghost"}
           className="text-foreground/80"
         />
-        <span>opened {formatPullRequestTime(detail.createdAt)}</span>
-        <span>· updated {formatPullRequestTime(detail.updatedAt)}</span>
+        <span>创建于 {formatPullRequestTime(detail.createdAt)}</span>
+        <span>· 更新于 {formatPullRequestTime(detail.updatedAt)}</span>
       </div>
       <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-meta text-muted-foreground">
         <span className="flex min-w-0 items-center gap-1 font-mono">
@@ -281,7 +281,7 @@ function DetailHeader({
             copied={copiedKey === "head"}
             onCopy={() => void copy(detail.headBranch, "head")}
           />
-          <span aria-label="into">→</span>
+          <span aria-label="到">→</span>
           <BranchName
             name={detail.baseBranch}
             copied={copiedKey === "base"}
@@ -290,7 +290,7 @@ function DetailHeader({
         </span>
         <span className="flex items-center gap-1.5 tabular-nums">
           <FileDiff className="size-3" aria-hidden="true" />
-          {detail.changedFiles} {detail.changedFiles === 1 ? "file" : "files"}
+          {detail.changedFiles} 个文件
           <span className="text-success">+{detail.additions}</span>
           <span className="text-destructive">−{detail.deletions}</span>
         </span>
@@ -303,7 +303,7 @@ function DetailHeader({
           onClick={() => void palot.openExternalUrl(detail.url)}
         >
           <ExternalLink data-icon="inline-start" aria-hidden="true" />
-          Open on GitHub
+          在 GitHub 上打开
         </Button>
         <Button
           type="button"
@@ -312,7 +312,7 @@ function DetailHeader({
           onClick={() => void startTask("detail", detail)}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />
-          Start task
+          启动任务
         </Button>
         {canLinkCurrent ? (
           <Button
@@ -320,13 +320,13 @@ function DetailHeader({
             variant="ghost"
             size="sm"
             disabled={link.isPending}
-            aria-label={`Link to current task, ${currentTask?.title ?? "Untitled task"}`}
+            aria-label={`关联到当前任务，${currentTask?.title ?? "未命名任务"}`}
             onClick={() =>
               void run(() => link.mutateAsync({ sessionID: currentTask!.id, url: detail.url }))
             }
           >
             <Link2 data-icon="inline-start" aria-hidden="true" />
-            Link to current task
+            关联到当前任务
           </Button>
         ) : null}
         {watchLink && (watchable || watchLink.watch) ? (
@@ -357,23 +357,23 @@ function DetailHeader({
               ) : (
                 <Eye data-icon="inline-start" aria-hidden="true" />
               )}
-              {watchLink.watch ? "Stop watching" : "Watch"}
+              {watchLink.watch ? "取消关注" : "关注"}
             </TooltipTrigger>
             <TooltipContent className="max-w-64">
-              {WATCH_EXPLANATION} For {taskTitle(watchLink.sessionID)}.
+              {WATCH_EXPLANATION} 针对 {taskTitle(watchLink.sessionID)}。
             </TooltipContent>
           </Tooltip>
         ) : null}
       </div>
       {links.length ? (
         <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1 text-meta text-muted-foreground">
-          <span>Linked to</span>
+          <span>已关联到</span>
           {links.map((candidate) => (
             <button
               key={candidate.sessionID}
               type="button"
               className="max-w-56 truncate rounded-sm px-1 text-foreground/80 underline-offset-2 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label={`Open task ${taskTitle(candidate.sessionID)}`}
+              aria-label={`打开任务 ${taskTitle(candidate.sessionID)}`}
               onClick={() => void openSession(candidate.sessionID)}
             >
               {taskTitle(candidate.sessionID)}
@@ -398,7 +398,7 @@ function BranchName({ name, copied, onCopy }: { name: string; copied: boolean; o
         render={
           <button
             type="button"
-            aria-label={`Copy branch ${name}`}
+            aria-label={`复制分支 ${name}`}
             className="group/branch inline-flex min-w-0 items-center gap-1 rounded-sm px-0.5 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             onClick={onCopy}
           />
@@ -410,7 +410,7 @@ function BranchName({ name, copied, onCopy }: { name: string; copied: boolean; o
           aria-hidden="true"
         />
       </TooltipTrigger>
-      <TooltipContent>{copied ? "Copied" : "Copy branch name"}</TooltipContent>
+      <TooltipContent>{copied ? "已复制" : "复制分支名"}</TooltipContent>
     </Tooltip>
   );
 }
@@ -471,7 +471,7 @@ function DetailMenu({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="Pull request actions"
+              aria-label="拉取请求操作"
               disabled={busy}
             />
           }
@@ -490,7 +490,7 @@ function DetailMenu({
                 onClick={() => run(() => setDraft.mutateAsync({ ...ref, draft: true }))}
               >
                 <GitPullRequestDraft aria-hidden="true" />
-                Convert to draft
+                转为草稿
               </DropdownMenuItem>
             ) : null}
             {detail.state === "draft" ? (
@@ -499,7 +499,7 @@ function DetailMenu({
                 onClick={() => run(() => setDraft.mutateAsync({ ...ref, draft: false }))}
               >
                 <GitPullRequest aria-hidden="true" />
-                Ready for review
+                准备评审
               </DropdownMenuItem>
             ) : null}
             {detail.state === "open" || detail.state === "draft" ? (
@@ -510,7 +510,7 @@ function DetailMenu({
                 {...close.buttonProps}
               >
                 <GitPullRequestClosed aria-hidden="true" />
-                {close.armed ? "Confirm close" : "Close pull request"}
+                {close.armed ? "确认关闭" : "关闭拉取请求"}
               </DropdownMenuItem>
             ) : null}
             {detail.state === "closed" ? (
@@ -519,7 +519,7 @@ function DetailMenu({
                 onClick={() => run(() => setState.mutateAsync({ ...ref, state: "open" }))}
               >
                 <GitPullRequest aria-hidden="true" />
-                Reopen
+                重新打开
               </DropdownMenuItem>
             ) : null}
           </DropdownMenuGroup>
@@ -527,11 +527,11 @@ function DetailMenu({
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => void copy(detail.url)}>
               <Copy aria-hidden="true" />
-              Copy link
+              复制链接
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onRefresh}>
               <RefreshCw aria-hidden="true" />
-              Refresh
+              刷新
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

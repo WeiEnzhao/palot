@@ -166,14 +166,14 @@ const target = { profileID: "profile", directory: "/repo" };
 
 it("stages and unstages files by repository path, one at a time or all together", () => {
   renderTab();
-  const staged = screen.getByRole("checkbox", { name: "Unstage lib/util.ts" });
+  const staged = screen.getByRole("checkbox", { name: "取消暂存 lib/util.ts" });
   expect(staged.getAttribute("aria-checked")).toBe("true");
-  expect(screen.getByRole("checkbox", { name: "Stage app.ts" }).getAttribute("aria-checked")).toBe(
+  expect(screen.getByRole("checkbox", { name: "暂存 app.ts" }).getAttribute("aria-checked")).toBe(
     "false",
   );
-  expect(screen.getByText("1 of 3 staged")).toBeTruthy();
+  expect(screen.getByText("已暂存 1 / 3")).toBeTruthy();
 
-  fireEvent.click(screen.getByRole("checkbox", { name: "Stage app.ts" }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "暂存 app.ts" }));
   expect(mocks.stage.mutate).toHaveBeenCalledWith(
     { ...target, paths: ["app.ts"] },
     expect.anything(),
@@ -184,12 +184,12 @@ it("stages and unstages files by repository path, one at a time or all together"
     expect.anything(),
   );
 
-  fireEvent.click(screen.getByRole("button", { name: "Stage all" }));
+  fireEvent.click(screen.getByRole("button", { name: "全部暂存" }));
   expect(mocks.stage.mutate).toHaveBeenLastCalledWith(
     { ...target, paths: ["app.ts", "new.txt"] },
     expect.anything(),
   );
-  fireEvent.click(screen.getByRole("button", { name: "Unstage all" }));
+  fireEvent.click(screen.getByRole("button", { name: "全部取消暂存" }));
   expect(mocks.unstage.mutate).toHaveBeenLastCalledWith(
     { ...target, paths: ["lib/util.ts"] },
     expect.anything(),
@@ -202,8 +202,8 @@ it("commits staged changes with Mod+Enter only when a message and staged files e
   );
   mocks.tree!.branch = branch({ upstream: null });
   renderTab();
-  const commit = screen.getByRole("button", { name: "Commit" });
-  const message = screen.getByRole("textbox", { name: "Commit message" });
+  const commit = screen.getByRole("button", { name: "提交" });
+  const message = screen.getByRole("textbox", { name: "提交消息" });
   expect(commit.hasAttribute("disabled")).toBe(true);
 
   fireEvent.change(message, { target: { value: "  fix: tidy util  " } });
@@ -221,18 +221,18 @@ it("commits staged changes with Mod+Enter only when a message and staged files e
   expect((message as HTMLTextAreaElement).value).toBe("");
   const status = screen.getByText("abc1234").closest("[role=status]")!;
   fireEvent.click(status.querySelector("button")!);
-  expect(status.textContent).toContain("Publish branch");
+  expect(status.textContent).toContain("发布分支");
   expect(mocks.push.mutate).toHaveBeenCalledWith(target, expect.anything());
 });
 
 it("keeps Commit disabled while nothing is staged", () => {
   mocks.tree!.files = mocks.tree!.files.map((entry) => ({ ...entry, staged: false }));
   renderTab();
-  fireEvent.change(screen.getByRole("textbox", { name: "Commit message" }), {
+  fireEvent.change(screen.getByRole("textbox", { name: "提交消息" }), {
     target: { value: "feat: something" },
   });
-  expect(screen.getByRole("button", { name: "Commit" }).hasAttribute("disabled")).toBe(true);
-  expect(screen.getByRole("button", { name: "Generate message" }).hasAttribute("disabled")).toBe(
+  expect(screen.getByRole("button", { name: "提交" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "生成消息" }).hasAttribute("disabled")).toBe(
     true,
   );
 });
@@ -241,11 +241,11 @@ it("drafts the message from the staged diff with the task's model", async () => 
   mocks.generate.mockResolvedValue("```\nfix(util): handle empty input\n```");
   renderTab();
   await act(async () => {
-    fireEvent.click(screen.getByRole("button", { name: "Generate message" }));
+    fireEvent.click(screen.getByRole("button", { name: "生成消息" }));
   });
   await waitFor(() =>
     expect(
-      (screen.getByRole("textbox", { name: "Commit message" }) as HTMLTextAreaElement).value,
+      (screen.getByRole("textbox", { name: "提交消息" }) as HTMLTextAreaElement).value,
     ).toBe("fix(util): handle empty input"),
   );
   const [{ prompt, model }] = mocks.generate.mock.calls[0]!;
@@ -257,19 +257,19 @@ it("drafts the message from the staged diff with the task's model", async () => 
 it("labels Push by upstream and hides it when the branch is up to date", () => {
   mocks.tree!.branch = branch({ upstream: null });
   const { unmount } = renderTab();
-  expect(screen.getByRole("button", { name: "Publish branch" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "发布分支" })).toBeTruthy();
   unmount();
 
   mocks.tree!.branch = branch({ ahead: 2, behind: 1 });
   const second = renderTab();
-  fireEvent.click(screen.getByRole("button", { name: "Push" }));
+  fireEvent.click(screen.getByRole("button", { name: "推送" }));
   expect(mocks.push.mutate).toHaveBeenCalledWith(target, expect.anything());
-  expect(screen.getByLabelText("2 ahead, 1 behind origin/feature")).toBeTruthy();
+  expect(screen.getByLabelText("2 领先，1 落后 origin/feature")).toBeTruthy();
   second.unmount();
 
   mocks.tree!.branch = branch();
   renderTab();
-  expect(screen.queryByRole("button", { name: /^(Push|Publish branch)$/ })).toBeNull();
+  expect(screen.queryByRole("button", { name: /^(推送|发布分支)$/ })).toBeNull();
 });
 
 it("explains failures inline, including hook output", async () => {
@@ -287,29 +287,29 @@ it("explains failures inline, including hook output", async () => {
     options.onError(new SourceControlError({ code: "push-rejected", message: "rejected" })),
   );
   renderTab();
-  fireEvent.change(screen.getByRole("textbox", { name: "Commit message" }), {
+  fireEvent.change(screen.getByRole("textbox", { name: "提交消息" }), {
     target: { value: "fix: x" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Commit" }));
+  fireEvent.click(screen.getByRole("button", { name: "提交" }));
   const alert = screen.getByRole("alert");
-  expect(alert.textContent).toContain("Could not commit: a Git hook rejected it.");
-  fireEvent.click(screen.getByRole("button", { name: "Hook output" }));
+  expect(alert.textContent).toContain("无法提交：Git hook 拒绝了它。");
+  fireEvent.click(screen.getByRole("button", { name: "Hook 输出" }));
   await waitFor(() => expect(screen.getByText("eslint: 2 problems")).toBeTruthy());
 
-  fireEvent.click(screen.getByRole("button", { name: "Push" }));
-  expect(screen.getByRole("alert").textContent).toContain("Pull them first, then push again.");
+  fireEvent.click(screen.getByRole("button", { name: "推送" }));
+  expect(screen.getByRole("alert").textContent).toContain("先拉取它们，然后再次推送。");
 
   mocks.commit.mutate.mockImplementation((_input, options) =>
     options.onError(new SourceControlError({ code: "identity-missing", message: "no identity" })),
   );
-  fireEvent.click(screen.getByRole("button", { name: "Commit" }));
-  expect(screen.getByRole("alert").textContent).toContain("user.name and user.email");
+  fireEvent.click(screen.getByRole("button", { name: "提交" }));
+  expect(screen.getByRole("alert").textContent).toContain("user.name 和 user.email");
 });
 
 it("shows only a note for remote connections", () => {
   mocks.supported = false;
   renderTab();
-  expect(screen.getByText("Commit and push are available for local connections.")).toBeTruthy();
-  expect(screen.queryByRole("textbox", { name: "Commit message" })).toBeNull();
+  expect(screen.getByText("提交和推送仅适用于本地连接。")).toBeTruthy();
+  expect(screen.queryByRole("textbox", { name: "提交消息" })).toBeNull();
   expect(screen.queryByRole("checkbox")).toBeNull();
 });

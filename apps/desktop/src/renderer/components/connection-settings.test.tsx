@@ -257,7 +257,7 @@ describe("LocalServiceSettings", () => {
     await user.click(restart);
     expect(await screen.findByText(/may interrupt other OpenCode clients/)).toBeTruthy();
     expect(onRestart).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "取消" }));
     expect(onRestart).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "Restart service" }));
     await user.click(await screen.findByRole("button", { name: "Restart" }));
@@ -335,21 +335,21 @@ describe("PairDialog", () => {
       <PairDialog open onOpenChange={() => {}} suggestedAddress="https://device.tailnet.example" />,
     );
     expect(palot.openCodePairingInfo).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Generate pairing details" }));
-    await user.click(screen.getByRole("button", { name: "Copy pairing JSON" }));
+    await user.click(screen.getByRole("button", { name: "生成配对详情" }));
+    await user.click(screen.getByRole("button", { name: "复制配对 JSON" }));
     expect(JSON.parse(clipboard.mock.calls[0]![0])).toEqual({
       ...payload,
       urls: ["https://device.tailnet.example"],
     });
-    await user.click(screen.getByRole("button", { name: "Show QR" }));
+    await user.click(screen.getByRole("button", { name: "显示 QR" }));
     expect(JSON.parse(toDataURL.mock.calls.at(-1)![0])).toEqual({
       ...payload,
       urls: ["https://device.tailnet.example"],
     });
-    expect(screen.getByRole("img", { name: "OpenCode pairing QR code" })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Use service addresses" }));
+    expect(screen.getByRole("img", { name: "OpenCode 配对 QR 码" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "使用服务地址" }));
     expect(screen.queryByRole("img")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Copy pairing JSON" }));
+    await user.click(screen.getByRole("button", { name: "复制配对 JSON" }));
     expect(JSON.parse(clipboard.mock.calls.at(-1)![0])).toEqual(payload);
   });
 
@@ -357,17 +357,17 @@ describe("PairDialog", () => {
     setupPairing();
     const user = userEvent.setup();
     render(<PairDialog open onOpenChange={() => {}} />);
-    await user.click(screen.getByRole("button", { name: "Generate pairing details" }));
+    await user.click(screen.getByRole("button", { name: "生成配对详情" }));
     await user.type(
-      screen.getByRole("textbox", { name: "Address for pairing" }),
+      screen.getByRole("textbox", { name: "配对地址" }),
       "http://proxy.example",
     );
     expect(screen.getByRole("alert").textContent).toContain("Use HTTPS");
-    expect((screen.getByRole("button", { name: "Show QR" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "显示 QR" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
     expect(
-      (screen.getByRole("button", { name: "Copy pairing JSON" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "复制配对 JSON" }) as HTMLButtonElement).disabled,
     ).toBe(true);
   });
 
@@ -381,17 +381,17 @@ describe("PairDialog", () => {
     );
     const user = userEvent.setup();
     render(<PairDialog open onOpenChange={() => {}} />);
-    await user.click(screen.getByRole("button", { name: "Generate pairing details" }));
-    await user.click(screen.getByRole("button", { name: "Show QR" }));
+    await user.click(screen.getByRole("button", { name: "生成配对详情" }));
+    await user.click(screen.getByRole("button", { name: "显示 QR" }));
     await user.type(
-      screen.getByRole("textbox", { name: "Address for pairing" }),
+      screen.getByRole("textbox", { name: "配对地址" }),
       "https://proxy.example",
     );
     await act(async () => {
       resolveQr("data:image/png;base64,stale");
     });
     expect(screen.queryByRole("img")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Show QR" }));
+    await user.click(screen.getByRole("button", { name: "显示 QR" }));
     expect(JSON.parse(toDataURL.mock.calls.at(-1)![0]).urls).toEqual(["https://proxy.example"]);
   });
 
@@ -406,15 +406,15 @@ describe("PairDialog", () => {
     );
     render(<PairDialog open onOpenChange={() => {}} />);
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Generate pairing details" }));
+      fireEvent.click(screen.getByRole("button", { name: "生成配对详情" }));
     });
     act(() => {
       vi.advanceTimersByTime(30_000);
     });
-    fireEvent.change(screen.getByRole("textbox", { name: "Address for pairing" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "配对地址" }), {
       target: { value: "https://proxy.example" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Show QR" }));
+    fireEvent.click(screen.getByRole("button", { name: "显示 QR" }));
     act(() => {
       vi.advanceTimersByTime(30_000);
     });
@@ -422,8 +422,8 @@ describe("PairDialog", () => {
       resolveQr("data:image/png;base64,expired");
     });
     expect(screen.queryByRole("img")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Copy pairing JSON" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Generate pairing details" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "复制配对 JSON" })).toBeNull();
+    expect(screen.getByRole("button", { name: "生成配对详情" })).toBeTruthy();
   });
 
   it("does not restore credentials or a pending QR after closing and reopening", async () => {
@@ -436,16 +436,16 @@ describe("PairDialog", () => {
     );
     const user = userEvent.setup();
     const view = render(<PairDialog open onOpenChange={() => {}} />);
-    await user.click(screen.getByRole("button", { name: "Generate pairing details" }));
-    await user.click(screen.getByRole("button", { name: "Show QR" }));
+    await user.click(screen.getByRole("button", { name: "生成配对详情" }));
+    await user.click(screen.getByRole("button", { name: "显示 QR" }));
     view.rerender(<PairDialog open={false} onOpenChange={() => {}} />);
     await act(async () => {
       resolveQr("data:image/png;base64,closed");
     });
     view.rerender(<PairDialog open onOpenChange={() => {}} />);
     expect(screen.queryByRole("img")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Copy pairing JSON" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Generate pairing details" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "复制配对 JSON" })).toBeNull();
+    expect(screen.getByRole("button", { name: "生成配对详情" })).toBeTruthy();
   });
 
   it("copies and encodes only the one-time link and expires it without extending on address changes", async () => {
@@ -454,32 +454,32 @@ describe("PairDialog", () => {
     vi.mocked(palot.openCodePairingInfo).mockResolvedValue(linkInfo);
     render(<PairDialog open onOpenChange={() => {}} suggestedAddress="https://proxy.example" />);
     await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: "Generate pairing details" })),
+      fireEvent.click(screen.getByRole("button", { name: "生成配对详情" })),
     );
-    expect(screen.getByText(/up to 30 days/)).toBeTruthy();
-    expect(screen.getByText(/Expires in 5 minutes/)).toBeTruthy();
-    expect(screen.queryByText("Password")).toBeNull();
-    expect(screen.queryByText("Username")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Copy one-time link" }));
+    expect(screen.getByText(/最长可持续 30 天/)).toBeTruthy();
+    expect(screen.getByText(/最多 5 分钟后过期/)).toBeTruthy();
+    expect(screen.queryByText("密码")).toBeNull();
+    expect(screen.queryByText("用户名")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "复制一次性链接" }));
     expect(clipboard).toHaveBeenLastCalledWith(
       "https://proxy.example/auth/connect/abcdefghijklmnop",
     );
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Show QR" })));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "显示 QR" })));
     expect(toDataURL).toHaveBeenLastCalledWith(
       JSON.stringify({ code: linkInfo.code, urls: ["https://proxy.example"] }),
       { margin: 1, width: 320 },
     );
-    expect(screen.getByRole("img", { name: "OpenCode one-time pairing QR code" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "OpenCode 一次性配对 QR 码" })).toBeTruthy();
     act(() => vi.advanceTimersByTime(150_000));
-    fireEvent.click(screen.getByRole("button", { name: "Use service addresses" }));
+    fireEvent.click(screen.getByRole("button", { name: "使用服务地址" }));
     expect(screen.queryByRole("img")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Copy one-time link" }));
+    fireEvent.click(screen.getByRole("button", { name: "复制一次性链接" }));
     expect(clipboard).toHaveBeenLastCalledWith(
       "https://fallback.example/auth/connect/abcdefghijklmnop",
     );
     act(() => vi.advanceTimersByTime(150_000));
-    expect(screen.queryByRole("button", { name: "Copy one-time link" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Generate pairing details" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "复制一次性链接" })).toBeNull();
+    expect(screen.getByRole("button", { name: "生成配对详情" })).toBeTruthy();
   });
 });
 
@@ -490,7 +490,7 @@ describe("ImportPairDialog", () => {
       .spyOn(palot, "importOpenCodePairing")
       .mockResolvedValue({} as Awaited<ReturnType<typeof palot.importOpenCodePairing>>);
     render(<ImportPairDialog open onOpenChange={() => {}} onSaved={() => {}} />);
-    fireEvent.change(screen.getByRole("textbox", { name: "Pairing link or legacy JSON" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "配对链接或旧的 JSON" }), {
       target: {
         value: JSON.stringify({
           code: linkInfo.code,
@@ -498,11 +498,11 @@ describe("ImportPairDialog", () => {
         }),
       },
     });
-    const address = screen.getByRole("combobox", { name: "Redeem at this address" });
+    const address = screen.getByRole("combobox", { name: "在此地址兑换" });
     expect((address as HTMLSelectElement).value).toBe("https://device.example");
     expect(importPairing).not.toHaveBeenCalled();
     await user.selectOptions(address, "http://192.168.1.2:4096");
-    const submit = screen.getByRole<HTMLButtonElement>("button", { name: "Probe and import" });
+    const submit = screen.getByRole<HTMLButtonElement>("button", { name: "探测并导入" });
     expect(submit.disabled).toBe(true);
     await user.click(screen.getByRole("checkbox"));
     await user.selectOptions(address, "https://device.example");
@@ -522,12 +522,12 @@ describe("ImportPairDialog", () => {
       .mockResolvedValue({} as Awaited<ReturnType<typeof palot.importOpenCodePairing>>);
     const onSaved = vi.fn();
     render(<ImportPairDialog open onOpenChange={() => {}} onSaved={onSaved} />);
-    fireEvent.change(screen.getByRole("textbox", { name: "Pairing link or legacy JSON" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "配对链接或旧的 JSON" }), {
       target: { value: "https://proxy.example/auth/connect/abcdefghijklmnop" },
     });
     expect(screen.getByText("https://proxy.example")).toBeTruthy();
     expect(importPairing).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Probe and import" }));
+    await user.click(screen.getByRole("button", { name: "探测并导入" }));
     expect(importPairing).toHaveBeenCalledExactlyOnceWith({
       link: "https://proxy.example/auth/connect/abcdefghijklmnop",
       allowPlainHttp: false,
@@ -542,11 +542,11 @@ describe("ImportPairDialog", () => {
       .mockResolvedValue({} as Awaited<ReturnType<typeof palot.importOpenCodePairing>>);
     const onOpenChange = vi.fn();
     const view = render(<ImportPairDialog open onOpenChange={onOpenChange} onSaved={() => {}} />);
-    const textbox = screen.getByRole("textbox", { name: "Pairing link or legacy JSON" });
+    const textbox = screen.getByRole("textbox", { name: "配对链接或旧的 JSON" });
     fireEvent.change(textbox, {
       target: { value: "http://proxy.example/auth/connect/abcdefghijklmnop" },
     });
-    const submit = screen.getByRole("button", { name: "Probe and import" }) as HTMLButtonElement;
+    const submit = screen.getByRole("button", { name: "探测并导入" }) as HTMLButtonElement;
     expect(submit.disabled).toBe(true);
     expect(importPairing).not.toHaveBeenCalled();
     await user.click(screen.getByRole("checkbox"));
@@ -566,11 +566,11 @@ describe("ImportPairDialog", () => {
       payload: { ...payload, urls: ["http://remote.example:4096"] },
       allowPlainHttp: true,
     });
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "取消" }));
     view.rerender(<ImportPairDialog open={false} onOpenChange={onOpenChange} onSaved={() => {}} />);
     view.rerender(<ImportPairDialog open onOpenChange={onOpenChange} onSaved={() => {}} />);
     expect(
-      (screen.getByRole("textbox", { name: "Pairing link or legacy JSON" }) as HTMLTextAreaElement)
+      (screen.getByRole("textbox", { name: "配对链接或旧的 JSON" }) as HTMLTextAreaElement)
         .value,
     ).toBe("");
     expect(screen.queryByRole("checkbox")).toBeNull();
@@ -591,19 +591,19 @@ describe("ImportPairDialog", () => {
     });
     expect(screen.getByRole("alert").textContent).toContain("without extra parameters");
     expect(
-      (screen.getByRole("button", { name: "Probe and import" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "探测并导入" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(importPairing).not.toHaveBeenCalled();
     fireEvent.change(textbox, {
       target: { value: "https://proxy.example/auth/connect/abcdefghijklmnop" },
     });
-    await user.click(screen.getByRole("button", { name: "Probe and import" }));
+    await user.click(screen.getByRole("button", { name: "探测并导入" }));
     expect(textbox.disabled).toBe(true);
-    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "取消" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
     expect(
-      (screen.getByRole("button", { name: "Probe and import" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "探测并导入" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
     expect(onOpenChange).not.toHaveBeenCalled();
@@ -626,14 +626,14 @@ describe("PairingCredentialRow", () => {
 
     render(
       <>
-        <PairingCredentialRow label="Username" value="opencode" />
-        <PairingCredentialRow label="Password" value="secret-value" concealed />
+        <PairingCredentialRow label="用户名" value="opencode" />
+        <PairingCredentialRow label="密码" value="secret-value" concealed />
       </>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Copy username" }));
-    expect(screen.getByRole("button", { name: "Username copied" })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Copy password" }));
+    await user.click(screen.getByRole("button", { name: "复制用户名" }));
+    expect(screen.getByRole("button", { name: "已复制用户名" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "复制密码" }));
 
     expect(writeClipboardText).toHaveBeenNthCalledWith(1, "opencode");
     expect(writeClipboardText).toHaveBeenNthCalledWith(2, "secret-value");

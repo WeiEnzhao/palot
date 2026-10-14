@@ -30,7 +30,7 @@ export function PaletteTabs({
     >
       <LayoutGroup id={layoutGroup}>
         <Tabs.List
-          aria-label="Filter results"
+          aria-label="筛选结果"
           data-slot="command-palette-tabs"
           className="flex items-center gap-1"
           onMouseDown={(event) => event.preventDefault()}

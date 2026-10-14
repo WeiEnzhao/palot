@@ -12,7 +12,7 @@ export function DiagnosticsOverlay() {
   return (
     <aside
       data-palot-diagnostics-overlay
-      aria-label="Diagnostics overlay"
+      aria-label="诊断叠层"
       className="pointer-events-auto absolute top-[58px] right-3 w-[min(294px,calc(100vw-24px))] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-2xl [contain:layout_paint_style]"
     >
       <header className="flex items-center gap-2 border-b border-border px-3 py-2.5">
@@ -20,19 +20,19 @@ export function DiagnosticsOverlay() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-micro font-semibold tracking-[0.12em] uppercase">
-              Diagnostics
+              诊断
             </span>
             <span className="font-mono text-micro text-muted-foreground tabular-nums">
               {snapshot.phase}
             </span>
           </div>
-          <p className="mt-0.5 text-micro text-muted-foreground">Observer cost is included</p>
+          <p className="mt-0.5 text-micro text-muted-foreground">已包含观察者开销</p>
         </div>
         <Button
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Hide diagnostics overlay"
+          aria-label="隐藏诊断面板"
           onClick={() => diagnostics.setOverlayVisible(false)}
         >
           <X aria-hidden="true" />
@@ -43,11 +43,11 @@ export function DiagnosticsOverlay() {
           label="CPU"
           value={formatPercent(snapshot.current.cpuPercent, snapshot.current.cpuReady)}
         />
-        <OverlayMetric label="Memory" value={formatMemory(snapshot.current.workingSetKiB)} />
+        <OverlayMetric label="内存" value={formatMemory(snapshot.current.workingSetKiB)} />
         <OverlayMetric label="FPS" value={formatFps(renderer?.frames.fps)} />
-        <OverlayMetric label="Frame p95" value={formatMilliseconds(renderer?.frames.p95)} />
+        <OverlayMetric label="帧 p95" value={formatMilliseconds(renderer?.frames.p95)} />
         <OverlayMetric
-          label="Long tasks"
+          label="长任务"
           value={
             renderer
               ? `${renderer.longTasks.count} / ${formatMilliseconds(renderer.longTasks.max)}`
@@ -55,15 +55,15 @@ export function DiagnosticsOverlay() {
           }
         />
         <OverlayMetric
-          label="React renders"
+          label="React 渲染"
           value={renderer?.reactScan ? String(renderer.reactScan.renderCount) : "-"}
         />
         <OverlayMetric
-          label="Stream p95"
+          label="流 p95"
           value={formatMilliseconds(renderer?.streamingLatency.p95)}
         />
         <OverlayMetric
-          label="Collector"
+          label="采集器"
           value={formatMilliseconds(snapshot.collector.lastCollectionDurationMs)}
         />
       </div>
@@ -79,7 +79,7 @@ export function DiagnosticsOverlay() {
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Copy diagnostics report"
+          aria-label="复制诊断报告"
           onClick={() => void copyReport()}
         >
           <Copy aria-hidden="true" />
@@ -88,7 +88,7 @@ export function DiagnosticsOverlay() {
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Open diagnostics settings"
+          aria-label="打开诊断设置"
           onClick={() => void router.navigate({ to: "/settings/diagnostics" })}
         >
           <Settings2 aria-hidden="true" />
@@ -101,12 +101,12 @@ export function DiagnosticsOverlay() {
 async function copyReport(): Promise<void> {
   try {
     await diagnostics.copySafeReport();
-    toast.add({ type: "success", title: "Diagnostics copied" });
+    toast.add({ type: "success", title: "诊断已复制" });
   } catch (error) {
     toast.add({
       type: "error",
-      title: "Could not copy diagnostics",
-      description: error instanceof Error ? error.message : "Clipboard access failed.",
+      title: "无法复制诊断",
+      description: error instanceof Error ? error.message : "剪贴板访问失败。",
     });
   }
 }
@@ -123,7 +123,7 @@ function OverlayMetric({ label, value }: { label: string; value: string }) {
 }
 
 function formatPercent(value: number | null, ready = true): string {
-  if (!ready) return "warming";
+  if (!ready) return "预热中";
   return value === null ? "-" : `${value.toFixed(1)}%`;
 }
 

@@ -35,21 +35,21 @@ function setup(
 describe("ApprovalSelector", () => {
   it("requires confirmation before elevating access, and cancellation leaves rules alone", async () => {
     const { onSelect } = setup();
-    await userEvent.click(screen.getByRole("button", { name: "Approvals: Defaults" }));
-    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^Full access/ }));
-    const dialog = await screen.findByRole("alertdialog", { name: "Enable Full access?" });
+    await userEvent.click(screen.getByRole("button", { name: "Approvals: 默认" }));
+    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^完全访问/ }));
+    const dialog = await screen.findByRole("alertdialog", { name: "启用完全访问？" });
     expect(onSelect).not.toHaveBeenCalled();
-    expect(within(dialog).getByText(/including Plan edit restrictions/)).toBeTruthy();
-    await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(within(dialog).getByText(/计划编辑限制/)).toBeTruthy();
+    await userEvent.click(within(dialog).getByRole("button", { name: "取消" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
     expect(onSelect).not.toHaveBeenCalled();
   });
 
   it("applies Full access only after confirmation and returns focus", async () => {
     const { onSelect, focus } = setup();
-    await userEvent.click(screen.getByRole("button", { name: "Approvals: Defaults" }));
-    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^Full access/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "Enable Full access" }));
+    await userEvent.click(screen.getByRole("button", { name: "Approvals: 默认" }));
+    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^完全访问/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "启用完全访问" }));
     await waitFor(() => expect(onSelect).toHaveBeenCalledExactlyOnceWith("full"));
     expect(focus).toHaveBeenCalledOnce();
     expect(screen.queryByRole("alertdialog")).toBeNull();
@@ -57,10 +57,10 @@ describe("ApprovalSelector", () => {
 
   it("shows Custom honestly and can replace it with Defaults", async () => {
     const { onSelect } = setup("custom");
-    await userEvent.click(screen.getByRole("button", { name: "Approvals: Custom" }));
-    expect(await screen.findByText(/Choosing a preset replaces them/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Approvals: 自定义" }));
+    expect(await screen.findByText(/自定义会话规则已生效/)).toBeTruthy();
     expect(screen.getAllByRole("menuitemradio", { checked: false })).toHaveLength(2);
-    await userEvent.click(screen.getByRole("menuitemradio", { name: /^Defaults/ }));
+    await userEvent.click(screen.getByRole("menuitemradio", { name: /^默认/ }));
     await waitFor(() => expect(onSelect).toHaveBeenCalledExactlyOnceWith("normal"));
   });
 
@@ -69,20 +69,20 @@ describe("ApprovalSelector", () => {
       "normal",
       vi.fn().mockRejectedValue(new Error("Server unavailable")),
     );
-    await userEvent.click(screen.getByRole("button", { name: "Approvals: Defaults" }));
-    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^Full access/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "Enable Full access" }));
+    await userEvent.click(screen.getByRole("button", { name: "Approvals: 默认" }));
+    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^完全访问/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "启用完全访问" }));
     expect((await screen.findByRole("alert")).textContent).toContain("Server unavailable");
     expect(onSelect).toHaveBeenCalledOnce();
     expect(focus).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(screen.getByRole("button", { name: "Approvals: Defaults" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "取消" }));
+    expect(screen.getByRole("button", { name: "Approvals: 默认" })).toBeTruthy();
   });
 
   it("disables changes when the connection or composer is unavailable", () => {
     setup("normal", vi.fn(), true);
     expect(
-      (screen.getByRole("button", { name: "Approvals: Defaults" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "Approvals: 默认" }) as HTMLButtonElement).disabled,
     ).toBe(true);
   });
 });

@@ -17,7 +17,7 @@ const defaults = {
 describe("browser address bar", () => {
   it("shows the host at rest and selects the full address when focused", async () => {
     render(<BrowserAddressBar {...defaults} />);
-    const address = screen.getByRole<HTMLInputElement>("textbox", { name: "Browser address" });
+    const address = screen.getByRole<HTMLInputElement>("textbox", { name: "浏览器地址" });
     expect(address.value).toBe("example.com:8443");
     await userEvent.click(address);
     expect(address.value).toBe(defaults.url);
@@ -28,7 +28,7 @@ describe("browser address bar", () => {
   it("keeps an edit through page updates and cancels to the current URL", async () => {
     const navigate = vi.fn();
     const { rerender } = render(<BrowserAddressBar {...defaults} onNavigate={navigate} />);
-    const address = screen.getByRole<HTMLInputElement>("textbox", { name: "Browser address" });
+    const address = screen.getByRole<HTMLInputElement>("textbox", { name: "浏览器地址" });
     await userEvent.click(address);
     fireEvent.change(address, { target: { value: "unfinished search" } });
     rerender(
@@ -44,7 +44,7 @@ describe("browser address bar", () => {
     const navigate = vi.fn();
     const error = vi.fn();
     render(<BrowserAddressBar {...defaults} onNavigate={navigate} onError={error} />);
-    const address = screen.getByRole("textbox", { name: "Browser address" });
+    const address = screen.getByRole("textbox", { name: "浏览器地址" });
     await userEvent.click(address);
     fireEvent.change(address, { target: { value: "test search" } });
     expect(navigate).not.toHaveBeenCalled();

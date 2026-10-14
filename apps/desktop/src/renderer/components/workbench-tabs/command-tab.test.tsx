@@ -92,7 +92,7 @@ describe("CommandTab", () => {
     expect(formatted.style.fontWeight).toBe("700");
     expect(formatted.style.fontStyle).toBe("italic");
     expect(mocks.output.mock.calls[1]?.[0].cursor).toBe(firstCursor);
-    fireEvent.click(screen.getByRole("button", { name: "Copy visible output" }));
+    fireEvent.click(screen.getByRole("button", { name: "复制可见输出" }));
     expect(mocks.copy).toHaveBeenCalledWith("formatted\n");
   });
 
@@ -101,7 +101,7 @@ describe("CommandTab", () => {
     mount();
     await settle();
     expect(screen.getByText("é")).toBeTruthy();
-    expect(screen.getByRole("status").textContent).toContain("Loading output");
+    expect(screen.getByRole("status").textContent).toContain("正在加载输出");
     await settle(50);
     expect(screen.getByText("é done")).toBeTruthy();
     expect(mocks.output.mock.calls[1]?.[0]).toEqual({
@@ -110,7 +110,7 @@ describe("CommandTab", () => {
       cursor: 2,
       limit: 65536,
     });
-    expect(screen.getByRole("status").textContent).toBe("exited · Exit 0");
+    expect(screen.getByRole("status").textContent).toBe("exited · 退出码 0");
     expect(screen.getByText("/repo/subdir")).toBeTruthy();
     await settle(10_000);
     expect(mocks.output).toHaveBeenCalledTimes(2);
@@ -126,7 +126,7 @@ describe("CommandTab", () => {
     await settle(1_000);
     expect(screen.getByRole("alert").textContent).toContain("Offline");
     expect(screen.getByText("first")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    fireEvent.click(screen.getByRole("button", { name: "重试" }));
     await settle();
     expect(screen.getByText("first second")).toBeTruthy();
     expect(mocks.output.mock.calls[2]?.[0].cursor).toBe(5);
@@ -182,13 +182,13 @@ describe("CommandTab", () => {
     mocks.output.mockResolvedValueOnce(page("latest", 262150));
     mount();
     await settle(200);
-    expect(screen.getByText(/Showing the latest output only/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Copy visible output" }));
+    expect(screen.getByText(/仅显示最新输出/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "复制可见输出" }));
     const copied = mocks.copy.mock.calls[0]?.[0] as string;
     expect(copied.length).toBe(262144);
     expect(copied).not.toContain("older");
     expect(copied.endsWith("latest")).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Pause following output" }));
-    expect(screen.getByRole("button", { name: "Follow output" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "暂停跟踪输出" }));
+    expect(screen.getByRole("button", { name: "跟踪输出" })).toBeTruthy();
   });
 });

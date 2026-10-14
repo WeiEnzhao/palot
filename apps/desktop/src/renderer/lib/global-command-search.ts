@@ -79,11 +79,11 @@ export function groupGlobalSearchResults(
     ({ command, score }) => command.kind === "task" && score < STRONG_MATCH_SCORE,
   );
   const groups: GlobalSearchGroup[] = [
-    { group: "tasks", label: "Tasks", commands: tasks.map(({ command }) => command) },
-    { group: "commands", label: "Commands", commands: others.map(({ command }) => command) },
+    { group: "tasks", label: "任务", commands: tasks.map(({ command }) => command) },
+    { group: "commands", label: "命令", commands: others.map(({ command }) => command) },
     {
       group: "similar-tasks",
-      label: "Similar tasks",
+      label: "相似任务",
       commands: similar.map(({ command }) => command),
     },
   ];
@@ -94,11 +94,11 @@ export function groupGlobalSearchResults(
 export type PaletteTab = "all" | "tasks" | "files" | "commands" | "settings";
 
 export const PALETTE_TABS: readonly { value: PaletteTab; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "tasks", label: "Tasks" },
-  { value: "files", label: "Files" },
-  { value: "commands", label: "Commands" },
-  { value: "settings", label: "Settings" },
+  { value: "all", label: "全部" },
+  { value: "tasks", label: "任务" },
+  { value: "files", label: "文件" },
+  { value: "commands", label: "命令" },
+  { value: "settings", label: "设置" },
 ];
 
 /** Files the All tab shows after tasks and commands; the Files tab shows a full search page. */

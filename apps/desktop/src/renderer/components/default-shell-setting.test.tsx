@@ -57,7 +57,7 @@ it("shows the global shell, lists server shells, and saves a choice", async () =
     { type: "document", path: "/repo/opencode.json", info: { shell: "nu" } },
   ] as ConfigGetOutput;
   const { get, update, user } = renderShell({ get: async () => entries });
-  const trigger = await screen.findByRole("combobox", { name: "Default shell" });
+  const trigger = await screen.findByRole("combobox", { name: "默认 shell" });
   await waitFor(() => expect(trigger.textContent).toContain("zsh"));
 
   await user.click(trigger);
@@ -85,7 +85,7 @@ it("reports load failures with a retry", async () => {
   expect((await screen.findByRole("alert")).textContent).toBe("Config unavailable");
   fail = false;
   await user.click(screen.getByRole("button", { name: "Retry" }));
-  const trigger = await screen.findByRole("combobox", { name: "Default shell" });
-  expect(trigger.textContent).toContain("Auto");
+  const trigger = await screen.findByRole("combobox", { name: "默认 shell" });
+  expect(trigger.textContent).toContain("自动");
   expect(get).toHaveBeenCalledTimes(2);
 });

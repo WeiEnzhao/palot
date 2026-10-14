@@ -41,7 +41,7 @@ export default function OfficePreview({
         if (!controller.signal.aborted)
           setLoaded({
             data,
-            error: error instanceof Error ? error.message : "Could not read this Office file.",
+            error: error instanceof Error ? error.message : "无法读取此 Office 文件。",
           });
       },
     );
@@ -52,7 +52,7 @@ export default function OfficePreview({
     return (
       <Empty className="rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Preview unavailable</EmptyTitle>
+          <EmptyTitle>预览不可用</EmptyTitle>
           <EmptyDescription>{current.error}</EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -61,7 +61,7 @@ export default function OfficePreview({
   if (!current || !("document" in current)) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-meta text-muted-foreground">
-        <Spinner /> Loading Office preview
+        <Spinner /> 正在加载 Office 预览
       </div>
     );
   }
@@ -73,17 +73,17 @@ export default function OfficePreview({
       <div className="flex min-h-9 shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-1 text-meta">
         <span className="min-w-0 flex-1 text-muted-foreground">
           {format === "xlsx"
-            ? "Saved cell values"
+            ? "已保存的单元格值"
             : format === "pptx"
-              ? "Slide content"
-              : "Document content"}{" "}
-          · Read-only
+              ? "幻灯片内容"
+              : "文档内容"}{" "}
+          · 只读
         </span>
         {format === "xlsx" && count ? (
           <label className="flex min-w-0 items-center gap-2">
-            Sheet
+            工作表
             <select
-              aria-label="Sheet"
+              aria-label="工作表"
               value={selected}
               onChange={(event) => setIndex(Number(event.target.value))}
               className="max-w-48 rounded-md border border-input bg-background px-2 py-1 text-meta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -102,20 +102,20 @@ export default function OfficePreview({
               type="button"
               variant="ghost"
               size="icon-xs"
-              aria-label="Previous slide"
+              aria-label="上一张幻灯片"
               disabled={selected === 0}
               onClick={() => setIndex(selected - 1)}
             >
               <ChevronLeft aria-hidden="true" />
             </Button>
             <span>
-              Slide {selected + 1} of {count}
+              第 {selected + 1} 张，共 {count} 张
             </span>
             <Button
               type="button"
               variant="ghost"
               size="icon-xs"
-              aria-label="Next slide"
+              aria-label="下一张幻灯片"
               disabled={selected + 1 >= count}
               onClick={() => setIndex(selected + 1)}
             >
@@ -126,12 +126,11 @@ export default function OfficePreview({
       </div>
       <div className="shrink-0 border-b border-border px-3 py-2 text-meta text-muted-foreground">
         {format === "xlsx"
-          ? "Values only, not recalculated. Dates and number formats may appear as stored numbers. Images, charts and layout are omitted."
-          : "Text, basic emphasis and tables only. Images, charts, page layout and animations are omitted. Links are inactive."}
+          ? "仅包含值，不重新计算。日期和数字格式可能显示为存储的数值。不包含图像、图表和布局。"
+          : "仅包含文本、基本强调和表格。不包含图像、图表、页面布局和动画。链接不可用。"}
         {doc.truncated ? (
           <p role="status" className="mt-1 text-foreground">
-            Preview truncated: up to 30 sheets, 100 slides, 200 rows × 50 columns, 10,000 content
-            items and 500,000 characters.
+            预览已截断：最多 30 个工作表、100 张幻灯片、200 行 × 50 列、10,000 个内容项和 500,000 个字符。
           </p>
         ) : null}
       </div>
@@ -152,8 +151,7 @@ export default function OfficePreview({
         (format !== "xlsx" && !doc.sections[selected]?.blocks.length) ||
         (format === "xlsx" && !doc.sheets[selected]?.rows.length) ? (
           <p className="text-sm text-muted-foreground">
-            No readable content in this{" "}
-            {format === "xlsx" ? "sheet" : format === "pptx" ? "slide" : "document"}.
+            此{format === "xlsx" ? "工作表" : format === "pptx" ? "幻灯片" : "文档"}中没有可读内容。
           </p>
         ) : null}
       </div>
@@ -165,7 +163,7 @@ function ContentBlock({ block }: { block: OfficeBlock }) {
   if (block.kind === "table")
     return (
       <div className="overflow-auto">
-        <table aria-label="Document table" className="w-full border-collapse text-sm">
+        <table aria-label="文档表格" className="w-full border-collapse text-sm">
           <tbody>
             {block.rows.map((row, r) => (
               <tr key={r}>
@@ -220,7 +218,7 @@ function ContentBlock({ block }: { block: OfficeBlock }) {
 function SheetContent({ sheet }: { sheet: OfficeSheet }) {
   return (
     <table
-      aria-label={`Sheet: ${sheet.name}`}
+      aria-label={`工作表：${sheet.name}`}
       className="w-full border-collapse font-mono text-code-compact"
     >
       <thead>

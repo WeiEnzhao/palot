@@ -126,7 +126,7 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
       );
       toast.add({
         type: "success",
-        title: enabled ? "OpenCode is available on your tailnet" : "Tailscale access disabled",
+        title: enabled ? "OpenCode 已在你的 tailnet 上可用" : "Tailscale 访问已禁用",
       });
     } catch (error) {
       showError(error);
@@ -140,7 +140,7 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
     try {
       await palot.restartLocalOpenCodeService();
       await reloadWebAccess();
-      toast.add({ type: "success", title: "Local OpenCode service restarted" });
+      toast.add({ type: "success", title: "本地 OpenCode 服务已重启" });
     } catch (error) {
       showError(error);
     } finally {
@@ -160,25 +160,25 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
       className="min-w-0 gap-6"
     >
       <div className="min-w-0 overflow-x-auto p-1">
-        <TabsList aria-label="Connection settings">
-          <TabsTrigger value="profiles">Profiles</TabsTrigger>
-          <TabsTrigger value="web-access">Web access</TabsTrigger>
-          <TabsTrigger value="local-service">Local service</TabsTrigger>
+        <TabsList aria-label="连接设置">
+          <TabsTrigger value="profiles">配置</TabsTrigger>
+          <TabsTrigger value="web-access">Web 访问</TabsTrigger>
+          <TabsTrigger value="local-service">本地服务</TabsTrigger>
         </TabsList>
       </div>
 
       {tab === "profiles" ? (
         <div className="space-y-8">
           <SettingsSection
-            title="Servers"
-            description="Enabled servers share one workspace. Opening a task uses its server automatically. Disabling a server only disconnects Palot; it does not stop the server."
+            title="服务器"
+            description="启用的服务器共享一个工作区。打开任务时会自动使用其服务器。禁用服务器只会断开 Palot 的连接，不会停止服务器。"
             action={
               <div className="flex flex-wrap gap-2">
                 <Button type="button" size="sm" variant="outline" onClick={() => setAddOpen(true)}>
-                  <Plus className="size-4" /> Add HTTP server
+                  <Plus className="size-4" /> 添加 HTTP 服务器
                 </Button>
                 <Button type="button" size="sm" onClick={() => setSshOpen(true)}>
-                  <Plus className="size-4" /> Add SSH connection
+                  <Plus className="size-4" /> 添加 SSH 连接
                 </Button>
               </div>
             }
@@ -205,10 +205,10 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
                         {enabled && connection ? (
                           <Badge variant="secondary">
                             {connection.runtime?.connected
-                              ? "Connected"
+                              ? "已连接"
                               : connection.phase === "loading"
-                                ? "Connecting…"
-                                : "Offline"}
+                                ? "连接中…"
+                                : "离线"}
                           </Badge>
                         ) : null}
                       </div>
@@ -217,23 +217,23 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
                       </p>
                       <p className="mt-1 text-meta text-muted-foreground">
                         {profile.kind === "local"
-                          ? "Local service"
+                          ? "本地服务"
                           : profile.kind === "ssh"
-                            ? "SSH tunnel · remote service stays running when disconnected"
-                            : "Remote server"}
+                            ? "SSH 隧道 · 断开连接时远程服务保持运行"
+                            : "远程服务器"}
                       </p>
                       {profile.kind === "remote" &&
                       profile.urls.some((url) => url.startsWith("http://")) ? (
                         <p className="mt-2 text-compact leading-relaxed text-warning">
-                          Plain HTTP can expose prompts, source, credentials, and terminal traffic.
+                          纯 HTTP 可能会暴露提示词、源码、凭据和终端流量。
                         </p>
                       ) : null}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 @lg/settings:justify-end">
                       <div className="flex items-center gap-2 text-compact text-muted-foreground">
-                        {enabled ? "Enabled" : "Disabled"}
+                        {enabled ? "已启用" : "已禁用"}
                         <Switch
-                          aria-label={`Enable ${profile.name}`}
+                          aria-label={`启用 ${profile.name}`}
                           checked={enabled}
                           onCheckedChange={(checked) =>
                             setIncludedProfileIDs((current) =>
@@ -249,7 +249,7 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`Edit ${profile.name}`}
+                          aria-label={`编辑 ${profile.name}`}
                           disabled={busyID !== null}
                           onClick={() => setEditing(profile)}
                         >
@@ -261,7 +261,7 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`Delete ${profile.name}`}
+                          aria-label={`删除 ${profile.name}`}
                           disabled={busyID !== null}
                           onClick={() => setDeleting(profile)}
                         >
@@ -272,17 +272,17 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
                   </div>
                 );
               })}
-              {!snapshot ? <SettingsEmpty>Loading connections…</SettingsEmpty> : null}
+              {!snapshot ? <SettingsEmpty>加载连接中…</SettingsEmpty> : null}
             </SettingsGroup>
           </SettingsSection>
 
           <SettingsSection
-            title="Import a connection"
-            description="Use a one-time pairing link, or import legacy Basic credentials from another computer."
+            title="导入连接"
+            description="使用一次性配对链接，或从另一台电脑导入旧的 Basic 凭据。"
           >
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-                <Plus className="size-4" /> Add paired server
+                <Plus className="size-4" /> 添加已配对的服务器
               </Button>
             </div>
           </SettingsSection>
@@ -430,9 +430,9 @@ function WebAccessSettings({
     <div className="min-w-0 space-y-8">
       <ConnectionCard
         icon={Laptop}
-        title="This computer"
-        description="Open the same OpenCode service and sessions in your local browser."
-        badge={local?.available ? "Available" : "Unavailable"}
+        title="本机"
+        description="在本地浏览器中打开相同的 OpenCode 服务和会话。"
+        badge={local?.available ? "可用" : "不可用"}
       >
         {local?.url ? <CodeValue value={local.url} /> : null}
         {local?.reason ? <InlineNotice>{local.reason}</InlineNotice> : null}
@@ -444,14 +444,14 @@ function WebAccessSettings({
               rel="noreferrer"
               className={buttonVariants({ variant: "default" })}
             >
-              <ExternalLink className="size-4" /> Open OpenCode Web
+              <ExternalLink className="size-4" /> 打开 OpenCode 网页
             </a>
           ) : null}
           <Button type="button" variant="outline" disabled={!pairingAvailable} onClick={onPair}>
-            <QrCode className="size-4" /> Pair device
+            <QrCode className="size-4" /> 配对设备
           </Button>
           <Button type="button" variant="ghost" onClick={onRefresh}>
-            Refresh
+            刷新
           </Button>
         </div>
       </ConnectionCard>
@@ -459,7 +459,7 @@ function WebAccessSettings({
       <ConnectionCard
         icon={Globe2}
         title="Tailscale"
-        description="Share the local web interface over HTTPS with devices allowed by your tailnet."
+        description="通过 HTTPS 将本地 Web 界面共享给你的 tailnet 所允许的设备。"
         badge={tailscaleBadge(tailscale)}
       >
         {tailscale?.publicUrl && tailscale.serveState === "active" ? (
@@ -467,8 +467,8 @@ function WebAccessSettings({
         ) : null}
         {tailscale?.serveState === "conflict" ? (
           <InlineNotice>
-            Tailscale Serve already uses the root web address for{" "}
-            {tailscale.proxyTarget ?? "another service"}. Palot will not replace it.
+            Tailscale Serve 已将根 Web 地址用于{" "}
+            {tailscale.proxyTarget ?? "其他服务"}。Palot 不会替换它。
           </InlineNotice>
         ) : null}
         {tailscale?.error ? <InlineNotice>{tailscale.error}</InlineNotice> : null}
@@ -506,26 +506,26 @@ function WebAccessSettings({
           {tailscale?.managedByPalot ? (
             <Button type="button" variant="outline" disabled={busy !== null} onClick={onDisable}>
               {busy === "disable" ? <LoaderCircle className="animate-spin" /> : <WifiOff />}
-              Disable
+              禁用
             </Button>
           ) : null}
           {tailscale?.serveState === "active" && tailscale.publicUrl ? (
             <Button type="button" variant="outline" onClick={() => void togglePublicQr()}>
-              <QrCode /> {showPublicQr ? "Hide phone QR" : "Show phone QR"}
+              <QrCode /> {showPublicQr ? "隐藏手机 QR" : "显示手机 QR"}
             </Button>
           ) : null}
           <Button type="button" variant="ghost" onClick={onRefresh}>
-            Refresh
+            刷新
           </Button>
         </div>
         {showPublicQr && publicQr ? (
           <div className="w-fit rounded-lg border border-border/70 bg-white p-2">
-            <img src={publicQr} alt="Tailscale OpenCode web address QR code" className="size-44" />
+            <img src={publicQr} alt="Tailscale OpenCode 网址 QR 码" className="size-44" />
           </div>
         ) : null}
         <p className="text-compact leading-relaxed text-muted-foreground">
-          OpenCode stays bound to loopback. Tailscale terminates HTTPS and applies your tailnet
-          access rules. Funnel and public internet exposure are never enabled.
+          OpenCode 保持绑定 loopback。Tailscale 终结 HTTPS 并应用你的 tailnet
+          访问规则。不会启用 Funnel 和公网暴露。
         </p>
       </ConnectionCard>
     </div>
@@ -572,17 +572,17 @@ export function LocalServiceSettings({
       />
       <ConnectionCard
         icon={Server}
-        title="Shared OpenCode service"
-        description="Palot and other local OpenCode clients use this background service."
-        badge={local?.available ? "Connected" : "Unavailable"}
+        title="共享的 OpenCode 服务"
+        description="Palot 和其他本地 OpenCode 客户端使用此后台服务。"
+        badge={local?.available ? "已连接" : "不可用"}
       >
         {local?.url ? <CodeValue value={local.url} /> : null}
         <dl className="grid min-w-0 gap-4 text-sm @lg/settings:grid-cols-3">
-          <ServiceDatum label="Running service version" value={local?.version ?? "Unknown"} />
-          <ServiceDatum label="Process" value={local?.pid ? String(local.pid) : "Unknown"} />
+          <ServiceDatum label="运行中的服务版本" value={local?.version ?? "未知"} />
+          <ServiceDatum label="进程" value={local?.pid ? String(local.pid) : "未知"} />
           <ServiceDatum
-            label="Lifecycle"
-            value={local?.managed ? "Started by Palot" : "Shared service"}
+            label="生命周期"
+            value={local?.managed ? "由 Palot 启动" : "共享服务"}
           />
         </dl>
         {local?.reason ? <InlineNotice>{local.reason}</InlineNotice> : null}
@@ -648,7 +648,7 @@ function CodeValue({ value }: { value: string }) {
         type="button"
         variant="ghost"
         size="icon-sm"
-        aria-label="Copy address"
+        aria-label="复制地址"
         onClick={() => void writeClipboardText(value)}
       >
         <Copy />
@@ -676,13 +676,13 @@ function ServiceDatum({ label, value }: { label: string; value: string }) {
 }
 
 function tailscaleBadge(info: OpenCodeWebAccessInfo["tailscale"] | undefined): string {
-  if (!info) return "Checking";
-  if (info.connectionState === "unavailable") return "Not installed";
-  if (info.connectionState === "disconnected") return "Disconnected";
+  if (!info) return "检查中";
+  if (info.connectionState === "unavailable") return "未安装";
+  if (info.connectionState === "disconnected") return "已断开";
   if (info.serveState === "active")
-    return info.managedByPalot ? "Shared by Palot" : "Already shared";
-  if (info.serveState === "conflict") return "Root address in use";
-  return "Connected";
+    return info.managedByPalot ? "由 Palot 共享" : "已共享";
+  if (info.serveState === "conflict") return "根地址已被占用";
+  return "已连接";
 }
 
 function EditServerDialog({
@@ -763,22 +763,22 @@ function EditServerDialog({
     <Dialog open onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit OpenCode server</DialogTitle>
+          <DialogTitle>编辑 OpenCode 服务器</DialogTitle>
           <DialogDescription>
-            Changes take effect the next time this profile connects.
+            更改将在下次此配置连接时生效。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <Input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Server name"
+            placeholder="服务器名称"
           />
           <Textarea
             value={urls}
             onChange={(event) => setUrls(event.target.value)}
             rows={3}
-            placeholder="One server URL per line"
+            placeholder="每行一个服务器 URL"
           />
           {profile.credentialID ? (
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -790,18 +790,18 @@ function EditServerDialog({
                   if (replacing) setAllowPlainHttp(false);
                 }}
               />
-              Replace stored credentials
+              替换已存储的凭据
             </label>
           ) : null}
           {profile.credentialID === null || replaceCredential ? (
             <>
               <Select value={auth} onValueChange={(value) => setAuth(value as typeof auth)}>
-                <SelectTrigger aria-label="Authentication">
+                <SelectTrigger aria-label="身份验证">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No authentication</SelectItem>
-                  <SelectItem value="basic">Username and password</SelectItem>
+                  <SelectItem value="none">无身份验证</SelectItem>
+                  <SelectItem value="basic">用户名和密码</SelectItem>
                   <SelectItem value="bearer">Bearer token</SelectItem>
                 </SelectContent>
               </Select>
@@ -809,7 +809,7 @@ function EditServerDialog({
                 <Input
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
-                  placeholder="Username"
+                  placeholder="用户名"
                 />
               ) : null}
               {auth !== "none" ? (
@@ -817,7 +817,7 @@ function EditServerDialog({
                   type="password"
                   value={secret}
                   onChange={(event) => setSecret(event.target.value)}
-                  placeholder={auth === "bearer" ? "Token" : "Password"}
+                  placeholder={auth === "bearer" ? "Token" : "密码"}
                 />
               ) : null}
             </>
@@ -828,13 +828,12 @@ function EditServerDialog({
                 checked={allowPlainHttp}
                 onCheckedChange={(checked) => setAllowPlainHttp(checked === true)}
               />
-              Allow plain HTTP. Traffic and credentials can be observed or modified in transit.
+              允许纯 HTTP。流量和凭据可能在传输过程中被观察或修改。
             </label>
           ) : null}
           {profile.credentialID && !replaceCredential ? (
             <p className="text-xs text-muted-foreground">
-              Testing requires replacing the stored credential; Palot never returns it to the
-              renderer.
+              测试需要替换已存储的凭据；Palot 不会将其返回给渲染器。
             </p>
           ) : null}
           {tested ? (
@@ -846,7 +845,7 @@ function EditServerDialog({
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            取消
           </Button>
           <Button
             type="button"
@@ -854,14 +853,14 @@ function EditServerDialog({
             disabled={busy || !canTest}
             onClick={() => void test()}
           >
-            Test
+            测试
           </Button>
           <Button
             type="button"
             disabled={busy || !name.trim() || remoteUrls.length === 0}
             onClick={() => void save()}
           >
-            Save
+            保存
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -925,16 +924,16 @@ function AddServerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add OpenCode server</DialogTitle>
+          <DialogTitle>添加 OpenCode 服务器</DialogTitle>
           <DialogDescription>
-            Remote servers run tools and read files on the server machine.
+            远程服务器在服务器机器上运行工具并读取文件。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <Input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Server name"
+            placeholder="服务器名称"
           />
           <Input
             value={url}
@@ -942,12 +941,12 @@ function AddServerDialog({
             placeholder="http://192.168.1.40:4096"
           />
           <Select value={auth} onValueChange={(value) => setAuth(value as typeof auth)}>
-            <SelectTrigger aria-label="Authentication">
+            <SelectTrigger aria-label="身份验证">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No authentication</SelectItem>
-              <SelectItem value="basic">Username and password</SelectItem>
+              <SelectItem value="none">无身份验证</SelectItem>
+              <SelectItem value="basic">用户名和密码</SelectItem>
               <SelectItem value="bearer">Bearer token</SelectItem>
             </SelectContent>
           </Select>
@@ -955,7 +954,7 @@ function AddServerDialog({
             <Input
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              placeholder="Username"
+              placeholder="用户名"
             />
           ) : null}
           {auth !== "none" ? (
@@ -963,7 +962,7 @@ function AddServerDialog({
               type="password"
               value={secret}
               onChange={(event) => setSecret(event.target.value)}
-              placeholder={auth === "bearer" ? "Token" : "Password"}
+              placeholder={auth === "bearer" ? "Token" : "密码"}
             />
           ) : null}
           {url.trim().toLowerCase().startsWith("http://") && !isLoopback(url) ? (
@@ -972,7 +971,7 @@ function AddServerDialog({
                 checked={allowPlainHttp}
                 onCheckedChange={(checked) => setAllowPlainHttp(checked === true)}
               />
-              Allow plain HTTP. Traffic and credentials can be observed or modified in transit.
+              允许纯 HTTP。流量和凭据可能在传输过程中被观察或修改。
             </label>
           ) : null}
           {tested ? (
@@ -984,7 +983,7 @@ function AddServerDialog({
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            取消
           </Button>
           <Button
             type="button"
@@ -992,10 +991,10 @@ function AddServerDialog({
             disabled={busy || !url}
             onClick={() => void test()}
           >
-            Test
+            测试
           </Button>
           <Button type="button" disabled={busy || !name.trim() || !url} onClick={() => void save()}>
-            Save
+            保存
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1053,7 +1052,7 @@ export function PairDialog({
     try {
       return { info: pairingInfoForAddress(info, address), error: null };
     } catch (error) {
-      return { info: null, error: error instanceof Error ? error.message : "Invalid address" };
+      return { info: null, error: error instanceof Error ? error.message : "无效地址" };
     }
   }, [info, address]);
   const changeAddress = (value: string) => {
@@ -1098,13 +1097,13 @@ export function PairDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Pair device</DialogTitle>
+          <DialogTitle>配对设备</DialogTitle>
           <DialogDescription>
             {info?.mode === "link"
-              ? "This one-time link and QR expire in up to 5 minutes and work only once. The session credential issued when redeemed can last up to 30 days."
+              ? "此一次性链接和 QR 码最多 5 分钟后过期，且只能使用一次。兑换时颁发的会话凭据最长可持续 30 天。"
               : info?.mode === "credentials"
-                ? "Legacy pairing JSON and QR contain reusable OpenCode service credentials."
-                : "Generate pairing details when the other device is ready."}
+                ? "旧的配对 JSON 和 QR 码包含可重复使用的 OpenCode 服务凭据。"
+                : "当另一台设备准备好后生成配对详情。"}
           </DialogDescription>
         </DialogHeader>
         {info ? (
@@ -1113,24 +1112,24 @@ export function PairDialog({
               <div className="min-w-0 space-y-3 text-sm">
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="pairing-address">
-                    Address for pairing
+                    配对地址
                   </label>
                   <Input
                     id="pairing-address"
                     value={address}
                     onChange={(event) => changeAddress(event.target.value)}
-                    placeholder="Use service addresses"
+                    placeholder="使用服务地址"
                     aria-invalid={Boolean(pairing.error)}
                     aria-describedby="pairing-address-help"
                   />
                   <p id="pairing-address-help" className="text-meta text-muted-foreground">
-                    Leave blank to include the service’s network addresses in the QR code, including
-                    an active OpenTunnel address. An override must be an HTTPS proxy you control.
-                    This does not configure a proxy or expose the service.
+                    留空则将服务的网络地址（包括活跃的 OpenTunnel 地址）包含在 QR 码中，
+                    包括活跃的 OpenTunnel 地址。覆盖地址必须是你控制的 HTTPS 代理。
+                    这不会配置代理或暴露服务。
                   </p>
                   {address ? (
                     <Button variant="ghost" size="sm" onClick={() => changeAddress("")}>
-                      Use service addresses
+                      使用服务地址
                     </Button>
                   ) : suggestedAddress ? (
                     <Button
@@ -1176,9 +1175,9 @@ export function PairDialog({
                       </p>
                     ))}
                     <div className="space-y-2">
-                      <PairingCredentialRow label="Username" value={info.username} />
+                      <PairingCredentialRow label="用户名" value={info.username} />
                       <PairingCredentialRow
-                        label="Password"
+                        label="密码"
                         value={info.password}
                         concealed={!revealed}
                         onToggleConcealed={() => setRevealed((value) => !value)}
@@ -1195,7 +1194,7 @@ export function PairDialog({
                     onClick={() => void toggleQr()}
                   >
                     <QrCode className="size-4" />
-                    {showQr ? "Hide QR" : "Show QR"}
+                    {showQr ? "隐藏 QR" : "显示 QR"}
                   </Button>
                   <Button
                     type="button"
@@ -1208,7 +1207,7 @@ export function PairDialog({
                     }}
                   >
                     <Copy className="size-4" />
-                    {info.mode === "link" ? "Copy one-time link" : "Copy pairing JSON"}
+                    {info.mode === "link" ? "复制一次性链接" : "复制配对 JSON"}
                   </Button>
                 </div>
               </div>
@@ -1217,8 +1216,8 @@ export function PairDialog({
                   src={qr}
                   alt={
                     info.mode === "link"
-                      ? "OpenCode one-time pairing QR code"
-                      : "OpenCode pairing QR code"
+                      ? "OpenCode 一次性配对 QR 码"
+                      : "OpenCode 配对 QR 码"
                   }
                   className="w-48 max-w-full justify-self-center rounded-lg bg-white p-2"
                 />
@@ -1228,11 +1227,10 @@ export function PairDialog({
         ) : (
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              Generate only when the other device is ready. Legacy credentials and redeemed sessions
-              can control this OpenCode service.
+              仅在另一台设备准备好后生成。旧的凭据和已兑换的会话可以控制此 OpenCode 服务。
             </p>
             <Button type="button" disabled={loading} onClick={() => void load()}>
-              {loading ? "Loading…" : "Generate pairing details"}
+              {loading ? "加载中…" : "生成配对详情"}
             </Button>
           </div>
         )}
@@ -1268,22 +1266,22 @@ export function PairingCredentialRow({
           type="button"
           variant="ghost"
           size="sm"
-          aria-label={`${concealed ? "Show" : "Hide"} password`}
+          aria-label={`${concealed ? "显示" : "隐藏"}密码`}
           onClick={onToggleConcealed}
         >
           {concealed ? <Eye /> : <EyeOff />}
-          {concealed ? "Show" : "Hide"}
+          {concealed ? "显示" : "隐藏"}
         </Button>
       ) : null}
       <Button
         type="button"
         variant="outline"
         size="sm"
-        aria-label={copied ? `${label} copied` : `Copy ${label.toLowerCase()}`}
+        aria-label={copied ? `已复制${label}` : `复制${label.toLowerCase()}`}
         onClick={() => void copy(value, "credential")}
       >
         {copied ? <Check /> : <Copy />}
-        {copied ? "Copied" : "Copy"}
+        {copied ? "已复制" : "复制"}
       </Button>
     </div>
   );
@@ -1316,7 +1314,7 @@ export function ImportPairDialog({
     } catch (error) {
       return {
         value: null,
-        error: error instanceof Error ? error.message : "Invalid pairing details",
+        error: error instanceof Error ? error.message : "无效的配对详情",
       };
     }
   }, [text, selectedAddress]);
@@ -1349,10 +1347,10 @@ export function ImportPairDialog({
     >
       <DialogContent showCloseButton={!busy}>
         <DialogHeader>
-          <DialogTitle>Add paired server</DialogTitle>
+          <DialogTitle>添加已配对的服务器</DialogTitle>
           <DialogDescription>
-            Paste a one-time pairing URL, QR payload, or legacy Basic pairing JSON. Review the
-            target before importing. Nothing is sent when you paste.
+            粘贴一次性配对 URL、QR 载荷或旧的 Basic 配对 JSON。导入前请查看目标。
+            粘贴时不会发送任何内容。
           </DialogDescription>
         </DialogHeader>
         <Textarea
@@ -1363,9 +1361,9 @@ export function ImportPairDialog({
             setSelectedAddress("");
           }}
           disabled={busy}
-          aria-label="Pairing link or legacy JSON"
+          aria-label="配对链接或旧的 JSON"
           rows={8}
-          placeholder="https://server.example/auth/connect/… or pairing JSON"
+          placeholder="https://server.example/auth/connect/… 或配对 JSON"
         />
         {parsed?.error ? (
           <p role="alert" className="text-meta text-destructive">
@@ -1376,12 +1374,12 @@ export function ImportPairDialog({
           <div className="space-y-2 rounded-lg border border-border/70 bg-muted/30 p-3 text-meta text-muted-foreground">
             <p>
               {"link" in parsed.value.input
-                ? "One-time link target"
-                : "Legacy Basic credential targets"}
+                ? "一次性链接目标"
+                : "旧的 Basic 凭据目标"}
             </p>
             {parsed.value.selectedAddress ? (
               <div className="space-y-2">
-                <label htmlFor="pairing-import-address">Redeem at this address</label>
+                <label htmlFor="pairing-import-address">在此地址兑换</label>
                 <NativeSelect
                   id="pairing-import-address"
                   className="w-full"
@@ -1399,8 +1397,7 @@ export function ImportPairDialog({
                   ))}
                 </NativeSelect>
                 <p>
-                  Only this address receives the one-time code. Other addresses are not tried
-                  automatically.
+                  只有此地址接收一次性代码。不会自动尝试其他地址。
                 </p>
               </div>
             ) : (
@@ -1419,8 +1416,8 @@ export function ImportPairDialog({
               disabled={busy}
               onCheckedChange={(checked) => setAllowPlainHttp(checked === true)}
             />
-            Allow plain HTTP. The pairing code or credentials, prompts, source, and terminal traffic
-            can be observed or modified in transit.
+            允许纯 HTTP。配对代码或凭据、提示词、源码和终端流量
+            可能在传输过程中被观察或修改。
           </label>
         ) : null}
         <DialogFooter>
@@ -1434,14 +1431,14 @@ export function ImportPairDialog({
               onOpenChange(false);
             }}
           >
-            Cancel
+            取消
           </Button>
           <Button
             type="button"
             disabled={busy || !parsed?.value || (insecure && !allowPlainHttp)}
             onClick={() => void save()}
           >
-            Probe and import
+            探测并导入
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1470,8 +1467,8 @@ function profileDescription(profile: OpenCodeProfile): string {
   if (profile.kind === "ssh")
     return `${profile.ssh.target}${profile.ssh.port ? ` (port ${profile.ssh.port})` : ""}`;
   if (profile.kind === "remote")
-    return profile.lastSuccessfulUrl ?? profile.urls[0] ?? "Remote OpenCode server";
-  return "Connect to the existing shared OpenCode service on this computer. Palot does not start it automatically.";
+    return profile.lastSuccessfulUrl ?? profile.urls[0] ?? "远程 OpenCode 服务器";
+  return "连接到本机上已有的共享 OpenCode 服务。Palot 不会自动启动它。";
 }
 
 function isLoopback(value: string): boolean {
@@ -1491,6 +1488,6 @@ function isLoopback(value: string): boolean {
 function showError(error: unknown): void {
   toast.add({
     type: "error",
-    title: error instanceof Error ? error.message : "OpenCode server action failed",
+    title: error instanceof Error ? error.message : "OpenCode 服务器操作失败",
   });
 }

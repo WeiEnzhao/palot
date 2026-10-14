@@ -94,7 +94,7 @@ function PullRequestCode({ pullRequest }: { pullRequest: PullRequestDetail }) {
   if (files.isPending) {
     return (
       <div className="flex h-full min-h-0 flex-1 items-center justify-center gap-2 text-meta text-muted-foreground">
-        <Spinner /> Loading changed files
+        <Spinner /> 正在加载已更改的文件
       </div>
     );
   }
@@ -102,11 +102,11 @@ function PullRequestCode({ pullRequest }: { pullRequest: PullRequestDetail }) {
     return (
       <Empty className="h-full min-h-0 flex-1 rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Could not load changed files</EmptyTitle>
+          <EmptyTitle>无法加载已更改的文件</EmptyTitle>
           <EmptyDescription>{files.error.message}</EmptyDescription>
         </EmptyHeader>
         <Button type="button" variant="outline" size="sm" onClick={() => void files.refetch()}>
-          <RefreshCw data-icon="inline-start" /> Retry
+          <RefreshCw data-icon="inline-start" /> 重试
         </Button>
       </Empty>
     );
@@ -118,8 +118,8 @@ function PullRequestCode({ pullRequest }: { pullRequest: PullRequestDetail }) {
           <EmptyMedia variant="icon">
             <FileCode2 aria-hidden="true" />
           </EmptyMedia>
-          <EmptyTitle>No changed files</EmptyTitle>
-          <EmptyDescription>This pull request does not change any files.</EmptyDescription>
+          <EmptyTitle>没有已更改的文件</EmptyTitle>
+          <EmptyDescription>此拉取请求没有更改任何文件。</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -273,7 +273,7 @@ function PullRequestCodeReview({
         {
           onError: (error) => {
             setCollapsed(path, !viewed);
-            showErrorToast("Could not update the viewed mark", error);
+            showErrorToast("无法更新已查看标记", error);
           },
         },
       );
@@ -316,7 +316,7 @@ function PullRequestCodeReview({
     if (!container) return;
     container.tabIndex = 0;
     container.setAttribute("role", "region");
-    container.setAttribute("aria-label", "Pull request diff");
+    container.setAttribute("aria-label", "拉取请求 diff");
   }, [container]);
 
   const revealFile = useCallback(
@@ -379,26 +379,26 @@ function PullRequestCodeReview({
           type="button"
           variant={showFiles ? "secondary" : "ghost"}
           size="sm"
-          aria-label={showFiles ? "Hide file list" : "Show file list"}
+          aria-label={showFiles ? "隐藏文件列表" : "显示文件列表"}
           aria-pressed={showFiles}
           onClick={() => setShowFiles((value) => !value)}
         >
           <FolderTree data-icon="inline-start" aria-hidden="true" />
-          <span className="hidden @min-[32rem]/pr-code:inline">Files</span>
+          <span className="hidden @min-[32rem]/pr-code:inline">文件</span>
         </Button>
         <span className="text-meta text-muted-foreground tabular-nums" aria-live="polite">
-          {viewedCount} of {files.length} viewed
+          {viewedCount} / {files.length} 已查看
         </span>
         <Button
           type="button"
           variant={hideViewed ? "secondary" : "ghost"}
           size="sm"
-          aria-label="Hide viewed"
+          aria-label="隐藏已查看"
           aria-pressed={hideViewed}
           onClick={() => setHideViewed((value) => !value)}
         >
           <EyeOff data-icon="inline-start" aria-hidden="true" />
-          <span className="hidden @min-[40rem]/pr-code:inline">Hide viewed</span>
+          <span className="hidden @min-[40rem]/pr-code:inline">隐藏已查看</span>
         </Button>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <span className="mr-1 hidden items-center gap-1.5 font-mono text-diff tabular-nums @min-[52rem]/pr-code:flex">
@@ -408,19 +408,19 @@ function PullRequestCodeReview({
           <PendingCommentsTray pending={pending} onReveal={revealLine} />
           <DiffViewOptionsMenu layout={diffStyle} onFind={find.openFind} />
           <ToolbarToggle
-            label={lineWrap ? "Disable line wrap" : "Enable line wrap"}
+            label={lineWrap ? "禁用自动换行" : "启用自动换行"}
             pressed={lineWrap}
             onClick={() => setLineWrap((value) => !value)}
           >
             <WrapText />
           </ToolbarToggle>
           <ToolbarToggle
-            label={allCollapsed ? "Expand all files" : "Collapse all files"}
+            label={allCollapsed ? "展开所有文件" : "折叠所有文件"}
             onClick={toggleAll}
           >
             {allCollapsed ? <ChevronsUpDown /> : <ChevronsDownUp />}
           </ToolbarToggle>
-          <ToolbarToggle label="Refresh files" onClick={onRefresh}>
+          <ToolbarToggle label="刷新文件" onClick={onRefresh}>
             <RefreshCw className={cn(refreshing && "animate-spin")} />
           </ToolbarToggle>
           <PullRequestReviewPopover
@@ -432,7 +432,7 @@ function PullRequestCodeReview({
       </div>
       <div className="relative grid min-h-0 flex-1 grid-cols-1 overflow-hidden @min-[46rem]/pr-code:grid-cols-[16rem_minmax(0,1fr)]">
         <aside
-          aria-label="Files"
+          aria-label="文件"
           className={cn(
             "absolute inset-0 z-10 min-h-0 flex-col border-r border-border bg-background @min-[46rem]/pr-code:static @min-[46rem]/pr-code:z-auto",
             showFiles ? "flex" : "hidden",
@@ -440,14 +440,14 @@ function PullRequestCodeReview({
         >
           <div className="flex h-8 shrink-0 items-center border-b border-border px-2 text-meta text-muted-foreground">
             <span className="tabular-nums">
-              {files.length} {files.length === 1 ? "file" : "files"}
+              {files.length} 个{files.length === 1 ? "文件" : "文件"}
             </span>
             <Button
               type="button"
               variant="ghost"
               size="icon-xs"
               className="ml-auto @min-[46rem]/pr-code:hidden"
-              aria-label="Close file list"
+              aria-label="关闭文件列表"
               onClick={() => setShowFiles(false)}
             >
               <X />
@@ -472,8 +472,8 @@ function PullRequestCodeReview({
           {items.length === 0 ? (
             <Empty className="h-full rounded-none p-5">
               <EmptyHeader>
-                <EmptyTitle>All files viewed</EmptyTitle>
-                <EmptyDescription>Turn off Hide viewed to read them again.</EmptyDescription>
+                <EmptyTitle>所有文件已查看</EmptyTitle>
+                <EmptyDescription>关闭"隐藏已查看"即可重新查看。</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -524,16 +524,16 @@ function PullRequestCodeReview({
               renderCodeViewFooter={() =>
                 truncated ? (
                   <p className="px-3 py-2 text-meta text-muted-foreground">
-                    GitHub lists at most 3,000 files.{" "}
+                    GitHub 最多列出 3,000 个文件。{" "}
                     <a
                       href={filesUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="text-foreground underline"
                     >
-                      Open on GitHub
+                      在 GitHub 上打开
                     </a>{" "}
-                    to see the rest.
+                    查看其余文件。
                   </p>
                 ) : null
               }
@@ -593,7 +593,7 @@ function FileHeader({
       role={foldable ? "button" : undefined}
       tabIndex={foldable ? 0 : undefined}
       aria-expanded={foldable ? !collapsed : undefined}
-      aria-label={foldable ? `${collapsed ? "Expand" : "Collapse"} ${file.path}` : undefined}
+      aria-label={foldable ? `${collapsed ? "展开" : "折叠"} ${file.path}` : undefined}
       data-palot-diff-header={file.path}
       title={file.path}
       className={cn(
@@ -633,7 +633,7 @@ function FileHeader({
       </span>
       {unavailable ? (
         <span className="flex shrink-0 items-center gap-1.5 text-micro text-muted-foreground">
-          Diff not available here
+          此处无法查看 diff
           <a
             href={filesUrl}
             target="_blank"
@@ -641,11 +641,11 @@ function FileHeader({
             className="text-foreground underline underline-offset-2"
             onClick={(event) => event.stopPropagation()}
           >
-            Open on GitHub
+            在 GitHub 上打开
           </a>
         </span>
       ) : whitespaceOnly ? (
-        <span className="shrink-0 text-micro text-muted-foreground">Whitespace changes hidden</span>
+        <span className="shrink-0 text-micro text-muted-foreground">空白变更已隐藏</span>
       ) : null}
       {file.viewed === "dismissed" ? <ChangedSinceViewed /> : null}
       {/* The header folds the file; the checkbox keeps its press to itself. */}
@@ -655,11 +655,11 @@ function FileHeader({
         onKeyDown={(event) => event.stopPropagation()}
       >
         <Checkbox
-          aria-label={`Mark ${file.path} as viewed`}
+          aria-label={`将 ${file.path} 标记为已查看`}
           checked={file.viewed === "viewed"}
           onCheckedChange={(checked) => onViewedChange(file.path, checked)}
         />
-        <span className="hidden @min-[32rem]/pr-code:inline">Viewed</span>
+        <span className="hidden @min-[32rem]/pr-code:inline">已查看</span>
       </label>
     </div>
   );

@@ -25,7 +25,7 @@ export const ReadImagePreview = memo(function ReadImagePreview({
       <Button
         type="button"
         variant="outline"
-        aria-label={`Open preview of ${name}`}
+        aria-label={`打开预览：${name}`}
         onClick={() => setOpen(true)}
         className="group h-auto max-w-full overflow-hidden rounded-lg bg-muted/25 p-0 hover:bg-muted/40"
       >
@@ -123,7 +123,7 @@ function ImageLightboxContent({
             type="button"
             variant="outline"
             size="icon-lg"
-            aria-label={copied ? "Copied image address" : "Copy image address"}
+            aria-label={copied ? "已复制图片地址" : "复制图片地址"}
             onClick={() => void copy(src, "image-address")}
             className="palot-promoted-blur bg-popover/95 shadow-sm backdrop-blur-sm"
           >
@@ -133,10 +133,10 @@ function ImageLightboxContent({
             type="button"
             variant="outline"
             size="icon-lg"
-            aria-label="Download image"
+            aria-label="下载图片"
             onClick={() => {
               void window.palot.downloadUrl(src).catch((error) => {
-                showErrorToast("Could not download image", error);
+                showErrorToast("无法下载图片", error);
               });
             }}
             className="palot-promoted-blur bg-popover/95 shadow-sm backdrop-blur-sm"
@@ -147,7 +147,7 @@ function ImageLightboxContent({
             type="button"
             variant="outline"
             size="icon-lg"
-            aria-label={zoomed ? "Zoom out" : "Zoom in"}
+            aria-label={zoomed ? "缩小" : "放大"}
             onClick={() => setZoomed((value) => !value)}
             className="palot-promoted-blur bg-popover/95 shadow-sm backdrop-blur-sm"
           >
@@ -157,7 +157,7 @@ function ImageLightboxContent({
             type="button"
             variant="outline"
             size="icon-lg"
-            aria-label="Close image preview"
+            aria-label="关闭图片预览"
             onClick={close}
             className="palot-promoted-blur bg-popover/95 shadow-sm backdrop-blur-sm"
           >

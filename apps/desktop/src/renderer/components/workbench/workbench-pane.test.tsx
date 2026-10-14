@@ -122,7 +122,7 @@ it("keeps browser rows on a failed close and reports the failure", async () => {
   const store = mount();
   fireEvent.click(screen.getByRole("button", { name: "Close Example" }));
   await waitFor(() =>
-    expect(showErrorToast).toHaveBeenCalledWith("Could not control browser", expect.any(Error)),
+    expect(showErrorToast).toHaveBeenCalledWith("无法控制浏览器", expect.any(Error)),
   );
   expect(palot.browserCommand).toHaveBeenCalledWith("binding", {
     type: "tabs.close",
@@ -136,8 +136,8 @@ it("keeps browser rows on a failed close and reports the failure", async () => {
 it("opens a new browser page without creating a generic workbench tab", async () => {
   vi.mocked(palot.browserCommand).mockResolvedValue(undefined);
   const store = mount();
-  fireEvent.click(screen.getByRole("button", { name: "Open workbench surface" }));
-  fireEvent.click(await screen.findByRole("menuitem", { name: "Browser" }));
+  fireEvent.click(screen.getByRole("button", { name: "打开工作台面板" }));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "浏览器" }));
   expect(palot.browserCommand).toHaveBeenCalledWith(
     "binding",
     { type: "tabs.open", focus: true },
@@ -163,8 +163,8 @@ it("places a page opened from the bottom menu in the bottom pane", async () => {
       <WorkbenchPane pane="bottom" scope={scope} context={context} location={location} />
     </Provider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "Open workbench surface" }));
-  fireEvent.click(await screen.findByRole("menuitem", { name: "Browser" }));
+  fireEvent.click(screen.getByRole("button", { name: "打开工作台面板" }));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "浏览器" }));
   expect(palot.browserCommand).toHaveBeenCalledWith(
     "binding",
     { type: "tabs.open", focus: true },
@@ -218,13 +218,13 @@ it("lists and reopens a closed tab from the menu in its original pane without cr
     },
   };
   const store = mount([], [{ tab: terminal, pane: "bottom", index: 0, closedAt: 1 }]);
-  fireEvent.click(screen.getByRole("button", { name: "Open workbench surface" }));
-  const recent = await screen.findByRole("menuitem", { name: "Terminal Bottom" });
+  fireEvent.click(screen.getByRole("button", { name: "打开工作台面板" }));
+  const recent = await screen.findByRole("menuitem", { name: "Terminal 底部" });
   expect(palot.createPty).not.toHaveBeenCalled();
   expect(palot.connectPty).not.toHaveBeenCalled();
   expect(
     screen.getByText(
-      "Browser pages cannot be reopened. Terminals reconnect only if still available.",
+      "浏览器页面无法重新打开。终端仅在仍可用时重连。",
     ),
   ).toBeTruthy();
   fireEvent.click(recent);
@@ -260,8 +260,8 @@ it("reopens the most recently closed tab using the workbench-focused shortcut", 
   expect(store.get(workbenchStateAtom).scopes[workbenchScopeKey(scope)]?.right.tabs).toEqual([
     tabs[1],
   ]);
-  fireEvent.click(screen.getByRole("button", { name: "Open workbench surface" }));
-  fireEvent.click(await screen.findByRole("menuitem", { name: "Reopen closed tab" }));
+  fireEvent.click(screen.getByRole("button", { name: "打开工作台面板" }));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "重新打开关闭的标签" }));
   await screen.findByRole("tab", { name: "first.ts" });
   expect(store.get(workbenchStateAtom).scopes[workbenchScopeKey(scope)]?.recentlyClosed).toEqual(
     [],

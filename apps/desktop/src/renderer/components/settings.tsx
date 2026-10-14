@@ -513,7 +513,7 @@ export function Settings({
             })}
             {visibleNav.length === 0 ? (
               <p className="px-3 py-5 text-center text-xs text-muted-foreground">
-                No settings match “{query}”.
+                没有匹配“{query}”的设置。
               </p>
             ) : null}
           </nav>
@@ -526,14 +526,14 @@ export function Settings({
             onClick={() => void closeSettings()}
           >
             <ArrowLeft aria-hidden="true" />
-            Back to tasks
+            返回任务
           </Button>
         </div>
       </aside>
       <section className="palot-main-surface @container/settings-page relative flex min-h-0 min-w-0 flex-1 flex-col bg-background">
         <header className="palot-main-surface-header window-drag flex h-(--shell-header-height) shrink-0 items-center gap-2 border-b border-sidebar-border bg-background px-5 pr-(--window-controls-width)">
           <div className="flex min-w-0 items-center gap-2 pl-1">
-            <span className="text-sm font-semibold">Settings</span>
+            <span className="text-sm font-semibold">设置</span>
             <span className="text-muted-foreground/45">/</span>
             <span className="truncate text-xs text-muted-foreground">{activeCopy.title}</span>
           </div>
@@ -1107,12 +1107,12 @@ function GeneralSettings() {
     <div className="space-y-8">
       <SettingsSection
         title="任务默认值"
-        description="Starting choices for new tasks and messages sent while work is running."
+        description="新任务和运行中消息的初始选项。"
       >
         <SettingsGroup>
           <SettingsRow
             title="默认工作区"
-            description="Create isolated worktrees by default, or start in the project checkout."
+            description="默认创建隔离工作树，或在项目检出中启动。"
             control={
               <Select
                 value={workspaceMode}
@@ -1122,15 +1122,15 @@ function GeneralSettings() {
                   <SelectValue>{WORKSPACE_MODE_LABELS[workspaceMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="worktree">New worktree</SelectItem>
-                  <SelectItem value="current">Current checkout</SelectItem>
+                  <SelectItem value="worktree">新建工作树</SelectItem>
+                  <SelectItem value="current">当前检出</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
             title="新工作树起点"
-            description="Start new task worktrees from the repository default branch or your current branch."
+            description="从仓库默认分支或当前分支启动新任务工作树。"
             control={
               <Select
                 value={worktreeBase}
@@ -1143,15 +1143,15 @@ function GeneralSettings() {
                   <SelectValue>{WORKTREE_BASE_LABELS[worktreeBase]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="repository-default">Repository default</SelectItem>
-                  <SelectItem value="current">Current branch</SelectItem>
+                  <SelectItem value="repository-default">仓库默认</SelectItem>
+                  <SelectItem value="current">当前分支</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
             title="运行时的消息"
-            description="Steer updates the active turn. Queue waits and starts after the current turn finishes."
+            description="引导更新当前轮次。队列等待当前轮次结束后启动。"
             control={
               <Select
                 value={delivery}
@@ -1164,19 +1164,19 @@ function GeneralSettings() {
                   <SelectValue>{DELIVERY_LABELS[delivery]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="steer">Steer current turn</SelectItem>
-                  <SelectItem value="queue">Queue next turn</SelectItem>
+                  <SelectItem value="steer">引导当前轮次</SelectItem>
+                  <SelectItem value="queue">队列下一轮次</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
             title="自动将阻塞工作发送到后台"
-            description="If a steer stays blocked for five seconds, let supported foreground work continue in the background."
+            description="若引导被阻塞超过五秒，让支持的前台工作在后台继续。"
             control={
               <Switch
                 checked={autoBackgroundOnSteer}
-                aria-label="Automatically send blocking work to background when steering"
+                aria-label="引导时自动将阻塞工作发送到后台"
                 onCheckedChange={(checked) => setAutoBackgroundOnSteer(Boolean(checked))}
               />
             }
@@ -1186,12 +1186,12 @@ function GeneralSettings() {
       </SettingsSection>
       <SettingsSection
         title="桌面行为"
-        description="Startup, local schedules, and website icons."
+        description="启动、本地计划和网站图标。"
       >
         <SettingsGroup>
           <SettingsRow
             title="默认侧边栏"
-            description="Choose which sidebar opens when Palot starts, or return to the last one you used."
+            description="选择 Palot 启动时打开哪个侧栏，或返回上次使用的侧栏。"
             control={
               <Select
                 value={defaultSidebarMode}
@@ -1201,16 +1201,16 @@ function GeneralSettings() {
                   <SelectValue>{SIDEBAR_MODE_LABELS[defaultSidebarMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="remember">Remember last used</SelectItem>
-                  <SelectItem value="project">Projects</SelectItem>
-                  <SelectItem value="inbox">Inbox</SelectItem>
+                  <SelectItem value="remember">记住上次使用</SelectItem>
+                  <SelectItem value="project">项目</SelectItem>
+                  <SelectItem value="inbox">收件箱</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
             title="登录时启动"
-            description="Start Palot when you sign in so local schedules can run."
+            description="登录时启动 Palot，以便本地计划可以运行。"
             control={
               <Switch
                 aria-label="登录时启动"
@@ -1224,10 +1224,10 @@ function GeneralSettings() {
           />
           <SettingsRow
             title="运行时防止休眠"
-            description="Keep this computer awake only while a scheduled run is preparing, queued, running, or finishing."
+            description="仅在计划任务准备、排队、运行或完成时保持电脑唤醒。"
             control={
               <Switch
-                aria-label="Prevent sleep during scheduled runs"
+                aria-label="计划任务运行时防止休眠"
                 checked={automationHostSettings?.preventSleepWhileRunning ?? false}
                 disabled={!automationHostSettings}
                 onCheckedChange={(checked) =>
@@ -1240,11 +1240,11 @@ function GeneralSettings() {
           />
           <SettingsRow
             title="链接中的网站图标"
-            description="Load icons from DuckDuckGo for public websites linked in messages. This shares each exact hostname, including subdomains, but not its page path."
+            description="从 DuckDuckGo 加载消息中链接的公开网站图标。这会分享每个完整主机名（含子域名），但不分享页面路径。"
             control={
               <Switch
                 checked={remoteMarkdownFavicons}
-                aria-label="Load website icons from DuckDuckGo"
+                aria-label="从 DuckDuckGo 加载网站图标"
                 onCheckedChange={(checked) => setRemoteMarkdownFavicons(Boolean(checked))}
               />
             }
@@ -1253,16 +1253,16 @@ function GeneralSettings() {
       </SettingsSection>
       <SettingsSection
         title="时间线"
-        description="Choose how reasoning and tool activity appear in your tasks."
+        description="选择推理和工具活动在任务中的显示方式。"
       >
         <SettingsGroup>
           <SettingsRow
             title="可能破坏缓存"
-            description="Show a warning in the timeline when cache reuse drops unexpectedly between matching model steps. Context always includes these diagnostics."
+            description="当匹配模型步骤间缓存重用意外下降时，在时间线中显示警告。上下文始终包含这些诊断。"
             control={
               <Switch
                 checked={showTimelineCacheBusts}
-                aria-label="Show likely cache busts in timeline"
+                aria-label="在时间线中显示可能的缓存破坏"
                 onCheckedChange={(checked) => setShowTimelineCacheBusts(Boolean(checked))}
               />
             }
@@ -1276,9 +1276,9 @@ function GeneralSettings() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label="Customize timeline activity"
+                  aria-label="自定义时间线活动"
                   aria-expanded={customizeProjection}
-                  title="Customize timeline activity"
+                  title="自定义时间线活动"
                   onClick={() => setCustomizeProjection((open) => !open)}
                 >
                   <SlidersHorizontal aria-hidden="true" />
@@ -1289,16 +1289,16 @@ function GeneralSettings() {
                     setProjection({ version: 2, preset: value as SessionProjectionPreset })
                   }
                 >
-                  <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Timeline style">
+                  <SelectTrigger className="w-full @lg/settings:w-44" aria-label="时间线样式">
                     <SelectValue>
                       {PROJECTION_PRESET_LABELS[projection.preset]}
-                      {customized ? ", customized" : ""}
+                      {customized ? "，已自定义" : ""}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent align="end">
-                    <SelectItem value="code-focus">Focused</SelectItem>
-                    <SelectItem value="compact">Balanced</SelectItem>
-                    <SelectItem value="expanded">Detailed</SelectItem>
+                    <SelectItem value="code-focus">聚焦</SelectItem>
+                    <SelectItem value="compact">均衡</SelectItem>
+                    <SelectItem value="expanded">详细</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1306,11 +1306,11 @@ function GeneralSettings() {
           />
           <SettingsRow
             title="推理摘要"
-            description="Show the agent's reasoning summaries inside activity groups."
+            description="在活动组内显示代理的推理摘要。"
             control={
               <Switch
                 checked={resolvedProjection.showReasoningSummaries}
-                aria-label="Show reasoning summaries in the timeline"
+                aria-label="在时间线中显示推理摘要"
                 onCheckedChange={(checked) =>
                   setProjection((current) => ({
                     ...current,
@@ -1322,11 +1322,11 @@ function GeneralSettings() {
           />
           <SettingsRow
             title="当前活动"
-            description="Keep the current activity group open while the agent works."
+            description="代理工作时保持当前活动组展开。"
             control={
               <Switch
                 checked={resolvedProjection.keepCurrentActivityExpanded}
-                aria-label="Keep current activity expanded"
+                aria-label="保持当前活动展开"
                 onCheckedChange={(checked) =>
                   setProjection((current) => ({
                     ...current,
@@ -1342,11 +1342,11 @@ function GeneralSettings() {
             <div className="flex items-center justify-between gap-3 border-b bg-muted/20 px-3 py-2.5">
               <div className="text-xs font-medium">
                 {projection.preset === "code-focus"
-                  ? "Focused"
+                  ? "聚焦"
                   : projection.preset === "compact"
-                    ? "Balanced"
-                    : "Detailed"}
-                {customized ? ", customized" : ""}
+                    ? "均衡"
+                    : "详细"}
+                {customized ? "，已自定义" : ""}
               </div>
               {customized ? (
                 <Button
@@ -1355,15 +1355,15 @@ function GeneralSettings() {
                   size="xs"
                   onClick={() => setProjection({ version: 2, preset: projection.preset })}
                 >
-                  Reset
+                  重置
                 </Button>
               ) : null}
             </div>
             <div className="hidden grid-cols-[minmax(7rem,1fr)_repeat(3,minmax(7rem,auto))] gap-x-2 border-b px-4 py-2 text-meta font-medium text-muted-foreground @3xl/settings:grid">
-              <span>Activity</span>
-              <span>Display</span>
-              <span>Details</span>
-              <span>Folded turns</span>
+              <span>活动</span>
+              <span>显示</span>
+              <span>详情</span>
+              <span>折叠轮次</span>
             </div>
             {ACTIVITY_CATEGORIES.map((category) => {
               const preference = resolvedProjection.categories[category];
@@ -1390,9 +1390,9 @@ function GeneralSettings() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent align="end">
-                      <SelectItem value="individual">Individual</SelectItem>
-                      <SelectItem value="grouped">Grouped</SelectItem>
-                      <SelectItem value="hidden">Hidden when completed</SelectItem>
+                      <SelectItem value="individual">单独</SelectItem>
+                      <SelectItem value="grouped">分组</SelectItem>
+                      <SelectItem value="hidden">完成后隐藏</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select
@@ -1410,8 +1410,8 @@ function GeneralSettings() {
                       <SelectValue>{DETAIL_DEFAULT_LABELS[preference.details]}</SelectValue>
                     </SelectTrigger>
                     <SelectContent align="end">
-                      <SelectItem value="collapsed">Collapsed</SelectItem>
-                      <SelectItem value="expanded">Expanded</SelectItem>
+                      <SelectItem value="collapsed">折叠</SelectItem>
+                      <SelectItem value="expanded">展开</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select
@@ -1429,15 +1429,15 @@ function GeneralSettings() {
                       <SelectValue>{FOLDED_TURN_LABELS[preference.foldedTurn]}</SelectValue>
                     </SelectTrigger>
                     <SelectContent align="end">
-                      <SelectItem value="inside">Inside</SelectItem>
-                      <SelectItem value="pinned">Keep visible</SelectItem>
+                      <SelectItem value="inside">内置</SelectItem>
+                      <SelectItem value="pinned">保持可见</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               );
             })}
             <div className="flex items-center justify-between gap-3 border-t bg-muted/10 px-3 py-3">
-              <span className="text-xs font-medium">Group titles</span>
+              <span className="text-xs font-medium">分组标题</span>
               <Select
                 value={resolvedProjection.groupTitle}
                 onValueChange={(value) =>
@@ -1451,13 +1451,13 @@ function GeneralSettings() {
                   <SelectValue>{GROUP_TITLE_LABELS[resolvedProjection.groupTitle]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="summary">Activity summary</SelectItem>
-                  <SelectItem value="latest-reasoning">Reasoning intent</SelectItem>
+                  <SelectItem value="summary">活动摘要</SelectItem>
+                  <SelectItem value="latest-reasoning">推理意图</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center justify-between gap-3 border-t bg-muted/10 px-3 py-3">
-              <span className="text-xs font-medium">Repeated file reads</span>
+              <span className="text-xs font-medium">重复文件读取</span>
               <Select
                 value={resolvedProjection.groupSameFileReads ? "grouped" : "separate"}
                 onValueChange={(value) =>
@@ -1467,19 +1467,19 @@ function GeneralSettings() {
                   }))
                 }
               >
-                <SelectTrigger className="w-44" aria-label="Repeated file reads">
+                <SelectTrigger className="w-44" aria-label="重复文件读取">
                   <SelectValue>
                     {resolvedProjection.groupSameFileReads ? "每个文件一张卡片" : "单独卡片"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="separate">Separate cards</SelectItem>
-                  <SelectItem value="grouped">One card per file</SelectItem>
+                  <SelectItem value="separate">单独卡片</SelectItem>
+                  <SelectItem value="grouped">每个文件一张卡片</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center justify-between gap-3 border-t bg-muted/10 px-3 py-3">
-              <span className="text-xs font-medium">Completed turns</span>
+              <span className="text-xs font-medium">已完成轮次</span>
               <Select
                 value={resolvedProjection.foldCompletedTurns ? "folded" : "expanded"}
                 onValueChange={(value) =>
@@ -1489,14 +1489,14 @@ function GeneralSettings() {
                   }))
                 }
               >
-                <SelectTrigger className="w-36" aria-label="Completed turns">
+                <SelectTrigger className="w-36" aria-label="已完成轮次">
                   <SelectValue>
-                    {resolvedProjection.foldCompletedTurns ? "折叠" : "Expanded"}
+                    {resolvedProjection.foldCompletedTurns ? "折叠" : "展开"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="folded">Folded</SelectItem>
-                  <SelectItem value="expanded">Expanded</SelectItem>
+                  <SelectItem value="folded">折叠</SelectItem>
+                  <SelectItem value="expanded">展开</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1543,7 +1543,7 @@ function NotificationSettings() {
         .then((value) => {
           if (active) setDeliveryStatus(value);
         })
-        .catch((error) => showError("Could not check notification delivery", error));
+        .catch((error) => showError("无法检查通知投递", error));
     };
     refresh();
     window.addEventListener("focus", refresh);
@@ -1562,7 +1562,7 @@ function NotificationSettings() {
       setSettings(await palot.updateDesktopNotificationSettings(next));
     } catch (error) {
       setSettings(previous);
-      showError("Could not update notification settings", error);
+      showError("无法更新通知设置", error);
     }
   };
 
@@ -1571,7 +1571,7 @@ function NotificationSettings() {
     try {
       setDeliveryStatus(await palot.desktopNotificationDeliveryStatus());
     } catch (error) {
-      showError("Could not check notification delivery", error);
+      showError("无法检查通知投递", error);
     } finally {
       setDeliveryBusy(false);
     }
@@ -1589,7 +1589,7 @@ function NotificationSettings() {
         await palot.sendDesktopTestNotification();
       }
     } catch (error) {
-      showError("Could not update notification delivery", error);
+      showError("无法更新通知投递", error);
     } finally {
       setDeliveryBusy(false);
     }
@@ -1601,13 +1601,13 @@ function NotificationSettings() {
     <div className="space-y-8">
       <SettingsSection
         title="原生提醒"
-        description="Palot uses the macOS notification center and opens the relevant task when you click an alert."
+        description="Palot 使用 macOS 通知中心，点击提醒时会打开相关任务。"
         icon={Bell}
       >
         <SettingsGroup>
           {isMac ? (
             <SettingsRow
-              title="Delivery check"
+              title="投递检查"
               description={delivery.description}
               control={
                 <>
@@ -1628,7 +1628,7 @@ function NotificationSettings() {
                     type="button"
                     size="icon-sm"
                     variant="ghost"
-                    aria-label="Check notification delivery again"
+                    aria-label="重新检查通知投递"
                     disabled={deliveryBusy}
                     onClick={() => void refreshDeliveryStatus()}
                   >
@@ -1640,7 +1640,7 @@ function NotificationSettings() {
           ) : null}
           <SettingsRow
             title="回合完成通知"
-            description="Set when Palot alerts you that a task has finished."
+            description="设置 Palot 何时提醒您任务已完成。"
             control={
               <Select
                 value={settings?.turnCompletion ?? "always"}
@@ -1660,16 +1660,16 @@ function NotificationSettings() {
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="never">Never</SelectItem>
-                  <SelectItem value="unfocused">Only when unfocused</SelectItem>
-                  <SelectItem value="always">Always</SelectItem>
+                  <SelectItem value="never">从不</SelectItem>
+                  <SelectItem value="unfocused">仅在未聚焦时</SelectItem>
+                  <SelectItem value="always">始终</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
             title="权限通知"
-            description="Show alerts when a task needs permission to continue."
+            description="任务需要权限才能继续时显示提醒。"
             control={
               <Switch
                 aria-label="权限通知"
@@ -1683,7 +1683,7 @@ function NotificationSettings() {
           />
           <SettingsRow
             title="问题通知"
-            description="Show alerts when your input is needed to continue."
+            description="需要您输入才能继续时显示提醒。"
             control={
               <Switch
                 aria-label="问题通知"
@@ -1712,7 +1712,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   if (!status) {
     return {
       label: "检查中",
-      description: "Reading Palot's current delivery path from macOS.",
+      description: "正在从 macOS 读取 Palot 当前的通知投递路径。",
       action: null,
       icon: null,
       badgeVariant: "outline",
@@ -1721,7 +1721,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   if (status.authorization === "not-determined") {
     return {
       label: "未设置",
-      description: "Choose whether Palot may alert you when work needs attention.",
+      description: "选择 Palot 是否可以在工作需要关注时提醒您。",
       action: "允许提醒",
       icon: <Bell />,
       badgeVariant: "outline",
@@ -1730,7 +1730,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   if (status.authorization === "denied") {
     return {
       label: "已阻止",
-      description: "macOS is blocking Palot alerts. Your in-app choices are still saved.",
+      description: "macOS 正在阻止 Palot 提醒。您的应用内选择仍会保留。",
       action: "打开 macOS 设置",
       icon: <ExternalLink />,
       badgeVariant: "destructive",
@@ -1739,7 +1739,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   if (status.delivery === "off") {
     return {
       label: "已暂停",
-      description: "Palot is allowed, but banners and Notification Center delivery are both off.",
+      description: "Palot 已被允许，但横幅和通知中心投递均已关闭。",
       action: "打开 macOS 设置",
       icon: <ExternalLink />,
       badgeVariant: "destructive",
@@ -1748,7 +1748,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   if (status.delivery === "notification-center" || status.authorization === "provisional") {
     return {
       label: "安静",
-      description: "Updates land in Notification Center without interrupting your current task.",
+      description: "更新会进入通知中心，不会打断当前任务。",
       action: "发送测试",
       icon: <Bell />,
       badgeVariant: "outline",
@@ -1758,7 +1758,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
     return {
       label: "就绪",
       description:
-        "Banners and Notification Center are available. Verify the route whenever you like.",
+        "横幅和通知中心可用。您可以随时验证投递路径。",
       action: "发送测试",
       icon: <Check />,
       badgeVariant: "secondary",
@@ -1766,7 +1766,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   }
   return {
     label: "不可用",
-    description: "Palot could not read notification delivery from macOS.",
+    description: "Palot 无法从 macOS 读取通知投递状态。",
     action: null,
     icon: null,
     badgeVariant: "outline",
@@ -1836,7 +1836,7 @@ function AppearanceSettings() {
     <>
       <SettingsSection
         title="主题"
-        description="Follow your desktop or choose a palette. Changes apply immediately."
+        description="跟随桌面或选择调色板。更改立即生效。"
         icon={Palette}
       >
         <SettingsGroup>
@@ -1845,11 +1845,11 @@ function AppearanceSettings() {
             description={
               preferences.source === "system"
                 ? preferences.systemPalette === "macos"
-                  ? "Following macOS appearance."
+                  ? "跟随 macOS 外观。"
                   : preferences.omarchyTheme
-                    ? `Following Omarchy · ${preferences.omarchyTheme.name}`
-                    : "Following desktop light/dark mode with your saved palettes."
-                : `Palette for ${resolved.scheme} mode. Light and dark palettes are saved independently.`
+                    ? `跟随 Omarchy · ${preferences.omarchyTheme.name}`
+                    : "跟随桌面浅色/深色模式，使用您保存的调色板。"
+                : `${resolved.scheme === "light" ? "浅色" : "深色"}模式的调色板。浅色和深色调色板独立保存。`
             }
             value={
               preferences.source === "system"
@@ -1885,10 +1885,10 @@ function AppearanceSettings() {
           />
           <SettingsRow
             title="对比度"
-            description={`Adjust separation between surfaces, controls, borders, and secondary text in the current ${resolved.scheme} theme.`}
+            description={`调整当前${resolved.scheme === "light" ? "浅色" : "深色"}主题中表面、控件、边框和次要文本之间的区分度。`}
             control={
               <AppearanceSlider
-                label={`${titleCase(resolved.scheme)} theme contrast`}
+                label={`${resolved.scheme === "light" ? "浅色" : "深色"}主题对比度`}
                 value={
                   resolved.scheme === "light" ? preferences.lightContrast : preferences.darkContrast
                 }
@@ -1907,7 +1907,7 @@ function AppearanceSettings() {
           />
           <AppearanceSelectRow
             title="代码主题"
-            description="File previews, diffs, Markdown code, and terminal ANSI colors."
+            description="文件预览、diff、Markdown 代码和终端 ANSI 颜色。"
             value={
               resolved.scheme === "light" ? preferences.lightCodeTheme : preferences.darkCodeTheme
             }
@@ -1927,7 +1927,7 @@ function AppearanceSettings() {
       {preferences.source === "palot" ? (
         <SettingsSection
           title="颜色模式"
-          description="Choose when Palot uses your light and dark palettes."
+          description="选择 Palot 何时使用您的浅色和深色调色板。"
           icon={Palette}
         >
           <div className="grid gap-3 @lg/settings:grid-cols-3">
@@ -1945,13 +1945,13 @@ function AppearanceSettings() {
 
       <SettingsSection
         title="滚动"
-        description="Scrollbars appear while scrolling or interacting with a pane."
+        description="滚动条在滚动或与面板交互时显示。"
         icon={Palette}
       >
         <SettingsGroup>
           <SettingsRow
             title="始终显示滚动条"
-            description="Keep scroll handles visible instead of hiding them when idle."
+            description="保持滚动手柄可见，而不是在空闲时隐藏。"
             control={
               <Switch
                 checked={preferences.alwaysShowScrollbars}
@@ -1965,14 +1965,14 @@ function AppearanceSettings() {
 
       <SettingsSection
         title="玻璃和材质"
-        description="Control renderer translucency separately from the native material behind the window."
+        description="独立于窗口背后的原生材质控制渲染器半透明度。"
         icon={Sparkles}
       >
         <SettingsGroup>
           {window.palot?.platform === "linux" ? (
             <SettingsRow
               title="窗口背景不透明度"
-              description="Make window backgrounds translucent while keeping text crisp. Enabling or disabling transparency requires restarting Palot. Your compositor controls desktop blur and can additionally fade the whole window."
+              description="使窗口背景半透明同时保持文字清晰。启用或禁用透明度需要重启 Palot。您的合成器控制桌面模糊，还可以额外淡化整个窗口。"
               control={
                 <AppearanceSlider
                   label="窗口背景不透明度"
@@ -1987,7 +1987,7 @@ function AppearanceSettings() {
           ) : null}
           <SettingsRow
             title="表面色调"
-            description="Higher values make the composer, inspector, menus, and dialogs more solid. Native Liquid Glass sidebars remain transparent."
+            description="值越高，合成器、检查器、菜单和对话框越不透明。原生 Liquid Glass 侧栏保持透明。"
             control={
               <AppearanceSlider
                 label="表面色调"
@@ -2007,7 +2007,7 @@ function AppearanceSettings() {
           />
           <SettingsRow
             title="主要内容不透明度"
-            description="Let the native material show through the chat surface and right or bottom workbench panes."
+            description="让原生材质透过聊天表面和右侧或底部工作台面板显示。"
             control={
               <AppearanceSlider
                 label="主要内容不透明度"
@@ -2021,7 +2021,7 @@ function AppearanceSettings() {
           />
           <SettingsRow
             title="原生玻璃色调"
-            description="Tint macOS Liquid Glass toward the current theme background."
+            description="将 macOS Liquid Glass 着色为当前主题背景色。"
             control={
               <AppearanceSlider
                 label="原生玻璃色调"
@@ -2037,12 +2037,12 @@ function AppearanceSettings() {
           />
           <AppearanceSelectRow
             title="原生玻璃变体"
-            description="Choose between Apple's regular and clear Liquid Glass treatments. Theme follows the active palette's recommendation."
+            description="在 Apple 的常规和清晰 Liquid Glass 处理之间选择。主题跟随当前调色板的建议。"
             value={preferences.nativeGlassVariant}
             options={[
               {
                 value: "theme",
-                label: `Theme (${titleCase(themeNativeGlass.variant)})`,
+                label: `主题（${titleCase(themeNativeGlass.variant)}）`,
               },
               ...NATIVE_GLASS_VARIANTS.map((value) => ({ value, label: titleCase(value) })),
             ]}
@@ -2055,15 +2055,15 @@ function AppearanceSettings() {
           />
           <AppearanceSelectRow
             title="窗口材质"
-            description="Automatic follows the active theme's native backdrop. Changing this may require a restart."
+            description="自动跟随当前主题的原生背景。更改此项可能需要重启。"
             value={preferences.windowMaterial}
             options={WINDOW_MATERIALS.map((value) => ({
               value,
               label:
                 value === "automatic"
-                  ? `Theme (${titleCase(themeTreatment.native.backdrop.replaceAll("-", " "))})`
+                  ? `主题（${titleCase(themeTreatment.native.backdrop.replaceAll("-", " "))}）`
                   : value === "native"
-                    ? "Native translucency"
+                    ? "原生半透明"
                     : titleCase(value),
             }))}
             onChange={(windowMaterial) => {
@@ -2072,13 +2072,13 @@ function AppearanceSettings() {
           />
           <AppearanceSelectRow
             title="侧边栏材质"
-            description="Choose whether the navigation and settings sidebar stay solid or reveal the window material."
+            description="选择导航和设置侧栏是保持不透明还是显示窗口材质。"
             value={preferences.sidebarMaterial}
             options={SIDEBAR_MATERIALS.map((value) => ({
               value,
               label:
                 value === "automatic"
-                  ? `Theme (${titleCase(themeTreatment.sidebar.material)})`
+                  ? `主题（${titleCase(themeTreatment.sidebar.material)}）`
                   : titleCase(value),
             }))}
             onChange={(sidebarMaterial) =>
@@ -2089,13 +2089,13 @@ function AppearanceSettings() {
           />
           <SettingsRow
             title="有效材质"
-            description="The material Palot is using after platform capability and accessibility fallbacks."
+            description="Palot 在平台能力和无障碍回退后实际使用的材质。"
             control={<Badge variant="outline">{effectiveMaterial}</Badge>}
           />
           {restartRequired ? (
             <div className="flex items-center justify-between gap-4 px-4 py-3">
               <p className="text-compact text-muted-foreground">
-                Restart Palot to apply native window material changes.
+                重启 Palot 以应用原生窗口材质更改。
               </p>
               <Button
                 type="button"
@@ -2103,7 +2103,7 @@ function AppearanceSettings() {
                 variant="outline"
                 onClick={() => void palot.restartApp("应用外观材质")}
               >
-                Restart
+                重启
               </Button>
             </div>
           ) : null}
@@ -2112,25 +2112,25 @@ function AppearanceSettings() {
 
       <SettingsSection
         title="排版"
-        description="Fonts and sizes apply across the interface, Markdown, file previews, diffs, and terminals. Included fonts work offline; unavailable system fonts remain disabled."
+        description="字体和大小应用于界面、Markdown、文件预览、diff 和终端。包含的字体可离线使用；不可用的系统字体保持禁用。"
         icon={Braces}
       >
         <SettingsGroup>
           <AppearanceSelectRow
             title="界面字体"
-            description="Everything outside code blocks, file previews, and terminals."
+            description="代码块、文件预览和终端之外的所有内容。"
             value={preferences.uiFont}
             options={Object.entries(UI_FONT_OPTIONS).map(([value, option]) => ({
               value,
               label:
-                fontAvailability[value] === false ? `${option.name} (Unavailable)` : option.name,
+                fontAvailability[value] === false ? `${option.name}（不可用）` : option.name,
               disabled: fontAvailability[value] === false,
               detail: option.source === "bundled" ? "已包含" : undefined,
             }))}
             onChange={(uiFont) => update({ uiFont: uiFont as AppearancePreferences["uiFont"] })}
             trailing={
               <SizeSelect
-                label="Interface font size"
+                label="界面字体大小"
                 value={preferences.uiFontSize}
                 values={[13, 14, 15, 16, 17, 18, 19]}
                 onChange={(uiFontSize) => update({ uiFontSize })}
@@ -2141,7 +2141,7 @@ function AppearanceSettings() {
           {window.palot?.platform === "linux" ? (
             <SettingsRow
               title="跟随桌面等宽字体"
-              description="Use Omarchy’s monospace font with the System theme. Interface typography stays independent."
+              description="使用 Omarchy 的等宽字体配合系统主题。界面排版保持独立。"
               control={
                 <Switch
                   checked={preferences.followOmarchyFont}
@@ -2153,12 +2153,12 @@ function AppearanceSettings() {
           ) : null}
           <AppearanceSelectRow
             title="等宽字体"
-            description="Code blocks, diffs, file previews, and terminal output."
+            description="代码块、diff、文件预览和终端输出。"
             value={preferences.codeFont}
             options={Object.entries(CODE_FONT_OPTIONS).map(([value, option]) => ({
               value,
               label:
-                fontAvailability[value] === false ? `${option.name} (Unavailable)` : option.name,
+                fontAvailability[value] === false ? `${option.name}（不可用）` : option.name,
               disabled: fontAvailability[value] === false,
               detail: option.source === "bundled" ? "已包含" : undefined,
             }))}
@@ -2167,7 +2167,7 @@ function AppearanceSettings() {
             }
             trailing={
               <SizeSelect
-                label="Code font size"
+                label="代码字体大小"
                 value={preferences.codeFontSize}
                 values={[10, 11, 12, 13, 14, 15, 16, 17, 18]}
                 onChange={(codeFontSize) => update({ codeFontSize })}
@@ -2176,7 +2176,7 @@ function AppearanceSettings() {
           />
           <SettingsRow
             title="终端字体大小"
-            description="Terminal size stays independent so shell output can remain compact or roomy."
+            description="终端大小保持独立，让 shell 输出可以保持紧凑或宽松。"
             control={
               <SizeSelect
                 label="终端字体大小"
@@ -2600,7 +2600,7 @@ export function ModelSettings({
     <>
       <SettingsSection
         title="任务默认"
-        description="Palot applies this model and effort after creating a task. Clear it to use OpenCode's resolved location default."
+        description="Palot 在创建任务后应用此模型和努力程度。清除以使用 OpenCode 解析的位置默认值。"
         icon={Sparkles}
       >
         <SettingsGroup>
@@ -2608,7 +2608,7 @@ export function ModelSettings({
             title="默认模型"
             description={
               snapshot?.catalog.defaultModel
-                ? `OpenCode currently resolves ${snapshot.catalog.defaultModel.name}.`
+                ? `OpenCode 当前解析为 ${snapshot.catalog.defaultModel.name}。`
                 : "OpenCode 将从项目和全局配置中解析模型。"
             }
             control={
@@ -2634,7 +2634,7 @@ export function ModelSettings({
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end" className="max-h-80">
-                  <SelectItem value="opencode-default">OpenCode default</SelectItem>
+                  <SelectItem value="opencode-default">OpenCode 默认</SelectItem>
                   {visibleModels.map((model) => (
                     <SelectItem
                       key={`${model.providerID}/${model.id}`}
@@ -2650,7 +2650,7 @@ export function ModelSettings({
           {selectedModel && selectedModel.variants.length > 0 ? (
             <SettingsRow
               title="默认努力程度"
-              description="Choose the reasoning effort Palot applies with this model when creating a task."
+              description="选择 Palot 创建任务时与此模型一起使用的推理努力程度。"
               control={
                 <Select
                   value={selected?.variant ?? "model-default"}
@@ -2671,7 +2671,7 @@ export function ModelSettings({
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent align="end">
-                    <SelectItem value="model-default">Model default</SelectItem>
+                    <SelectItem value="model-default">模型默认</SelectItem>
                     {selectedModel.variants.map((variant) => (
                       <SelectItem key={variant} value={variant}>
                         {sentenceCase(variant)}
@@ -2711,7 +2711,7 @@ export function ModelSettings({
                 disabled={models.length === 0 || visibleModels.length === models.length}
                 onClick={() => setAllModelsEnabled(true)}
               >
-                Select all
+                全选
               </Button>
               <Button
                 type="button"
@@ -2720,7 +2720,7 @@ export function ModelSettings({
                 disabled={models.length === 0 || visibleModels.length === 0}
                 onClick={() => setAllModelsEnabled(false)}
               >
-                Deselect all
+                取消全选
               </Button>
             </div>
           </div>
@@ -2731,7 +2731,7 @@ export function ModelSettings({
             accessibility={{
               screenReaderInstructions: {
                 draggable:
-                  "Press space to pick up a model. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                  "按空格拾起模型。用方向键移动，按空格放下，或按 Esc 取消。",
               },
               announcements: {
                 onDragStart({ active }) {
@@ -2748,23 +2748,23 @@ export function ModelSettings({
                   const position = filteredModels.findIndex(
                     (candidate) => modelPreferenceKey(candidate) === over.id,
                   );
-                  return `${model?.name ?? "Model"} is over position ${position + 1} of ${filteredModels.length}.`;
+                  return `模型 ${model?.name ?? "模型"} 位于第 ${position + 1} 位，共 ${filteredModels.length} 个。`;
                 },
                 onDragEnd({ active, over }) {
-                  if (!over) return "Model was not moved.";
+                  if (!over) return "模型未移动。";
                   const model = orderedModels.find(
                     (candidate) => modelPreferenceKey(candidate) === active.id,
                   );
                   const position = filteredModels.findIndex(
                     (candidate) => modelPreferenceKey(candidate) === over.id,
                   );
-                  return `${model?.name ?? "Model"} was dropped at position ${position + 1} of ${filteredModels.length}.`;
+                  return `模型 ${model?.name ?? "模型"} 已放置到第 ${position + 1} 位，共 ${filteredModels.length} 个。`;
                 },
                 onDragCancel({ active }) {
                   const model = orderedModels.find(
                     (candidate) => modelPreferenceKey(candidate) === active.id,
                   );
-                  return `Sorting cancelled. ${model?.name ?? "Model"} returned to its original position.`;
+                  return `排序已取消。${model?.name ?? "模型"} 已返回原始位置。`;
                 },
               },
             }}
@@ -3034,7 +3034,7 @@ function ProviderSettings({
       await refresh();
       toast.add({ type: "success", title: `${connection.label} is now in use` });
     } catch (cause) {
-      showError("Could not switch credential", cause);
+      showError("无法切换凭据", cause);
     } finally {
       setActivatingCredentialID(null);
     }
@@ -3056,7 +3056,7 @@ function ProviderSettings({
       await refresh();
       toast.add({ type: "success", title: `${target.connection.label} removed` });
     } catch (cause) {
-      showError("Could not remove credential", cause);
+      showError("无法移除凭据", cause);
     } finally {
       setRemovingCredentialID(null);
     }
@@ -3065,12 +3065,12 @@ function ProviderSettings({
   return (
     <div className="flex flex-col gap-8">
       <SettingsSection
-        title="Provider connections"
-        description="Credentials belong to this OpenCode service and are shared by every project connected to it."
+        title="提供者连接"
+        description="凭据属于此 OpenCode 服务，由连接到它的每个项目共享。"
         icon={Cable}
         action={
           <Badge variant="outline">
-            {connectedCount} connected · {storedCredentialCount} stored
+            {connectedCount} 已连接 · {storedCredentialCount} 已存储
           </Badge>
         }
       >
@@ -3081,8 +3081,8 @@ function ProviderSettings({
               <Input
                 type="search"
                 value={providerQuery}
-                placeholder="Search providers"
-                aria-label="Search providers"
+                placeholder="搜索提供者"
+                aria-label="搜索提供者"
                 className="h-8 pl-8"
                 onChange={(event) => setProviderQuery(event.target.value)}
               />
@@ -3095,14 +3095,14 @@ function ProviderSettings({
                 aria-pressed={expanded}
                 onClick={() => setExpanded((current) => !current)}
               >
-                {expanded ? "Popular only" : "Browse all"}
+                {expanded ? "仅常用" : "浏览全部"}
               </Button>
             ) : null}
           </div>
 
           {connectedIntegrations.length > 0 ? (
             <ProviderGroupLabel
-              label="Connected"
+              label="已连接"
               detail={`${connectedIntegrations.length} provider${connectedIntegrations.length === 1 ? "" : "s"}`}
             />
           ) : null}
@@ -3131,7 +3131,7 @@ function ProviderSettings({
 
           {visibleAvailableIntegrations.length > 0 ? (
             <ProviderGroupLabel
-              label={expanded || normalizedQuery ? "Available providers" : "Popular providers"}
+              label={expanded || normalizedQuery ? "可用提供者" : "常用提供者"}
               detail={`${visibleAvailableIntegrations.length} shown`}
             />
           ) : null}
@@ -3153,7 +3153,7 @@ function ProviderSettings({
           ) : null}
 
           <InventoryState
-            title="Providers"
+            title="提供者"
             state={inventoryState(snapshot, "integrations")}
             count={connectedIntegrations.length + visibleAvailableIntegrations.length}
             total={integrations.length}
@@ -3163,18 +3163,18 @@ function ProviderSettings({
       </SettingsSection>
 
       <SettingsSection
-        title="Advanced provider sources"
-        description="Add a custom integration catalog from a trusted well-known URL. Most providers do not need this."
+        title="高级提供者来源"
+        description="从受信任的知名 URL 添加自定义集成目录。大多数提供者不需要此功能。"
         icon={Braces}
       >
         <SettingsGroup>
           <SettingsRow
-            title="Custom integration catalog"
-            description="OpenCode fetches and persists the integrations published by this source."
+            title="自定义集成目录"
+            description="OpenCode 获取并持久化此来源发布的集成。"
             control={
               <Button type="button" variant="outline" onClick={() => setWellknownOpen(true)}>
                 <Plus data-icon="inline-start" aria-hidden="true" />
-                Add source
+                添加来源
               </Button>
             }
           />
@@ -3315,14 +3315,14 @@ function ConnectedProviderCard({
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="text-sm font-medium wrap-anywhere">{connection.label}</span>
-                  {connection.active ? <Badge variant="secondary">In use</Badge> : null}
+                  {connection.active ? <Badge variant="secondary">使用中</Badge> : null}
                 </div>
                 <p className="mt-1 text-compact text-muted-foreground">
                   {connection.type === "credential"
-                    ? "Stored credential"
+                    ? "已存储凭据"
                     : connection.active
-                      ? "Environment variable"
-                      : "Environment fallback · used when stored credentials are removed"}
+                      ? "环境变量"
+                      : "环境回退 · 已存储凭据被移除时使用"}
                 </p>
               </div>
               <div className="flex items-center gap-1">
@@ -3337,7 +3337,7 @@ function ConnectedProviderCard({
                     {connection.id === activatingCredentialID ? (
                       <LoaderCircle className="animate-spin" aria-hidden="true" />
                     ) : null}
-                    Use
+                    使用
                   </Button>
                 ) : null}
                 {connection.type === "credential" && connection.id ? (
@@ -3450,9 +3450,9 @@ function WellknownIntegrationDialog({
       await onComplete();
       setUrl("");
       onOpenChange(false);
-      toast.add({ type: "success", title: "Integration source added" });
+      toast.add({ type: "success", title: "集成来源已添加" });
     } catch (cause) {
-      showError("Could not add integration source", cause);
+      showError("无法添加集成来源", cause);
     } finally {
       setBusy(false);
     }
@@ -3461,7 +3461,7 @@ function WellknownIntegrationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add integration source</DialogTitle>
+          <DialogTitle>添加集成源</DialogTitle>
           <DialogDescription>
             OpenCode fetches the source's well-known document and persists the discovered
             integration configuration.
@@ -3522,7 +3522,7 @@ function CredentialLabelDialog({
       onOpenChange(false);
       toast.add({ type: "success", title: `${credential.integrationName} credential renamed` });
     } catch (cause) {
-      showError("Could not rename credential", cause);
+      showError("无法重命名凭据", cause);
     } finally {
       setBusy(false);
     }
@@ -3555,12 +3555,12 @@ function CredentialLabelDialog({
 }
 
 const TOOL_TABS = [
-  ["plugins", "Plugins"],
+  ["plugins", "插件"],
   ["mcp", "MCP"],
-  ["skills", "Skills"],
-  ["commands", "Commands"],
-  ["references", "References"],
-  ["websearchProviders", "Web search"],
+  ["skills", "技能"],
+  ["commands", "命令"],
+  ["references", "参考资料"],
+  ["websearchProviders", "网络搜索"],
 ] as const;
 
 function matchesInventory(query: string, ...values: Array<string | null | undefined>) {
@@ -3627,7 +3627,7 @@ export function ToolSettings({
     <>
       <Tabs value={tab} onValueChange={(value) => setTab(String(value))} className="min-w-0 gap-6">
         <div className="overflow-x-auto pb-1">
-          <TabsList aria-label="Tool inventories" activateOnFocus>
+          <TabsList aria-label="工具清单" activateOnFocus>
             {TOOL_TABS.map(([value, name]) => (
               <TabsTrigger key={value} value={value}>
                 {name}
@@ -3642,8 +3642,8 @@ export function ToolSettings({
           />
           <Input
             type="search"
-            aria-label={`Search ${label.toLowerCase()}`}
-            placeholder={`Search ${label.toLowerCase()} by name, description, or source`}
+            aria-label={`搜索${label.toLowerCase()}`}
+            placeholder={`按名称、描述或来源搜索${label.toLowerCase()}`}
             value={query}
             className="pl-9"
             onChange={(event) =>
@@ -3664,8 +3664,8 @@ export function ToolSettings({
         </TabsContent>
         <TabsContent value="mcp" keepMounted className="space-y-8 data-hidden:hidden">
           <SettingsSection
-            title="MCP servers"
-            description="Connect tools and data sources to this project."
+            title="MCP 服务器"
+            description="将工具和数据源连接到此项目。"
             icon={PlugZap}
             action={
               <Button type="button" variant="outline" size="sm" onClick={() => setAddOpen(true)}>
@@ -3676,11 +3676,11 @@ export function ToolSettings({
           >
             <SettingsGroup>
               <InventoryState
-                title="MCP servers"
+                title="MCP 服务器"
                 state={state("mcp")}
                 count={servers.length}
                 total={snapshot?.mcpServers.length ?? 0}
-                empty="No MCP servers are configured for this project."
+                empty="此项目尚未配置 MCP 服务器。"
               />
               {servers.map((server) => (
                 <McpServerRow
@@ -3722,7 +3722,7 @@ export function ToolSettings({
         </TabsContent>
         <TabsContent value="skills" keepMounted className="data-hidden:hidden">
           <InventorySection
-            title="Skills"
+            title="技能"
             icon={BrainCircuit}
             count={skills.length}
             total={snapshot?.skills.length ?? 0}
@@ -3735,8 +3735,8 @@ export function ToolSettings({
                 description={skill.description ?? skill.location}
                 detail={[
                   skill.location,
-                  skill.slash ? "slash command" : null,
-                  skill.autoinvoke ? "auto-invoke" : null,
+                  skill.slash ? "斜杠命令" : null,
+                  skill.autoinvoke ? "自动调用" : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -3746,7 +3746,7 @@ export function ToolSettings({
         </TabsContent>
         <TabsContent value="commands" keepMounted className="data-hidden:hidden">
           <InventorySection
-            title="Commands"
+            title="命令"
             icon={Command}
             count={commands.length}
             total={snapshot?.commands.length ?? 0}
@@ -3756,10 +3756,10 @@ export function ToolSettings({
               <InventoryRow
                 key={command.name}
                 title={`/${command.name}`}
-                description={command.description ?? "Reusable OpenCode command"}
+                description={command.description ?? "可复用的 OpenCode 命令"}
                 detail={[
-                  command.agent ? `Agent ${command.agent}` : null,
-                  command.subtask ? "subtask" : null,
+                  command.agent ? `代理 ${command.agent}` : null,
+                  command.subtask ? "子任务" : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -3769,7 +3769,7 @@ export function ToolSettings({
         </TabsContent>
         <TabsContent value="references" keepMounted className="data-hidden:hidden">
           <InventorySection
-            title="References"
+            title="参考资料"
             icon={Link2}
             count={references.length}
             total={snapshot?.references.length ?? 0}
@@ -3787,7 +3787,7 @@ export function ToolSettings({
         </TabsContent>
         <TabsContent value="websearchProviders" keepMounted className="data-hidden:hidden">
           <InventorySection
-            title="Web search providers"
+            title="网络搜索提供者"
             icon={Search}
             count={websearchProviders.length}
             total={snapshot?.websearchProviders.length ?? 0}
@@ -3874,7 +3874,7 @@ export function PluginSettings({
     try {
       await checkPlugins();
     } catch (cause) {
-      showError("Could not check plugin updates", cause);
+      showError("无法检查插件更新", cause);
     } finally {
       setBusy(null);
     }
@@ -3906,8 +3906,8 @@ export function PluginSettings({
 
   return (
     <SettingsSection
-      title="Plugins"
-      description="Inspect loaded plugins, check package versions, and apply updates through OpenCode."
+      title="插件"
+      description="检查已加载的插件、查看包版本并通过 OpenCode 应用更新。"
       icon={Code2}
       action={
         <div className="flex items-center gap-2">
@@ -3927,7 +3927,7 @@ export function PluginSettings({
               className={busy === "check" ? "animate-spin" : undefined}
               aria-hidden="true"
             />
-            Check for updates
+            检查更新
           </Button>
         </div>
       }
@@ -3935,25 +3935,25 @@ export function PluginSettings({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-meta text-muted-foreground">
           {query.trim()
-            ? `${visiblePlugins.length} of ${scopedPlugins.length} plugins`
-            : `${scopedPlugins.length} ${scopedPlugins.length === 1 ? "plugin" : "plugins"}`}
-          {!showBuiltins && builtinCount > 0 ? ` · ${builtinCount} built-in hidden` : ""}
+            ? `${scopedPlugins.length} 个中的 ${visiblePlugins.length} 个`
+            : `${scopedPlugins.length} ${scopedPlugins.length === 1 ? "个插件" : "个插件"}`}
+          {!showBuiltins && builtinCount > 0 ? ` · ${builtinCount} 个内置已隐藏` : ""}
         </p>
         <label className="flex cursor-pointer items-center gap-2 text-compact">
-          Show built-in plugins
+          显示内置插件
           <Switch checked={showBuiltins} onCheckedChange={setShowBuiltins} />
         </label>
       </div>
       <SettingsGroup>
         <InventoryState
-          title="Plugins"
+          title="插件"
           state={state}
           count={visiblePlugins.length}
           total={scopedPlugins.length}
           empty={
             !showBuiltins && builtinCount > 0
-              ? "No added plugins. Show built-in plugins to browse OpenCode defaults."
-              : "No plugins were returned."
+              ? "没有已添加的插件。显示内置插件以浏览 OpenCode 默认值。"
+              : "没有返回任何插件。"
           }
         />
         {visiblePlugins.map((plugin, index) => {
@@ -3968,16 +3968,16 @@ export function PluginSettings({
               key={`${source.type}:${target ?? plugin.id ?? index}`}
               className="grid min-w-0 gap-3 p-4 @lg/settings:grid-cols-[minmax(0,1fr)_auto] @lg/settings:items-start"
               role="group"
-              aria-label={`${name} plugin`}
+              aria-label={`${name} 插件`}
             >
               <div className="min-w-0">
                 <div className="flex min-w-0 flex-wrap items-center gap-2">
                   <h3 className="min-w-0 text-sm font-medium wrap-anywhere">{name}</h3>
                   <Badge variant={failure ? "destructive" : "outline"}>
-                    {failure ? "Failed" : "Active"}
+                    {failure ? "失败" : "活跃"}
                   </Badge>
                   {outdated && !updating ? (
-                    <Badge variant="secondary">Update available</Badge>
+                    <Badge variant="secondary">有更新</Badge>
                   ) : null}
                 </div>
                 <div className="mt-1 flex flex-wrap gap-x-2 text-compact text-muted-foreground">
@@ -3993,10 +3993,10 @@ export function PluginSettings({
                 ) : null}
                 {failure ? (
                   <div className="mt-3 text-compact leading-relaxed wrap-anywhere text-destructive">
-                    <p>OpenCode could not activate this plugin.</p>
+                    <p>OpenCode 无法激活此插件。</p>
                     <details className="mt-2">
                       <summary className="cursor-pointer rounded-sm font-medium focus-visible:outline-2 focus-visible:outline-ring">
-                        Error details for {name}
+                        {name} 的错误详情
                       </summary>
                       <pre className="mt-2 font-mono text-code-compact whitespace-pre-wrap wrap-anywhere">
                         {failure.error}
@@ -4006,7 +4006,7 @@ export function PluginSettings({
                   </div>
                 ) : null}
                 <div className="mt-2 flex flex-wrap gap-x-3 text-meta text-muted-foreground">
-                  {plugin.features.server ? <span>Server</span> : null}
+                  {plugin.features.server ? <span>服务器</span> : null}
                   {plugin.features.tui ? <span>TUI</span> : null}
                   {plugin.features.rpc ? <span>RPC</span> : null}
                 </div>
@@ -4024,7 +4024,7 @@ export function PluginSettings({
                   ) : (
                     <Download aria-hidden="true" />
                   )}
-                  {updating ? "Updating" : "Update"}
+                  {updating ? "正在更新" : "更新"}
                 </Button>
               ) : null}
             </div>
@@ -4205,7 +4205,7 @@ function AddMcpDialog({
       onOpenChange(false);
       toast.add({ type: "success", title: `${name.trim()} added` });
     } catch (cause) {
-      showError("Could not add MCP server", cause);
+      showError("无法添加 MCP 服务器", cause);
     } finally {
       setBusy(false);
     }
@@ -4289,20 +4289,20 @@ function AddMcpDialog({
                   <Input
                     aria-label="OAuth client ID"
                     value={oauthClientID}
-                    placeholder="Client ID"
+                    placeholder="客户端 ID"
                     onChange={(event) => setOauthClientID(event.target.value)}
                   />
                   <Input
                     aria-label="OAuth client secret"
                     type="password"
                     value={oauthClientSecret}
-                    placeholder="Client secret"
+                    placeholder="客户端密钥"
                     onChange={(event) => setOauthClientSecret(event.target.value)}
                   />
                   <Input
                     aria-label="OAuth scope"
                     value={oauthScope}
-                    placeholder="Scope"
+                    placeholder="作用域"
                     onChange={(event) => setOauthScope(event.target.value)}
                   />
                   <Input
@@ -4311,13 +4311,13 @@ function AddMcpDialog({
                     min={1}
                     max={65_535}
                     value={oauthCallbackPort}
-                    placeholder="Callback port"
+                    placeholder="回调端口"
                     onChange={(event) => setOauthCallbackPort(event.target.value)}
                   />
                   <Input
                     aria-label="OAuth redirect URI"
                     value={oauthRedirectUri}
-                    placeholder="Redirect URI"
+                    placeholder="重定向 URI"
                     className="sm:col-span-2"
                     onChange={(event) => setOauthRedirectUri(event.target.value)}
                   />
@@ -4327,27 +4327,27 @@ function AddMcpDialog({
           ) : null}
           <div className="grid gap-2 sm:grid-cols-3">
             <Input
-              aria-label="Startup timeout"
+              aria-label="启动超时"
               type="number"
               min={0}
               value={startupTimeout}
-              placeholder="Startup timeout"
+              placeholder="启动超时"
               onChange={(event) => setStartupTimeout(event.target.value)}
             />
             <Input
-              aria-label="Catalog timeout"
+              aria-label="目录超时"
               type="number"
               min={0}
               value={catalogTimeout}
-              placeholder="Catalog timeout"
+              placeholder="目录超时"
               onChange={(event) => setCatalogTimeout(event.target.value)}
             />
             <Input
-              aria-label="Execution timeout"
+              aria-label="执行超时"
               type="number"
               min={0}
               value={executionTimeout}
-              placeholder="Execution timeout"
+              placeholder="执行超时"
               onChange={(event) => setExecutionTimeout(event.target.value)}
             />
           </div>
@@ -4401,17 +4401,17 @@ function AgentSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
   const agents = snapshot?.agents ?? [];
   return (
     <SettingsSection
-      title="Available agents"
-      description="Agent definitions come from built-ins, global configuration, project configuration, and agent files."
+      title="可用代理"
+      description="代理定义来自内置、全局配置、项目配置和代理文件。"
       icon={BrainCircuit}
     >
       <SettingsGroup>
         <InventoryState
-          title="Agents"
+          title="智能体"
           state={inventoryState(snapshot, "agents")}
           count={agents.length}
           total={agents.length}
-          empty="No agents were returned for this project."
+          empty="此项目没有返回任何代理。"
         />
         {agents.map((agent) => (
           <div key={agent.id} className="min-w-0 p-4">
@@ -4435,7 +4435,7 @@ function AgentSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
               </div>
             </div>
             <p className="mt-3 text-compact leading-relaxed wrap-anywhere text-muted-foreground">
-              {agent.description ?? "No description provided."}
+              {agent.description ?? "没有提供描述。"}
             </p>
             <div className="mt-2 flex flex-wrap gap-2 text-meta wrap-anywhere text-muted-foreground">
               <span>{agent.permissions.length} permission rules</span>
@@ -4470,20 +4470,20 @@ function PermissionSettings({
   return (
     <>
       <SettingsSection
-        title="Saved approvals"
-        description="These project-scoped allow rules were created when you selected Always allow. Configured deny rules still win."
+        title="已保存的批准"
+        description="这些项目范围的允许规则是在您选择「始终允许」时创建的。已配置的拒绝规则仍然优先。"
         icon={ShieldCheck}
       >
         <SettingsGroup>
           <InventoryState
-            title="Saved approvals"
+            title="已保存的批准"
             state={
               capabilityStates.savedPermissions ??
               inventoryState(snapshot, "savedPermissions", pendingCapabilities)
             }
             count={permissions.length}
             total={permissions.length}
-            empty="This project has no saved approvals."
+            empty="此项目没有已保存的批准。"
           />
           {permissions.map((permission) => (
             <div
@@ -4516,7 +4516,7 @@ function PermissionSettings({
                       ...(location?.workspaceID ? { workspaceID: location.workspaceID } : {}),
                     })
                     .then(refresh)
-                    .catch((cause) => showError("Could not remove saved approval", cause))
+                    .catch((cause) => showError("无法移除已保存的批准", cause))
                 }
               >
                 <Trash2 aria-hidden="true" />
@@ -4526,13 +4526,13 @@ function PermissionSettings({
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Configured policy"
-        description="OpenCode exposes the effective config sources as read-only documents in this client version."
+        title="已配置的策略"
+        description="OpenCode 在此客户端版本中将有效配置来源以只读文档形式暴露。"
         icon={FileCog}
       >
         <SettingsGroup>
           <InventoryState
-            title="Configured policy"
+            title="已配置的策略"
             state={
               capabilityStates.config ?? inventoryState(snapshot, "config", pendingCapabilities)
             }
@@ -4554,8 +4554,8 @@ function PermissionSettings({
             .status === "ready" &&
           snapshot?.configSources.every((source) => source.permissions.length === 0) ? (
             <SettingsRow
-              title="Permission rules"
-              description="No explicit permission rules were returned. Edit the source JSON or agent file to change configured policy."
+              title="权限规则"
+              description="没有返回明确的权限规则。编辑来源 JSON 或代理文件以更改已配置的策略。"
               control={<Badge variant="outline">Read-only API</Badge>}
             />
           ) : null}
@@ -4585,7 +4585,7 @@ function ConfigSettings({
       await queryClient.invalidateQueries({ queryKey: openCodeKeys.all(owner.connectionID) });
       await refresh();
     } catch (cause) {
-      setReloadError(cause instanceof Error ? cause.message : "Could not reload configuration.");
+      setReloadError(cause instanceof Error ? cause.message : "无法重新加载配置。");
     } finally {
       setReloading(false);
     }
@@ -4594,14 +4594,14 @@ function ConfigSettings({
   return (
     <>
       <SettingsSection
-        title="Configuration sources"
-        description="OpenCode returns discovery entries from lowest to highest priority. After editing a source file, reload the server's configuration to apply it."
+        title="配置来源"
+        description="OpenCode 按优先级从低到高返回发现条目。编辑源文件后，重新加载服务器配置以生效。"
         icon={FileCog}
       >
         <SettingsGroup>
           <SettingsRow
-            title="Reload configuration"
-            description="Reload configuration and plugins for all locations on this server. Pending approvals and questions are cancelled."
+            title="重新加载配置"
+            description="为此服务器上的所有位置重新加载配置和插件。待处理的批准和问题将被取消。"
             control={
               <Button
                 type="button"
@@ -4610,7 +4610,7 @@ function ConfigSettings({
                 disabled={!owner?.connected || reloading}
                 onClick={() => void reload()}
               >
-                {reloading ? "Reloading…" : "Reload configuration"}
+                {reloading ? "正在重新加载…" : "重新加载配置"}
               </Button>
             }
           />
@@ -4620,11 +4620,11 @@ function ConfigSettings({
             </p>
           ) : null}
           <InventoryState
-            title="Configuration sources"
+            title="配置来源"
             state={inventoryState(snapshot, "config")}
             count={snapshot?.configSources.length ?? 0}
             total={snapshot?.configSources.length ?? 0}
-            empty="No configuration entries were returned."
+            empty="没有返回任何配置条目。"
           />
           {snapshot?.configSources.map((source, index) => (
             <div
@@ -4641,17 +4641,17 @@ function ConfigSettings({
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Effective inventory"
-        description="Sanitized values and counts from the discovered configuration documents. Read-only."
+        title="有效清单"
+        description="从发现的配置文档中提取的清理值和计数。只读。"
         icon={Boxes}
       >
         <SettingsGroup>
           <InventoryState
-            title="Effective inventory"
+            title="有效清单"
             state={inventoryState(snapshot, "config")}
             count={inventory.length}
             total={inventory.length}
-            empty="No inventory values were configured."
+            empty="没有配置任何清单值。"
           />
           {inventory.map(([title, value]) => (
             <SettingsRow
@@ -4663,7 +4663,7 @@ function ConfigSettings({
         </SettingsGroup>
       </SettingsSection>
       <InventorySection
-        title="Formatters"
+        title="格式化器"
         state={inventoryState(snapshot, "config")}
         icon={Code2}
         count={
@@ -4679,7 +4679,7 @@ function ConfigSettings({
               description={
                 formatter.executable
                   ? `${formatter.executable}${formatter.argumentCount ? ` + ${formatter.argumentCount} arguments` : ""}`
-                  : "No command configured"
+                  : "未配置命令"
               }
               detail={[
                 formatter.disabled ? "disabled" : "enabled",
@@ -4695,7 +4695,7 @@ function ConfigSettings({
         )}
       </InventorySection>
       <InventorySection
-        title="Language servers"
+        title="语言服务器"
         state={inventoryState(snapshot, "config")}
         icon={Braces}
         count={
@@ -4713,7 +4713,7 @@ function ConfigSettings({
               description={
                 server.executable
                   ? `${server.executable}${server.argumentCount ? ` + ${server.argumentCount} arguments` : ""}`
-                  : "No command configured"
+                  : "未配置命令"
               }
               detail={[
                 server.disabled ? "disabled" : "enabled",
@@ -4731,10 +4731,10 @@ function ConfigSettings({
           )),
         )}
       </InventorySection>
-      <SettingsSection title="Feature status" icon={Code2}>
+      <SettingsSection title="功能状态" icon={Code2}>
         <SettingsGroup>
           <InventoryState
-            title="Feature status"
+            title="功能状态"
             state={inventoryState(snapshot, "config")}
             count={1}
             total={1}
@@ -4742,29 +4742,29 @@ function ConfigSettings({
           {inventoryState(snapshot, "config").status === "ready"
             ? [
                 [
-                  "Snapshots",
+                  "快照",
                   configValue(snapshot, "snapshots"),
-                  "Filesystem undo and revert support",
+                  "文件系统撤销和回退支持",
                 ],
                 [
-                  "Compaction",
+                  "压缩",
                   configNestedValue(snapshot, "compaction", "auto"),
-                  "Automatic context management",
+                  "自动上下文管理",
                 ],
                 [
-                  "Session warming",
+                  "会话预热",
                   configValue(snapshot, "warming"),
-                  "Keep recent model sessions warm",
+                  "保持最近的模型会话预热",
                 ],
                 [
-                  "Formatter",
+                  "格式化器",
                   configValue(snapshot, "formatter"),
-                  "Accepted by V2, not executed yet",
+                  "V2 已接受，尚未执行",
                 ],
                 [
-                  "Language servers",
+                  "语言服务器",
                   configValue(snapshot, "lsp"),
-                  "Accepted by V2, not started yet",
+                  "V2 已接受，尚未启动",
                 ],
               ].map(([title, value, description]) => (
                 <SettingsRow
@@ -4830,7 +4830,7 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
       </SettingsSection>
       <SettingsSection
         title="帮助和法律"
-        description="Project information opens on the official Palot GitHub repository."
+        description="项目信息在 Palot 官方 GitHub 仓库打开。"
         icon={ExternalLink}
       >
         <SettingsGroup>
@@ -4856,7 +4856,7 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
         <SettingsGroup>
           <SettingsRow
             title="从源更新"
-            description="This codebase has no supported binary update channel yet. Follow the source installation and update instructions; Palot never downloads or installs an update automatically."
+            description="此代码库尚无受支持的二进制更新通道。请按照源码安装和更新说明操作；Palot 永远不会自动下载或安装更新。"
             control={
               <Button
                 type="button"
@@ -4910,14 +4910,14 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
           />
           <SettingsRow
             title="重启 Palot"
-            description="Restarts the development or installed client. The shared OpenCode service stays available."
+            description="重启开发中或已安装的客户端。共享的 OpenCode 服务保持可用。"
             control={
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => void palot.restartApp("Restart requested from settings")}
+                onClick={() => void palot.restartApp("从设置请求重启")}
               >
-                Restart
+                重启
               </Button>
             }
           />
@@ -4950,17 +4950,17 @@ const ABOUT_LINKS = [
   },
   {
     title: "问题和支持",
-    description: "Report a bug, request a feature, or ask for help.",
+    description: "报告错误、请求功能或寻求帮助。",
     href: `${PALOT_REPOSITORY_URL}/issues`,
   },
   {
     title: "安全",
-    description: "Read the security policy and report vulnerabilities privately.",
+    description: "阅读安全策略并私下报告漏洞。",
     href: `${PALOT_REPOSITORY_URL}/security/policy`,
   },
   {
     title: "隐私",
-    description: "Read what Palot stores and sends.",
+    description: "了解 Palot 存储和发送的内容。",
     href: `${PALOT_REPOSITORY_URL}/blob/main/PRIVACY.md`,
   },
   {
@@ -4970,7 +4970,7 @@ const ABOUT_LINKS = [
   },
   {
     title: "发布说明",
-    description: "See all published Palot releases and their notes.",
+    description: "查看所有已发布的 Palot 版本及其说明。",
     href: `${PALOT_REPOSITORY_URL}/releases`,
   },
 ] as const;
@@ -5011,12 +5011,12 @@ function InventoryState({
       <div role="alert" className="space-y-1 p-4 text-compact leading-relaxed wrap-anywhere">
         <p className="font-medium text-destructive">
           {total > 0
-            ? `Could not refresh ${title.toLowerCase()}. Showing the last loaded inventory.`
-            : `Could not load ${title.toLowerCase()}.`}
+            ? `无法刷新${title.toLowerCase()}。显示上次加载的清单。`
+            : `无法加载${title.toLowerCase()}。`}
         </p>
         <details className="text-muted-foreground">
           <summary className="cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-ring">
-            Error details for {title.toLowerCase()}
+            {title.toLowerCase()}的错误详情
           </summary>
           <pre className="mt-2 font-mono text-code-compact whitespace-pre-wrap wrap-anywhere">
             {state.message}
@@ -5028,21 +5028,21 @@ function InventoryState({
     return (
       <p role="status" className="flex items-center gap-2 p-4 text-compact text-muted-foreground">
         <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-        Loading {title.toLowerCase()}…
+        正在加载{title.toLowerCase()}…
       </p>
     );
   if (state.status === "unavailable")
     return (
       <SettingsEmpty>
-        {title} are unavailable. Refresh settings when OpenCode is connected.
+        {title}不可用。OpenCode 连接后请刷新设置。
       </SettingsEmpty>
     );
   if (count > 0) return null;
   return (
     <SettingsEmpty>
       {total > 0
-        ? `No ${title.toLowerCase()} match this search.`
-        : (empty ?? `No ${title.toLowerCase()} were returned.`)}
+        ? `没有${title.toLowerCase()}匹配此搜索。`
+        : (empty ?? `没有返回任何${title.toLowerCase()}。`)}
     </SettingsEmpty>
   );
 }
@@ -5100,7 +5100,7 @@ function InventoryRow({
 
 function SettingsSkeleton() {
   return (
-    <div className="space-y-10" aria-label="Loading settings">
+    <div className="space-y-10" aria-label="正在加载设置">
       {[0, 1].map((section) => (
         <section key={section} className="space-y-3">
           <div className="mx-4 h-5 w-32 animate-pulse rounded bg-muted" />
@@ -5173,7 +5173,7 @@ function parseKeyValues(value: string): Record<string, string> {
 function parseCommand(value: string): string[] {
   const parts = value.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [];
   const command = parts.map((part) => part.replace(/^(?:"([\s\S]*)"|'([\s\S]*)')$/, "$1$2"));
-  if (command.length === 0) throw new Error("Enter a command.");
+  if (command.length === 0) throw new Error("请输入命令。");
   return command;
 }
 
@@ -5197,27 +5197,27 @@ function configNestedValue(
 function configInventory(snapshot: PalotSettingsSnapshot | null): Array<[string, string]> {
   const fields = [
     ["默认模型", "model"],
-    ["Default agent", "defaultAgent"],
-    ["Update policy", "update"],
-    ["Sharing", "share"],
-    ["Shell configured", "shell"],
-    ["Enterprise configured", "enterprise"],
-    ["Permission rules", "permissionCount"],
-    ["Agent definitions", "agentCount"],
-    ["Formatters", "formatterCount"],
-    ["Language servers", "lspCount"],
-    ["Watcher configured", "watcher"],
-    ["Media configured", "media"],
-    ["Tool output configured", "toolOutput"],
-    ["MCP servers", "mcpServerCount"],
-    ["Skills", "skillCount"],
-    ["Commands", "commandCount"],
-    ["Instructions", "instructionCount"],
-    ["References", "referenceCount"],
-    ["Web search provider", "websearchProvider"],
-    ["Plugins", "pluginCount"],
-    ["Providers", "providerCount"],
-    ["Experimental policies", "experimentalPolicyCount"],
+    ["默认代理", "defaultAgent"],
+    ["更新策略", "update"],
+    ["共享", "share"],
+    ["Shell 已配置", "shell"],
+    ["企业版已配置", "enterprise"],
+    ["权限规则", "permissionCount"],
+    ["代理定义", "agentCount"],
+    ["格式化器", "formatterCount"],
+    ["语言服务器", "lspCount"],
+    ["监视器已配置", "watcher"],
+    ["媒体已配置", "media"],
+    ["工具输出已配置", "toolOutput"],
+    ["MCP 服务器", "mcpServerCount"],
+    ["技能", "skillCount"],
+    ["命令", "commandCount"],
+    ["指令", "instructionCount"],
+    ["参考资料", "referenceCount"],
+    ["网络搜索提供者", "websearchProvider"],
+    ["插件", "pluginCount"],
+    ["提供者", "providerCount"],
+    ["实验性策略", "experimentalPolicyCount"],
   ] as const;
   return fields.flatMap(([label, key]) => {
     const value = configValue(snapshot, key);

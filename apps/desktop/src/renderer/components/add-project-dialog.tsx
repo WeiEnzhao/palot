@@ -89,7 +89,7 @@ export function AddProjectDialog({
   const browse = (value: string) => {
     const trimmed = value.trim();
     if (!absoluteServerPath(trimmed)) {
-      setError("Enter an absolute folder path on this server.");
+      setError("请输入此服务器上的绝对文件夹路径。");
       return;
     }
     const normalized = directoryBreadcrumbs(trimmed).at(-1)!.path;
@@ -121,7 +121,7 @@ export function AddProjectDialog({
       if (picked && current(token, profile, connection)) browse(picked);
     } catch (cause) {
       if (current(token, profile, connection))
-        setError(cause instanceof Error ? cause.message : "Could not choose a folder.");
+        setError(cause instanceof Error ? cause.message : "无法选择文件夹。");
     } finally {
       if (token === operation.current) setBusy(false);
     }
@@ -136,7 +136,7 @@ export function AddProjectDialog({
     setError(null);
     try {
       const session = await palot.createSession(chosen, undefined, connection);
-      if (!session) throw new Error("The server did not create a task.");
+      if (!session) throw new Error("服务器未创建任务。");
       cacheSession(queryClient, connection, session);
       setRecent((previous) => ({
         ...previous,
@@ -150,7 +150,7 @@ export function AddProjectDialog({
       if (token === operation.current) onClose();
     } catch (cause) {
       if (current(token, profile, connection))
-        setError(cause instanceof Error ? cause.message : "Could not add the project.");
+        setError(cause instanceof Error ? cause.message : "无法添加项目。");
     } finally {
       if (token === operation.current) setBusy(false);
     }
@@ -168,17 +168,17 @@ export function AddProjectDialog({
     >
       <DialogContent className="@container/add-project max-h-[calc(100dvh-2rem)] grid-cols-[minmax(0,1fr)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add project folder</DialogTitle>
+          <DialogTitle>添加项目文件夹</DialogTitle>
           <DialogDescription>
-            Choose a folder on a server. A new task will open there.
+            选择服务器上的文件夹。将在该处新建任务。
           </DialogDescription>
         </DialogHeader>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="add-project-server">Server</FieldLabel>
+            <FieldLabel htmlFor="add-project-server">服务器</FieldLabel>
             <Select value={profileID} onValueChange={chooseServer} disabled={busy}>
               <SelectTrigger id="add-project-server" className="w-full">
-                <SelectValue placeholder="Choose a server">{selected?.profile.name}</SelectValue>
+                <SelectValue placeholder="选择服务器">{selected?.profile.name}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {overview.connections
@@ -190,7 +190,7 @@ export function AddProjectDialog({
                       disabled={!entry.runtime?.connected}
                     >
                       {entry.profile.name}
-                      {!entry.runtime?.connected ? " (offline)" : ""}
+                      {!entry.runtime?.connected ? "（离线）" : ""}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -199,22 +199,22 @@ export function AddProjectDialog({
           {selected && !connectionID && (
             <Alert>
               <AlertDescription>
-                This server is disabled or offline. Enable it in Connections before adding a folder.
+                此服务器已禁用或离线。请先在"连接"中启用后再添加文件夹。
               </AlertDescription>
             </Alert>
           )}
           {!overview.includedProfileIDs.length && (
             <p className="text-sm text-muted-foreground">
-              Enable a server in Connections to get started.
+              请先在"连接"中启用一个服务器。
             </p>
           )}
           <Field>
-            <FieldLabel htmlFor="add-project-path">Folder path</FieldLabel>
+            <FieldLabel htmlFor="add-project-path">文件夹路径</FieldLabel>
             <div className="flex gap-2">
               <Input
                 id="add-project-path"
                 value={path}
-                placeholder="Absolute path on the selected server"
+                placeholder="所选服务器上的绝对路径"
                 disabled={!connectionID || busy}
                 onChange={(event) => setPath(event.target.value)}
                 onKeyDown={(event) => {
@@ -229,7 +229,7 @@ export function AddProjectDialog({
                 disabled={!connectionID || !path.trim() || busy}
                 onClick={() => browse(path)}
               >
-                Browse
+                浏览
               </Button>
             </div>
           </Field>
@@ -237,7 +237,7 @@ export function AddProjectDialog({
         {connectionID && (
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" disabled={busy} onClick={() => browse("/")}>
-              Browse root
+              浏览根目录
             </Button>
             {selected?.profile.kind === "local" &&
               selected.runtime?.capabilities?.localPathActions !== false && (
@@ -247,7 +247,7 @@ export function AddProjectDialog({
                   disabled={busy}
                   onClick={() => void pickLocal()}
                 >
-                  Choose local folder…
+                  选择本地文件夹…
                 </Button>
               )}
             {(recent[profileID!] ?? []).map((folder) => (
@@ -268,7 +268,7 @@ export function AddProjectDialog({
         {connectionID && directory && (
           <div className="min-w-0 rounded-md border">
             <nav
-              aria-label="Folder breadcrumbs"
+              aria-label="文件夹面包屑"
               className="flex flex-wrap items-center gap-1 border-b p-2"
             >
               {directoryBreadcrumbs(directory).map((crumb, index) => (
@@ -281,7 +281,7 @@ export function AddProjectDialog({
                     size="sm"
                     className="max-w-full truncate"
                     disabled={busy}
-                    aria-label={`Browse ${crumb.path}`}
+                    aria-label={`浏览 ${crumb.path}`}
                     onClick={() => browse(crumb.path)}
                   >
                     {crumb.label}
@@ -296,20 +296,20 @@ export function AddProjectDialog({
                   className="flex items-center gap-2 p-3 text-sm text-muted-foreground"
                 >
                   <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-                  Loading folders…
+                  正在加载文件夹…
                 </p>
               ) : listing.isError ? (
                 <Alert variant="destructive" className="border-0">
                   <AlertDescription>
                     {listing.error.message}
                     <Button variant="ghost" size="sm" onClick={() => void listing.refetch()}>
-                      Retry
+                      重试
                     </Button>
                   </AlertDescription>
                 </Alert>
               ) : folders.length === 0 ? (
                 <p className="p-3 text-sm text-muted-foreground">
-                  No subfolders. You can add the current folder.
+                  没有子文件夹。你可以添加当前文件夹。
                 </p>
               ) : (
                 <ul className="p-1">
@@ -319,7 +319,7 @@ export function AddProjectDialog({
                         variant="ghost"
                         className="w-full justify-start"
                         disabled={busy}
-                        aria-label={`Open folder ${entry.path}`}
+                        aria-label={`打开文件夹 ${entry.path}`}
                         onClick={() => browse(resolveDirectoryEntry(directory, entry.path))}
                       >
                         <Folder aria-hidden="true" />
@@ -344,13 +344,13 @@ export function AddProjectDialog({
         )}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            取消
           </Button>
           <Button
             disabled={!connectionID || !absoluteServerPath(path.trim()) || busy}
             onClick={() => void addProject()}
           >
-            {busy ? "Opening…" : "Add project"}
+            {busy ? "正在打开…" : "添加项目"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -30,17 +30,16 @@ export function SessionLocationMissingView({
   if (!recovery.missing) return null;
   return (
     <section
-      aria-label="Missing workspace"
+      aria-label="丢失的工作区"
       className="space-y-3 rounded-lg border bg-card p-3 text-sm"
     >
       <div>
-        <h2 className="font-medium">This workspace is missing</h2>
+        <h2 className="font-medium">此工作区丢失</h2>
         <p className="break-all text-meta text-muted-foreground">
           {options.session.location.directory}
         </p>
         <p className="text-meta text-muted-foreground">
-          Choose another existing directory on this server, or create a new worktree from the
-          project's saved checkout.
+          选择此服务器上的另一个现有目录，或从项目的已保存检出创建新工作树。
         </p>
       </div>
       <form
@@ -52,8 +51,8 @@ export function SessionLocationMissingView({
       >
         <Input
           className="min-w-0 flex-1"
-          aria-label="Existing directory"
-          placeholder="Existing checkout or directory"
+          aria-label="现有目录"
+          placeholder="现有检出或目录"
           list={listID}
           value={directory}
           disabled={recovery.pending}
@@ -70,7 +69,7 @@ export function SessionLocationMissingView({
           size="sm"
           disabled={recovery.pending || !directory.trim()}
         >
-          Use directory
+          使用目录
         </Button>
         <Button
           type="button"
@@ -79,27 +78,27 @@ export function SessionLocationMissingView({
           disabled={recovery.pending || !recovery.canCreate}
           onClick={() => void recovery.recover({ type: "create" })}
         >
-          Create new worktree
+          创建新工作树
         </Button>
         {recovery.pending ? (
           <Button type="button" variant="ghost" size="sm" onClick={recovery.cancel}>
-            Cancel
+            取消
           </Button>
         ) : null}
       </form>
       {recovery.pending ? (
         <p role="status" className="text-meta text-muted-foreground">
-          Recovering workspace… Cancel stops waiting; work already started on the server may finish.
+          正在恢复工作区… 取消将停止等待；服务器上已开始的工作可能会完成。
         </p>
       ) : null}
       {recovery.loadingDirectories ? (
         <p role="status" className="text-meta text-muted-foreground">
-          Loading existing checkouts…
+          正在加载现有检出…
         </p>
       ) : null}
       {recovery.directoriesError ? (
         <p className="text-meta text-muted-foreground">
-          Could not list checkouts. You can still enter an existing directory.
+          无法列出检出。你仍可输入现有目录。
         </p>
       ) : null}
       {recovery.error ? (

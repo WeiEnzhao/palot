@@ -67,7 +67,7 @@ describe("OpenCodeLoginAutostartSettings", () => {
     });
     expect(await screen.findByRole("status")).toHaveProperty(
       "textContent",
-      "Login startup enabled for future logins. The running service is unchanged.",
+      "登录启动已为后续登录启用。运行中的服务不受影响。",
     );
     expect(onBusyChange).toHaveBeenLastCalledWith(false);
   });
@@ -97,7 +97,7 @@ describe("OpenCodeLoginAutostartSettings", () => {
     expect(palot.updateOpenCodeLogin).toHaveBeenCalledExactlyOnceWith({ enabled: false });
     expect(await screen.findByRole("status")).toHaveProperty(
       "textContent",
-      "Login startup disabled for future logins. Any running service stays running.",
+      "登录启动已为后续登录禁用。任何运行中的服务继续运行。",
     );
     expect(screen.getByText(/Running \(process 42\)/)).toBeTruthy();
     expect(palot.inspectOpenCodeInstallations).not.toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe("OpenCodeLoginAutostartSettings", () => {
     render(<OpenCodeLoginAutostartSettings />);
     await screen.findByText("Disabled");
     await user.click(screen.getByRole("button", { name: "Enable login startup" }));
-    await user.click(screen.getByRole("combobox", { name: "OpenCode installation" }));
+    await user.click(screen.getByRole("combobox", { name: "OpenCode 安装" }));
     expect(screen.queryByRole("option", { name: /1.0.0/ })).toBeNull();
     await user.click(screen.getByRole("option", { name: /2.0.0-beta.100/ }));
     expect(within(screen.getByRole("alertdialog")).getByText(approved.launchPath)).toBeTruthy();

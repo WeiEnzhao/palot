@@ -93,7 +93,7 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
           height > MAX_PAGE_DIMENSION ||
           width * height > MAX_RENDER_PIXELS
         ) {
-          throw new Error("This PDF page is too large to preview.");
+          throw new Error("此 PDF 页面太大，无法预览。");
         }
         const ratio = Math.max(
           1,
@@ -108,7 +108,7 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
         const context = canvas.getContext("2d");
-        if (!context) throw new Error("Canvas rendering is unavailable.");
+        if (!context) throw new Error("Canvas 渲染不可用。");
         renderTask = pdfPage.render({
           canvas,
           canvasContext: context,
@@ -124,7 +124,7 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
             page,
             zoom,
             status: "error",
-            message: error instanceof Error ? error.message : "Could not render this PDF page.",
+            message: error instanceof Error ? error.message : "无法渲染此 PDF 页面。",
           });
         }
       } finally {
@@ -144,8 +144,8 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
     return (
       <Empty className="rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Preview unavailable</EmptyTitle>
-          <EmptyDescription>Could not open {path} as a PDF.</EmptyDescription>
+          <EmptyTitle>预览不可用</EmptyTitle>
+          <EmptyDescription>无法将 {path} 作为 PDF 打开。</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -164,21 +164,21 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Previous page"
+            aria-label="上一页"
             disabled={page <= 1}
             onClick={() => setPageNumber(page - 1)}
           >
             <ChevronLeft aria-hidden="true" />
           </Button>
           <span>
-            Page {page} of {pageCount}
-            {document.numPages > MAX_PAGES ? ` (first ${MAX_PAGES} of ${document.numPages})` : ""}
+            第 {page} 页，共 {pageCount} 页
+            {document.numPages > MAX_PAGES ? `（前 ${MAX_PAGES} 页，共 ${document.numPages} 页）` : ""}
           </span>
           <Button
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Next page"
+            aria-label="下一页"
             disabled={page >= pageCount}
             onClick={() => setPageNumber(page + 1)}
           >
@@ -189,7 +189,7 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Zoom out"
+            aria-label="缩小"
             disabled={zoomIndex === 0}
             onClick={() => setZoomIndex(zoomIndex - 1)}
           >
@@ -200,7 +200,7 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Zoom in"
+            aria-label="放大"
             disabled={zoomIndex === ZOOMS.length - 1}
             onClick={() => setZoomIndex(zoomIndex + 1)}
           >
@@ -212,12 +212,12 @@ export default function PdfPreview({ data, path }: { data: Uint8Array; path: str
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label={`PDF page ${page} of ${path}`}
+          aria-label={`PDF 第 ${page} 页，${path}`}
           className={`mx-auto shadow-sm ${current?.status === "ready" ? "block" : "hidden"}`}
         />
         {!document || !current ? (
           <div className="flex h-full items-center justify-center gap-2 text-meta text-muted-foreground">
-            <Spinner /> Loading PDF preview
+            <Spinner /> 正在加载 PDF 预览
           </div>
         ) : current.status === "error" ? (
           <div className="flex h-full items-center justify-center text-meta text-muted-foreground">

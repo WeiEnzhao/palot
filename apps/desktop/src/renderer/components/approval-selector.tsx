@@ -42,7 +42,7 @@ export const ApprovalSelector = memo(function ApprovalSelector({
 }) {
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const label = mode === "full" ? "Full access" : mode === "custom" ? "Custom" : "Defaults";
+  const label = mode === "full" ? "完全访问" : mode === "custom" ? "自定义" : "默认";
 
   async function apply(next: ApprovalPreset) {
     if (busy || disabled) return;
@@ -53,8 +53,8 @@ export const ApprovalSelector = memo(function ApprovalSelector({
       onOpenChange(false);
       onSelectionComplete();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not change permissions.");
-      showErrorToast("Could not change permissions", error);
+      setError(error instanceof Error ? error.message : "无法更改权限。");
+      showErrorToast("无法更改权限", error);
     }
   }
 
@@ -79,7 +79,7 @@ export const ApprovalSelector = memo(function ApprovalSelector({
         <DropdownMenuContent side="top" align="start" className="w-80 max-w-[calc(100vw-24px)]">
           {mode === "custom" && (
             <p className="px-2 py-1 text-meta text-muted-foreground">
-              Custom session rules are active. Choosing a preset replaces them.
+              自定义会话规则已生效。选择预设将替换它们。
             </p>
           )}
           <DropdownMenuRadioGroup
@@ -93,12 +93,12 @@ export const ApprovalSelector = memo(function ApprovalSelector({
               } else if (value === "normal") void apply("normal");
             }}
           >
-            <DropdownMenuLabel>Approvals for this thread</DropdownMenuLabel>
+            <DropdownMenuLabel>此线程的审批</DropdownMenuLabel>
             <DropdownMenuRadioItem value="normal" disabled={disabled || busy}>
               <div>
-                <div>Defaults</div>
+                <div>默认</div>
                 <div className="text-meta text-muted-foreground">
-                  Use project and agent permission rules.
+                  使用项目和智能体权限规则。
                 </div>
               </div>
             </DropdownMenuRadioItem>
@@ -108,15 +108,15 @@ export const ApprovalSelector = memo(function ApprovalSelector({
               className="text-warning"
             >
               <div>
-                <div>Full access</div>
+                <div>完全访问</div>
                 <div className="text-meta text-muted-foreground">
-                  Allow tool actions without normal approval prompts.
+                  允许工具操作而无需常规审批提示。
                 </div>
               </div>
             </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
           <p className="px-2 py-1 text-meta text-muted-foreground">
-            Existing approval requests still need a reply.
+            已有的审批请求仍需回复。
           </p>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -128,17 +128,14 @@ export const ApprovalSelector = memo(function ApprovalSelector({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Enable Full access?</AlertDialogTitle>
+            <AlertDialogTitle>启用完全访问？</AlertDialogTitle>
             <AlertDialogDescription>
-              This overrides project and agent tool-permission rules for this thread, including Plan
-              edit restrictions. Commands can modify files and use the network with the OpenCode
-              service user's access. It does not grant additional OS privileges or bypass permission
-              plugins.
+              这将覆盖此线程的项目和智能体工具权限规则，包括计划编辑限制。命令可以使用 OpenCode
+              服务用户的访问权限修改文件和使用网络。这不会授予额外的操作系统权限或绕过权限插件。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <p className="text-meta text-muted-foreground">
-            New subagents inherit these rules; existing subagents and pending approvals are
-            unchanged. You can return to Defaults, but this will not stop commands already running.
+            新子智能体继承这些规则；已有子智能体和待处理审批不受影响。您可以返回默认，但这不会停止已在运行的命令。
           </p>
           {error && (
             <p role="alert" className="text-meta text-destructive">
@@ -146,9 +143,9 @@ export const ApprovalSelector = memo(function ApprovalSelector({
             </p>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy}>取消</AlertDialogCancel>
             <AlertDialogAction disabled={disabled || busy} onClick={() => void apply("full")}>
-              {busy ? "Updating permissions…" : "Enable Full access"}
+              {busy ? "正在更新权限…" : "启用完全访问"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

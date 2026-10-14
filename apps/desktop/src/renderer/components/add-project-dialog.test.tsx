@@ -96,8 +96,8 @@ function mount(initialProfileID = "remote", store = createStore()) {
   return { ...result, onClose, store };
 }
 function browse(path: string) {
-  fireEvent.change(screen.getByLabelText("Folder path"), { target: { value: path } });
-  fireEvent.click(screen.getByRole("button", { name: "Browse" }));
+  fireEvent.change(screen.getByLabelText("文件夹路径"), { target: { value: path } });
+  fireEvent.click(screen.getByRole("button", { name: "浏览" }));
 }
 
 it("lazily browses the selected server, follows directories and supports breadcrumbs", async () => {
@@ -109,9 +109,9 @@ it("lazily browses the selected server, follows directories and supports breadcr
     .mockResolvedValue([]);
   mount();
   expect(palot.listWorkspaceDirectory).not.toHaveBeenCalled();
-  expect(screen.queryByRole("button", { name: "Choose local folder…" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "选择本地文件夹…" })).toBeNull();
   browse("/srv/project");
-  fireEvent.click(await screen.findByRole("button", { name: "Open folder src" }));
+  fireEvent.click(await screen.findByRole("button", { name: "打开文件夹 src" }));
   await waitFor(() =>
     expect(palot.listWorkspaceDirectory).toHaveBeenLastCalledWith(
       { directory: "/srv/project/src" },
@@ -120,7 +120,7 @@ it("lazily browses the selected server, follows directories and supports breadcr
     ),
   );
   expect(screen.queryByText("README.md")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Browse /srv" }));
+  fireEvent.click(screen.getByRole("button", { name: "浏览 /srv" }));
   await waitFor(() =>
     expect(palot.listWorkspaceDirectory).toHaveBeenLastCalledWith(
       { directory: "/srv" },
@@ -140,10 +140,10 @@ it("aborts obsolete folder requests and never displays their late results", asyn
   await waitFor(() => expect(palot.listWorkspaceDirectory).toHaveBeenCalledOnce());
   const signal = vi.mocked(palot.listWorkspaceDirectory).mock.calls[0]![1]!;
   browse("/new");
-  expect(await screen.findByRole("button", { name: "Open folder current" })).toBeTruthy();
+  expect(await screen.findByRole("button", { name: "打开文件夹 current" })).toBeTruthy();
   expect(signal.aborted).toBe(true);
   await act(async () => old.resolve([{ path: "stale", type: "directory" }]));
-  expect(screen.queryByRole("button", { name: "Open folder stale" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "打开文件夹 stale" })).toBeNull();
 });
 
 it("cancels the previous server's listing when the independent server selection changes", async () => {
@@ -155,7 +155,7 @@ it("cancels the previous server's listing when the independent server selection 
   browse("/same");
   await waitFor(() => expect(palot.listWorkspaceDirectory).toHaveBeenCalledOnce());
   const signal = vi.mocked(palot.listWorkspaceDirectory).mock.calls[0]![1]!;
-  await userEvent.click(screen.getByRole("combobox", { name: "Server" }));
+  await userEvent.click(screen.getByRole("combobox", { name: "服务器" }));
   await userEvent.click(await screen.findByRole("option", { name: "Local" }));
   expect(signal.aborted).toBe(true);
   browse("/same");
@@ -167,22 +167,22 @@ it("cancels the previous server's listing when the independent server selection 
     ),
   );
   await act(async () => pending.resolve([{ path: "remote-only", type: "directory" }]));
-  expect(screen.queryByRole("button", { name: "Open folder remote-only" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "打开文件夹 remote-only" })).toBeNull();
 });
 
 it("keeps recent folders with their server when the dialog is reopened", async () => {
   vi.spyOn(palot, "createSession").mockResolvedValue(session());
   const first = mount();
-  fireEvent.change(screen.getByLabelText("Folder path"), { target: { value: "/srv/project" } });
-  fireEvent.click(screen.getByRole("button", { name: "Add project" }));
+  fireEvent.change(screen.getByLabelText("文件夹路径"), { target: { value: "/srv/project" } });
+  fireEvent.click(screen.getByRole("button", { name: "添加项目" }));
   await waitFor(() => expect(first.onClose).toHaveBeenCalledOnce());
   first.unmount();
   mount("remote", first.store);
-  expect((screen.getByLabelText("Folder path") as HTMLInputElement).value).toBe("/srv/project");
+  expect((screen.getByLabelText("文件夹路径") as HTMLInputElement).value).toBe("/srv/project");
   expect(screen.getByRole("button", { name: "/srv/project" })).toBeTruthy();
-  await userEvent.click(screen.getByRole("combobox", { name: "Server" }));
+  await userEvent.click(screen.getByRole("combobox", { name: "服务器" }));
   await userEvent.click(await screen.findByRole("option", { name: "Local" }));
-  expect((screen.getByLabelText("Folder path") as HTMLInputElement).value).toBe("");
+  expect((screen.getByLabelText("文件夹路径") as HTMLInputElement).value).toBe("");
   expect(screen.queryByRole("button", { name: "/srv/project" })).toBeNull();
 });
 
@@ -190,11 +190,11 @@ it("selects a server independently and retains its owner through creation and na
   const created = Promise.withResolvers<PalotSession>();
   const create = vi.spyOn(palot, "createSession").mockReturnValue(created.promise);
   const view = mount("local");
-  await userEvent.click(screen.getByRole("combobox", { name: "Server" }));
+  await userEvent.click(screen.getByRole("combobox", { name: "服务器" }));
   await userEvent.click(await screen.findByRole("option", { name: "Remote" }));
-  expect(screen.queryByRole("button", { name: "Choose local folder…" })).toBeNull();
-  fireEvent.change(screen.getByLabelText("Folder path"), { target: { value: "/srv/project" } });
-  fireEvent.click(screen.getByRole("button", { name: "Add project" }));
+  expect(screen.queryByRole("button", { name: "选择本地文件夹…" })).toBeNull();
+  fireEvent.change(screen.getByLabelText("文件夹路径"), { target: { value: "/srv/project" } });
+  fireEvent.click(screen.getByRole("button", { name: "添加项目" }));
   expect(create).toHaveBeenCalledWith("/srv/project", undefined, "remote-connection");
   await act(async () => created.resolve(session()));
   expect(mocks.openSession).toHaveBeenCalledWith("task", { profileID: "remote" });
@@ -207,7 +207,7 @@ it("offers a native picker only for the selected local server and ignores comple
   const picked = Promise.withResolvers<string | null>();
   const pick = vi.spyOn(palot, "pickDirectory").mockReturnValue(picked.promise);
   const view = mount("local");
-  fireEvent.click(screen.getByRole("button", { name: "Choose local folder…" }));
+  fireEvent.click(screen.getByRole("button", { name: "选择本地文件夹…" }));
   expect(pick).toHaveBeenCalledWith("local-connection");
   view.unmount();
   await act(async () => picked.resolve("/chosen"));
@@ -219,8 +219,8 @@ it("does not create on a disabled server or silently fall back to another owner"
   mocks.overview.includedProfileIDs = ["local"];
   const create = vi.spyOn(palot, "createSession");
   mount("remote");
-  expect(screen.getByText(/This server is disabled or offline/)).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Add project" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByText(/此服务器已禁用或离线/)).toBeTruthy();
+  expect(screen.getByRole("button", { name: "添加项目" }).hasAttribute("disabled")).toBe(true);
   expect(create).not.toHaveBeenCalled();
   expect(palot.listWorkspaceDirectory).not.toHaveBeenCalled();
 });

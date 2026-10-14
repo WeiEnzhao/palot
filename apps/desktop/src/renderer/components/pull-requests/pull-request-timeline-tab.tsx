@@ -72,12 +72,12 @@ export function PullRequestTimelineTab({ detail }: { detail: PullRequestDetail }
     <div className="flex flex-col pb-6">
       <div className="flex flex-wrap items-center gap-1 px-4 pt-3 pb-1">
         <FilterToggle
-          label="Hide bots"
+          label="隐藏机器人"
           pressed={filters.hideBots}
           onPressedChange={(hideBots) => setFilters((current) => ({ ...current, hideBots }))}
         />
         <FilterToggle
-          label="Hide resolved"
+          label="隐藏已解决"
           pressed={filters.hideResolved}
           onPressedChange={(hideResolved) =>
             setFilters((current) => ({ ...current, hideResolved }))
@@ -85,7 +85,7 @@ export function PullRequestTimelineTab({ detail }: { detail: PullRequestDetail }
         />
         {hidden > 0 ? (
           <span className="ml-auto text-micro text-muted-foreground tabular-nums">
-            {hidden} hidden
+            {hidden} 已隐藏
           </span>
         ) : null}
       </div>
@@ -100,14 +100,14 @@ export function PullRequestTimelineTab({ detail }: { detail: PullRequestDetail }
       ) : timeline.isPending ? (
         <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
           <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
-          Loading activity
+          正在加载动态
         </div>
       ) : visible.length === 0 ? (
         <p className="px-4 py-3 text-sm text-muted-foreground">
-          {items.length ? "Every item is hidden by the filters above." : "No activity yet."}
+          {items.length ? "所有条目都已被上方筛选器隐藏。" : "暂无动态。"}
         </p>
       ) : (
-        <ol aria-label="Timeline" className="flex flex-col">
+        <ol aria-label="时间线" className="flex flex-col">
           {visible.map((item) => (
             <li key={`${item.kind}:${item.id}`} className="px-4">
               <TimelineEntry item={item} detail={detail} />
@@ -127,7 +127,7 @@ export function PullRequestTimelineTab({ detail }: { detail: PullRequestDetail }
           {timeline.isFetchingNextPage ? (
             <LoaderCircle data-icon="inline-start" className="animate-spin" aria-hidden="true" />
           ) : null}
-          Load newer activity
+          加载更新的动态
         </Button>
       ) : null}
       <CommentComposer detail={detail} />
@@ -213,36 +213,36 @@ function TimelineEntry({
 
 const REVIEW_ACTION: Record<Extract<PullRequestTimelineItem, { kind: "review" }>["state"], string> =
   {
-    approved: "approved these changes",
-    "changes-requested": "requested changes",
-    commented: "reviewed",
-    dismissed: "had a review dismissed",
+    approved: "批准了这些更改",
+    "changes-requested": "请求了更改",
+    commented: "已评审",
+    dismissed: "评审已被撤销",
   };
 
 export function eventSentence(item: EventItem): string {
   switch (item.type) {
     case "merged":
-      return "merged this pull request";
+      return "合并了此拉取请求";
     case "closed":
-      return "closed this pull request";
+      return "关闭了此拉取请求";
     case "reopened":
-      return "reopened this pull request";
+      return "重新打开了此拉取请求";
     case "ready-for-review":
-      return "marked this ready for review";
+      return "标记为准备评审";
     case "converted-to-draft":
-      return "converted this to a draft";
+      return "将此转为草稿";
     case "review-requested":
-      return item.detail ? `requested a review from ${item.detail}` : "requested a review";
+      return item.detail ? `请求 ${item.detail} 进行评审` : "请求了评审";
     case "labeled":
-      return item.detail ? `added the ${item.detail} label` : "added a label";
+      return item.detail ? `添加了 ${item.detail} 标签` : "添加了标签";
     case "unlabeled":
-      return item.detail ? `removed the ${item.detail} label` : "removed a label";
+      return item.detail ? `移除了 ${item.detail} 标签` : "移除了标签";
     case "force-pushed":
-      return "force-pushed the branch";
+      return "强制推送了分支";
     case "head-ref-deleted":
-      return "deleted the branch";
+      return "删除了分支";
     case "renamed":
-      return item.detail ? `renamed this to “${item.detail}”` : "renamed this pull request";
+      return item.detail ? `将此重命名为"${item.detail}"` : "重命名了此拉取请求";
   }
 }
 
@@ -319,7 +319,7 @@ function ReviewThread({ thread, detail }: { thread: ThreadItem; detail: PullRequ
   };
   return (
     <article
-      aria-label={`Review thread on ${location}`}
+      aria-label={`评审线程：${location}`}
       className="my-2 overflow-hidden rounded-lg border border-border/70"
     >
       <header className="flex min-w-0 items-center gap-2 border-b border-border/60 bg-muted/30 px-3 py-1.5 text-meta">
@@ -328,12 +328,12 @@ function ReviewThread({ thread, detail }: { thread: ThreadItem; detail: PullRequ
           {location}
         </span>
         {thread.isOutdated ? (
-          <span className="shrink-0 text-muted-foreground">Outdated</span>
+          <span className="shrink-0 text-muted-foreground">已过时</span>
         ) : null}
         {thread.isResolved ? (
           <span className="flex shrink-0 items-center gap-1 text-success">
             <CircleCheck className="size-3" aria-hidden="true" />
-            Resolved
+            已解决
           </span>
         ) : null}
       </header>
@@ -380,8 +380,8 @@ function ReviewThread({ thread, detail }: { thread: ThreadItem; detail: PullRequ
       {replying ? (
         <div className="border-t border-border/60 p-2">
           <MarkdownComposer
-            label={`Reply on ${location}`}
-            submitLabel="Reply"
+            label={`回复 ${location}`}
+            submitLabel="回复"
             autoFocus
             onCancel={() => setReplying(false)}
             onSubmit={() => setReplying(false)}
@@ -400,7 +400,7 @@ function ReviewThread({ thread, detail }: { thread: ThreadItem; detail: PullRequ
               onClick={() => setReplying(true)}
             >
               <MessageSquare data-icon="inline-start" aria-hidden="true" />
-              Reply
+              回复
             </Button>
           ) : null}
           {thread.viewerCanResolve ? (
@@ -412,7 +412,7 @@ function ReviewThread({ thread, detail }: { thread: ThreadItem; detail: PullRequ
               disabled={resolve.isPending}
               onClick={toggleResolved}
             >
-              {thread.isResolved ? "Unresolve" : "Resolve"}
+              {thread.isResolved ? "取消解决" : "解决"}
             </Button>
           ) : null}
           {error ? (
@@ -433,7 +433,7 @@ function ReviewThread({ thread, detail }: { thread: ThreadItem; detail: PullRequ
 function CommentComposer({ detail }: { detail: PullRequestDetail }) {
   return (
     <div className="mx-4 mt-4 border-t border-border/60 pt-4">
-      <MarkdownComposer label="Add a comment" submitLabel="Comment" detail={detail} />
+      <MarkdownComposer label="添加评论" submitLabel="评论" detail={detail} />
     </div>
   );
 }
@@ -497,7 +497,7 @@ function MarkdownComposer({
     >
       <Textarea
         aria-label={label}
-        placeholder="Write a comment in Markdown"
+        placeholder="用 Markdown 写评论"
         value={body}
         autoFocus={autoFocus}
         disabled={pending}
@@ -513,11 +513,11 @@ function MarkdownComposer({
       ) : null}
       <div className="flex items-center justify-end gap-1">
         <span className="mr-auto text-micro text-muted-foreground">
-          {mac ? "⌘↵" : "Ctrl+Enter"} to send
+          {mac ? "⌘↵" : "Ctrl+Enter"} 发送
         </span>
         {onCancel ? (
           <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-            Cancel
+            取消
           </Button>
         ) : null}
         <Button type="submit" size="sm" disabled={pending || !body.trim()}>

@@ -61,7 +61,7 @@ describe("WorktreesPage", () => {
       for (const connectionID of ["connection", "other"])
         seedCatalog(queryClient, { projects: [project], sessions: [] }, connectionID);
       renderWithRouter(<WorktreesPage />, store, "/worktrees?projectID=project-1", queryClient);
-      await userEvent.click(await screen.findByRole("button", { name: "Remove clean" }));
+      await userEvent.click(await screen.findByRole("button", { name: "移除 clean" }));
       expect(status).toHaveBeenCalledWith(
         { directory: "/worktrees/clean" },
         undefined,
@@ -69,7 +69,7 @@ describe("WorktreesPage", () => {
       );
       if (when === "after confirmation opens") {
         await act(async () => resolve([]));
-        expect(await screen.findByRole("button", { name: "Remove worktree" })).toBeTruthy();
+        expect(await screen.findByRole("button", { name: "移除工作树" })).toBeTruthy();
       }
       act(() =>
         store.set(runtimeAtom, {
@@ -80,7 +80,7 @@ describe("WorktreesPage", () => {
       );
       if (when === "during inspection") await act(async () => resolve([]));
       await waitFor(() =>
-        expect(screen.queryByRole("button", { name: "Remove worktree" })).toBeNull(),
+        expect(screen.queryByRole("button", { name: "移除工作树" })).toBeNull(),
       );
       expect(remove).not.toHaveBeenCalled();
     },
@@ -132,18 +132,18 @@ describe("WorktreesPage", () => {
       queryClient,
     );
 
-    const disclosure = await screen.findByRole("button", { name: "Tasks in attached" });
+    const disclosure = await screen.findByRole("button", { name: "attached 中的任务" });
     expect(disclosure.getAttribute("aria-expanded")).toBe("false");
-    expect(disclosure.textContent).toContain("2 tasks");
+    expect(disclosure.textContent).toContain("2 个任务");
     expect(screen.queryByRole("link", { name: "Attached task" })).toBeNull();
     await userEvent.click(disclosure);
-    const list = screen.getByRole("list", { name: "Tasks in attached" });
+    const list = screen.getByRole("list", { name: "attached 中的任务" });
     expect(within(list).getAllByRole("link")).toHaveLength(2);
     expect(within(list).getByRole("link", { name: "Attached task" }).getAttribute("href")).toBe(
       "/sessions/session-1",
     );
     const archivedLink = within(list).getByRole("link", {
-      name: "Archived investigation Archived",
+      name: "Archived investigation 已归档",
     });
     expect(screen.queryByRole("link", { name: "Other worktree task" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Other project task" })).toBeNull();
@@ -166,14 +166,14 @@ describe("WorktreesPage", () => {
     seedCatalog(queryClient, { projects: [project], sessions: [attachedSession] }, "connection");
     renderWithRouter(<WorktreesPage />, store, "/worktrees?projectID=project-1", queryClient);
 
-    expect(await screen.findByText("Main checkout")).toBeTruthy();
+    expect(await screen.findByText("主检出")).toBeTruthy();
     expect(screen.getByText("clean")).toBeTruthy();
     expect(screen.getByText("attached")).toBeTruthy();
     expect(
-      (screen.getByRole("button", { name: "Remove attached" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "移除 attached" }) as HTMLButtonElement).disabled,
     ).toBe(true);
 
-    await userEvent.click(screen.getByRole("button", { name: "Remove clean" }));
+    await userEvent.click(screen.getByRole("button", { name: "移除 clean" }));
     await waitFor(() =>
       expect(status).toHaveBeenCalledWith(
         { directory: "/worktrees/clean" },
@@ -181,7 +181,7 @@ describe("WorktreesPage", () => {
         "connection",
       ),
     );
-    await userEvent.click(screen.getByRole("button", { name: "Remove worktree" }));
+    await userEvent.click(screen.getByRole("button", { name: "移除工作树" }));
 
     await waitFor(() =>
       expect(remove).toHaveBeenCalledWith(

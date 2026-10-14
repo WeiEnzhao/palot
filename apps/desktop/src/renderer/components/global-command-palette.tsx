@@ -529,15 +529,15 @@ export function GlobalCommandPalette() {
   if (fileRows.length > 0) {
     // Files follow tasks and commands, ahead of loose task matches.
     const similar = paletteGroups.findIndex((group) => group.id === "similar-tasks");
-    const filesGroup: PaletteGroup = { id: "files", label: "Files", items: fileRows };
+    const filesGroup: PaletteGroup = { id: "files", label: "文件", items: fileRows };
     if (similar === -1) paletteGroups.push(filesGroup);
     else paletteGroups.splice(similar, 0, filesGroup);
   }
   if (searchesTasks && search.isError) {
-    paletteGroups.push({ id: "task-search", label: "Task search", items: [RETRY_SEARCH_ID] });
+    paletteGroups.push({ id: "task-search", label: "任务搜索", items: [RETRY_SEARCH_ID] });
   }
   if (searchesTasks && search.hasNextPage) {
-    paletteGroups.push({ id: "more-tasks", label: "More tasks", items: [LOAD_MORE_ID] });
+    paletteGroups.push({ id: "more-tasks", label: "更多任务", items: [LOAD_MORE_ID] });
   }
   const itemOrder = paletteGroups.flatMap((group) => group.items);
   const fluidIndex = new Map(itemOrder.map((itemID, index) => [itemID, index]));
@@ -553,7 +553,7 @@ export function GlobalCommandPalette() {
     return paletteEnterLabel(command);
   };
   const remotePageCount = search.data?.pages.length ?? 0;
-  const paletteLabel = page === "projects" ? "Choose a project" : "Search tasks and commands";
+  const paletteLabel = page === "projects" ? "选择项目" : "搜索任务和命令";
 
   useLayoutEffect(() => {
     const appendedPage =
@@ -589,9 +589,9 @@ export function GlobalCommandPalette() {
       className="sm:max-w-[680px]"
     >
       <DialogHeader className="sr-only">
-        <DialogTitle>Commands</DialogTitle>
+        <DialogTitle>命令</DialogTitle>
         <DialogDescription>
-          Search tasks, navigate Palot, or run an available command.
+          搜索任务、导航 Palot 或运行可用命令。
         </DialogDescription>
       </DialogHeader>
       <Autocomplete.Root
@@ -639,7 +639,7 @@ export function GlobalCommandPalette() {
           <div className="shrink-0 border-b border-(--command-border)">
             {page === "projects" ? (
               <div className="px-4 pt-2.5 text-meta font-medium text-muted-foreground">
-                New task / Choose project
+                新建任务 / 选择项目
               </div>
             ) : null}
             <Autocomplete.InputGroup
@@ -653,10 +653,10 @@ export function GlobalCommandPalette() {
                 className="min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder={
                   page === "projects"
-                    ? "Search projects..."
+                    ? "搜索项目..."
                     : tab === "files"
-                      ? "Search files..."
-                      : "Search tasks and commands..."
+                      ? "搜索文件..."
+                      : "搜索任务和命令..."
                 }
                 aria-label={paletteLabel}
                 onKeyDown={(event) => {
@@ -696,7 +696,7 @@ export function GlobalCommandPalette() {
             <Autocomplete.Empty className="py-6 text-center text-xs/relaxed empty:p-0">
               {emptyLabel}
             </Autocomplete.Empty>
-            <Autocomplete.List aria-label="Command results">
+            <Autocomplete.List aria-label="命令结果">
               {(group: PaletteGroup) => (
                 <Autocomplete.Group
                   key={group.id}
@@ -861,12 +861,12 @@ export function GlobalCommandPalette() {
             store={highlight}
             enterLabel={enterLabel}
             tabs={page === "root"}
-            escapeLabel={page === "projects" ? "Back" : "Close"}
+            escapeLabel={page === "projects" ? "返回" : "关闭"}
           />
           <Autocomplete.Status className="sr-only">
             {search.isFetching
-              ? "Searching older tasks"
-              : `${visibleCommands.length + fileRows.length} results`}
+              ? "搜索更早的任务"
+              : `${visibleCommands.length + fileRows.length} 条结果`}
           </Autocomplete.Status>
         </div>
       </Autocomplete.Root>
@@ -1022,9 +1022,9 @@ function PaletteFooter({
 }
 
 const STATUS_LABELS: Record<PaletteTaskStatus, string> = {
-  attention: "Needs attention",
-  unread: "Unread task activity",
-  running: "Running",
+  attention: "需要关注",
+  unread: "未读任务活动",
+  running: "运行中",
 };
 
 /** Status and age; the Alt+N hint replaces the age while the row is highlighted. */

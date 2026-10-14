@@ -71,18 +71,18 @@ describe("pull request summary", () => {
         },
       ],
     });
-    const checks = await screen.findByRole("region", { name: "Checks" });
+    const checks = await screen.findByRole("region", { name: "检查" });
     const groups = within(checks).getAllByRole("list");
     expect(groups.map((group) => group.getAttribute("aria-label"))).toEqual([
-      "Failing checks",
-      "Running checks",
-      "Passing checks",
+      "失败的检查",
+      "运行中的检查",
+      "通过的检查",
     ]);
-    expect(within(groups[0]!).getByText("Required")).toBeTruthy();
+    expect(within(groups[0]!).getByText("必需")).toBeTruthy();
     expect(groups[0]!.textContent).toContain("Failed · 3s");
     expect(groups[2]!.textContent).toContain("Passed · 1m 05s");
-    expect(within(checks).getByText("1 failing, 1 running, 1 passing")).toBeTruthy();
-    expect(within(checks).getByText(/This list is incomplete/)).toBeTruthy();
+    expect(within(checks).getByText("1 失败, 1 运行中, 1 通过")).toBeTruthy();
+    expect(within(checks).getByText(/此列表不完整/)).toBeTruthy();
   });
 
   it("shows reviewers with their states and requests new ones", async () => {
@@ -93,13 +93,13 @@ describe("pull request summary", () => {
       ],
       assignees: [person("bob")],
     });
-    const reviewers = await screen.findByRole("region", { name: "Reviewers" });
+    const reviewers = await screen.findByRole("region", { name: "评审人" });
     expect(within(reviewers).getByText("Approved")).toBeTruthy();
     expect(within(reviewers).getByText("Awaiting review")).toBeTruthy();
-    await userEvent.click(within(reviewers).getByRole("button", { name: "Request reviewers" }));
+    await userEvent.click(within(reviewers).getByRole("button", { name: "请求评审" }));
     await userEvent.click(await screen.findByRole("button", { name: "bob" }));
-    await userEvent.type(screen.getByRole("textbox", { name: "Reviewer login or team" }), "@carol");
-    await userEvent.click(screen.getByRole("button", { name: "Request" }));
+    await userEvent.type(screen.getByRole("textbox", { name: "评审人用户名或团队" }), "@carol");
+    await userEvent.click(screen.getByRole("button", { name: "请求" }));
     await waitFor(() =>
       expect(api.requestPullRequestReviewers).toHaveBeenCalledWith({
         ...ref,
@@ -127,7 +127,7 @@ describe("pull request summary", () => {
     ],
   ] as const)("disables merging with a clear reason (%o)", async (detail, reason) => {
     renderDetail(detail as Partial<PullRequestDetail>);
-    const merge = await screen.findByRole("region", { name: "Merge" });
+    const merge = await screen.findByRole("region", { name: "合并" });
     const button = within(merge).getByRole("button", { name: /merge/i }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     expect(within(merge).getByText(new RegExp(reason))).toBeTruthy();
@@ -135,7 +135,7 @@ describe("pull request summary", () => {
 
   it("warns about unstable checks without blocking", async () => {
     renderDetail({ mergeState: "unstable" });
-    const merge = await screen.findByRole("region", { name: "Merge" });
+    const merge = await screen.findByRole("region", { name: "合并" });
     expect(within(merge).getByText(/Some checks are failing/)).toBeTruthy();
     expect(
       (within(merge).getByRole("button", { name: "Create a merge commit" }) as HTMLButtonElement)
@@ -151,11 +151,11 @@ describe("pull request summary", () => {
       {},
       store,
     );
-    const merge = await screen.findByRole("region", { name: "Merge" });
-    expect(within(merge).getByText(/Auto-merge is on \(squash and merge\)/)).toBeTruthy();
+    const merge = await screen.findByRole("region", { name: "合并" });
+    expect(within(merge).getByText(/自动合并已开启/)).toBeTruthy();
     await userEvent.click(within(merge).getByRole("button", { name: "Rebase and merge" }));
     expect(api.mergePullRequest).not.toHaveBeenCalled();
-    await userEvent.click(within(merge).getByRole("button", { name: "Confirm rebase and merge" }));
+    await userEvent.click(within(merge).getByRole("button", { name: "确认rebase and merge" }));
     await waitFor(() =>
       expect(api.mergePullRequest).toHaveBeenCalledWith({
         ...ref,
@@ -175,10 +175,10 @@ describe("pull request summary", () => {
         }),
       },
     );
-    const merge = await screen.findByRole("region", { name: "Merge" });
+    const merge = await screen.findByRole("region", { name: "合并" });
     await userEvent.click(within(merge).getByRole("button", { name: "Create a merge commit" }));
     await userEvent.click(
-      within(merge).getByRole("button", { name: "Confirm create a merge commit" }),
+      within(merge).getByRole("button", { name: "确认create a merge commit" }),
     );
     expect((await within(merge).findByRole("alert")).textContent).toContain(
       "New commits were pushed since you loaded this pull request",
@@ -187,7 +187,7 @@ describe("pull request summary", () => {
 
   it("renders the description as markdown, or says there is none", async () => {
     renderDetail({ body: "" });
-    expect(await screen.findByText("No description.")).toBeTruthy();
+    expect(await screen.findByText("暂无描述。")).toBeTruthy();
   });
 });
 
@@ -230,33 +230,33 @@ describe("pull request header", () => {
         }),
       },
     );
-    expect(await screen.findByRole("tab", { name: "Code 1 of 2 viewed" })).toBeTruthy();
+    expect(await screen.findByRole("tab", { name: "代码 1 / 2 已查看" })).toBeTruthy();
 
-    const menu = () => screen.getByRole("button", { name: "Pull request actions" });
+    const menu = () => screen.getByRole("button", { name: "拉取请求操作" });
     await userEvent.click(menu());
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Convert to draft" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "转为草稿" }));
     await waitFor(() =>
       expect(api.setPullRequestDraft).toHaveBeenCalledWith({ ...ref, draft: true }),
     );
 
     // The draft result replaced the cached detail, so the menu now offers Ready for review.
     await userEvent.click(menu());
-    expect(await screen.findByRole("menuitem", { name: "Ready for review" })).toBeTruthy();
-    await userEvent.click(screen.getByRole("menuitem", { name: "Close pull request" }));
+    expect(await screen.findByRole("menuitem", { name: "准备评审" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("menuitem", { name: "关闭拉取请求" }));
     expect(api.setPullRequestState).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole("menuitem", { name: "Confirm close" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "确认关闭" }));
     await waitFor(() =>
       expect(api.setPullRequestState).toHaveBeenCalledWith({ ...ref, state: "closed" }),
     );
 
     await userEvent.click(menu());
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Copy link" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "复制链接" }));
     await waitFor(() =>
       expect(writeClipboardText).toHaveBeenCalledWith("https://github.com/acme/web/pull/7"),
     );
     const reads = api.pullRequestDetail.mock.calls.length;
     await userEvent.click(menu());
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Refresh" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "刷新" }));
     await waitFor(() => expect(api.pullRequestDetail.mock.calls.length).toBeGreaterThan(reads));
   });
 
@@ -339,8 +339,8 @@ describe("pull request timeline", () => {
       },
       store,
     );
-    await userEvent.click(await screen.findByRole("tab", { name: "Timeline" }));
-    await screen.findByRole("list", { name: "Timeline" });
+    await userEvent.click(await screen.findByRole("tab", { name: "时间线" }));
+    await screen.findByRole("list", { name: "时间线" });
     return bridge;
   }
 
@@ -349,19 +349,19 @@ describe("pull request timeline", () => {
     await openTimeline(store);
     expect(screen.getByText("Looks good to me")).toBeTruthy();
     expect(screen.getByText("Coverage report")).toBeTruthy();
-    expect(screen.getAllByRole("article", { name: "Review thread on src/app.ts:12" })).toHaveLength(
+    expect(screen.getAllByRole("article", { name: "评审线程：src/app.ts:12" })).toHaveLength(
       2,
     );
     expect(screen.getAllByText("+new line")).toHaveLength(2);
     expect(screen.getByText("Fix tests")).toBeTruthy();
-    expect(screen.getByText("added the bug label")).toBeTruthy();
+    expect(screen.getByText("添加了 bug 标签")).toBeTruthy();
 
-    await userEvent.click(screen.getByRole("button", { name: "Hide bots" }));
+    await userEvent.click(screen.getByRole("button", { name: "隐藏机器人" }));
     expect(screen.queryByText("Coverage report")).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Hide resolved" }));
+    await userEvent.click(screen.getByRole("button", { name: "隐藏已解决" }));
     expect(screen.queryByText("Thread done-thread body")).toBeNull();
     expect(screen.getByText("Thread open-thread body")).toBeTruthy();
-    expect(screen.getByText("2 hidden")).toBeTruthy();
+    expect(screen.getByText("2 已隐藏")).toBeTruthy();
     expect(store.get(pullRequestTimelineFiltersAtom)).toEqual({
       hideBots: true,
       hideResolved: true,
@@ -372,7 +372,7 @@ describe("pull request timeline", () => {
     const { api } = await openTimeline();
     const mod = shortcutPlatform() === "mac" ? { metaKey: true } : { ctrlKey: true };
     const open = screen.getByText("Thread open-thread body").closest("article")!;
-    await userEvent.click(within(open).getByRole("button", { name: "Resolve" }));
+    await userEvent.click(within(open).getByRole("button", { name: "解决" }));
     await waitFor(() =>
       expect(api.resolvePullRequestThread).toHaveBeenCalledWith({
         ...ref,
@@ -381,7 +381,7 @@ describe("pull request timeline", () => {
       }),
     );
     const done = screen.getByText("Thread done-thread body").closest("article")!;
-    await userEvent.click(within(done).getByRole("button", { name: "Unresolve" }));
+    await userEvent.click(within(done).getByRole("button", { name: "取消解决" }));
     await waitFor(() =>
       expect(api.resolvePullRequestThread).toHaveBeenLastCalledWith({
         ...ref,
@@ -390,8 +390,8 @@ describe("pull request timeline", () => {
       }),
     );
 
-    await userEvent.click(within(open).getByRole("button", { name: "Reply" }));
-    const reply = within(open).getByRole("textbox", { name: "Reply on src/app.ts:12" });
+    await userEvent.click(within(open).getByRole("button", { name: "回复" }));
+    const reply = within(open).getByRole("textbox", { name: "回复 src/app.ts:12" });
     await userEvent.type(reply, "Fixed in 0123");
     fireEvent.keyDown(reply, { key: "Enter", ...mod });
     await waitFor(() =>
@@ -402,7 +402,7 @@ describe("pull request timeline", () => {
       }),
     );
 
-    const composer = screen.getByRole("textbox", { name: "Add a comment" });
+    const composer = screen.getByRole("textbox", { name: "添加评论" });
     await userEvent.type(composer, "Ship it");
     fireEvent.keyDown(composer, { key: "Enter", ...mod });
     await waitFor(() =>

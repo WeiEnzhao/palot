@@ -26,7 +26,7 @@ export function CommandTab({
   if (!runtime?.connected || runtime.profileID !== tab.resource.profileID) {
     return (
       <p className="p-4 text-sm text-muted-foreground">
-        Connect to this command's server to view output.
+        连接到此命令的服务器以查看输出。
       </p>
     );
   }
@@ -118,7 +118,7 @@ function CommandOutput({
         if (!drained) timer = setTimeout(() => void read(), behind ? 50 : 1_000);
       } catch (cause) {
         if (current())
-          setError(cause instanceof Error ? cause.message : "Could not load command output.");
+          setError(cause instanceof Error ? cause.message : "无法加载命令输出。");
       }
     };
     setError(undefined);
@@ -136,7 +136,7 @@ function CommandOutput({
   return (
     <section
       className="@container flex h-full min-h-0 min-w-0 flex-1 flex-col bg-background"
-      aria-label="Command output"
+      aria-label="命令输出"
       hidden={!active}
     >
       <div className="flex min-h-9 shrink-0 flex-wrap items-center gap-2 border-b border-border px-2 py-1">
@@ -149,8 +149,8 @@ function CommandOutput({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={following ? "Pause following output" : "Follow output"}
-          title={following ? "Pause following output" : "Follow output"}
+          aria-label={following ? "暂停跟踪输出" : "跟踪输出"}
+          title={following ? "暂停跟踪输出" : "跟踪输出"}
           onClick={() => setFollowing(!following)}
         >
           {following ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
@@ -158,8 +158,8 @@ function CommandOutput({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label="Copy visible output"
-          title="Copy visible output"
+          aria-label="复制可见输出"
+          title="复制可见输出"
           disabled={!presentation.output}
           onClick={() => void clipboard.copy(presentation.output ?? "")}
         >
@@ -185,10 +185,10 @@ function CommandOutput({
         </span>
         <span role="status">
           {removed
-            ? "Command removed. Only the output already loaded here remains."
+            ? "命令已移除。仅已加载到此处的输出会保留。"
             : info
-              ? `${info.status}${info.exit !== undefined ? ` · Exit ${info.exit}` : ""}${!complete && info.status !== "running" ? " · Loading output" : ""}`
-              : "Loading command…"}
+              ? `${info.status}${info.exit !== undefined ? ` · 退出码 ${info.exit}` : ""}${!complete && info.status !== "running" ? " · 正在加载输出" : ""}`
+              : "正在加载命令…"}
         </span>
       </div>
       {error ? (
@@ -198,20 +198,20 @@ function CommandOutput({
         >
           <span className="min-w-0 flex-1 break-words">{error}</span>
           <Button variant="outline" size="sm" onClick={() => setAttempt((value) => value + 1)}>
-            Retry
+            重试
           </Button>
         </div>
       ) : null}
       {trimmed ? (
         <p className="shrink-0 px-3 py-1 text-meta text-muted-foreground">
-          Showing the latest output only. Copy includes the visible buffer.
+          仅显示最新输出。复制包含可见缓冲区内容。
         </p>
       ) : null}
       <div
         ref={viewport}
         className="palot-native-scrollbar min-h-0 flex-1 overflow-auto p-3"
         tabIndex={0}
-        aria-label="Combined command output"
+        aria-label="合并命令输出"
         onScroll={(event) => {
           const node = event.currentTarget;
           if (node.scrollHeight - node.scrollTop - node.clientHeight > 24) setFollowing(false);
@@ -221,9 +221,9 @@ function CommandOutput({
           {presentation.output ? (
             <TerminalOutput {...presentation} />
           ) : complete ? (
-            "No output."
+            "无输出。"
           ) : (
-            "Waiting for output…"
+            "等待输出…"
           )}
         </pre>
       </div>

@@ -101,9 +101,9 @@ function renderWithProviders(children: ReactNode) {
 it("switches review scope through a pressed-toggle group", () => {
   mocks.diffs = { isPending: true, reviewBase: { ref: "main" } };
   renderWithProviders(<ChangesTab tab={changesTab("working")} pane="right" scope={scope} />);
-  const group = screen.getByRole("group", { name: "Review scope" });
-  const working = screen.getByRole("button", { name: "Working", pressed: true });
-  const branch = screen.getByRole("button", { name: "Branch", pressed: false });
+  const group = screen.getByRole("group", { name: "审查范围" });
+  const working = screen.getByRole("button", { name: "工作区", pressed: true });
+  const branch = screen.getByRole("button", { name: "分支", pressed: false });
   expect(group.contains(working) && group.contains(branch)).toBe(true);
 
   fireEvent.click(branch);
@@ -132,9 +132,9 @@ it("initializes Git for a project without a repository and refreshes VCS state",
   );
   const invalidate = vi.spyOn(queryClient, "invalidateQueries");
 
-  fireEvent.click(await screen.findByRole("button", { name: "Initialize Git" }));
+  fireEvent.click(await screen.findByRole("button", { name: "初始化 Git" }));
 
-  await waitFor(() => expect(screen.queryByRole("button", { name: /Initializ/ })).toBeNull());
+  await waitFor(() => expect(screen.queryByRole("button", { name: /初始化/ })).toBeNull());
   expect(init).toHaveBeenCalledWith(
     { location: { directory: "/repo" }, provider: "git" },
     expect.objectContaining({ signal: expect.any(AbortSignal) }),
@@ -144,7 +144,7 @@ it("initializes Git for a project without a repository and refreshes VCS state",
     queryKey: openCodeKeys.diffsLocation("conn", location),
   });
   expect(get).toHaveBeenCalledTimes(2);
-  expect(screen.getByText("No working changes")).toBeTruthy();
+  expect(screen.getByText("无工作区更改")).toBeTruthy();
 });
 
 it("shows Initialize Git failures inline and allows a retry", async () => {
@@ -154,12 +154,12 @@ it("shows Initialize Git failures inline and allows a retry", async () => {
   setOpenCodeClientForTest({ vcs: { get, init } } as unknown as OpenCodeClient);
   renderWithProviders(<ChangesTab tab={changesTab("branch")} pane="right" scope={scope} />);
 
-  fireEvent.click(await screen.findByRole("button", { name: "Initialize Git" }));
+  fireEvent.click(await screen.findByRole("button", { name: "初始化 Git" }));
 
   expect((await screen.findByRole("alert")).textContent).toBe(
-    "Could not initialize Git: Project directory does not exist",
+    "无法初始化 Git：Project directory does not exist",
   );
-  expect(screen.getByRole("button", { name: "Initialize Git" }).hasAttribute("disabled")).toBe(
+  expect(screen.getByRole("button", { name: "初始化 Git" }).hasAttribute("disabled")).toBe(
     false,
   );
 });
@@ -206,31 +206,31 @@ it("finds and steps through diff matches without taking the transcript's Mod+F",
     false,
   );
   expect(transcriptFind).toHaveBeenCalledOnce();
-  expect(screen.queryByRole("textbox", { name: "Find in diff" })).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "在 diff 中查找" })).toBeNull();
 
   // Mod+F inside the Changes tab opens Find in diff instead.
   expect(fireEvent.keyDown(screen.getByRole("region", { name: "Diff content" }), findKey)).toBe(
     false,
   );
   expect(transcriptFind).toHaveBeenCalledOnce();
-  const input = screen.getByRole("textbox", { name: "Find in diff" });
+  const input = screen.getByRole("textbox", { name: "在 diff 中查找" });
   const status = () => screen.getByRole("status").textContent;
 
   await act(async () => {
     fireEvent.change(input, { target: { value: "widget" } });
   });
-  await waitFor(() => expect(status()).toBe("1 of 4"));
+  await waitFor(() => expect(status()).toBe("第 1 项，共 4 项"));
   fireEvent.keyDown(input, { key: "Enter" });
-  expect(status()).toBe("2 of 4");
+  expect(status()).toBe("第 2 项，共 4 项");
   fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
   fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
-  expect(status()).toBe("4 of 4");
+  expect(status()).toBe("第 4 项，共 4 项");
 
   await act(async () => {
     fireEvent.change(input, { target: { value: "missing" } });
   });
-  await waitFor(() => expect(status()).toBe("No results"));
+  await waitFor(() => expect(status()).toBe("无结果"));
 
   fireEvent.keyDown(input, { key: "Escape" });
-  expect(screen.queryByRole("search", { name: "Find in diff" })).toBeNull();
+  expect(screen.queryByRole("search", { name: "在 diff 中查找" })).toBeNull();
 });

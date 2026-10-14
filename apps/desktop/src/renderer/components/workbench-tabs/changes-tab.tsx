@@ -231,7 +231,7 @@ export function ChangesTab({
     codeViewContainer.tabIndex = 0;
     codeViewContainer.setAttribute(
       "aria-label",
-      `${modeLabel === "branch" ? "Branch" : "Working tree"} review`,
+      `${modeLabel === "branch" ? "分支审查" : "工作区审查"}`,
     );
     codeViewContainer.setAttribute("role", "region");
   }, [codeViewContainer, modeLabel]);
@@ -271,7 +271,7 @@ export function ChangesTab({
       <div className="flex min-h-0 flex-1 flex-col bg-card">
         <ReviewModeBar tab={tab} pane={pane} commands={commands} active={active} />
         <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Spinner /> Loading {modeLabel} changes
+          <Spinner /> {modeLabel === "branch" ? "正在加载分支更改" : "正在加载工作区更改"}
         </div>
       </div>
     );
@@ -282,11 +282,11 @@ export function ChangesTab({
         <ReviewModeBar tab={tab} pane={pane} commands={commands} active={active} />
         <Empty className="min-h-0 flex-1 rounded-none p-5">
           <EmptyHeader>
-            <EmptyTitle>Could not load changes</EmptyTitle>
+            <EmptyTitle>无法加载更改</EmptyTitle>
             <EmptyDescription>{query.error.message}</EmptyDescription>
           </EmptyHeader>
           <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
-            <RefreshCw data-icon="inline-start" /> Retry
+            <RefreshCw data-icon="inline-start" /> 重试
           </Button>
         </Empty>
       </div>
@@ -301,11 +301,11 @@ export function ChangesTab({
             <EmptyMedia variant="icon">
               <FileCode2 aria-hidden="true" />
             </EmptyMedia>
-            <EmptyTitle>No {modeLabel} changes</EmptyTitle>
+            <EmptyTitle>{modeLabel === "branch" ? "无分支更改" : "无工作区更改"}</EmptyTitle>
             <EmptyDescription>
               {tab.resource.mode === "branch"
-                ? "Changes from this branch relative to the selected review base appear here."
-                : "Working tree changes for this workspace appear here."}
+                ? "此分支相对于所选审查基础的更改显示在此处。"
+                : "此工作区的工作区更改显示在此处。"}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -322,17 +322,17 @@ export function ChangesTab({
           type="button"
           variant={showTree ? "secondary" : "ghost"}
           size="xs"
-          aria-label={showTree ? "Hide changed files" : "Show changed files"}
+          aria-label={showTree ? "隐藏已更改文件" : "显示已更改文件"}
           aria-pressed={showTree}
           onClick={() => setShowTree((visible) => !visible)}
         >
           <FolderTree data-icon="inline-start" />
-          <span className="hidden @min-[28rem]/workbench:inline">Files</span>
+          <span className="hidden @min-[28rem]/workbench:inline">文件</span>
         </Button>
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
           <div className="hidden shrink-0 items-center gap-2 font-mono text-diff tabular-nums @min-[46rem]/workbench:flex">
             <span className="text-muted-foreground">
-              {diffs.length} {diffs.length === 1 ? "file" : "files"}
+              {diffs.length} 个文件
             </span>
             <span className="text-success">+{totals.additions}</span>
             <span className="text-destructive">-{totals.deletions}</span>
@@ -347,7 +347,7 @@ export function ChangesTab({
                   type="button"
                   variant={lineWrap ? "secondary" : "ghost"}
                   size="icon-sm"
-                  aria-label={lineWrap ? "Disable line wrap" : "Enable line wrap"}
+                  aria-label={lineWrap ? "禁用自动换行" : "启用自动换行"}
                   aria-pressed={lineWrap}
                   onClick={() => setLineWrap((enabled) => !enabled)}
                 />
@@ -355,7 +355,7 @@ export function ChangesTab({
             >
               <WrapText />
             </TooltipTrigger>
-            <TooltipContent>{lineWrap ? "Disable line wrap" : "Enable line wrap"}</TooltipContent>
+            <TooltipContent>{lineWrap ? "禁用自动换行" : "启用自动换行"}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger
@@ -364,7 +364,7 @@ export function ChangesTab({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={allCollapsed ? "Expand all diffs" : "Collapse all diffs"}
+                  aria-label={allCollapsed ? "展开所有 diff" : "折叠所有 diff"}
                   onClick={() => setCollapsedPaths(allCollapsed ? new Set() : new Set(paths))}
                 />
               }
@@ -372,7 +372,7 @@ export function ChangesTab({
               {allCollapsed ? <ChevronsUpDown /> : <ChevronsDownUp />}
             </TooltipTrigger>
             <TooltipContent>
-              {allCollapsed ? "Expand all diffs" : "Collapse all diffs"}
+              {allCollapsed ? "展开所有 diff" : "折叠所有 diff"}
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -382,7 +382,7 @@ export function ChangesTab({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Refresh changes"
+                  aria-label="刷新更改"
                   onClick={() => {
                     void query.refetch();
                     if (sourceControl.availability === "ready") void sourceControl.refetch();
@@ -392,7 +392,7 @@ export function ChangesTab({
             >
               <RefreshCw className={cn(query.isFetching && "animate-spin")} />
             </TooltipTrigger>
-            <TooltipContent>Refresh changes</TooltipContent>
+            <TooltipContent>刷新更改</TooltipContent>
           </Tooltip>
         </div>
       </div>
@@ -407,19 +407,19 @@ export function ChangesTab({
             "absolute inset-0 z-10 min-h-0 border-r border-border bg-background @min-[46rem]/workbench:static @min-[46rem]/workbench:z-auto",
             showTree ? "flex flex-col" : "hidden",
           )}
-          aria-label="Changed files"
+          aria-label="已更改文件"
         >
           <div className="flex h-8 shrink-0 items-center border-b border-border px-2">
             <Files className="mr-1.5 size-3 text-muted-foreground" aria-hidden="true" />
             <span className="text-micro font-semibold tracking-wide text-muted-foreground uppercase">
-              Changed files
+              已更改文件
             </span>
             <Button
               type="button"
               variant="ghost"
               size="icon-xs"
               className="ml-auto"
-              aria-label="Search changed files"
+              aria-label="搜索已更改文件"
               onClick={() => tree.openSearch()}
             >
               <Search />
@@ -429,7 +429,7 @@ export function ChangesTab({
               variant="ghost"
               size="icon-xs"
               className="ml-0.5 @min-[46rem]/workbench:hidden"
-              aria-label="Close changed files"
+              aria-label="关闭已更改文件"
               onClick={() => setShowTree(false)}
             >
               <X />
@@ -445,7 +445,7 @@ export function ChangesTab({
             "min-h-0 min-w-0 overflow-hidden bg-card",
             !showTree && "@min-[46rem]/workbench:col-span-2",
           )}
-          aria-label={tab.resource.mode === "branch" ? "Branch review" : "Working tree review"}
+          aria-label={tab.resource.mode === "branch" ? "分支审查" : "工作区审查"}
         >
           <CodeView
             ref={codeViewRef}
@@ -524,7 +524,7 @@ export function ChangesTab({
                   </span>
                   {item.type === "file" ? (
                     <span className="shrink-0 text-micro text-muted-foreground">
-                      {file?.whitespaceOnly ? "Whitespace changes hidden" : "Patch unavailable"}
+                      {file?.whitespaceOnly ? "空白变更已隐藏" : "补丁不可用"}
                     </span>
                   ) : null}
                   <span className="ml-1 flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/header:opacity-100 group-focus-within/header:opacity-100">
@@ -536,7 +536,7 @@ export function ChangesTab({
                             variant="ghost"
                             size="icon-xs"
                             className="size-6"
-                            aria-label={`Copy ${item.id} path`}
+                            aria-label={`复制 ${item.id} 路径`}
                             onClick={(event) => {
                               event.stopPropagation();
                               void writeClipboardText(item.id);
@@ -546,7 +546,7 @@ export function ChangesTab({
                       >
                         <Copy />
                       </TooltipTrigger>
-                      <TooltipContent>Copy file path</TooltipContent>
+                      <TooltipContent>复制文件路径</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger
@@ -556,7 +556,7 @@ export function ChangesTab({
                             variant="ghost"
                             size="icon-xs"
                             className="size-6"
-                            aria-label={`Open ${item.id} in a tab`}
+                            aria-label={`在标签页中打开 ${item.id}`}
                             onClick={(event) => {
                               event.stopPropagation();
                               commands.openTab(
@@ -575,7 +575,7 @@ export function ChangesTab({
                       >
                         <ExternalLink />
                       </TooltipTrigger>
-                      <TooltipContent>Open in tab</TooltipContent>
+                      <TooltipContent>在标签页中打开</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger
@@ -585,7 +585,7 @@ export function ChangesTab({
                             variant="ghost"
                             size="icon-xs"
                             className="size-6"
-                            aria-label={`${collapsed ? "Expand" : "Collapse"} ${item.id}`}
+                            aria-label={`${collapsed ? "展开" : "折叠"} ${item.id}`}
                             onClick={(event) => {
                               event.stopPropagation();
                               togglePath(item.id);
@@ -595,7 +595,7 @@ export function ChangesTab({
                       >
                         {collapsed ? <ChevronRight /> : <ChevronDown />}
                       </TooltipTrigger>
-                      <TooltipContent>{collapsed ? "Expand file" : "Collapse file"}</TooltipContent>
+                      <TooltipContent>{collapsed ? "展开文件" : "折叠文件"}</TooltipContent>
                     </Tooltip>
                   </span>
                 </div>
@@ -661,7 +661,7 @@ function ReviewModeToggle({
       <ToggleGroup
         variant="segmented"
         size="sm"
-        aria-label="Review scope"
+        aria-label="审查范围"
         value={[tab.resource.mode]}
         onValueChange={(value) => {
           const mode = value[0];
@@ -678,8 +678,8 @@ function ReviewModeToggle({
           );
         }}
       >
-        <ToggleGroupItem value="working">Working</ToggleGroupItem>
-        <ToggleGroupItem value="branch">Branch</ToggleGroupItem>
+        <ToggleGroupItem value="working">工作区</ToggleGroupItem>
+        <ToggleGroupItem value="branch">分支</ToggleGroupItem>
       </ToggleGroup>
       {branchContext ? (
         <span
@@ -709,9 +709,9 @@ function InitializeGitEmpty({ location }: { location: LocationRef }) {
         <EmptyMedia variant="icon">
           <FolderGit2 aria-hidden="true" />
         </EmptyMedia>
-        <EmptyTitle>No Git repository</EmptyTitle>
+        <EmptyTitle>无 Git 仓库</EmptyTitle>
         <EmptyDescription>
-          Initialize Git to track, review, and undo changes in this project.
+          初始化 Git 以跟踪、审查和撤消此项目中的更改。
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
@@ -723,11 +723,11 @@ function InitializeGitEmpty({ location }: { location: LocationRef }) {
           onClick={() => initialize.mutate()}
         >
           {initialize.isPending ? <Spinner data-icon="inline-start" aria-hidden="true" /> : null}
-          {initialize.isPending ? "Initializing Git…" : "Initialize Git"}
+          {initialize.isPending ? "正在初始化 Git…" : "初始化 Git"}
         </Button>
         {initialize.isError ? (
           <p role="alert" className="text-meta text-destructive">
-            Could not initialize Git: {errorMessage(initialize.error)}
+            无法初始化 Git：{errorMessage(initialize.error)}
           </p>
         ) : null}
       </EmptyContent>
@@ -736,7 +736,7 @@ function InitializeGitEmpty({ location }: { location: LocationRef }) {
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error && error.message ? error.message : "Unknown error";
+  return error instanceof Error && error.message ? error.message : "未知错误";
 }
 
 function reviewItem(file: PresentedFileDiff, collapsed: boolean): CodeViewItem<undefined> {

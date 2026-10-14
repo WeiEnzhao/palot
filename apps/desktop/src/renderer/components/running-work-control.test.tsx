@@ -96,9 +96,9 @@ describe("running work", () => {
   it("uses one indicator, opens owned children and commands, and directly stops an individual child", async () => {
     setup();
     expect(screen.getAllByRole("button")).toHaveLength(1);
-    const trigger = screen.getByRole("button", { name: "Running work: 2 running" });
+    const trigger = screen.getByRole("button", { name: "运行中的工作：2 个运行中" });
     fireEvent.click(trigger);
-    fireEvent.click(await screen.findByRole("button", { name: "Stop Inspect files" }));
+    fireEvent.click(await screen.findByRole("button", { name: "停止 Inspect files" }));
     await waitFor(() => expect(mocks.interrupt).toHaveBeenCalledWith({ sessionID: "child" }));
     expect(mocks.client).toHaveBeenCalledWith("origin");
     expect(mocks.remove).not.toHaveBeenCalled();
@@ -120,20 +120,20 @@ describe("running work", () => {
   it("stops only the selected command at its own location and keeps failures on that row", async () => {
     mocks.remove.mockRejectedValue(new Error("Cannot stop shell"));
     setup();
-    fireEvent.click(screen.getByRole("button", { name: "Running work: 2 running" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Stop sleep 30" }));
+    fireEvent.click(screen.getByRole("button", { name: "运行中的工作：2 个运行中" }));
+    fireEvent.click(await screen.findByRole("button", { name: "停止 sleep 30" }));
     expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Cannot stop shell");
     expect(mocks.remove).toHaveBeenCalledWith({ id: "shell", location: { directory: "/child" } });
     expect(mocks.client).toHaveBeenCalledWith("origin");
     expect(mocks.interrupt).not.toHaveBeenCalled();
     expect(
-      screen.getByRole("button", { name: "Stop Inspect files" }).hasAttribute("disabled"),
+      screen.getByRole("button", { name: "停止 Inspect files" }).hasAttribute("disabled"),
     ).toBe(false);
   });
   it("does not stop work on a newly focused other connection", async () => {
     const { store } = setup();
-    fireEvent.click(screen.getByRole("button", { name: "Running work: 2 running" }));
-    const stop = await screen.findByRole("button", { name: "Stop Inspect files" });
+    fireEvent.click(screen.getByRole("button", { name: "运行中的工作：2 个运行中" }));
+    const stop = await screen.findByRole("button", { name: "停止 Inspect files" });
     act(() =>
       store.set(runtimeAtom, {
         connected: true,
@@ -157,9 +157,9 @@ describe("running work", () => {
       terminalsSupported: true,
     });
     setup([]);
-    fireEvent.click(screen.getByRole("button", { name: "Running work: 1 terminal" }));
-    expect(await screen.findByRole("region", { name: "Recently finished" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Stop / })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "运行中的工作：1 terminal" }));
+    expect(await screen.findByRole("region", { name: "最近完成" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /停止 / })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Dev server/ }));
     expect(mocks.openTab).toHaveBeenCalledWith(
       {

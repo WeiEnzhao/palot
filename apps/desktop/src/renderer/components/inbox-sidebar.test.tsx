@@ -121,8 +121,8 @@ describe("InboxSidebarContent", () => {
       </SidebarProvider>,
       store,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Add project folder" }));
-    fireEvent.click(screen.getByRole("button", { name: "Choose local folder…" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加项目文件夹" }));
+    fireEvent.click(screen.getByRole("button", { name: "选择本地文件夹…" }));
     expect(pick).toHaveBeenCalledWith("connection-original");
     store.set(runtimeAtom, {
       ...runtime,
@@ -131,11 +131,11 @@ describe("InboxSidebarContent", () => {
     });
     finishPick("/original/folder");
     await waitFor(() =>
-      expect((screen.getByLabelText("Folder path") as HTMLInputElement).value).toBe(
+      expect((screen.getByLabelText("文件夹路径") as HTMLInputElement).value).toBe(
         "/original/folder",
       ),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Add project" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加项目" }));
     await waitFor(() =>
       expect(create).toHaveBeenCalledWith("/original/folder", undefined, "connection-original"),
     );
@@ -443,8 +443,8 @@ describe("InboxSidebarContent", () => {
 
     expect(screen.getByRole("button", { name: /^Open Pinned task,/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Open Inbox task,/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Unpin task" })).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "Settle task" })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "取消置顶任务" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "结算任务" })).toHaveLength(1);
     expect(screen.getByTitle(/Working for/)).toBeTruthy();
     expect(screen.getByText(/^New · /)).toBeTruthy();
     const pinnedCard = screen
@@ -461,13 +461,13 @@ describe("InboxSidebarContent", () => {
     ).toBeNull();
     expect(within(runningCard).queryByLabelText("Unread task activity")).toBeNull();
     expect(within(runningCard).getByTitle(/Working for/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Add project folder" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Inbox view settings" }));
-    expect(await screen.findByText("Ordering")).toBeTruthy();
-    expect(screen.getByRole("combobox").textContent).toContain("Newest");
-    expect(screen.getByRole("switch", { name: "Unread first" })).toBeTruthy();
-    expect(screen.getByRole("switch", { name: "Show snoozed" })).toBeTruthy();
-    expect(screen.getByRole("switch", { name: "Show settled" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "添加项目文件夹" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "收件箱视图设置" }));
+    expect(await screen.findByText("排序")).toBeTruthy();
+    expect(screen.getByRole("combobox").textContent).toContain("最新");
+    expect(screen.getByRole("switch", { name: "未读优先" })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: "显示已暂停" })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: "显示已结算" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     store.set(inboxViewPreferencesAtom, {
       ordering: "newest",
@@ -475,17 +475,17 @@ describe("InboxSidebarContent", () => {
       showSnoozed: true,
       showSettled: false,
     });
-    await waitFor(() => expect(screen.queryByRole("button", { name: /Settled/ })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("button", { name: /已结算/ })).toBeNull());
     store.set(inboxViewPreferencesAtom, {
       ordering: "newest",
       unreadFirst: false,
       showSnoozed: true,
       showSettled: true,
     });
-    fireEvent.click(screen.getByRole("button", { name: "Filter tasks" }));
-    expect(await screen.findByText("Add filter…")).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Project" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "State" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "筛选任务" }));
+    expect(await screen.findByText("添加筛选…")).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "项目" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "状态" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     store.set(inboxFiltersAtom, { projectID: null, states: ["running"] });
     await waitFor(() =>
@@ -493,19 +493,19 @@ describe("InboxSidebarContent", () => {
     );
     expect(screen.getByRole("button", { name: /^Open Inbox task,/ })).toBeTruthy();
     store.set(inboxFiltersAtom, { projectID: null, states: [] });
-    fireEvent.click(screen.getByRole("button", { name: "Inbox options" }));
+    fireEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     expect(
-      await screen.findByRole("menuitem", { name: /tasks loaded|Load older tasks/i }),
+      await screen.findByRole("menuitem", { name: /所有任务已加载|加载更早的任务/ }),
     ).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Expand all sections" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Collapse all sections" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "展开所有分区" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "折叠所有分区" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
-    fireEvent.click(screen.getByRole("button", { name: /^Pinned 1$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^已置顶 1$/ }));
     expect(screen.queryByRole("button", { name: /^Open Pinned task,/ })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /^Inbox 1$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^收件箱 1$/ }));
     expect(screen.queryByRole("button", { name: /^Open Inbox task,/ })).toBeNull();
-    expect(screen.getByRole("button", { name: /Snoozed/ }).textContent).toContain("1");
-    expect(screen.getByRole("button", { name: /Settled/ }).textContent).toContain("1");
+    expect(screen.getByRole("button", { name: /已暂停/ }).textContent).toContain("1");
+    expect(screen.getByRole("button", { name: /已结算/ }).textContent).toContain("1");
     expect(screen.queryByText("Snoozed task")).toBeNull();
     expect(screen.queryByText("Settled task")).toBeNull();
   });
@@ -636,16 +636,16 @@ describe("InboxSidebarContent", () => {
       queryClient,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /^Snoozed 1$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^已暂停 1$/ }));
     fireEvent.contextMenu(screen.getByRole("button", { name: /Snoozed task/ }));
 
-    expect(await screen.findByRole("menuitem", { name: "Pin" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Wake" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Move to worktree" })).toBeTruthy();
-    expect(screen.queryByRole("menuitem", { name: "Settle" })).toBeNull();
+    expect(await screen.findByRole("menuitem", { name: "置顶" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "唤醒" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "移到工作树" })).toBeTruthy();
+    expect(screen.queryByRole("menuitem", { name: "结算" })).toBeNull();
     fireEvent.keyDown(document, { key: "Escape" });
 
-    fireEvent.click(screen.getByRole("button", { name: /^Settled 1$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^已结算 1$/ }));
     expect(
       within(
         screen
@@ -655,8 +655,8 @@ describe("InboxSidebarContent", () => {
     ).toBeTruthy();
     fireEvent.contextMenu(screen.getByRole("button", { name: /Settled task/ }));
 
-    expect(await screen.findByRole("menuitem", { name: "Pin" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Unsettle" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Move to worktree" })).toBeTruthy();
+    expect(await screen.findByRole("menuitem", { name: "置顶" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "取消结算" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "移到工作树" })).toBeTruthy();
   });
 });

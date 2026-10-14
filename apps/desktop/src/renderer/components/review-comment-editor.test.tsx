@@ -12,10 +12,10 @@ it("requires a nonempty line comment and saves the selected range", () => {
       onCancel={vi.fn()}
     />,
   );
-  expect(screen.getByText("src/a.ts · lines 2–4")).toBeTruthy();
-  const submit = screen.getByRole<HTMLButtonElement>("button", { name: "Add comment" });
+  expect(screen.getByText("src/a.ts · 第 2–4 行")).toBeTruthy();
+  const submit = screen.getByRole<HTMLButtonElement>("button", { name: "添加评论" });
   expect(submit.disabled).toBe(true);
-  fireEvent.change(screen.getByRole("textbox", { name: "Line comment" }), {
+  fireEvent.change(screen.getByRole("textbox", { name: "行评论" }), {
     target: { value: "Handle null" },
   });
   fireEvent.click(submit);

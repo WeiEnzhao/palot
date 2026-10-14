@@ -233,18 +233,18 @@ export function StageCheckbox({
   const entry = controller.entries.get(path);
   if (!entry) return <span className="size-4 shrink-0" aria-hidden="true" />;
   const staged = entry.state === "staged";
-  const label = `${staged ? "Unstage" : "Stage"} ${path}`;
+  const label = `${staged ? "取消暂存" : "暂存"} ${path}`;
   return (
     <Checkbox
       aria-label={label}
       title={
         entry.conflicted
-          ? "Resolve the conflict before staging"
+          ? "暂存前请先解决冲突"
           : entry.state === "partial"
-            ? "Partly staged"
+            ? "部分已暂存"
             : staged
-              ? "Staged"
-              : "Not staged"
+              ? "已暂存"
+              : "未暂存"
       }
       checked={staged}
       indeterminate={entry.state === "partial"}
@@ -261,7 +261,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
   if (controller.availability === "unsupported") {
     return (
       <p className="shrink-0 border-t border-border bg-background px-3 py-1.5 text-meta text-muted-foreground">
-        Commit and push are available for local connections.
+        提交和推送仅适用于本地连接。
       </p>
     );
   }
@@ -270,7 +270,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
   const total = controller.tree.files.length;
   const unstagedCount = stageablePaths(controller.tree).length;
   const canPush = Boolean(branch.name) && (!branch.upstream || branch.ahead > 0);
-  const pushLabel = branch.upstream ? "Push" : "Publish branch";
+  const pushLabel = branch.upstream ? "推送" : "发布分支";
   const onMessageKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
     if (event.nativeEvent.isComposing || event.key !== "Enter") return;
     const mod = shortcutPlatform() === "mac" ? event.metaKey : event.ctrlKey;
@@ -281,18 +281,18 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
 
   return (
     <section
-      aria-label="Commit changes"
+      aria-label="提交更改"
       className="flex shrink-0 flex-col gap-1.5 border-t border-border bg-background px-2 py-1.5"
     >
       <div className="flex h-7 min-w-0 items-center gap-2 text-meta">
         <GitBranch className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="min-w-0 truncate font-medium" title={branch.name ?? undefined}>
-          {branch.name ?? "Detached HEAD"}
+          {branch.name ?? "分离的 HEAD"}
         </span>
         {branch.ahead > 0 || branch.behind > 0 ? (
           <span
             className="flex shrink-0 items-center gap-1 font-mono text-diff text-muted-foreground tabular-nums"
-            aria-label={`${branch.ahead} ahead, ${branch.behind} behind ${branch.upstream ?? "upstream"}`}
+            aria-label={`${branch.ahead} 领先，${branch.behind} 落后 ${branch.upstream ?? "上游"}`}
           >
             {branch.ahead > 0 ? (
               <span className="flex items-center">
@@ -309,7 +309,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
           </span>
         ) : null}
         <span className="hidden shrink-0 text-muted-foreground tabular-nums @min-[28rem]/workbench:inline">
-          {controller.stagedCount} of {total} staged
+          已暂存 {controller.stagedCount} / {total}
         </span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {unstagedCount > 0 ? (
@@ -320,7 +320,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
               disabled={controller.pathsBusy}
               onClick={controller.stageAll}
             >
-              Stage all
+              全部暂存
             </Button>
           ) : null}
           {controller.stagedCount > 0 ? (
@@ -331,7 +331,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
               disabled={controller.pathsBusy}
               onClick={controller.unstageAll}
             >
-              Unstage all
+              全部取消暂存
             </Button>
           ) : null}
           {canPush ? (
@@ -353,8 +353,8 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
         value={controller.message}
         onChange={(event) => controller.setMessage(event.target.value)}
         onKeyDown={onMessageKeyDown}
-        placeholder="Commit message"
-        aria-label="Commit message"
+        placeholder="提交消息"
+        aria-label="提交消息"
         aria-keyshortcuts={shortcutPlatform() === "mac" ? "Meta+Enter" : "Control+Enter"}
         rows={2}
         spellCheck
@@ -374,7 +374,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
           ) : (
             <Sparkles data-icon="inline-start" aria-hidden="true" />
           )}
-          {controller.generating ? "Generating…" : "Generate message"}
+          {controller.generating ? "正在生成…" : "生成消息"}
         </Button>
         <Button
           type="button"
@@ -385,7 +385,7 @@ export function ChangesSourceControlPanel({ controller }: { controller: ChangesS
           onClick={controller.commit}
         >
           {controller.committing ? <Spinner data-icon="inline-start" aria-hidden="true" /> : null}
-          Commit
+          提交
         </Button>
       </div>
       <SourceControlFeedback controller={controller} canPush={canPush} pushLabel={pushLabel} />
@@ -408,7 +408,7 @@ function SourceControlFeedback({
     return (
       <div role="status" className="flex min-w-0 items-center gap-2 text-meta">
         <span className="min-w-0 truncate text-muted-foreground">
-          Committed{" "}
+          已提交{" "}
           <span className="font-mono text-foreground">{shortOid(feedback.result.oid)}</span>{" "}
           {feedback.result.summary}
         </span>
@@ -431,7 +431,7 @@ function SourceControlFeedback({
     const { remote, branch, setUpstream } = feedback.result;
     return (
       <p role="status" className="truncate text-meta text-muted-foreground">
-        {setUpstream ? "Published" : "Pushed"} {branch} to {remote}
+        {setUpstream ? "已发布" : "已推送"} {branch} to {remote}
         {feedback.result.branchStatus.oid ? (
           <span className="font-mono"> · {shortOid(feedback.result.branchStatus.oid)}</span>
         ) : null}
@@ -467,11 +467,11 @@ function shortOid(oid: string): string {
 }
 
 const ACTION_FAILED: Record<SourceControlAction, string> = {
-  stage: "Could not stage the file",
-  unstage: "Could not unstage the file",
-  commit: "Could not commit",
-  push: "Could not push",
-  generate: "Could not generate a commit message",
+  stage: "无法暂存文件",
+  unstage: "无法取消暂存文件",
+  commit: "无法提交",
+  push: "无法推送",
+  generate: "无法生成提交消息",
 };
 
 /** Specific, actionable text for a failed action; `detail` is Git or hook output. */
@@ -479,43 +479,43 @@ export function describeSourceControlError(
   action: SourceControlAction,
   error: unknown,
 ): { text: string; detail?: string; detailLabel: string } {
-  const message = error instanceof Error && error.message ? error.message : "Unknown error";
+  const message = error instanceof Error && error.message ? error.message : "未知错误";
   if (!(error instanceof SourceControlError)) {
-    return { text: `${ACTION_FAILED[action]}: ${message}`, detailLabel: "Details" };
+    return { text: `${ACTION_FAILED[action]}: ${message}`, detailLabel: "详情" };
   }
   const detail = error.detail?.trim() || undefined;
-  const result = (text: string, detailLabel = "Git output") => ({
+  const result = (text: string, detailLabel = "Git 输出") => ({
     text,
     ...(detail ? { detail } : {}),
     detailLabel,
   });
   switch (error.code) {
     case "hook-failed":
-      return result(`${ACTION_FAILED[action]}: a Git hook rejected it.`, "Hook output");
+      return result(`${ACTION_FAILED[action]}：Git hook 拒绝了它。`, "Hook 输出");
     case "identity-missing":
       return result(
-        "Git needs your name and email before committing. Set user.name and user.email with git config, then commit again.",
+        "提交前 Git 需要您的姓名和邮箱。请使用 git config 设置 user.name 和 user.email，然后再次提交。",
       );
     case "nothing-to-commit":
-      return result("Nothing is staged to commit.");
+      return result("没有已暂存的内容可供提交。");
     case "push-rejected":
       return result(
-        "The remote has commits that this branch doesn't. Pull them first, then push again.",
+        "远程仓库有该分支没有的提交。先拉取它们，然后再次推送。",
       );
     case "auth-failed":
       return result(
-        "Git could not sign in to the remote. Check your Git credentials and try again.",
+        "Git 无法登录远程仓库。请检查您的 Git 凭据，然后重试。",
       );
     case "no-remote":
       return result(
-        "This repository has no remote to push to. Add one with git remote add, then push.",
+        "此仓库没有可推送的远程仓库。请使用 git remote add 添加一个，然后推送。",
       );
     case "detached-head":
-      return result("HEAD is detached. Check out a branch first.");
+      return result("HEAD 已分离。请先检出分支。");
     case "path-outside-repository":
-      return result(`${ACTION_FAILED[action]}: the path is outside this repository.`);
+      return result(`${ACTION_FAILED[action]}：路径在此仓库之外。`);
     case "unsupported-connection":
-      return result("Commit and push are available for local connections.");
+      return result("提交和推送仅适用于本地连接。");
     default:
       return result(`${ACTION_FAILED[action]}: ${message}`);
   }

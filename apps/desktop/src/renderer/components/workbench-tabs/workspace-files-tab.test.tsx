@@ -101,8 +101,8 @@ it("searches with a limit, shows empty and error states, and clears back to the 
     .spyOn(palot, "findWorkspaceFiles")
     .mockResolvedValue([{ type: "file", path: "src/a.ts" }]);
   mount();
-  expect(await screen.findByText("No files in this directory")).toBeTruthy();
-  fireEvent.change(screen.getByRole("searchbox", { name: "Search workspace files" }), {
+  expect(await screen.findByText("此目录没有文件")).toBeTruthy();
+  fireEvent.change(screen.getByRole("searchbox", { name: "搜索工作区文件" }), {
     target: { value: "a.ts" },
   });
   expect(await screen.findByRole("button", { name: "src/a.ts" })).toBeTruthy();
@@ -115,10 +115,10 @@ it("searches with a limit, shows empty and error states, and clears back to the 
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "missing" } });
   expect(await screen.findByText("search failed")).toBeTruthy();
   search.mockResolvedValue([]);
-  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-  expect(await screen.findByText("No matching files")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "重试" }));
+  expect(await screen.findByText("没有匹配的文件")).toBeTruthy();
   fireEvent.keyDown(screen.getByRole("searchbox"), { key: "Escape" });
-  expect(await screen.findByText("No files in this directory")).toBeTruthy();
+  expect(await screen.findByText("此目录没有文件")).toBeTruthy();
 });
 
 it("does not fetch while hidden or attached to another connection", async () => {
@@ -127,6 +127,6 @@ it("does not fetch while hidden or attached to another connection", async () => 
   expect(list).not.toHaveBeenCalled();
   store.set(runtimeAtom, { ...store.get(runtimeAtom)!, profileID: "other" });
   rerender(true);
-  expect(await screen.findByText("Files unavailable")).toBeTruthy();
+  expect(await screen.findByText("文件不可用")).toBeTruthy();
   expect(list).not.toHaveBeenCalled();
 });

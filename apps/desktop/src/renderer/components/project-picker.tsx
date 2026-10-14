@@ -23,9 +23,9 @@ export function ProjectPickerContent({
 }) {
   return (
     <Command className="bg-transparent p-0">
-      <CommandInput placeholder="Search projects…" aria-label="Search projects" autoFocus />
+      <CommandInput placeholder="搜索项目…" aria-label="搜索项目" autoFocus />
       <CommandList className="max-h-72">
-        <CommandEmpty>No projects found</CommandEmpty>
+        <CommandEmpty>未找到项目</CommandEmpty>
         <CommandGroup>
           {allLabel ? (
             <CommandItem

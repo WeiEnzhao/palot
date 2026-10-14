@@ -37,15 +37,15 @@ describe("PullRequestsPage list", () => {
       listPullRequestLinks: async () => ({ ok: true, value: [pullRequestLink(task.id, 5)] }),
     });
     renderPullRequestsPage();
-    for (const name of ["Review requested", "Assigned", "Authored", "Mentioned", "Recently merged"])
+    for (const name of ["请求评审", "已指派", "我创建的", "提及我的", "最近合并"])
       expect(await screen.findByRole("region", { name })).toBeTruthy();
-    const review = screen.getByRole("region", { name: "Review requested" });
+    const review = screen.getByRole("region", { name: "请求评审" });
     const row = await within(review).findByRole("button", { name: /^#5 Add billing/ });
     expect(row.getAttribute("aria-label")).toContain("by hubot");
     expect(row.textContent).toContain("Fix login");
-    expect(await screen.findByText("Nothing is assigned to you.")).toBeTruthy();
+    expect(await screen.findByText("没有指派给你的内容。")).toBeTruthy();
 
-    await userEvent.click(within(review).getByRole("button", { name: "Load more" }));
+    await userEvent.click(within(review).getByRole("button", { name: "加载更多" }));
     expect(await within(review).findByRole("button", { name: /^#6 Second page/ })).toBeTruthy();
     expect(api.searchPullRequests).toHaveBeenCalledWith({
       list: "review-requested",
@@ -59,7 +59,7 @@ describe("PullRequestsPage list", () => {
     renderPullRequestsPage();
     await waitFor(() => expect(api.searchPullRequests).toHaveBeenCalledTimes(5));
     await userEvent.type(
-      screen.getByRole("searchbox", { name: "Search pull requests" }),
+      screen.getByRole("searchbox", { name: "搜索拉取请求" }),
       "label:bug",
     );
     await waitFor(() =>
@@ -125,20 +125,20 @@ describe("PullRequestsPage list", () => {
     const store = createStore();
     store.set(pullRequestMergeMethodsAtom, { "github.com/acme/web": "squash" });
     renderPullRequestsPage({ store });
-    const group = await screen.findByRole("group", { name: "Quick actions for #5" });
+    const group = await screen.findByRole("group", { name: "#5 的快捷操作" });
     expect(group.hasAttribute("data-visible")).toBe(false);
     act(() => void fireEvent.keyDown(window, { key: "Shift" }));
     expect(group.hasAttribute("data-visible")).toBe(true);
 
-    await userEvent.click(within(group).getByRole("button", { name: "Approve #5" }));
-    await userEvent.click(within(group).getByRole("button", { name: "Confirm approve #5" }));
+    await userEvent.click(within(group).getByRole("button", { name: "批准 #5" }));
+    await userEvent.click(within(group).getByRole("button", { name: "确认批准 #5" }));
     await waitFor(() =>
       expect(api.submitPullRequestReview).toHaveBeenCalledWith(
         expect.objectContaining({ event: "approve", commitOid: "head-5", number: 5 }),
       ),
     );
-    await userEvent.click(within(group).getByRole("button", { name: "Merge #5" }));
-    await userEvent.click(within(group).getByRole("button", { name: "Confirm merge #5" }));
+    await userEvent.click(within(group).getByRole("button", { name: "合并 #5" }));
+    await userEvent.click(within(group).getByRole("button", { name: "确认合并 #5" }));
     await waitFor(() =>
       expect(api.mergePullRequest).toHaveBeenCalledWith({
         host: "github.com",
@@ -149,10 +149,10 @@ describe("PullRequestsPage list", () => {
       }),
     );
 
-    const close = within(group).getByRole("button", { name: "Close #5" });
+    const close = within(group).getByRole("button", { name: "关闭 #5" });
     await userEvent.click(close);
     expect(api.setPullRequestState).not.toHaveBeenCalled();
-    await userEvent.click(within(group).getByRole("button", { name: "Confirm close #5" }));
+    await userEvent.click(within(group).getByRole("button", { name: "确认关闭 #5" }));
     await waitFor(() =>
       expect(api.setPullRequestState).toHaveBeenCalledWith({
         host: "github.com",
@@ -171,7 +171,7 @@ describe("PullRequestsPage list", () => {
       status: async () => sourceControlStatus({ github: { authenticated: false } }),
     });
     renderPullRequestsPage();
-    expect(await screen.findByText("Sign in to GitHub")).toBeTruthy();
+    expect(await screen.findByText("登录 GitHub")).toBeTruthy();
     expect(screen.getByText("gh auth login")).toBeTruthy();
     expect(api.searchPullRequests).not.toHaveBeenCalled();
   });
@@ -189,7 +189,7 @@ describe("PullRequestsPage list", () => {
       }),
     });
     renderPullRequestsPage();
-    expect((await screen.findByRole("status")).textContent).toContain("GitHub rate limit reached");
+    expect((await screen.findByRole("status")).textContent).toContain("GitHub 速率限制已达");
     await waitFor(() =>
       expect(
         screen.getAllByText(`GitHub rate limit reached. Try again after ${time}.`),
@@ -205,17 +205,17 @@ describe("PullRequestsPage list", () => {
     });
     renderPullRequestsPage({ pr: "github.com/acme/web/5", selectedSessionID: task.id });
     expect(
-      await screen.findByText(/Task linking is unavailable on this connection\. This is an SSH/),
+      await screen.findByText(/任务关联在此连接不可用。This is an SSH/),
     ).toBeTruthy();
     expect(await screen.findByRole("button", { name: /^#5 / })).toBeTruthy();
     await screen.findByRole("region", { name: /^#5 / });
-    expect(screen.queryByRole("button", { name: /Link to current task/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /关联到当前任务/ })).toBeNull();
   });
 
   it("starts a task in the matching project with a prompt referencing the pull request", async () => {
     installSourceControl();
     const { router, store } = renderPullRequestsPage({ pr: "github.com/acme/web/8" });
-    await userEvent.click(await screen.findByRole("button", { name: "Start task" }));
+    await userEvent.click(await screen.findByRole("button", { name: "启动任务" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/new"));
     const draft = store.get(
       composerDraftAtomFamily(composerScope("profile", `new:${project.id}:${project.canonical}:`)),
@@ -232,7 +232,7 @@ describe("PullRequestsPage list", () => {
       selectedSessionID: task.id,
     });
     await userEvent.click(
-      await screen.findByRole("button", { name: "Link to current task, Fix login" }),
+      await screen.findByRole("button", { name: "关联到当前任务，Fix login" }),
     );
     await waitFor(() =>
       expect(api.linkPullRequest).toHaveBeenCalledWith({
@@ -241,7 +241,7 @@ describe("PullRequestsPage list", () => {
         url: "https://github.com/acme/web/pull/5",
       }),
     );
-    await userEvent.click(screen.getByRole("button", { name: "Open task Untitled task" }));
+    await userEvent.click(screen.getByRole("button", { name: "打开任务 Untitled task" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/sessions/other-task"));
   });
 });

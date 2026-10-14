@@ -178,7 +178,7 @@ it("pauses for earlier-button focus and resumes only after both hover and rail f
   });
   const list = screen.getByRole("listbox");
   const rail = list.parentElement!.parentElement!;
-  const earlier = screen.getByRole("button", { name: "Load earlier prompts" });
+  const earlier = screen.getByRole("button", { name: "加载更早的提示" });
   act(() => earlier.focus());
   rerender(<TranscriptRail {...props} activeMessageID="message-100" />);
   expect(list.scrollTop).toBe(0);
@@ -267,7 +267,7 @@ it("loads earlier only on the explicit action and disables it while loading", ()
   const earlier = { available: true, loading: false, load: vi.fn(async () => true) };
   const { props, rerender } = setup({ earlier });
   expect(earlier.load).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Load earlier prompts" }));
+  fireEvent.click(screen.getByRole("button", { name: "加载更早的提示" }));
   expect(earlier.load).toHaveBeenCalledTimes(1);
   rerender(<TranscriptRail {...props} earlier={{ ...earlier, loading: true }} />);
   expect((screen.getByRole("button") as HTMLButtonElement).disabled).toBe(true);
@@ -278,7 +278,7 @@ it("retains keyboard focus, selection, and accessible previews when the pane bec
   const { props, rerender } = setup({
     earlier: { available: true, loading: false, load: vi.fn(async () => true) },
   });
-  const list = screen.getByRole("listbox", { name: "Prompt navigation" });
+  const list = screen.getByRole("listbox", { name: "提示导航" });
   act(() => list.focus());
   fireEvent.keyDown(list, { key: "End" });
   const descendant = list.getAttribute("aria-activedescendant");
@@ -292,7 +292,7 @@ it("retains keyboard focus, selection, and accessible previews when the pane bec
   );
   fireEvent.keyDown(list, { key: "Enter" });
   expect(props.onSelect).toHaveBeenLastCalledWith("message-19");
-  const earlier = screen.getByRole("button", { name: "Load earlier prompts" });
+  const earlier = screen.getByRole("button", { name: "加载更早的提示" });
   act(() => earlier.focus());
   expect(document.activeElement).toBe(earlier);
   expect(earlier.tabIndex).toBe(0);
@@ -316,7 +316,7 @@ it("uses the latest selection and history callbacks after callback-only parent u
   fireEvent.click(screen.getByRole("option", { name: "Prompt 2" }));
   expect(onSelect).toHaveBeenCalledWith("message-2");
   expect(props.onSelect).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Load earlier prompts" }));
+  fireEvent.click(screen.getByRole("button", { name: "加载更早的提示" }));
   expect(load).toHaveBeenCalledOnce();
   expect(earlier.load).not.toHaveBeenCalled();
 });

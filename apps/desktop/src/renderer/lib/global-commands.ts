@@ -31,12 +31,12 @@ export interface GlobalCommand {
 }
 
 export const GLOBAL_COMMAND_GROUP_LABELS: Record<GlobalCommandGroup, string> = {
-  tasks: "Recent tasks",
-  actions: "Quick actions",
-  settings: "Settings",
-  projects: "Projects",
-  diagnostics: "Diagnostics",
-  development: "Development",
+  tasks: "最近任务",
+  actions: "快速操作",
+  settings: "设置",
+  projects: "项目",
+  diagnostics: "诊断",
+  development: "开发",
 };
 
 const DEFAULT_GROUP_ORDER: readonly GlobalCommandGroup[] = [

@@ -57,7 +57,7 @@ function WorkspacePicker({
   onSelect(selection: WorkspaceSelection): void;
 }) {
   const [open, setOpen] = useState(false);
-  const label = selection.type === "create" ? "New worktree" : "Current checkout";
+  const label = selection.type === "create" ? "新工作树" : "当前检出";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -68,25 +68,25 @@ function WorkspacePicker({
             variant="ghost"
             size="context"
             className="max-w-48"
-            aria-label={`Work in: ${label}`}
+            aria-label={`工作于：${label}`}
             title={label}
           />
         }
       >
         <FolderGit2 className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="truncate">
-          {selection.type === "create" ? "New worktree" : "Checkout"}
+          {selection.type === "create" ? "新工作树" : "检出"}
         </span>
         <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 gap-1 p-1.5">
         <PopoverHeader className="px-2 py-1">
-          <PopoverTitle>Work in</PopoverTitle>
-          <PopoverDescription>Choose where OpenCode creates this task.</PopoverDescription>
+          <PopoverTitle>工作于</PopoverTitle>
+          <PopoverDescription>选择 OpenCode 创建此任务的位置。</PopoverDescription>
         </PopoverHeader>
         <WorkspaceOption
-          title="New worktree"
-          description="Start detached from the current HEAD"
+          title="新工作树"
+          description="从当前 HEAD 分离启动"
           active={selection.type === "create"}
           onClick={() => {
             onSelect({ type: "create" });
@@ -94,8 +94,8 @@ function WorkspacePicker({
           }}
         />
         <WorkspaceOption
-          title="Current checkout"
-          description="Use the project folder directly"
+          title="当前检出"
+          description="直接使用项目文件夹"
           active={selection.type === "current"}
           onClick={() => {
             onSelect({ type: "current", directory: project.canonical });
@@ -159,7 +159,7 @@ function BranchPicker({
             variant="ghost"
             size="context"
             className="max-w-52"
-            aria-label={`Source branch: ${value}`}
+            aria-label={`源分支：${value}`}
           />
         }
       >
@@ -169,14 +169,14 @@ function BranchPicker({
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 gap-1 p-1.5">
         <PopoverHeader className="px-2 py-1">
-          <PopoverTitle>Source branch</PopoverTitle>
-          <PopoverDescription>Choose the ref for the new detached worktree.</PopoverDescription>
+          <PopoverTitle>源分支</PopoverTitle>
+          <PopoverDescription>选择新分离工作树的引用。</PopoverDescription>
         </PopoverHeader>
         <Input
           type="search"
           value={search}
-          placeholder="Search branches"
-          aria-label="Search branches"
+          placeholder="搜索分支"
+          aria-label="搜索分支"
           className="mb-1 h-8"
           onChange={(event) => onSearchChange(event.target.value)}
         />
@@ -198,7 +198,7 @@ function BranchPicker({
           ))}
           {branches.length === 0 ? (
             <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-              No matching branches
+              无匹配分支
             </p>
           ) : null}
         </div>
@@ -347,7 +347,7 @@ export function NewTask({
       } catch (error) {
         setCreationErrorState({
           identity: workspaceIdentity,
-          message: error instanceof Error ? error.message : "Could not create this task.",
+          message: error instanceof Error ? error.message : "无法创建此任务。",
         });
         throw error;
       }
@@ -371,7 +371,7 @@ export function NewTask({
         setCreationErrorState({
           identity: workspaceIdentity,
           message:
-            error instanceof Error ? error.message : "Could not apply this task's selection.",
+            error instanceof Error ? error.message : "无法应用此任务的选择。",
         });
         // Keep the draft intact. Returning a session here would submit with the wrong selection.
         throw error;
@@ -399,11 +399,11 @@ export function NewTask({
       <main className="flex size-full items-center justify-center p-8 text-center">
         <div className="max-w-sm">
           <PalotBeacon className="mx-auto mb-6" />
-          <h1 className="text-lg font-semibold">Choose a task destination</h1>
+          <h1 className="text-lg font-semibold">选择任务目标</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {selectedProjectID
-              ? "This project is not available on the selected server. Reconnect or choose another destination."
-              : "Choose a project and server below. You can add a project folder from the sidebar."}
+              ? "此项目在所选服务器上不可用。请重新连接或选择其他目标。"
+              : "请在下方选择一个项目和服务器。你可以从侧栏添加项目文件夹。"}
           </p>
           <div className="mt-4 flex justify-center">
             <ConnectionDestination
@@ -423,7 +423,7 @@ export function NewTask({
   return (
     <main
       className="palot-main-surface @container/new-task relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-background"
-      aria-label="New task"
+      aria-label="新建任务"
       data-palot-new-task
     >
       <div className="palot-main-surface-header window-drag h-(--shell-header-height) shrink-0 border-b bg-background/90" />
@@ -431,11 +431,11 @@ export function NewTask({
         <div className="flex w-full min-w-0 flex-col items-center gap-9">
           <PalotBeacon />
           <h1 className="flex max-w-full flex-wrap items-center justify-center gap-x-[0.3em] text-center text-hero/tight font-normal tracking-[-0.035em] max-[720px]:text-2xl">
-            <span>What should we build in</span>
+            <span>我们要在</span>
             {/* Keep "?" attached to the name; the flex gap belongs only between word groups. */}
             <span className="flex min-w-0 max-w-full">
               <span className="truncate">{projectName(selectedProject)}</span>
-              <span className="shrink-0">?</span>
+              <span className="shrink-0">中构建什么？</span>
             </span>
           </h1>
           <Composer
@@ -447,7 +447,7 @@ export function NewTask({
             onCreateSessionError={(error) =>
               setCreationErrorState({
                 identity: workspaceIdentity,
-                message: error instanceof Error ? error.message : "Could not create this task.",
+                message: error instanceof Error ? error.message : "无法创建此任务。",
               })
             }
             contextBarMode="compact"
@@ -493,14 +493,14 @@ export function NewTask({
                     className="ml-auto flex h-6 min-w-0 items-center gap-1 px-1.5 text-meta leading-none text-muted-foreground max-[560px]:ml-0"
                     title={
                       workspaceSelection.type === "create"
-                        ? "OpenCode creates a detached worktree at the current checkout's HEAD commit"
-                        : "Current branch for the selected checkout"
+                        ? "OpenCode 在当前检出的 HEAD 提交处创建分离工作树"
+                        : "当前检出的分支"
                     }
                   >
                     <GitBranch className="size-3 shrink-0" aria-hidden="true" />
                     <span className="truncate">
-                      {workspaceSelection.type === "create" ? "From" : "On"}{" "}
-                      {selectedSourceBranch ?? "current HEAD"}
+                      {workspaceSelection.type === "create" ? "从" : "在"}{" "}
+                      {selectedSourceBranch ?? "当前 HEAD"}
                     </span>
                   </div>
                 ) : null}

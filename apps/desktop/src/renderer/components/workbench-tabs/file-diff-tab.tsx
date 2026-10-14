@@ -76,7 +76,7 @@ function FileDiffContent({
   if (query.isPending) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Spinner /> Loading diff
+        <Spinner /> 正在加载 diff
       </div>
     );
   }
@@ -84,11 +84,11 @@ function FileDiffContent({
     return (
       <Empty className="rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Could not load diff</EmptyTitle>
+          <EmptyTitle>无法加载 diff</EmptyTitle>
           <EmptyDescription>{query.error.message}</EmptyDescription>
         </EmptyHeader>
         <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
-          <RefreshCw data-icon="inline-start" /> Retry
+          <RefreshCw data-icon="inline-start" /> 重试
         </Button>
       </Empty>
     );
@@ -100,9 +100,9 @@ function FileDiffContent({
           <EmptyMedia variant="icon">
             <FileCode2 aria-hidden="true" />
           </EmptyMedia>
-          <EmptyTitle>Diff unavailable</EmptyTitle>
+          <EmptyTitle>Diff 不可用</EmptyTitle>
           <EmptyDescription>
-            {tab.resource.path} is no longer present in the {tab.resource.mode} changes.
+            {tab.resource.path} 不再存在于{tab.resource.mode}更改中。
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -134,8 +134,8 @@ function FileDiffContent({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Open in editor"
-          title="Open in editor"
+          aria-label="在编辑器中打开"
+          title="在编辑器中打开"
           disabled={
             runtime?.profileID !== tab.resource.profileID ||
             runtime?.capabilities?.localPathActions !== true
@@ -158,8 +158,8 @@ function FileDiffContent({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Reveal in Finder"
-          title="Reveal in Finder"
+          aria-label="在 Finder 中显示"
+          title="在 Finder 中显示"
           disabled={
             runtime?.profileID !== tab.resource.profileID ||
             runtime?.capabilities?.localPathActions !== true
@@ -174,7 +174,7 @@ function FileDiffContent({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Refresh diff"
+          aria-label="刷新 diff"
           onClick={() => void query.refetch()}
         >
           <RefreshCw className={cn(query.isFetching && "animate-spin")} aria-hidden="true" />
@@ -212,8 +212,8 @@ function FileDiffContent({
   ) : (
     <Empty className="rounded-none p-5">
       <EmptyHeader>
-        <EmptyTitle>Diff details unavailable</EmptyTitle>
-        <EmptyDescription>OpenCode did not return a patch for this file.</EmptyDescription>
+        <EmptyTitle>Diff 详情不可用</EmptyTitle>
+        <EmptyDescription>OpenCode 未返回此文件的补丁。</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

@@ -47,23 +47,23 @@ describe("KeyboardShortcutsSettings", () => {
 
   it("filters the reference by label and keeps matches under their group", async () => {
     const user = renderSettings();
-    expect(screen.getByRole("heading", { name: "Task view" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "任务视图" })).toBeTruthy();
 
     await user.type(
-      screen.getByRole("searchbox", { name: "Filter keyboard shortcuts" }),
-      "cycle agent",
+      screen.getByRole("searchbox", { name: "筛选键盘快捷键" }),
+      "循环",
     );
 
     expect(screen.getAllByRole("heading").map((heading) => heading.textContent)).toEqual([
-      "Composer",
+      "编辑器",
     ]);
-    expect(screen.getByText("Cycle agent")).toBeTruthy();
-    expect(screen.getByText("Cycle agent backwards")).toBeTruthy();
-    expect(screen.queryByText("Find in task")).toBeNull();
+    expect(screen.getByText("循环智能体")).toBeTruthy();
+    expect(screen.getByText("向后循环智能体")).toBeTruthy();
+    expect(screen.queryByText("在任务中查找")).toBeNull();
 
-    await user.clear(screen.getByRole("searchbox", { name: "Filter keyboard shortcuts" }));
+    await user.clear(screen.getByRole("searchbox", { name: "筛选键盘快捷键" }));
     await user.type(
-      screen.getByRole("searchbox", { name: "Filter keyboard shortcuts" }),
+      screen.getByRole("searchbox", { name: "筛选键盘快捷键" }),
       "no such shortcut",
     );
     expect(screen.getByText(/No shortcuts match/)).toBeTruthy();
@@ -71,17 +71,17 @@ describe("KeyboardShortcutsSettings", () => {
 
   it("lists Find in changes as an editable shortcut", () => {
     renderSettings();
-    expect(within(row("changes.find")).getByText("Find in changes")).toBeTruthy();
+    expect(within(row("changes.find")).getByText("在更改中查找")).toBeTruthy();
     expect(
       within(row("changes.find")).getByRole("button", {
-        name: /Change shortcut for Find in changes/,
+        name: /Change shortcut for 在更改中查找/,
       }),
     ).toBeTruthy();
   });
 
   it("records a new binding that the matcher and other labels follow", async () => {
     const user = renderSettings();
-    await user.click(screen.getByRole("button", { name: /Change shortcut for New task/ }));
+    await user.click(screen.getByRole("button", { name: /Change shortcut for 新建任务/ }));
     expect(within(row("task.new")).getByText("Press keys…")).toBeTruthy();
 
     await user.keyboard("{Control>}j{/Control}");
@@ -90,13 +90,13 @@ describe("KeyboardShortcutsSettings", () => {
     expect(matchesShortcut(ctrl("n"), shortcutKeys("task.new"))).toBe(false);
     expect(screen.getByTestId("new-task-hint").textContent).toBe("Ctrl+J");
     expect(
-      screen.getByRole("button", { name: "Change shortcut for New task, currently Ctrl+J" }),
+      screen.getByRole("button", { name: "Change shortcut for 新建任务, currently Ctrl+J" }),
     ).toBeTruthy();
   });
 
   it("cancels with Escape, clears with Backspace, and rejects bare keys", async () => {
     const user = renderSettings();
-    const change = () => screen.getByRole("button", { name: /Change shortcut for New task/ });
+    const change = () => screen.getByRole("button", { name: /Change shortcut for 新建任务/ });
 
     await user.click(change());
     await user.keyboard("j");
@@ -110,11 +110,11 @@ describe("KeyboardShortcutsSettings", () => {
     expect(shortcutKeys("task.new")).toEqual([]);
     expect(screen.getByTestId("new-task-hint").textContent).toBe("none");
     expect(change().getAttribute("aria-label")).toBe(
-      "Change shortcut for New task, currently Not set",
+      "Change shortcut for 新建任务, currently 未设置",
     );
 
     // The palette is the way into every command, so it cannot be cleared.
-    await user.click(screen.getByRole("button", { name: /Change shortcut for Search tasks/ }));
+    await user.click(screen.getByRole("button", { name: /Change shortcut for 搜索任务和命令/ }));
     await user.keyboard("{Backspace}");
     expect(within(row("palette.open")).getByRole("alert").textContent).toMatch(/needs a shortcut/);
     expect(shortcutKeys("palette.open")).toEqual(["Mod", "K"]);
@@ -123,13 +123,13 @@ describe("KeyboardShortcutsSettings", () => {
   it("offers to replace or cancel a conflicting binding", async () => {
     const user = renderSettings();
     const recordNewTask = async () => {
-      await user.click(screen.getByRole("button", { name: /Change shortcut for New task/ }));
+      await user.click(screen.getByRole("button", { name: /Change shortcut for 新建任务/ }));
       await user.keyboard("{Control>}b{/Control}");
     };
 
     await recordNewTask();
     const alert = within(row("task.new")).getByRole("alert");
-    expect(alert.textContent).toContain("Ctrl+B is already used by Show or hide navigation");
+    expect(alert.textContent).toContain("Ctrl+B is already used by 显示或隐藏导航");
     await user.click(within(alert).getByRole("button", { name: "Cancel" }));
     expect(shortcutKeys("task.new")).toEqual(["Mod", "N"]);
     expect(shortcutKeys("navigation.toggle")).toEqual(["Mod", "B"]);
@@ -147,9 +147,9 @@ describe("KeyboardShortcutsSettings", () => {
     setShortcutBinding("settings.open", ["Mod", "Shift", "P"]);
     const user = renderSettings();
 
-    await user.click(screen.getByRole("button", { name: "Reset New task to Ctrl+N" }));
+    await user.click(screen.getByRole("button", { name: "Reset 新建任务 to Ctrl+N" }));
     expect(shortcutKeys("task.new")).toEqual(["Mod", "N"]);
-    expect(screen.queryByRole("button", { name: "Reset New task to Ctrl+N" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Reset 新建任务 to Ctrl+N" })).toBeNull();
     expect(shortcutKeys("settings.open")).toEqual(["Mod", "Shift", "P"]);
 
     await user.click(screen.getByRole("button", { name: "Restore defaults" }));
@@ -163,6 +163,6 @@ describe("KeyboardShortcutsSettings", () => {
     renderSettings();
     expect(within(row("composer.send")).queryByRole("button")).toBeNull();
     expect(within(row("composer.send")).getByText("Part of typing in the composer")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Change shortcut for Send message/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Change shortcut for 发送消息/ })).toBeNull();
   });
 });
