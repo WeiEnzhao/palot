@@ -114,7 +114,7 @@ export function KeyboardShortcutsSettings() {
     resetShortcutBindings();
     setPending(null);
     stopRecording();
-    toast.add({ type: "success", title: "Default shortcuts restored" });
+    toast.add({ type: "success", title: "已恢复默认快捷键" });
   };
 
   return (
@@ -128,8 +128,8 @@ export function KeyboardShortcutsSettings() {
           <Input
             type="search"
             value={query}
-            placeholder="Filter shortcuts"
-            aria-label="Filter keyboard shortcuts"
+            placeholder="筛选快捷键"
+            aria-label="筛选键盘快捷键"
             className="h-8 pr-8 pl-8"
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -138,7 +138,7 @@ export function KeyboardShortcutsSettings() {
               type="button"
               size="icon-xs"
               variant="ghost"
-              aria-label="Clear shortcut filter"
+              aria-label="清除快捷键筛选"
               className="absolute top-1/2 right-1.5 -translate-y-1/2"
               onClick={() => setQuery("")}
             >
@@ -221,12 +221,12 @@ function ShortcutRow({
   const keys = shortcutKeys(shortcut.id);
   // A recorded Space must not reach the button's keyup activation and restart recording.
   const capturedCode = useRef<string | null>(null);
-  const label = keys.length > 0 ? formatShortcut(keys) : "Not set";
+  const label = keys.length > 0 ? formatShortcut(keys) : "未设置";
   const replaceable = conflict?.conflicts.every((other) => !other.locked && !other.required);
   const hint = recording
     ? shortcut.required
-      ? "Press the new keys. Esc cancels."
-      : "Press the new keys. Esc cancels, Delete clears."
+      ? "按下新的按键。Esc 取消。"
+      : "按下新的按键。Esc 取消，Delete 清除。"
     : shortcut.note;
 
   return (

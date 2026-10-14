@@ -84,7 +84,7 @@ function ProjectSettingsScope({
             directories.has(String(queryKey[3]))),
       });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save project settings.");
+      setError(cause instanceof Error ? cause.message : "无法保存项目设置。");
     } finally {
       setPending(false);
     }
@@ -92,7 +92,7 @@ function ProjectSettingsScope({
 
   if (!project)
     return (
-      <SettingsSection title="Project" icon={FolderGit2}>
+      <SettingsSection title="项目" icon={FolderGit2}>
         {query.error ? (
           <Alert variant="destructive">
             <AlertDescription>
@@ -133,9 +133,9 @@ function ProjectSettingsScope({
 
   return (
     <SettingsSection
-      title="Project details"
+      title="项目详情"
       icon={FolderGit2}
-      description="Saved by OpenCode for this project, not written to your configuration files."
+      description="由 OpenCode 为此项目保存，不写入您的配置文件。"
     >
       <form
         onSubmit={(event) => {
@@ -148,31 +148,31 @@ function ProjectSettingsScope({
           <FieldGroup className="p-4">
             {field(
               "name",
-              "Project name",
+              "项目名称",
               project.name ?? "",
-              "Leave blank to use the directory name.",
+              "留空以使用目录名。",
             )}
             {field(
               "override",
-              "Icon override",
+              "图标覆盖",
               project.icon?.override ?? "",
               "Image URL or data URL. Leave blank to use the discovered project icon.",
             )}
             {field(
               "color",
-              "Icon color",
+              "图标颜色",
               project.icon?.color ?? "",
               "Optional color value. Leave blank to clear the override.",
             )}
             {field(
               "start",
-              "Worktree startup command",
+              "工作树启动命令",
               project.commands?.start ?? "",
               "Runs when OpenCode creates a worktree. Saving does not run it. Leave blank to disable.",
             )}
             {field(
               "canonical",
-              "Main checkout directory",
+              "主检出目录",
               project.canonical,
               "Absolute path on the connected OpenCode server. Changes the project's canonical directory metadata only; files and existing sessions are not moved.",
             )}

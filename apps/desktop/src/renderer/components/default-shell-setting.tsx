@@ -44,7 +44,7 @@ export function DefaultShellSetting() {
     },
     onError: (error, _shell, context) => {
       if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      showErrorToast("Could not change the default shell", error);
+      showErrorToast("无法更改默认 shell", error);
     },
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: openCodeKeys.settings(connectionID) }),
@@ -55,23 +55,23 @@ export function DefaultShellSetting() {
   const current = settings?.shell ?? null;
   const currentLabel = current
     ? (options.find((option) => option.value === current)?.label ?? current)
-    : "Auto";
+    : "自动";
   const status = !available
-    ? "Connect to an OpenCode server to choose its shell."
+    ? "连接到 OpenCode 服务器以选择其 shell。"
     : query.isPending
-      ? "Loading available shells…"
+      ? "正在加载可用 shell…"
       : undefined;
 
   return (
     <SettingsRow
-      title="Default shell"
-      description="The shell OpenCode uses for terminals and agent commands. Auto lets OpenCode choose. Applies to every project on the current task's server."
+      title="默认 shell"
+      description="OpenCode 用于终端和智能体命令的 shell。自动让 OpenCode 选择。适用于当前任务服务器上的每个项目。"
       status={status}
       control={
         query.isError ? (
           <>
             <span role="alert" className="text-meta text-destructive">
-              {query.error instanceof Error ? query.error.message : "Could not load shells."}
+              {query.error instanceof Error ? query.error.message : "无法加载 shell。"}
             </span>
             <Button type="button" size="sm" variant="outline" onClick={() => void query.refetch()}>
               Retry
@@ -86,7 +86,7 @@ export function DefaultShellSetting() {
               if (shell !== current) mutation.mutate(shell);
             }}
           >
-            <SelectTrigger className="w-full @lg/settings:w-48" aria-label="Default shell">
+            <SelectTrigger className="w-full @lg/settings:w-48" aria-label="默认 shell">
               <SelectValue>{currentLabel}</SelectValue>
             </SelectTrigger>
             <SelectContent align="end">

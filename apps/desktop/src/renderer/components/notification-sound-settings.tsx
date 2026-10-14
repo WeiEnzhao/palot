@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { SettingsGroup, SettingsRow, SettingsSection } from "./settings-layout";
 
 const SOUND_LABELS: Record<NotificationSoundChoice, string> = {
-  off: "Off",
+  off: "关闭",
   ...(Object.fromEntries(NOTIFICATION_SOUND_OPTIONS.map(({ id, label }) => [id, label])) as Record<
     NotificationSoundID,
     string
@@ -40,7 +40,7 @@ export function NotificationSoundSettings({
 
   return (
     <SettingsSection
-      title="Sounds"
+      title="声音"
       description={
         desktopSettings?.turnCompletion === "unfocused"
           ? "Play a short sound when tasks finish or need you. Turn sounds play only while Palot is in the background, like turn completion notifications."
@@ -92,7 +92,7 @@ export function NotificationSoundSettings({
                     size="icon-sm"
                     variant="ghost"
                     aria-label={`Play ${event.label.toLowerCase()} sound`}
-                    title="Play sound"
+                    title="播放声音"
                     disabled={choice === "off"}
                     onClick={() => {
                       if (choice !== "off") play(choice);

@@ -424,7 +424,7 @@ export function Settings({
   const error = settings.error
     ? settings.error instanceof Error
       ? settings.error.message
-      : "Could not load OpenCode settings."
+      : "无法加载 OpenCode 设置。"
     : null;
   const visibleNav = normalizedQuery
     ? SETTINGS_NAV_ITEMS.filter((item) =>
@@ -438,7 +438,7 @@ export function Settings({
   return (
     <main
       className="flex size-full min-h-0 flex-col bg-transparent md:flex-row"
-      aria-label="Settings"
+      aria-label="设置"
     >
       <div className="palot-navigation-rail hidden shrink-0 flex-col bg-sidebar md:flex">
         <div className="window-drag h-(--shell-header-height) shrink-0" aria-hidden="true" />
@@ -452,8 +452,8 @@ export function Settings({
               type="search"
               autoFocus
               value={query}
-              placeholder="Search settings"
-              aria-label="Search settings"
+              placeholder="搜索设置"
+              aria-label="搜索设置"
               className="h-8 bg-background/55 pr-8 pl-8"
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -462,7 +462,7 @@ export function Settings({
                 type="button"
                 size="icon-xs"
                 variant="ghost"
-                aria-label="Clear settings search"
+                aria-label="清除设置搜索"
                 className="absolute top-1/2 right-1.5 -translate-y-1/2"
                 onClick={() => setQuery("")}
               >
@@ -474,9 +474,9 @@ export function Settings({
         <ScrollArea className="min-h-0 flex-1 px-2 md:px-2.5">
           <nav
             className="flex gap-1 py-1 md:flex md:flex-col md:gap-3"
-            aria-label="Settings categories"
+            aria-label="设置分类"
           >
-            {(["Palot", "OpenCode", "System"] as const).map((group) => {
+            {(["Palot", "OpenCode", "系统"] as const).map((group) => {
               const items = visibleNav.filter((item) => item.group === group);
               if (items.length === 0) return null;
               return (
@@ -548,13 +548,13 @@ export function Settings({
                 }}
               >
                 <SelectTrigger
-                  aria-label="Configure server"
+                  aria-label="配置服务器"
                   className="window-no-drag w-auto min-w-28 max-w-52"
                 >
-                  <SelectValue className="min-w-0 truncate" placeholder="Configure server">
+                  <SelectValue className="min-w-0 truncate" placeholder="配置服务器">
                     {server.profiles.find((profile) => profile.id === server.profileID)?.name ??
                       runtime?.profileID ??
-                      "Choose server"}
+                      "选择服务器"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -576,7 +576,7 @@ export function Settings({
                 projects={projects}
                 value={project?.id ?? null}
                 onValueChange={(value) => value && setProjectChoice(value)}
-                ariaLabel="Settings project"
+                ariaLabel="设置项目"
                 align="end"
                 variant="settings"
               />
@@ -586,7 +586,7 @@ export function Settings({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Refresh settings"
+                aria-label="刷新设置"
                 disabled={loading || server.projectsPending || !server.available}
                 onClick={() => void refresh()}
               >
@@ -665,11 +665,11 @@ export function Settings({
               "diagnostics",
               "about",
             ].includes(category) ? (
-              <SettingsSection title="No project selected" icon={FolderGit2}>
+              <SettingsSection title="未选择项目" icon={FolderGit2}>
                 <p className="px-4 text-sm text-muted-foreground">
                   {server.projectsPending
-                    ? "Loading this server's projects…"
-                    : "Add a project on this server before configuring project-scoped OpenCode settings."}
+                    ? "正在加载此服务器的项目…"
+                    : "在配置项目范围的 OpenCode 设置之前，请先在此服务器上添加项目。"}
                 </p>
               </SettingsSection>
             ) : (
@@ -800,69 +800,69 @@ function SettingsContent({
 }
 
 const ACTIVITY_CATEGORY_LABELS: Record<ActivityCategory, string> = {
-  reasoning: "Reasoning",
-  read: "Reads",
-  "code-search": "Code searches",
-  edit: "Edits",
-  command: "Commands",
-  web: "Web activity",
-  delegation: "Delegation",
-  other: "Other tools",
+  reasoning: "推理",
+  read: "读取",
+  "code-search": "代码搜索",
+  edit: "编辑",
+  command: "命令",
+  web: "网页活动",
+  delegation: "委托",
+  other: "其他工具",
 };
 
 const PROJECTION_PRESET_DESCRIPTIONS: Record<SessionProjectionPreset, string> = {
-  "code-focus": "Keeps the final response prominent and activity available as summaries.",
+  "code-focus": "保持最终响应突出，活动以摘要形式呈现。",
   compact:
-    "Keeps the current phase open with reasoning summaries while completed work stays compact.",
-  expanded: "Shows every activity row while keeping raw tool inputs and outputs inspectable.",
+    "保持当前阶段展开并显示推理摘要，已完成工作保持紧凑。",
+  expanded: "显示每个活动行，同时保持原始工具输入和输出可检查。",
 };
 
 const PROJECTION_PRESET_LABELS: Record<SessionProjectionPreset, string> = {
-  "code-focus": "Focused",
-  compact: "Balanced",
-  expanded: "Detailed",
+  "code-focus": "聚焦",
+  compact: "平衡",
+  expanded: "详细",
 };
 
 const ACTIVITY_PRESENTATION_LABELS: Record<ActivityProjectionPreference["presentation"], string> = {
-  individual: "Individual",
-  grouped: "Grouped",
-  hidden: "Hidden when completed",
+  individual: "单独",
+  grouped: "分组",
+  hidden: "完成后隐藏",
 };
 
 const DETAIL_DEFAULT_LABELS: Record<ActivityProjectionPreference["details"], string> = {
-  collapsed: "Collapsed",
-  expanded: "Expanded",
+  collapsed: "折叠",
+  expanded: "展开",
 };
 
 const FOLDED_TURN_LABELS: Record<ActivityProjectionPreference["foldedTurn"], string> = {
-  inside: "Inside",
-  pinned: "Keep visible",
+  inside: "内部",
+  pinned: "保持可见",
 };
 
 const GROUP_TITLE_LABELS: Record<GroupTitleMode, string> = {
-  summary: "Activity summary",
-  "latest-reasoning": "Reasoning intent",
+  summary: "活动摘要",
+  "latest-reasoning": "推理意图",
 };
 
 const SIDEBAR_MODE_LABELS = {
-  remember: "Remember",
-  project: "Projects",
-  inbox: "Inbox",
+  remember: "记住",
+  project: "项目",
+  inbox: "收件箱",
 } as const;
 
 const WORKSPACE_MODE_LABELS = {
-  worktree: "Worktree",
-  current: "Current checkout",
+  worktree: "工作树",
+  current: "当前检出",
 } as const;
 
 const WORKTREE_BASE_LABELS = {
-  "repository-default": "Repository default",
-  current: "Current branch",
+  "repository-default": "仓库默认",
+  current: "当前分支",
 } as const;
 
 const DELIVERY_LABELS = {
-  steer: "Steer",
-  queue: "Queue",
+  steer: "引导",
+  queue: "队列",
 } as const;
 
 function BrowserSettings() {
@@ -886,9 +886,9 @@ function BrowserSettings() {
         profileID: runtime.profileID,
         connectionID: runtime.connectionID,
       });
-      toast.add({ type: "success", title: "Task browser data cleared" });
+      toast.add({ type: "success", title: "任务浏览器数据已清除" });
     } catch (error) {
-      showErrorToast("Could not clear browser data", error);
+      showErrorToast("无法清除浏览器数据", error);
     } finally {
       setClearing(false);
     }
@@ -897,17 +897,17 @@ function BrowserSettings() {
   return (
     <div className="space-y-8">
       <SettingsSection
-        title="Browser access"
-        description="Experimental workbench browser for tasks."
+        title="浏览器访问"
+        description="实验性的任务工作台浏览器。"
       >
         <SettingsGroup>
           <SettingsRow
-            title="Enable browser"
-            description="Allow tasks to open browser tabs in the workbench. Requires the OpenCode browser plugin on the connected server. The browser tool can access sites reachable from that server, including localhost and private networks. Palot cannot require per-site approval yet."
+            title="启用浏览器"
+            description="允许任务在工作台中打开浏览器标签。需要连接服务器上的 OpenCode 浏览器插件。浏览器工具可以访问从该服务器可达的站点，包括 localhost 和私有网络。Palot 尚不支持逐站点审批。"
             control={
               <Switch
                 checked={experimentalBrowser}
-                aria-label="Enable experimental browser"
+                aria-label="启用实验性浏览器"
                 onCheckedChange={(checked) => setExperimentalBrowser(Boolean(checked))}
               />
             }
@@ -915,19 +915,19 @@ function BrowserSettings() {
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Navigation"
-        description="Choose where links open and how addresses appear."
+        title="导航"
+        description="选择链接打开位置和地址显示方式。"
       >
         <SettingsGroup>
           <SettingsRow
-            title="Search engine"
-            description="Used when you enter search terms instead of a URL in the browser address bar."
+            title="搜索引擎"
+            description="在浏览器地址栏输入搜索词而非 URL 时使用。"
             control={
               <Select
                 value={searchEngine}
                 onValueChange={(value) => setSearchEngine(value as typeof searchEngine)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Search engine">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="搜索引擎">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -939,59 +939,59 @@ function BrowserSettings() {
             }
           />
           <SettingsRow
-            title="Web links"
-            description="Choose where public web links open when you click them in Palot."
+            title="网页链接"
+            description="选择在 Palot 中点击公共网页链接时的打开位置。"
             control={
               <Select
                 value={webLinks}
                 onValueChange={(value) => setWebLinks(value as typeof webLinks)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Web links">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="网页链接">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="external">External browser</SelectItem>
-                  <SelectItem value="browser">Palot Browser</SelectItem>
+                  <SelectItem value="external">外部浏览器</SelectItem>
+                  <SelectItem value="browser">Palot 浏览器</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
-            title="Local dev links"
-            description="Choose where local development links open when you click them in Palot."
+            title="本地开发链接"
+            description="选择在 Palot 中点击本地开发链接时的打开位置。"
             control={
               <Select
                 value={localLinks}
                 onValueChange={(value) => setLocalLinks(value as typeof localLinks)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Local dev links">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="本地开发链接">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="external">External browser</SelectItem>
-                  <SelectItem value="browser">Palot Browser</SelectItem>
+                  <SelectItem value="external">外部浏览器</SelectItem>
+                  <SelectItem value="browser">Palot 浏览器</SelectItem>
                 </SelectContent>
               </Select>
             }
           />
           <SettingsRow
-            title="Show full URL"
-            description="Show the complete page address rather than a shortened address in the browser bar."
+            title="显示完整 URL"
+            description="在浏览器栏中显示完整页面地址而非缩短地址。"
             control={
               <Switch
                 checked={showFullURL}
-                aria-label="Show full URL"
+                aria-label="显示完整 URL"
                 onCheckedChange={(checked) => setShowFullURL(Boolean(checked))}
               />
             }
           />
         </SettingsGroup>
       </SettingsSection>
-      <SettingsSection title="Browser data and permissions">
+      <SettingsSection title="浏览器数据和权限">
         <SettingsGroup>
           <SettingsRow
-            title="Clear task browser data"
-            description="Close this task's browser pages and remove their saved tab URLs, temporary captures and downloads, site data, and cache. Other tasks and files exported to the server are unaffected."
+            title="清除任务浏览器数据"
+            description="关闭此任务的浏览器页面并删除其保存的标签 URL、临时捕获和下载、站点数据和缓存。其他任务和导出到服务器的文件不受影响。"
             control={
               <Button
                 type="button"
@@ -999,13 +999,13 @@ function BrowserSettings() {
                 disabled={!selectedTask || clearing}
                 onClick={() => setConfirmClear(true)}
               >
-                {clearing ? "Clearing…" : "Clear data"}
+                {clearing ? "正在清除…" : "清除数据"}
               </Button>
             }
           />
           <SettingsRow
-            title="Not available in Palot"
-            description="Palot does not provide a download manager, browsing history, saved passwords, extensions, or per-site permissions. There are no separate WebMCP or CDP settings here."
+            title="Palot 不提供"
+            description="Palot 不提供下载管理器、浏览历史、保存的密码、扩展或逐站点权限。此处没有单独的 WebMCP 或 CDP 设置。"
           />
         </SettingsGroup>
       </SettingsSection>
@@ -1081,7 +1081,7 @@ function GeneralSettings() {
       .catch((error) => {
         toast.add({
           type: "error",
-          title: error instanceof Error ? error.message : "Could not load Scheduled settings",
+          title: error instanceof Error ? error.message : "无法加载计划设置",
         });
       });
     return () => {
@@ -1099,26 +1099,26 @@ function GeneralSettings() {
       setAutomationHostSettings(previous);
       toast.add({
         type: "error",
-        title: error instanceof Error ? error.message : "Could not update Scheduled settings",
+        title: error instanceof Error ? error.message : "无法更新计划设置",
       });
     }
   };
   return (
     <div className="space-y-8">
       <SettingsSection
-        title="Task defaults"
+        title="任务默认值"
         description="Starting choices for new tasks and messages sent while work is running."
       >
         <SettingsGroup>
           <SettingsRow
-            title="Default workspace"
+            title="默认工作区"
             description="Create isolated worktrees by default, or start in the project checkout."
             control={
               <Select
                 value={workspaceMode}
                 onValueChange={(value) => setWorkspaceMode(value as typeof workspaceMode)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Default workspace">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="默认工作区">
                   <SelectValue>{WORKSPACE_MODE_LABELS[workspaceMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -1129,7 +1129,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="New worktree starting point"
+            title="新工作树起点"
             description="Start new task worktrees from the repository default branch or your current branch."
             control={
               <Select
@@ -1138,7 +1138,7 @@ function GeneralSettings() {
               >
                 <SelectTrigger
                   className="w-full @lg/settings:w-48"
-                  aria-label="New worktree starting point"
+                  aria-label="新工作树起点"
                 >
                   <SelectValue>{WORKTREE_BASE_LABELS[worktreeBase]}</SelectValue>
                 </SelectTrigger>
@@ -1150,7 +1150,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Messages while running"
+            title="运行时的消息"
             description="Steer updates the active turn. Queue waits and starts after the current turn finishes."
             control={
               <Select
@@ -1159,7 +1159,7 @@ function GeneralSettings() {
               >
                 <SelectTrigger
                   className="w-full @lg/settings:w-44"
-                  aria-label="Messages while running"
+                  aria-label="运行时的消息"
                 >
                   <SelectValue>{DELIVERY_LABELS[delivery]}</SelectValue>
                 </SelectTrigger>
@@ -1171,7 +1171,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Automatically send blocking work to background"
+            title="自动将阻塞工作发送到后台"
             description="If a steer stays blocked for five seconds, let supported foreground work continue in the background."
             control={
               <Switch
@@ -1185,19 +1185,19 @@ function GeneralSettings() {
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Desktop behavior"
+        title="桌面行为"
         description="Startup, local schedules, and website icons."
       >
         <SettingsGroup>
           <SettingsRow
-            title="Default sidebar"
+            title="默认侧边栏"
             description="Choose which sidebar opens when Palot starts, or return to the last one you used."
             control={
               <Select
                 value={defaultSidebarMode}
                 onValueChange={(value) => setDefaultSidebarMode(value as typeof defaultSidebarMode)}
               >
-                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="Default sidebar">
+                <SelectTrigger className="w-full @lg/settings:w-44" aria-label="默认侧边栏">
                   <SelectValue>{SIDEBAR_MODE_LABELS[defaultSidebarMode]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -1209,11 +1209,11 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Launch at login"
+            title="登录时启动"
             description="Start Palot when you sign in so local schedules can run."
             control={
               <Switch
-                aria-label="Launch at login"
+                aria-label="登录时启动"
                 checked={automationHostSettings?.launchAtLogin ?? false}
                 disabled={!automationHostSettings}
                 onCheckedChange={(checked) =>
@@ -1223,7 +1223,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Prevent sleep during runs"
+            title="运行时防止休眠"
             description="Keep this computer awake only while a scheduled run is preparing, queued, running, or finishing."
             control={
               <Switch
@@ -1239,7 +1239,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Website icons in links"
+            title="链接中的网站图标"
             description="Load icons from DuckDuckGo for public websites linked in messages. This shares each exact hostname, including subdomains, but not its page path."
             control={
               <Switch
@@ -1252,12 +1252,12 @@ function GeneralSettings() {
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Timeline"
+        title="时间线"
         description="Choose how reasoning and tool activity appear in your tasks."
       >
         <SettingsGroup>
           <SettingsRow
-            title="Likely cache busts"
+            title="可能破坏缓存"
             description="Show a warning in the timeline when cache reuse drops unexpectedly between matching model steps. Context always includes these diagnostics."
             control={
               <Switch
@@ -1268,7 +1268,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Timeline activity"
+            title="时间线活动"
             description={PROJECTION_PRESET_DESCRIPTIONS[projection.preset]}
             control={
               <div className="flex items-center gap-2">
@@ -1305,7 +1305,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Reasoning summaries"
+            title="推理摘要"
             description="Show the agent's reasoning summaries inside activity groups."
             control={
               <Switch
@@ -1321,7 +1321,7 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Current activity"
+            title="当前活动"
             description="Keep the current activity group open while the agent works."
             control={
               <Switch
@@ -1447,7 +1447,7 @@ function GeneralSettings() {
                   }))
                 }
               >
-                <SelectTrigger className="w-44" aria-label="Group titles">
+                <SelectTrigger className="w-44" aria-label="分组标题">
                   <SelectValue>{GROUP_TITLE_LABELS[resolvedProjection.groupTitle]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -1469,7 +1469,7 @@ function GeneralSettings() {
               >
                 <SelectTrigger className="w-44" aria-label="Repeated file reads">
                   <SelectValue>
-                    {resolvedProjection.groupSameFileReads ? "One card per file" : "Separate cards"}
+                    {resolvedProjection.groupSameFileReads ? "每个文件一张卡片" : "单独卡片"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -1491,7 +1491,7 @@ function GeneralSettings() {
               >
                 <SelectTrigger className="w-36" aria-label="Completed turns">
                   <SelectValue>
-                    {resolvedProjection.foldCompletedTurns ? "Folded" : "Expanded"}
+                    {resolvedProjection.foldCompletedTurns ? "折叠" : "Expanded"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -1508,9 +1508,9 @@ function GeneralSettings() {
 }
 
 const TURN_NOTIFICATION_LABELS: Record<DesktopNotificationSettings["turnCompletion"], string> = {
-  never: "Never",
-  unfocused: "Only when unfocused",
-  always: "Always",
+  never: "从不",
+  unfocused: "仅在未聚焦时",
+  always: "始终",
 };
 
 function NotificationSettings() {
@@ -1528,7 +1528,7 @@ function NotificationSettings() {
       .then((value) => {
         if (active) setSettings(value);
       })
-      .catch((error) => showError("Could not load notification settings", error));
+      .catch((error) => showError("无法加载通知设置", error));
     return () => {
       active = false;
     };
@@ -1600,7 +1600,7 @@ function NotificationSettings() {
   return (
     <div className="space-y-8">
       <SettingsSection
-        title="Native alerts"
+        title="原生提醒"
         description="Palot uses the macOS notification center and opens the relevant task when you click an alert."
         icon={Bell}
       >
@@ -1639,7 +1639,7 @@ function NotificationSettings() {
             />
           ) : null}
           <SettingsRow
-            title="Turn completion notifications"
+            title="回合完成通知"
             description="Set when Palot alerts you that a task has finished."
             control={
               <Select
@@ -1653,7 +1653,7 @@ function NotificationSettings() {
               >
                 <SelectTrigger
                   className="w-full @lg/settings:w-48"
-                  aria-label="Turn completion notifications"
+                  aria-label="回合完成通知"
                 >
                   <SelectValue>
                     {TURN_NOTIFICATION_LABELS[settings?.turnCompletion ?? "always"]}
@@ -1668,11 +1668,11 @@ function NotificationSettings() {
             }
           />
           <SettingsRow
-            title="Permission notifications"
+            title="权限通知"
             description="Show alerts when a task needs permission to continue."
             control={
               <Switch
-                aria-label="Permission notifications"
+                aria-label="权限通知"
                 checked={settings?.permissionRequests ?? false}
                 disabled={!settings}
                 onCheckedChange={(checked) =>
@@ -1682,11 +1682,11 @@ function NotificationSettings() {
             }
           />
           <SettingsRow
-            title="Question notifications"
+            title="问题通知"
             description="Show alerts when your input is needed to continue."
             control={
               <Switch
-                aria-label="Question notifications"
+                aria-label="问题通知"
                 checked={settings?.questionRequests ?? false}
                 disabled={!settings}
                 onCheckedChange={(checked) =>
@@ -1711,7 +1711,7 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
 } {
   if (!status) {
     return {
-      label: "Checking",
+      label: "检查中",
       description: "Reading Palot's current delivery path from macOS.",
       action: null,
       icon: null,
@@ -1720,52 +1720,52 @@ function notificationDeliveryPresentation(status: DesktopNotificationDeliverySta
   }
   if (status.authorization === "not-determined") {
     return {
-      label: "Not set up",
+      label: "未设置",
       description: "Choose whether Palot may alert you when work needs attention.",
-      action: "Allow alerts",
+      action: "允许提醒",
       icon: <Bell />,
       badgeVariant: "outline",
     };
   }
   if (status.authorization === "denied") {
     return {
-      label: "Blocked",
+      label: "已阻止",
       description: "macOS is blocking Palot alerts. Your in-app choices are still saved.",
-      action: "Open macOS Settings",
+      action: "打开 macOS 设置",
       icon: <ExternalLink />,
       badgeVariant: "destructive",
     };
   }
   if (status.delivery === "off") {
     return {
-      label: "Paused",
+      label: "已暂停",
       description: "Palot is allowed, but banners and Notification Center delivery are both off.",
-      action: "Open macOS Settings",
+      action: "打开 macOS 设置",
       icon: <ExternalLink />,
       badgeVariant: "destructive",
     };
   }
   if (status.delivery === "notification-center" || status.authorization === "provisional") {
     return {
-      label: "Quiet",
+      label: "安静",
       description: "Updates land in Notification Center without interrupting your current task.",
-      action: "Send test",
+      action: "发送测试",
       icon: <Bell />,
       badgeVariant: "outline",
     };
   }
   if (status.authorization === "authorized" || status.authorization === "ephemeral") {
     return {
-      label: "Ready",
+      label: "就绪",
       description:
         "Banners and Notification Center are available. Verify the route whenever you like.",
-      action: "Send test",
+      action: "发送测试",
       icon: <Check />,
       badgeVariant: "secondary",
     };
   }
   return {
-    label: "Unavailable",
+    label: "不可用",
     description: "Palot could not read notification delivery from macOS.",
     action: null,
     icon: null,
@@ -1808,12 +1808,12 @@ function AppearanceSettings() {
   }, []);
 
   const effectiveMaterial = nativeMaterial.reducedTransparency
-    ? "Opaque because Reduce Transparency is enabled"
+    ? "因减少透明度已启用而不透明"
     : nativeMaterial.tier === "liquid-glass"
-      ? "Liquid Glass"
+      ? "液态玻璃"
       : nativeMaterial.tier === "vibrancy"
-        ? "Vibrancy"
-        : "Opaque";
+        ? "鲜艳"
+        : "不透明";
   const themeNativeGlass = effectiveNativeGlass(
     {
       ...preferences,
@@ -1835,13 +1835,13 @@ function AppearanceSettings() {
   return (
     <>
       <SettingsSection
-        title="Theme"
+        title="主题"
         description="Follow your desktop or choose a palette. Changes apply immediately."
         icon={Palette}
       >
         <SettingsGroup>
           <AppearanceSelectRow
-            title="Theme"
+            title="主题"
             description={
               preferences.source === "system"
                 ? preferences.systemPalette === "macos"
@@ -1859,7 +1859,7 @@ function AppearanceSettings() {
                   : preferences.darkTheme
             }
             options={[
-              { value: "system", label: "System" },
+              { value: "system", label: "系统" },
               ...Object.values(APPEARANCE_THEMES).flatMap((theme) => {
                 const variant = theme[resolved.scheme];
                 return variant
@@ -1884,7 +1884,7 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
-            title="Contrast"
+            title="对比度"
             description={`Adjust separation between surfaces, controls, borders, and secondary text in the current ${resolved.scheme} theme.`}
             control={
               <AppearanceSlider
@@ -1906,7 +1906,7 @@ function AppearanceSettings() {
             }
           />
           <AppearanceSelectRow
-            title="Code theme"
+            title="代码主题"
             description="File previews, diffs, Markdown code, and terminal ANSI colors."
             value={
               resolved.scheme === "light" ? preferences.lightCodeTheme : preferences.darkCodeTheme
@@ -1926,7 +1926,7 @@ function AppearanceSettings() {
 
       {preferences.source === "palot" ? (
         <SettingsSection
-          title="Color mode"
+          title="颜色模式"
           description="Choose when Palot uses your light and dark palettes."
           icon={Palette}
         >
@@ -1944,19 +1944,19 @@ function AppearanceSettings() {
       ) : null}
 
       <SettingsSection
-        title="Scrolling"
+        title="滚动"
         description="Scrollbars appear while scrolling or interacting with a pane."
         icon={Palette}
       >
         <SettingsGroup>
           <SettingsRow
-            title="Always show scrollbars"
+            title="始终显示滚动条"
             description="Keep scroll handles visible instead of hiding them when idle."
             control={
               <Switch
                 checked={preferences.alwaysShowScrollbars}
                 onCheckedChange={(alwaysShowScrollbars) => update({ alwaysShowScrollbars })}
-                aria-label="Always show scrollbars"
+                aria-label="始终显示滚动条"
               />
             }
           />
@@ -1964,18 +1964,18 @@ function AppearanceSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Glass and materials"
+        title="玻璃和材质"
         description="Control renderer translucency separately from the native material behind the window."
         icon={Sparkles}
       >
         <SettingsGroup>
           {window.palot?.platform === "linux" ? (
             <SettingsRow
-              title="Window background opacity"
+              title="窗口背景不透明度"
               description="Make window backgrounds translucent while keeping text crisp. Enabling or disabling transparency requires restarting Palot. Your compositor controls desktop blur and can additionally fade the whole window."
               control={
                 <AppearanceSlider
-                  label="Window background opacity"
+                  label="窗口背景不透明度"
                   value={preferences.linuxBackgroundOpacity}
                   min={60}
                   max={100}
@@ -1986,11 +1986,11 @@ function AppearanceSettings() {
             />
           ) : null}
           <SettingsRow
-            title="Surface tint"
+            title="表面色调"
             description="Higher values make the composer, inspector, menus, and dialogs more solid. Native Liquid Glass sidebars remain transparent."
             control={
               <AppearanceSlider
-                label="Surface tint"
+                label="表面色调"
                 value={
                   preferences.glassOpacity === "theme"
                     ? themeTreatment.sidebar.opacity
@@ -2006,11 +2006,11 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
-            title="Main content opacity"
+            title="主要内容不透明度"
             description="Let the native material show through the chat surface and right or bottom workbench panes."
             control={
               <AppearanceSlider
-                label="Main content opacity"
+                label="主要内容不透明度"
                 value={preferences.contentOpacity}
                 min={55}
                 max={100}
@@ -2020,11 +2020,11 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
-            title="Native glass tint"
+            title="原生玻璃色调"
             description="Tint macOS Liquid Glass toward the current theme background."
             control={
               <AppearanceSlider
-                label="Native glass tint"
+                label="原生玻璃色调"
                 value={resolved.treatment.native.tint}
                 min={0}
                 max={30}
@@ -2036,7 +2036,7 @@ function AppearanceSettings() {
             }
           />
           <AppearanceSelectRow
-            title="Native glass variant"
+            title="原生玻璃变体"
             description="Choose between Apple's regular and clear Liquid Glass treatments. Theme follows the active palette's recommendation."
             value={preferences.nativeGlassVariant}
             options={[
@@ -2054,7 +2054,7 @@ function AppearanceSettings() {
             }
           />
           <AppearanceSelectRow
-            title="Window material"
+            title="窗口材质"
             description="Automatic follows the active theme's native backdrop. Changing this may require a restart."
             value={preferences.windowMaterial}
             options={WINDOW_MATERIALS.map((value) => ({
@@ -2071,7 +2071,7 @@ function AppearanceSettings() {
             }}
           />
           <AppearanceSelectRow
-            title="Sidebar material"
+            title="侧边栏材质"
             description="Choose whether the navigation and settings sidebar stay solid or reveal the window material."
             value={preferences.sidebarMaterial}
             options={SIDEBAR_MATERIALS.map((value) => ({
@@ -2088,7 +2088,7 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
-            title="Effective material"
+            title="有效材质"
             description="The material Palot is using after platform capability and accessibility fallbacks."
             control={<Badge variant="outline">{effectiveMaterial}</Badge>}
           />
@@ -2101,7 +2101,7 @@ function AppearanceSettings() {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => void palot.restartApp("Apply appearance material")}
+                onClick={() => void palot.restartApp("应用外观材质")}
               >
                 Restart
               </Button>
@@ -2111,13 +2111,13 @@ function AppearanceSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Typography"
+        title="排版"
         description="Fonts and sizes apply across the interface, Markdown, file previews, diffs, and terminals. Included fonts work offline; unavailable system fonts remain disabled."
         icon={Braces}
       >
         <SettingsGroup>
           <AppearanceSelectRow
-            title="Interface font"
+            title="界面字体"
             description="Everything outside code blocks, file previews, and terminals."
             value={preferences.uiFont}
             options={Object.entries(UI_FONT_OPTIONS).map(([value, option]) => ({
@@ -2125,7 +2125,7 @@ function AppearanceSettings() {
               label:
                 fontAvailability[value] === false ? `${option.name} (Unavailable)` : option.name,
               disabled: fontAvailability[value] === false,
-              detail: option.source === "bundled" ? "Included" : undefined,
+              detail: option.source === "bundled" ? "已包含" : undefined,
             }))}
             onChange={(uiFont) => update({ uiFont: uiFont as AppearancePreferences["uiFont"] })}
             trailing={
@@ -2140,19 +2140,19 @@ function AppearanceSettings() {
           <TypographyPreview />
           {window.palot?.platform === "linux" ? (
             <SettingsRow
-              title="Follow desktop monospace font"
+              title="跟随桌面等宽字体"
               description="Use Omarchy’s monospace font with the System theme. Interface typography stays independent."
               control={
                 <Switch
                   checked={preferences.followOmarchyFont}
                   onCheckedChange={(followOmarchyFont) => update({ followOmarchyFont })}
-                  aria-label="Follow desktop monospace font"
+                  aria-label="跟随桌面等宽字体"
                 />
               }
             />
           ) : null}
           <AppearanceSelectRow
-            title="Monospace font"
+            title="等宽字体"
             description="Code blocks, diffs, file previews, and terminal output."
             value={preferences.codeFont}
             options={Object.entries(CODE_FONT_OPTIONS).map(([value, option]) => ({
@@ -2160,7 +2160,7 @@ function AppearanceSettings() {
               label:
                 fontAvailability[value] === false ? `${option.name} (Unavailable)` : option.name,
               disabled: fontAvailability[value] === false,
-              detail: option.source === "bundled" ? "Included" : undefined,
+              detail: option.source === "bundled" ? "已包含" : undefined,
             }))}
             onChange={(codeFont) =>
               update({ codeFont: codeFont as AppearancePreferences["codeFont"] })
@@ -2175,11 +2175,11 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
-            title="Terminal font size"
+            title="终端字体大小"
             description="Terminal size stays independent so shell output can remain compact or roomy."
             control={
               <SizeSelect
-                label="Terminal font size"
+                label="终端字体大小"
                 value={preferences.terminalFontSize}
                 values={[10, 11, 12, 13, 14, 15, 16, 18, 20, 22]}
                 onChange={(terminalFontSize) => update({ terminalFontSize })}
@@ -2467,7 +2467,7 @@ function TypographyPreview() {
 function codeThemeOptions(preferences: AppearancePreferences, scheme: "light" | "dark") {
   return CODE_THEME_IDS.map((value) => ({
     value,
-    label: value === "follow" ? "Follow app theme" : CODE_THEME_OPTIONS[value].name,
+    label: value === "follow" ? "跟随应用主题" : CODE_THEME_OPTIONS[value].name,
     preview: (
       <ThemeSwatch
         variant={
@@ -2599,17 +2599,17 @@ export function ModelSettings({
   return (
     <>
       <SettingsSection
-        title="Task default"
+        title="任务默认"
         description="Palot applies this model and effort after creating a task. Clear it to use OpenCode's resolved location default."
         icon={Sparkles}
       >
         <SettingsGroup>
           <SettingsRow
-            title="Default model"
+            title="默认模型"
             description={
               snapshot?.catalog.defaultModel
                 ? `OpenCode currently resolves ${snapshot.catalog.defaultModel.name}.`
-                : "OpenCode will resolve the model from the project and global configuration."
+                : "OpenCode 将从项目和全局配置中解析模型。"
             }
             control={
               <Select
@@ -2626,11 +2626,11 @@ export function ModelSettings({
                   if (model) setDefaults({ ...defaults, [preferenceScope]: modelRef(model) });
                 }}
               >
-                <SelectTrigger className="w-full @lg/settings:w-64" aria-label="Default model">
+                <SelectTrigger className="w-full @lg/settings:w-64" aria-label="默认模型">
                   <SelectValue>
                     {selected
                       ? `${providers.get(selected.providerID) ?? selected.providerID} · ${selectedModel?.name ?? selected.id}`
-                      : "OpenCode default"}
+                      : "OpenCode 默认"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end" className="max-h-80">
@@ -2649,7 +2649,7 @@ export function ModelSettings({
           />
           {selectedModel && selectedModel.variants.length > 0 ? (
             <SettingsRow
-              title="Default effort"
+              title="默认努力程度"
               description="Choose the reasoning effort Palot applies with this model when creating a task."
               control={
                 <Select
@@ -2665,9 +2665,9 @@ export function ModelSettings({
                     });
                   }}
                 >
-                  <SelectTrigger className="w-full @lg/settings:w-64" aria-label="Default effort">
+                  <SelectTrigger className="w-full @lg/settings:w-64" aria-label="默认努力程度">
                     <SelectValue>
-                      {selected?.variant ? sentenceCase(selected.variant) : "Model default"}
+                      {selected?.variant ? sentenceCase(selected.variant) : "模型默认"}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent align="end">
@@ -2685,7 +2685,7 @@ export function ModelSettings({
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Available models"
+        title="可用模型"
         description={`${visibleModels.length} of ${models.length} models shown in Palot pickers. Drag to set picker order.`}
         icon={Bot}
         action={<Badge variant="outline">{visibleModels.length} enabled</Badge>}
@@ -2697,8 +2697,8 @@ export function ModelSettings({
               <Input
                 type="search"
                 value={query}
-                placeholder="Search models"
-                aria-label="Search models"
+                placeholder="搜索模型"
+                aria-label="搜索模型"
                 className="h-8 pl-8"
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -2793,11 +2793,11 @@ export function ModelSettings({
                   />
                 ))}
                 <InventoryState
-                  title="Models"
+                  title="模型"
                   state={inventoryState(snapshot, "catalog")}
                   count={filteredModels.length}
                   total={models.length}
-                  empty="OpenCode returned no models for this project."
+                  empty="OpenCode 未为此项目返回任何模型。"
                 />
               </SettingsGroup>
             </SortableContext>
@@ -2940,7 +2940,7 @@ function ModelInventoryRow({
             size="icon-sm"
             className="text-muted-foreground"
             aria-label={`Move ${model.name} to top`}
-            title="Move to top"
+            title="移到顶部"
             disabled={moveToTopDisabled}
             onClick={onMoveToTop}
           >
@@ -2948,7 +2948,7 @@ function ModelInventoryRow({
           </Button>
           <Switch
             checked={enabled}
-            aria-label={`${enabled ? "Disable" : "Enable"} ${model.name}`}
+            aria-label={`${enabled ? "禁用" : "启用"} ${model.name}`}
             onCheckedChange={(checked) => onEnabledChange?.(Boolean(checked))}
           />
         </div>
@@ -4793,22 +4793,22 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
       <SettingsSection title="Palot" icon={PalotMark as ComponentType<{ className?: string }>}>
         <SettingsGroup>
           <SettingsRow
-            title="Desktop client"
+            title="桌面客户端"
             description="A native workspace for OpenCode V2 sessions, worktrees, approvals, and diffs."
             control={<BuildBadge />}
           />
           <SettingsRow
-            title="Version"
+            title="版本"
             control={<code className="text-code-compact">{palotBuild.version}</code>}
           />
           <SettingsRow
-            title="Channel"
+            title="频道"
             control={<code className="text-code-compact">{palotBuild.channel}</code>}
           />
           <SettingsRow
-            title="Commit"
+            title="提交"
             description={
-              palotBuild.dirty ? "Local build with uncommitted changes" : "Clean source revision"
+              palotBuild.dirty ? "含未提交更改的本地构建" : "干净的源代码修订"
             }
             control={
               <code className="max-w-80 text-code-compact" title={palotBuild.commitSha}>
@@ -4817,11 +4817,11 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
             }
           />
           <SettingsRow
-            title="Build number"
+            title="构建号"
             control={<code className="text-code-compact">{palotBuild.buildNumber}</code>}
           />
           <SettingsRow
-            title="OpenCode contract"
+            title="OpenCode 合约"
             control={
               <code className="text-code-compact">{palotBuild.openCodeContractVersion}</code>
             }
@@ -4829,7 +4829,7 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
         </SettingsGroup>
       </SettingsSection>
       <SettingsSection
-        title="Help and legal"
+        title="帮助和法律"
         description="Project information opens on the official Palot GitHub repository."
         icon={ExternalLink}
       >
@@ -4852,10 +4852,10 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
           ))}
         </SettingsGroup>
       </SettingsSection>
-      <SettingsSection title="Updates" icon={RefreshCw}>
+      <SettingsSection title="更新" icon={RefreshCw}>
         <SettingsGroup>
           <SettingsRow
-            title="Update from source"
+            title="从源更新"
             description="This codebase has no supported binary update channel yet. Follow the source installation and update instructions; Palot never downloads or installs an update automatically."
             control={
               <Button
@@ -4864,7 +4864,7 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
                 onClick={() => {
                   window.open(PALOT_INSTALLATION_URL, "_blank", "noopener,noreferrer");
                   setUpdateStatus(
-                    "Opened source installation and update instructions in your browser.",
+                    "已在浏览器中打开源安装和更新说明。",
                   );
                 }}
               >
@@ -4878,10 +4878,10 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
           {updateStatus}
         </p>
       </SettingsSection>
-      <SettingsSection title="OpenCode service" icon={Server}>
+      <SettingsSection title="OpenCode 服务" icon={Server}>
         <SettingsGroup>
           <SettingsRow
-            title="Status"
+            title="状态"
             control={
               <Badge variant={runtime?.connected ? "secondary" : "destructive"}>
                 {runtime?.phase ?? "unknown"}
@@ -4889,27 +4889,27 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
             }
           />
           <SettingsRow
-            title="Version"
-            control={<code className="text-code-compact">{runtime?.version ?? "Unavailable"}</code>}
+            title="版本"
+            control={<code className="text-code-compact">{runtime?.version ?? "不可用"}</code>}
           />
           <SettingsRow
-            title="Process"
-            description={runtime?.managed ? "Started by Palot" : "Discovered shared service"}
+            title="进程"
+            description={runtime?.managed ? "由 Palot 启动" : "发现的共享服务"}
             control={<code className="text-code-compact">PID {runtime?.pid ?? "-"}</code>}
           />
           <SettingsRow
-            title="Binary"
+            title="二进制"
             control={
               <code
                 className="max-w-80 text-code-compact wrap-anywhere"
                 title={runtime?.binaryPath ?? ""}
               >
-                {runtime?.binaryPath ?? "Not discovered"}
+                {runtime?.binaryPath ?? "未发现"}
               </code>
             }
           />
           <SettingsRow
-            title="Restart Palot"
+            title="重启 Palot"
             description="Restarts the development or installed client. The shared OpenCode service stays available."
             control={
               <Button
@@ -4924,7 +4924,7 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
         </SettingsGroup>
       </SettingsSection>
       {snapshot?.errors.length ? (
-        <SettingsSection title="Partial API failures" icon={CircleAlert}>
+        <SettingsSection title="部分 API 失败" icon={CircleAlert}>
           <SettingsGroup>
             {snapshot.errors.map((value, index) => (
               <SettingsRow
@@ -4944,32 +4944,32 @@ const PALOT_REPOSITORY_URL = "https://github.com/ItsWendell/palot";
 const PALOT_INSTALLATION_URL = `${PALOT_REPOSITORY_URL}/blob/main/docs/installation.md#updating-and-uninstalling`;
 const ABOUT_LINKS = [
   {
-    title: "Documentation",
+    title: "文档",
     description: "Setup, development, testing, and project documentation.",
     href: `${PALOT_REPOSITORY_URL}/tree/main/docs`,
   },
   {
-    title: "Issues and support",
+    title: "问题和支持",
     description: "Report a bug, request a feature, or ask for help.",
     href: `${PALOT_REPOSITORY_URL}/issues`,
   },
   {
-    title: "Security",
+    title: "安全",
     description: "Read the security policy and report vulnerabilities privately.",
     href: `${PALOT_REPOSITORY_URL}/security/policy`,
   },
   {
-    title: "Privacy",
+    title: "隐私",
     description: "Read what Palot stores and sends.",
     href: `${PALOT_REPOSITORY_URL}/blob/main/PRIVACY.md`,
   },
   {
-    title: "Licenses",
+    title: "许可证",
     description: "Review Palot and third-party license notices.",
     href: `${PALOT_REPOSITORY_URL}/blob/main/apps/desktop/resources/licenses/THIRD_PARTY_NOTICES.md`,
   },
   {
-    title: "Release notes",
+    title: "发布说明",
     description: "See all published Palot releases and their notes.",
     href: `${PALOT_REPOSITORY_URL}/releases`,
   },
@@ -5196,7 +5196,7 @@ function configNestedValue(
 
 function configInventory(snapshot: PalotSettingsSnapshot | null): Array<[string, string]> {
   const fields = [
-    ["Default model", "model"],
+    ["默认模型", "model"],
     ["Default agent", "defaultAgent"],
     ["Update policy", "update"],
     ["Sharing", "share"],
@@ -5222,16 +5222,16 @@ function configInventory(snapshot: PalotSettingsSnapshot | null): Array<[string,
   return fields.flatMap(([label, key]) => {
     const value = configValue(snapshot, key);
     if (value === undefined) return [];
-    if (typeof value === "boolean") return [[label, value ? "Yes" : "No"]];
+    if (typeof value === "boolean") return [[label, value ? "是" : "否"]];
     return [[label, String(value)]];
   });
 }
 
 function formatConfigState(value: unknown) {
-  if (value === undefined) return "Default";
-  if (value === false) return "Disabled";
-  if (value === true) return "Enabled";
-  return "Configured";
+  if (value === undefined) return "默认";
+  if (value === false) return "已禁用";
+  if (value === true) return "已启用";
+  return "已配置";
 }
 
 function showError(title: string, cause: unknown) {
