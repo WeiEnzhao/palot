@@ -74,19 +74,19 @@ function ScopedProcessFooter({
     processes.commands + processes.terminals > 0
       ? processCountLabel(processes.commands, processes.terminals)
       : processes.rows.length > 0
-        ? "Recently finished"
-        : "Commands & terminals";
+        ? "最近完成"
+        : "命令和终端";
   if (!open && processes.rows.length === 0 && !processes.error && !openError) return null;
   const groups = [
     {
-      title: "Running commands",
+      title: "运行中的命令",
       rows: processes.rows.filter((row) => row.kind === "command" && row.active),
     },
     {
-      title: "Terminals",
+      title: "终端",
       rows: processes.rows.filter((row) => row.kind === "terminal" && row.active),
     },
-    { title: "Recently finished", rows: processes.rows.filter((row) => !row.active) },
+    { title: "最近完成", rows: processes.rows.filter((row) => !row.active) },
   ];
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -95,7 +95,7 @@ function ScopedProcessFooter({
           <button
             type="button"
             className="flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={label === "Commands & terminals" ? label : `Commands & terminals: ${label}`}
+            aria-label={label === "命令和终端" ? label : `命令和终端：${label}`}
           />
         }
       >
@@ -105,9 +105,9 @@ function ScopedProcessFooter({
       </PopoverTrigger>
       <PopoverContent side="top" align="end" className="w-[340px] gap-1 p-1.5">
         <PopoverHeader className="px-2 py-1">
-          <PopoverTitle>Commands &amp; terminals</PopoverTitle>
+          <PopoverTitle>命令和终端</PopoverTitle>
           <PopoverDescription>
-            Inspect processes from this conversation and its child tasks.
+            检查此对话及其子任务的进程。
           </PopoverDescription>
         </PopoverHeader>
         {processes.error || openError ? (
@@ -123,19 +123,19 @@ function ScopedProcessFooter({
                   void processes.retry();
                 }}
               >
-                Retry
+                重试
               </Button>
             ) : null}
           </div>
         ) : null}
         {!processes.terminalsSupported ? (
           <p className="px-2 py-1 text-meta text-muted-foreground">
-            Terminal discovery is unavailable on this runtime.
+            此运行时不可用终端发现。
           </p>
         ) : null}
         {processes.rows.length === 0 ? (
           <p className="px-2 py-2 text-meta text-muted-foreground">
-            {processes.loading ? "Loading processes…" : "No commands or terminals found."}
+            {processes.loading ? "正在加载进程…" : "未找到命令或终端。"}
           </p>
         ) : null}
         <div className="flex max-h-72 flex-col overflow-y-auto">

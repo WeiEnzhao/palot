@@ -27,9 +27,9 @@ import type { SshConnector } from "./ssh/interaction";
 const REQUEST_TIMEOUT_MS = 30_000;
 const RETAINED_ENDPOINT_TIMEOUT_MS = 5_000;
 const LOCAL_SERVICE_UNAVAILABLE =
-  "No reachable local OpenCode service was found. Retry the connection, or start OpenCode explicitly. If no CLI is installed, install OpenCode 2 or download an official runtime in connection settings first.";
+  "未找到可用的本地 OpenCode 服务。请重试连接，或手动启动 OpenCode。如果未安装 CLI，请先安装 OpenCode 2 或在连接设置中下载官方运行时。";
 const RECONNECTING_ERROR =
-  "OpenCode is reconnecting. Retry once the service is available, or start it explicitly.";
+  "OpenCode 正在重新连接。请等待服务可用后重试，或手动启动服务。";
 const MAX_RECONNECT_DELAY_MS = 30_000;
 const STREAM_YIELD_MS = 8;
 // The service sends a keepalive every 15 seconds, including when no events are emitted.
@@ -190,7 +190,7 @@ export class OpenCodeRuntimeLifecycle {
     input: OpenCodeConnectInput = {},
     sshConnector?: SshConnector,
   ): Promise<OpenCodeRuntimeStatus> {
-    if (this.stopped) throw new Error("OpenCode connection has been disposed");
+    if (this.stopped) throw new Error("OpenCode 连接已断开");
     if (this.statusValue.connected && this.clientValue) return this.status();
     const explicitLocalStart =
       (this.options.profile?.kind ?? "local") === "local" &&
@@ -232,7 +232,7 @@ export class OpenCodeRuntimeLifecycle {
   }
 
   async client(): Promise<OpenCodeClient> {
-    if (this.stopped) throw new Error("OpenCode connection has been disposed");
+    if (this.stopped) throw new Error("OpenCode 连接已断开");
     // Reconnect observers may request the ready client while snapshot repair is pending.
     if (this.clientValue && this.statusValue.connected) return this.clientValue;
     if (this.reconnectPromise) throw new Error(this.statusValue.error ?? RECONNECTING_ERROR);
@@ -246,22 +246,22 @@ export class OpenCodeRuntimeLifecycle {
       );
     }
     if (!this.clientValue || !this.statusValue.connected) await this.connect();
-    if (!this.clientValue) throw new Error("OpenCode client is not connected");
+    if (!this.clientValue) throw new Error("OpenCode 客户端未连接");
     return this.clientValue;
   }
 
   async restartLocalService(): Promise<OpenCodeRuntimeStatus> {
-    if (this.stopped) throw new Error("OpenCode connection has been disposed");
+    if (this.stopped) throw new Error("OpenCode 连接已断开");
     const profile = this.options.profile ?? {
       id: "local-default",
       kind: "local" as const,
       name: "Local OpenCode",
     };
     if (profile.kind !== "local")
-      throw new Error("Only the local OpenCode service can be restarted");
+      throw new Error("只有本地 OpenCode 服务可以重启");
     if (this.restartPromise) return this.restartPromise;
     if (this.connectPromise || this.reconnectPromise) {
-      throw new Error("OpenCode is connecting. Disconnect first, then restart the local service.");
+      throw new Error("OpenCode 正在连接中。请先断开连接，再重启本地服务。");
     }
     this.restartPromise = this.restartLocalServiceNow().finally(() => {
       this.restartPromise = null;
@@ -274,7 +274,7 @@ export class OpenCodeRuntimeLifecycle {
     headers: Record<string, string> | undefined;
   }> {
     await this.client();
-    if (!this.endpointValue) throw new Error("OpenCode endpoint is not connected");
+    if (!this.endpointValue) throw new Error("OpenCode 端点未连接");
     return {
       endpoint: this.endpointValue,
       headers: this.options.headers ?? Service.headers(this.endpointValue),
@@ -317,7 +317,7 @@ export class OpenCodeRuntimeLifecycle {
     // Verify the selected executable before interrupting a working shared service.
     const binary = await this.discoverLocalBinary();
     this.connectionAbort.signal.throwIfAborted();
-    if (!binary) throw new Error("No verified OpenCode runtime is available to restart with.");
+    if (!binary) throw new Error("没有可用的已验证 OpenCode 运行时来重启。");
     this.reconnectAbort?.abort();
     this.reconnectAbort = null;
     this.streamAbort?.abort();
@@ -391,7 +391,7 @@ export class OpenCodeRuntimeLifecycle {
     if (profile.kind === "ssh") {
       await this.closeSsh();
       if (!this.sshConnector)
-        throw new Error("Connect to this SSH server from a Palot window first");
+        throw new Error("请先从 Palot 窗口连接到此 SSH 服务器");
       const binary = await this.adapter.discoverBinary({ exactVersion: this.contractVersion });
       if (!binary || binary.version !== this.contractVersion)
         throw new Error(
@@ -531,7 +531,7 @@ export class OpenCodeRuntimeLifecycle {
           },
         }));
     }
-    if (this.stopped) throw new Error("OpenCode runtime stopped while connecting");
+    if (this.stopped) throw new Error("OpenCode 运行时在连接过程中已停止");
 
     this.setStatus("connecting", {
       connected: false,
@@ -540,7 +540,7 @@ export class OpenCodeRuntimeLifecycle {
       managed,
       error: null,
     });
-    if (!endpoint) throw new Error("OpenCode server is unavailable");
+    if (!endpoint) throw new Error("OpenCode 服务不可用");
     const client = this.adapter.makeClient(
       endpoint,
       this.options.headers,
@@ -572,7 +572,7 @@ export class OpenCodeRuntimeLifecycle {
         this.options.onVersionMismatchAccepted?.(mismatch);
       }
     }
-    if (this.stopped) throw new Error("OpenCode runtime stopped while connecting");
+    if (this.stopped) throw new Error("OpenCode 运行时在连接过程中已停止");
     this.clientValue = client;
     this.endpointValue = endpoint;
     this.setStatus("connected", {
@@ -711,7 +711,7 @@ export class OpenCodeRuntimeLifecycle {
         lastYield = this.adapter.now();
       }
     }
-    if (!controller.signal.aborted) throw new Error("OpenCode event stream closed");
+    if (!controller.signal.aborted) throw new Error("OpenCode 事件流已关闭");
   }
 
   private startReconnect(cause: unknown): void {

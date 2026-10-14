@@ -640,12 +640,12 @@ function WorkbenchTabItem({
         <ContextMenuGroup>
           <ContextMenuItem onClick={moveTab}>
             {pane === "right" ? <PanelBottom /> : <PanelRight />}
-            Move to {pane === "right" ? "bottom" : "right"}
+            移动到{pane === "right" ? "底部" : "右侧"}
           </ContextMenuItem>
           {tab.kind !== "browser" ? (
             <ContextMenuItem onClick={() => setPinned(!tab.pinned)}>
               {tab.pinned ? <PinOff /> : <Pin />}
-              {tab.pinned ? "Unpin" : "Pin"}
+              {tab.pinned ? "取消置顶" : "置顶"}
             </ContextMenuItem>
           ) : null}
         </ContextMenuGroup>

@@ -12,7 +12,6 @@ import {
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ActivityWatermark, PalotProject, PalotSession } from "../../shared";
-import type { PullRequestLink } from "../../shared/source-control-contract";
 import { groupedScheduledSessionIDsAtom } from "../atoms/automations";
 import { dispatchSessionTriageAtom } from "../atoms/inbox";
 import { runtimeAtom, type SessionExecutionState } from "../atoms/workspace";
@@ -27,7 +26,6 @@ import {
 import { useAttentionItems, useUnseenAttentionCount } from "../hooks/use-attention-items";
 import { useSessionInbox } from "../hooks/use-session-inbox";
 import { useSessionActivity } from "../hooks/use-session-activity";
-import { usePullRequestLinksBySession } from "../hooks/use-source-control";
 import {
   formatRelativeTime,
   groupSessions,
@@ -93,13 +91,6 @@ import {
 } from "./ui/sidebar-styles";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { toast } from "./ui/toast";
-import {
-  SidebarFluidList,
-  sectionChevronRevealClass,
-  sidebarFluidItemClass,
-  sidebarFluidRowProps,
-} from "./sidebar-fluid-list";
-import { PullRequestBadge } from "./pull-requests/pull-request-badge";
 
 const EMPTY_EXECUTION_STATES = new Map<string, SessionExecutionState>();
 
@@ -109,25 +100,15 @@ function currentTimestamp(): number {
 
 interface ProjectSidebarContentProps {
   onNewSession(directory?: string): void;
-  /**
-   * Whether this instance raises desktop notifications for new requests. A peeked
-   * copy of the column turns it off so the pinned instance stays the only notifier.
-   */
-  notifyAttention?: boolean;
 }
 
-export function ProjectSidebarContent({
-  onNewSession,
-  notifyAttention = true,
-}: ProjectSidebarContentProps) {
+export function ProjectSidebarContent({ onNewSession }: ProjectSidebarContentProps) {
   const { openSession, openWorktrees, preloadSession } = usePalotNavigation();
   const projects = useProjectCatalog();
   const sessions = useSessionCatalog();
   const groupedScheduledSessionIDs = useAtomValue(groupedScheduledSessionIDsAtom);
   const runtime = useAtomValue(runtimeAtom);
   const executionStates = useSessionActivity().data?.execution ?? EMPTY_EXECUTION_STATES;
-  // One links query backs every task row's PR badge.
-  const pullRequests = usePullRequestLinksBySession().data;
   const selectedID = useRouterState({
     select: (state) => {
       const value = state.matches
@@ -195,7 +176,7 @@ export function ProjectSidebarContent({
   useEffect(() => {
     const currentKeys = new Set(attentionItems.flatMap((item) => item.requestKeys));
     const known = knownAttentionKeys.current;
-    if (notifyAttention && known && !document.hasFocus()) {
+    if (known && !document.hasFocus()) {
       for (const item of attentionItems) {
         const request = item.requests.find((candidate) => !known.has(candidate.key));
         if (request) {
@@ -208,7 +189,7 @@ export function ProjectSidebarContent({
       }
     }
     knownAttentionKeys.current = currentKeys;
-  }, [attentionItems, notifyAttention]);
+  }, [attentionItems]);
 
   const activeSessionID =
     pendingSelection?.originID === selectedID ? pendingSelection.targetID : selectedID;
@@ -264,7 +245,7 @@ export function ProjectSidebarContent({
       cacheSession(imported);
       await openSession(imported.id, { profileID: runtime?.profileID });
     } catch (error) {
-      showErrorToast("Could not import task", error);
+      showErrorToast("无法导入任务", error);
     }
   }
 
@@ -279,15 +260,15 @@ export function ProjectSidebarContent({
         });
         toast.add({
           type: "success",
-          title: "Task settled",
+          title: "任务已归档",
           actionProps: {
-            children: "Undo",
+            children: "撤销",
             onClick: () =>
               void dispatchTriage({ type: "inbox", sessionID, at: currentTimestamp() }),
           },
         });
       } catch (error) {
-        showErrorToast("Could not settle task", error);
+        showErrorToast("无法归档任务", error);
       }
     },
     [dispatchTriage],
@@ -305,15 +286,15 @@ export function ProjectSidebarContent({
         });
         toast.add({
           type: "success",
-          title: "Task snoozed",
-          description: `Returns ${formatSnoozeWakeTime(until)}.`,
+          title: "任务已暂停",
+          description: `将在 ${formatSnoozeWakeTime(until)} 恢复。`,
           actionProps: {
-            children: "Undo",
+            children: "撤销",
             onClick: () => void dispatchTriage({ type: "wake", sessionID, at: currentTimestamp() }),
           },
         });
       } catch (error) {
-        showErrorToast("Could not snooze task", error);
+        showErrorToast("无法暂停任务", error);
       }
     },
     [dispatchTriage],
@@ -336,7 +317,7 @@ export function ProjectSidebarContent({
                   />
                 }
               >
-                <span>Needs attention</span>
+                <span>需要关注</span>
                 {unseenAttentionCount > 0 ? (
                   <span className="ml-auto rounded-full bg-destructive px-1.5 text-micro leading-4 text-destructive-foreground">
                     {unseenAttentionCount}
@@ -347,7 +328,6 @@ export function ProjectSidebarContent({
                     className={cn(
                       unseenAttentionCount === 0 && "ml-auto",
                       sidebarSectionIconVariants(),
-                      sectionChevronRevealClass(true),
                     )}
                     aria-hidden="true"
                   />
@@ -363,59 +343,57 @@ export function ProjectSidebarContent({
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarGroupContent className="max-h-[min(40vh,20rem)] overflow-y-auto overscroll-contain">
-                  <nav aria-label="Tasks needing attention">
-                    <SidebarFluidList>
-                      <SidebarMenu>
-                        {attentionItems.slice(0, showAllAttention ? undefined : 5).map((item) => {
-                          const target =
-                            item.requests.find(
+                  <nav aria-label="需要关注的任务">
+                    <SidebarMenu>
+                      {attentionItems.slice(0, showAllAttention ? undefined : 5).map((item) => {
+                        const target =
+                          item.requests.find(
+                            (request) =>
+                              !attentionSeenIDs.includes(request.key) &&
+                              !attentionSeenIDs.includes(request.legacyKey),
+                          ) ?? item.requests[0]!;
+                        return (
+                          <SidebarMenuItem key={item.key}>
+                            <SidebarMenuButton
+                              data-palot-attention-row
+                              onClick={() =>
+                                selectAttention(target.sessionID, target.id, target.type)
+                              }
+                            >
+                              <CircleAlert aria-hidden="true" />
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate">{item.sessionTitle}</span>
+                                <span className="block truncate text-meta text-muted-foreground">
+                                  {item.count === 1
+                                    ? `${item.sessionID !== item.key ? "子智能体 " : ""}${item.type} · ${item.projectName}`
+                                    : `${item.count} 个请求 · ${item.types.join(" + ")}`}
+                                </span>
+                              </span>
+                            </SidebarMenuButton>
+                            {item.requests.some(
                               (request) =>
                                 !attentionSeenIDs.includes(request.key) &&
                                 !attentionSeenIDs.includes(request.legacyKey),
-                            ) ?? item.requests[0]!;
-                          return (
-                            <SidebarMenuItem key={item.key} {...sidebarFluidRowProps}>
-                              <SidebarMenuButton
-                                data-palot-attention-row
-                                onClick={() =>
-                                  selectAttention(target.sessionID, target.id, target.type)
-                                }
-                              >
-                                <CircleAlert aria-hidden="true" />
-                                <span className="min-w-0 flex-1">
-                                  <span className="block truncate">{item.sessionTitle}</span>
-                                  <span className="block truncate text-meta text-muted-foreground">
-                                    {item.count === 1
-                                      ? `${item.sessionID !== item.key ? "Subagent " : ""}${item.type} · ${item.projectName}`
-                                      : `${item.count} requests · ${item.types.join(" + ")}`}
-                                  </span>
-                                </span>
-                              </SidebarMenuButton>
-                              {item.requests.some(
-                                (request) =>
-                                  !attentionSeenIDs.includes(request.key) &&
-                                  !attentionSeenIDs.includes(request.legacyKey),
-                              ) ? (
-                                <SidebarMenuBadge className="size-2 min-w-0 rounded-full bg-destructive p-0" />
-                              ) : null}
-                            </SidebarMenuItem>
-                          );
-                        })}
-                        {attentionItems.length > 5 ? (
-                          <SidebarMenuItem {...sidebarFluidRowProps}>
-                            <SidebarMenuButton
-                              onClick={() => setShowAllAttention((current) => !current)}
-                            >
-                              <span>
-                                {showAllAttention
-                                  ? "Show less"
-                                  : `Show all (${attentionItems.length})`}
-                              </span>
-                            </SidebarMenuButton>
+                            ) ? (
+                              <SidebarMenuBadge className="size-2 min-w-0 rounded-full bg-destructive p-0" />
+                            ) : null}
                           </SidebarMenuItem>
-                        ) : null}
-                      </SidebarMenu>
-                    </SidebarFluidList>
+                        );
+                      })}
+                      {attentionItems.length > 5 ? (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            onClick={() => setShowAllAttention((current) => !current)}
+                          >
+                            <span>
+                              {showAllAttention
+                                ? "收起"
+                                : `显示全部 (${attentionItems.length})`}
+                            </span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ) : null}
+                    </SidebarMenu>
                   </nav>
                 </SidebarGroupContent>
               </CollapsibleContent>
@@ -435,14 +413,10 @@ export function ProjectSidebarContent({
                 />
               }
             >
-              <span>Recents</span>
+              <span>最近任务</span>
               {sectionOpen("recents") ? (
                 <ChevronDown
-                  className={cn(
-                    "ml-auto",
-                    sidebarSectionIconVariants(),
-                    sectionChevronRevealClass(true),
-                  )}
+                  className={cn("ml-auto", sidebarSectionIconVariants())}
                   aria-hidden="true"
                 />
               ) : (
@@ -454,35 +428,32 @@ export function ProjectSidebarContent({
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarGroupContent>
-                <nav aria-label="Recent tasks">
-                  <SidebarFluidList>
-                    <SidebarMenu>
-                      {recentSessions.map((session) => {
-                        const item = inboxItems.get(session.id);
-                        return (
-                          <SessionRow
-                            key={session.id}
-                            session={session}
-                            project={projectForSession(projects, session)}
-                            selected={session.id === activeSessionID}
-                            status={sidebarSessionStatus(executionStates.get(session.id))}
-                            attention={attentionSessionIDs.has(session.id)}
-                            recent
-                            pullRequests={pullRequests?.get(session.id)}
-                            triageThrough={item?.activityThrough}
-                            canSettle={Boolean(item?.canSettle && item.section !== "settled")}
-                            onSelect={selectSession}
-                            onPreload={preloadSession}
-                            onSnooze={snoozeSession}
-                            onSettle={settleSession}
-                          />
-                        );
-                      })}
-                      {recentSessions.length === 0 ? (
-                        <li className="px-2 py-1 text-xs text-muted-foreground">No recent tasks</li>
-                      ) : null}
-                    </SidebarMenu>
-                  </SidebarFluidList>
+                <nav aria-label="最近任务">
+                  <SidebarMenu>
+                    {recentSessions.map((session) => {
+                      const item = inboxItems.get(session.id);
+                      return (
+                        <SessionRow
+                          key={session.id}
+                          session={session}
+                          project={projectForSession(projects, session)}
+                          selected={session.id === activeSessionID}
+                          status={sidebarSessionStatus(executionStates.get(session.id))}
+                          attention={attentionSessionIDs.has(session.id)}
+                          recent
+                          triageThrough={item?.activityThrough}
+                          canSettle={Boolean(item?.canSettle && item.section !== "settled")}
+                          onSelect={selectSession}
+                          onPreload={preloadSession}
+                          onSnooze={snoozeSession}
+                          onSettle={settleSession}
+                        />
+                      );
+                    })}
+                    {recentSessions.length === 0 ? (
+                      <li className="px-2 py-1 text-xs text-muted-foreground">没有最近的任务</li>
+                    ) : null}
+                  </SidebarMenu>
                 </nav>
               </SidebarGroupContent>
             </CollapsibleContent>
@@ -494,7 +465,7 @@ export function ProjectSidebarContent({
           className="flex min-h-0 flex-1 flex-col overflow-hidden"
         >
           <SidebarGroup className="min-h-0 flex-1">
-            <div className="group/projects-header group/section-row relative">
+            <div className="group/projects-header relative">
               <CollapsibleTrigger
                 render={
                   <SidebarGroupLabel
@@ -503,14 +474,10 @@ export function ProjectSidebarContent({
                   />
                 }
               >
-                <span>Projects</span>
+                <span>项目</span>
                 {sectionOpen("projects") ? (
                   <ChevronDown
-                    className={cn(
-                      "ml-auto",
-                      sidebarSectionIconVariants(),
-                      sectionChevronRevealClass(true),
-                    )}
+                    className={cn("ml-auto", sidebarSectionIconVariants())}
                     aria-hidden="true"
                   />
                 ) : (
@@ -525,7 +492,7 @@ export function ProjectSidebarContent({
                   render={
                     <SidebarGroupAction
                       type="button"
-                      aria-label="Add project folder"
+                      aria-label="添加项目文件夹"
                       className="pointer-events-none top-1 right-7 opacity-0 transition-opacity group-hover/projects-header:pointer-events-auto group-hover/projects-header:opacity-100 group-has-[:focus-visible]/projects-header:pointer-events-auto group-has-[:focus-visible]/projects-header:opacity-100 hover:bg-sidebar-accent/60! hover:text-sidebar-foreground/75! focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-inset [&>svg]:size-3.5!"
                       onClick={() => void addFolder()}
                     />
@@ -533,13 +500,13 @@ export function ProjectSidebarContent({
                 >
                   <Plus aria-hidden="true" />
                 </TooltipTrigger>
-                <TooltipContent>Add project folder</TooltipContent>
+                <TooltipContent>添加项目文件夹</TooltipContent>
               </Tooltip>
             </div>
             <CollapsibleContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <SidebarGroupContent className="min-h-0 flex-1">
                 <ScrollArea className="h-full min-h-0">
-                  <nav aria-label="Projects and tasks">
+                  <nav aria-label="项目和任务">
                     <SidebarMenu>
                       {groups.map(({ project, sessions: projectSessions }) => {
                         const projectKey = JSON.stringify([runtime?.profileID, project.id]);
@@ -561,10 +528,7 @@ export function ProjectSidebarContent({
                               <ContextMenu>
                                 <ContextMenuTrigger
                                   render={
-                                    <div
-                                      data-palot-project-header
-                                      className="group/section-row grid grid-cols-[minmax(0,1fr)_auto_auto] items-center"
-                                    >
+                                    <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center">
                                       <CollapsibleTrigger
                                         data-palot-project-trigger
                                         render={
@@ -582,15 +546,12 @@ export function ProjectSidebarContent({
                                         </span>
                                         <span className="w-7" aria-hidden="true" />
                                         <span className="ml-auto flex items-center">
-                                          <span className="mr-2 text-micro text-sidebar-foreground/45 tabular-nums transition-colors group-hover/section-row:text-sidebar-foreground/70 group-focus-visible/section-label:text-sidebar-foreground/70">
+                                          <span className="mr-2 text-micro text-sidebar-foreground/45 tabular-nums">
                                             {projectSessions.length}
                                           </span>
                                           {projectOpen ? (
                                             <ChevronDown
-                                              className={cn(
-                                                sidebarSectionIconVariants(),
-                                                sectionChevronRevealClass(true),
-                                              )}
+                                              className={sidebarSectionIconVariants()}
                                               aria-hidden="true"
                                             />
                                           ) : (
@@ -610,7 +571,8 @@ export function ProjectSidebarContent({
                                               <SidebarMenuAction
                                                 type="button"
                                                 data-palot-project-action
-                                                aria-label={`Start a new task in ${displayName}`}
+                                                aria-label={`在 ${displayName} 中新建任务`}
+                                                showOnHover
                                                 className="relative! top-auto! right-auto! text-sidebar-foreground/45! hover:bg-sidebar-accent/60! hover:text-sidebar-foreground/75! focus-visible:ring-inset [&>svg]:size-3!"
                                                 onClick={(event) => {
                                                   event.stopPropagation();
@@ -622,7 +584,7 @@ export function ProjectSidebarContent({
                                             <Plus aria-hidden="true" />
                                           </TooltipTrigger>
                                           <TooltipContent side="right">
-                                            Start a new task in {displayName}
+                                            在 {displayName} 中新建任务
                                           </TooltipContent>
                                         </Tooltip>
                                       </div>
@@ -632,55 +594,52 @@ export function ProjectSidebarContent({
                                 <ContextMenuContent>
                                   <ContextMenuItem onClick={() => void openWorktrees(project.id)}>
                                     <FolderGit2 aria-hidden="true" />
-                                    Manage worktrees
+                                    管理工作树
                                   </ContextMenuItem>
                                 </ContextMenuContent>
                               </ContextMenu>
                               <CollapsibleContent>
-                                <SidebarFluidList>
-                                  <SidebarMenuSub className="mx-0 w-full translate-x-0 gap-px border-l-0 px-0 py-0.5">
-                                    {projectSessions.map((session) => {
-                                      const item = inboxItems.get(session.id);
-                                      return (
-                                        <SessionRow
-                                          key={session.id}
-                                          session={session}
-                                          project={project}
-                                          selected={session.id === activeSessionID}
-                                          status={sidebarSessionStatus(
-                                            executionStates.get(session.id),
-                                          )}
-                                          attention={attentionSessionIDs.has(session.id)}
-                                          pullRequests={pullRequests?.get(session.id)}
-                                          triageThrough={item?.activityThrough}
-                                          canSettle={Boolean(
-                                            item?.canSettle && item.section !== "settled",
-                                          )}
-                                          onSelect={selectSession}
-                                          onPreload={preloadSession}
-                                          onSnooze={snoozeSession}
-                                          onSettle={settleSession}
-                                        />
-                                      );
-                                    })}
-                                    {projectSessions.length === 0 ? (
-                                      <li className="flex items-center justify-between gap-2 px-2 py-1 text-xs text-muted-foreground">
-                                        <span>No tasks in this project</span>
-                                        <button
-                                          type="button"
-                                          className="text-foreground/70 hover:text-foreground"
-                                          onClick={() =>
-                                            void importTask({
-                                              directory: projectLocation(project),
-                                            })
-                                          }
-                                        >
-                                          Import
-                                        </button>
-                                      </li>
-                                    ) : null}
-                                  </SidebarMenuSub>
-                                </SidebarFluidList>
+                                <SidebarMenuSub className="mx-0 w-full translate-x-0 gap-px border-l-0 px-0 py-0.5">
+                                  {projectSessions.map((session) => {
+                                    const item = inboxItems.get(session.id);
+                                    return (
+                                      <SessionRow
+                                        key={session.id}
+                                        session={session}
+                                        project={project}
+                                        selected={session.id === activeSessionID}
+                                        status={sidebarSessionStatus(
+                                          executionStates.get(session.id),
+                                        )}
+                                        attention={attentionSessionIDs.has(session.id)}
+                                        triageThrough={item?.activityThrough}
+                                        canSettle={Boolean(
+                                          item?.canSettle && item.section !== "settled",
+                                        )}
+                                        onSelect={selectSession}
+                                        onPreload={preloadSession}
+                                        onSnooze={snoozeSession}
+                                        onSettle={settleSession}
+                                      />
+                                    );
+                                  })}
+                                  {projectSessions.length === 0 ? (
+                                    <li className="flex items-center justify-between gap-2 px-2 py-1 text-xs text-muted-foreground">
+                                      <span>此项目没有任务</span>
+                                      <button
+                                        type="button"
+                                        className="text-foreground/70 hover:text-foreground"
+                                        onClick={() =>
+                                          void importTask({
+                                            directory: projectLocation(project),
+                                          })
+                                        }
+                                      >
+                                        导入
+                                      </button>
+                                    </li>
+                                  ) : null}
+                                </SidebarMenuSub>
                               </CollapsibleContent>
                             </Collapsible>
                           </SidebarMenuItem>
@@ -693,7 +652,7 @@ export function ProjectSidebarContent({
                           <EmptyMedia variant="icon">
                             <FolderPlus aria-hidden="true" />
                           </EmptyMedia>
-                          <EmptyTitle>Add a project to start</EmptyTitle>
+                          <EmptyTitle>添加项目以开始</EmptyTitle>
                         </EmptyHeader>
                         <EmptyContent>
                           <div className="flex flex-wrap justify-center gap-2">
@@ -704,7 +663,7 @@ export function ProjectSidebarContent({
                               onClick={() => void addFolder()}
                             >
                               <FolderPlus data-icon="inline-start" aria-hidden="true" />
-                              Add project
+                              添加项目
                             </Button>
                             <Button
                               type="button"
@@ -713,7 +672,7 @@ export function ProjectSidebarContent({
                               onClick={() => void importTask()}
                             >
                               <Upload data-icon="inline-start" aria-hidden="true" />
-                              Import task
+                              导入任务
                             </Button>
                           </div>
                         </EmptyContent>
@@ -743,7 +702,6 @@ const SessionRow = memo(function SessionRow({
   status,
   attention,
   recent = false,
-  pullRequests,
   triageThrough,
   canSettle,
   onSelect,
@@ -757,7 +715,6 @@ const SessionRow = memo(function SessionRow({
   status: SidebarSessionStatus;
   attention: boolean;
   recent?: boolean;
-  pullRequests?: PullRequestLink[];
   triageThrough?: ActivityWatermark;
   canSettle: boolean;
   onSelect(id: string): void;
@@ -786,7 +743,6 @@ const SessionRow = memo(function SessionRow({
 
   const row = (
     <SidebarMenuSubItem
-      {...sidebarFluidRowProps}
       className="w-full"
       {...(recent ? { "data-palot-recent-row": true } : { "data-palot-task-row": true })}
     >
@@ -794,7 +750,7 @@ const SessionRow = memo(function SessionRow({
       {title.editing ? (
         <Input
           autoFocus
-          aria-label="Task title"
+          aria-label="任务标题"
           value={title.draft}
           maxLength={1_000}
           className={cn(
@@ -826,7 +782,7 @@ const SessionRow = memo(function SessionRow({
             isActive={selected}
             className={cn(
               "w-full translate-x-0 cursor-grab text-left active:cursor-grabbing",
-              sidebarFluidItemClass(),
+              sidebarItemVariants(),
               recent ? "pl-1.5" : "pl-8",
             )}
             onClick={() => onSelect(session.id)}
@@ -837,17 +793,16 @@ const SessionRow = memo(function SessionRow({
               title.start();
             }}
           >
-            <span className="min-w-0 flex-1 truncate">{session.title ?? "Untitled task"}</span>
+            <span className="min-w-0 flex-1 truncate">{session.title ?? "未命名任务"}</span>
             {isAdditionalCheckout ? (
               <span
                 className="flex shrink-0 text-muted-foreground"
-                title="Additional checkout"
-                aria-label="Additional checkout"
+                title="额外检出"
+                aria-label="额外检出"
               >
                 <GitBranch aria-hidden="true" />
               </span>
             ) : null}
-            <PullRequestBadge links={pullRequests} />
             <SessionStatusIndicator status={state} reserveSpace={recent} />
             {recent ? (
               <time
@@ -873,7 +828,7 @@ const SessionRow = memo(function SessionRow({
       onRename={title.start}
     >
       {canSettle && triageThrough !== undefined ? (
-        <ContextMenuItem onClick={settle}>Settle</ContextMenuItem>
+        <ContextMenuItem onClick={settle}>归档</ContextMenuItem>
       ) : null}
     </SessionContextMenu>
   );
@@ -890,14 +845,14 @@ function SessionStatusIndicator({
     return reserveSpace ? <span className="size-3.5 shrink-0" aria-hidden="true" /> : null;
   const label =
     status === "attention"
-      ? "Task needs attention"
+      ? "任务需要关注"
       : status === "running"
-        ? "Task is running"
+        ? "任务运行中"
         : status === "failed"
-          ? "Task failed"
+          ? "任务失败"
           : status === "interrupted"
-            ? "Task was interrupted"
-            : "Unread task activity";
+            ? "任务已中断"
+            : "未读任务活动";
   return (
     <span
       className={

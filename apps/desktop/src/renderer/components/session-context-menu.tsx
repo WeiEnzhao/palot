@@ -115,7 +115,7 @@ export function SessionContextMenu({
     try {
       await forkSession({ sessionID: session.id });
     } catch (error) {
-      showErrorToast("Could not fork task", error);
+      showErrorToast("无法分叉任务", error);
     } finally {
       setForking(false);
     }
@@ -134,7 +134,7 @@ export function SessionContextMenu({
       )
         await openNewTask(session.projectID, runtime?.profileID);
     } catch (error) {
-      showErrorToast("Could not delete task", error);
+      showErrorToast("无法删除任务", error);
     } finally {
       setDeleting(false);
     }
@@ -168,7 +168,7 @@ export function SessionContextMenu({
               onClick={() => void openSessionWindow(session.id, runtime?.connectionID)}
             >
               <PanelsTopLeft aria-hidden="true" />
-              Open in new window
+              在新窗口中打开
             </ContextMenuItem>
             <ContextMenuItem disabled={unavailable || forking} onClick={() => void fork()}>
               {forking ? (
@@ -176,21 +176,21 @@ export function SessionContextMenu({
               ) : (
                 <GitFork aria-hidden="true" />
               )}
-              Fork
+              分叉
             </ContextMenuItem>
             <ContextMenuItem disabled={unavailable} onClick={() => setForkHistoryOpen(true)}>
-              Fork from prompt…
+              从提示词分叉…
             </ContextMenuItem>
             {onRename ? (
               <ContextMenuItem disabled={unavailable} onClick={onRename}>
-                Rename
+                重命名
               </ContextMenuItem>
             ) : null}
             <ContextMenuItem
               disabled={unavailable || runtime?.capabilities?.scheduledAutomations === false}
               title={
                 runtime?.capabilities?.scheduledAutomations === false
-                  ? "Scheduled follow-ups are unavailable on this connection"
+                  ? "此连接不可用计划后续任务"
                   : undefined
               }
               onClick={() =>
@@ -202,7 +202,7 @@ export function SessionContextMenu({
               }
             >
               <CalendarClock aria-hidden="true" />
-              Schedule follow-up
+              安排后续任务
             </ContextMenuItem>
             <SessionTransferItems transfer={transfer} />
             {onSnooze ? (
@@ -222,7 +222,7 @@ export function SessionContextMenu({
             onClick={() => setDeleteOpen(true)}
           >
             <Trash2 aria-hidden="true" />
-            Delete task
+            删除任务
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
@@ -239,19 +239,19 @@ export function SessionContextMenu({
             <AlertDialogMedia>
               <Trash2 aria-hidden="true" />
             </AlertDialogMedia>
-            <AlertDialogTitle>Delete {session.title ?? "this task"}?</AlertDialogTitle>
+            <AlertDialogTitle>确定删除 {session.title ?? "此任务"}？</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently deletes the task and all of its child tasks from OpenCode.
+              这将从 OpenCode 中永久删除该任务及其所有子任务。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>取消</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={unavailable || deleting}
               onClick={() => void deleteSession()}
             >
-              {deleting ? "Deleting..." : "Delete task"}
+              {deleting ? "正在删除…" : "删除任务"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -281,7 +281,7 @@ async function openSessionWindow(sessionID: string, connectionID?: string): Prom
   try {
     await palot.openSessionWindow(sessionID, connectionID);
   } catch (error) {
-    showErrorToast("Could not open task in a new window", error);
+    showErrorToast("无法在新窗口中打开任务", error);
   }
 }
 
@@ -314,7 +314,7 @@ export function SessionExportMenu({
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => void openSessionWindow(session.id, connectionID)}>
               <PanelsTopLeft aria-hidden="true" />
-              Open in new window
+              在新窗口中打开
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
@@ -333,21 +333,21 @@ export function SessionExportMenu({
                   onClick={historyActions.previousTurn}
                 >
                   <ArrowUp aria-hidden="true" />
-                  Previous user turn
+                  上一轮用户输入
                   <MenuShortcut id="task.turn.previous" />
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={historyActions.nextTurn}>
                   <ArrowDown aria-hidden="true" />
-                  Next user turn
+                  下一轮用户输入
                   <MenuShortcut id="task.turn.next" />
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={historyActions.openTimeline}>
                   <History aria-hidden="true" />
-                  Prompt timeline
+                  提示词时间线
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={historyActions.forkFromPrompt}>
                   <GitFork aria-hidden="true" />
-                  Fork from prompt…
+                  从提示词分叉…
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -386,9 +386,9 @@ function useSessionTransfer(
     setTransferring("export");
     try {
       const path = await palot.exportSession(session.id, session.title, runtime?.connectionID);
-      if (path) toast.add({ type: "success", title: "Task exported", description: path });
+      if (path) toast.add({ type: "success", title: "任务已导出", description: path });
     } catch (error) {
-      showErrorToast("Could not export task", error);
+      showErrorToast("无法导出任务", error);
     } finally {
       setTransferring(null);
     }
@@ -402,7 +402,7 @@ function useSessionTransfer(
       cacheSession(imported);
       await openSession(imported.id, { profileID: runtime?.profileID });
     } catch (error) {
-      showErrorToast("Could not import task", error);
+      showErrorToast("无法导入任务", error);
     } finally {
       setTransferring(null);
     }
@@ -420,9 +420,9 @@ function useSessionTransfer(
     setTransferring("copy");
     try {
       await palot.copySessionMarkdown(session.id, runtime?.connectionID);
-      toast.add({ type: "success", title: "Conversation copied as Markdown" });
+      toast.add({ type: "success", title: "对话已复制为 Markdown" });
     } catch (error) {
-      showErrorToast("Could not copy conversation", error);
+      showErrorToast("无法复制对话", error);
     } finally {
       setTransferring(null);
     }
@@ -459,20 +459,20 @@ function SessionTransferItems({
     <>
       <Item disabled={unavailable || Boolean(transferring)} onClick={() => void exportSession()}>
         {transferring === "export" ? <LoaderCircle className="animate-spin" /> : <Download />}
-        Export task
+        导出任务
       </Item>
       <Item disabled={unavailable || Boolean(transferring)} onClick={() => void copySession()}>
         {transferring === "copy" ? <LoaderCircle className="animate-spin" /> : <ClipboardCopy />}
-        Copy conversation as Markdown
+        复制对话为 Markdown
       </Item>
       <Item disabled={unavailable || Boolean(transferring)} onClick={transfer.openServerCopy}>
         <PanelsTopLeft />
-        Copy task to server…
+        复制任务到服务器…
       </Item>
       {!dropdown ? (
         <Item disabled={unavailable || Boolean(transferring)} onClick={() => void importSession()}>
           {transferring === "import" ? <LoaderCircle className="animate-spin" /> : <FileUp />}
-          Import task
+          导入任务
         </Item>
       ) : null}
     </>
@@ -491,7 +491,7 @@ function SessionSnoozeMenu({
     <ContextMenuSub>
       <ContextMenuSubTrigger disabled={disabled}>
         <Clock3 aria-hidden="true" />
-        Snooze
+        暂停
       </ContextMenuSubTrigger>
       <ContextMenuSubContent className="min-w-52">
         <ContextMenuGroup>
@@ -535,7 +535,7 @@ function SessionMoveMenu({
   const loadDirectories = useCallback(() => {
     if (unavailable || !project || directoriesQuery.isFetching) return;
     void directoriesQuery.refetch().then((result) => {
-      if (result.error) showErrorToast("Could not load worktrees", result.error);
+      if (result.error) showErrorToast("无法加载工作树", result.error);
     });
   }, [directoriesQuery, project, unavailable]);
 
@@ -548,11 +548,11 @@ function SessionMoveMenu({
         if (moved) cacheSession(moved);
         toast.add({
           type: "success",
-          title: "Task moved",
+          title: "任务已移动",
           description: `Now working in ${directoryLabel(directory)}.`,
         });
       } catch (error) {
-        showErrorToast("Could not move task", error);
+        showErrorToast("无法移动任务", error);
       } finally {
         setMoving(false);
       }
@@ -569,11 +569,11 @@ function SessionMoveMenu({
       if (moved) cacheSession(moved);
       toast.add({
         type: "success",
-        title: "Task moved to a new worktree",
+        title: "任务已移动到新工作树",
         description: directoryLabel(copy.directory),
       });
     } catch (error) {
-      showErrorToast("Could not move task to a new worktree", error);
+      showErrorToast("无法将任务移动到新工作树", error);
     } finally {
       setMoving(false);
     }
@@ -607,7 +607,7 @@ function SessionMoveMenu({
     >
       <FolderGit2 aria-hidden="true" />
       <span className="min-w-0 flex-1 truncate">
-        {item.directory === project?.canonical ? "Main checkout" : directoryLabel(item.directory)}
+        {item.directory === project?.canonical ? "主检出" : directoryLabel(item.directory)}
       </span>
     </ContextMenuItem>
   );
@@ -620,7 +620,7 @@ function SessionMoveMenu({
         onFocus={() => void loadDirectories()}
       >
         <FolderGit2 aria-hidden="true" />
-        Move to worktree
+        移到工作树
       </ContextMenuSubTrigger>
       <ContextMenuSubContent className="min-w-52">
         <ContextMenuGroup>
@@ -628,7 +628,7 @@ function SessionMoveMenu({
             disabled={unavailable || runtime?.capabilities?.worktreeCreate === false}
             title={
               runtime?.capabilities?.worktreeCreate === false
-                ? "Creating worktrees is unavailable on this connection"
+                ? "此连接不可用创建工作树"
                 : undefined
             }
             onClick={() => void createAndMove()}
@@ -638,7 +638,7 @@ function SessionMoveMenu({
             ) : (
               <Plus aria-hidden="true" />
             )}
-            New worktree
+            新建工作树
           </ContextMenuItem>
           {mainTarget ? renderTarget(mainTarget) : null}
         </ContextMenuGroup>
@@ -649,13 +649,13 @@ function SessionMoveMenu({
           {loading && !directories ? (
             <ContextMenuItem disabled>
               <LoaderCircle className="animate-spin" aria-hidden="true" />
-              Loading worktrees
+              正在加载工作树
             </ContextMenuItem>
           ) : null}
           {!loading && directories && !targets?.length ? (
             <ContextMenuItem disabled>
               <Check aria-hidden="true" />
-              Current worktree
+              当前工作树
             </ContextMenuItem>
           ) : null}
           {worktreeTargets?.map(renderTarget)}

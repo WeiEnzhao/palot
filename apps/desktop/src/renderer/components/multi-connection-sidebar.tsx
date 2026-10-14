@@ -345,7 +345,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
             disabled={disabled}
             onClick={() => command(item.pinnedAt !== null ? "unpin" : "pin")}
           >
-            {item.pinnedAt !== null ? "Unpin" : "Pin"}
+            {item.pinnedAt !== null ? "取消置顶" : "置顶"}
           </DropdownMenuItem>
           {item.section === "settled" ? (
             <DropdownMenuItem disabled={disabled} onClick={() => command("inbox")}>
@@ -363,7 +363,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 })
               }
             >
-              Settle
+              归档
             </DropdownMenuItem>
           )}
           {item.section === "snoozed" ? (
@@ -461,7 +461,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label="Unpin task"
+                        aria-label="取消置顶任务"
                         className={INBOX_CARD_ACTION_BUTTON_CLASS}
                         disabled={disabled}
                         onClick={() => command("unpin")}
@@ -477,11 +477,11 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                           "h-6 gap-0.5 px-2 text-micro!",
                           INBOX_CARD_ACTION_BUTTON_CLASS,
                         )}
-                        aria-label="Settle task"
+                        aria-label="归档任务"
                         onClick={settle}
                       >
                         <Check aria-hidden="true" />
-                        Settle
+                        归档
                       </Button>
                     ) : null}
                     <SnoozeButton
@@ -576,7 +576,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           disabled={disabled}
           onClick={() => command(item.pinnedAt !== null ? "unpin" : "pin")}
         >
-          {item.pinnedAt !== null ? "Unpin" : "Pin"}
+          {item.pinnedAt !== null ? "取消置顶" : "置顶"}
         </ContextMenuItem>
         {item.section === "settled" ? (
           <ContextMenuItem disabled={disabled} onClick={() => command("inbox")}>

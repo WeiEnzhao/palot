@@ -249,7 +249,7 @@ export function useSessionProcesses(
     error: shells.some((query) => query.isError)
       ? "Commands could not be refreshed."
       : terminals.some((query) => query.isError)
-        ? "Terminals could not be refreshed."
+        ? "无法刷新终端。"
         : null,
     terminalsSupported,
     owners,

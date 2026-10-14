@@ -163,8 +163,8 @@ export const DEFAULT_APPEARANCE_PREFERENCES: AppearancePreferences = Object.free
   contentOpacity: 100,
   nativeGlassTint: "theme",
   nativeGlassVariant: "theme",
-  windowMaterial: "automatic",
-  sidebarMaterial: "automatic",
+  windowMaterial: "opaque",
+  sidebarMaterial: "opaque",
 });
 
 export interface AppearanceThemePalette {
