@@ -1373,6 +1373,9 @@
 
   .markdown :not(pre) > code {
     @apply rounded border border-foreground/6 bg-muted px-1.5 py-0.5 font-mono text-[0.9em];
+    /* Long paths/commands wrap instead of hard-truncating at the pane edge. */
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .markdown pre {
