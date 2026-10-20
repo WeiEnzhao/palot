@@ -118,34 +118,33 @@ export function InboxCardSurface({
             </span>
           )}
         </div>
-        {titleEditor ?? (
-          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-compact font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
-            <span className="min-w-0 flex-1 truncate">{item.session.title ?? "Untitled task"}</span>
-          </div>
-        )}
-        <div
-          className="mt-1 flex min-w-0 items-center gap-1.5 text-meta text-muted-foreground"
-          data-inbox-location
-        >
-          {detachedWorktree ? (
-            <FolderGit2
-              className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
-              aria-hidden="true"
-            />
-          ) : (
-            <GitBranch
-              className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
-              aria-hidden="true"
-            />
+        <div className="mt-1 flex min-w-0 items-center gap-1.5" data-inbox-location>
+          {titleEditor ?? (
+            <div className="min-w-0 flex-1 truncate text-compact font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
+              {item.session.title ?? "Untitled task"}
+            </div>
           )}
-          <span
-            className="min-w-0 -translate-y-px truncate"
-            title={item.session.location.directory}
-          >
-            {branchLabel(vcs, item)}
+          <span className="flex shrink-0 items-center gap-1 text-meta text-muted-foreground opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
+            {detachedWorktree ? (
+              <FolderGit2
+                className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
+                aria-hidden="true"
+              />
+            ) : (
+              <GitBranch
+                className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
+                aria-hidden="true"
+              />
+            )}
+            <span
+              className="max-w-40 -translate-y-px truncate"
+              title={item.session.location.directory}
+            >
+              {branchLabel(vcs, item)}
+            </span>
           </span>
           {pullRequest ? (
-            <span className="ml-auto flex shrink-0 items-center">{pullRequest}</span>
+            <span className="shrink-0">{pullRequest}</span>
           ) : null}
         </div>
       </div>
