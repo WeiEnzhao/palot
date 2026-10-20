@@ -39,33 +39,33 @@ describe("WorkspaceSidebar", () => {
     expect(shell?.querySelector("[data-navigation-rail]")).toBeNull();
     const rail = screen.getByRole("navigation", { name: "Palot" });
     expect(
-      within(rail).getByRole("button", { name: "Show inbox" }).getAttribute("aria-pressed"),
+      within(rail).getByRole("button", { name: "显示收件箱" }).getAttribute("aria-pressed"),
     ).toBe("true");
-    expect(screen.getByRole("heading", { name: "Inbox" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Filter tasks" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Inbox options" })).toBeTruthy();
+    expect(document.querySelector('[aria-label="收件箱导航"]')).toBeTruthy();
+    expect(screen.getByRole("button", { name: "筛选任务" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "收件箱选项" })).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(document.querySelectorAll('[data-slot="sidebar-header"]')).toHaveLength(1);
     expect(document.querySelectorAll('[data-slot="sidebar-footer"]')).toHaveLength(1);
 
-    const search = screen.getByRole("button", { name: "Search tasks" });
+    const search = screen.getByRole("button", { name: "搜索任务" });
     await userEvent.click(search);
     expect(onSearchTasks).toHaveBeenCalledExactlyOnceWith(search);
 
-    await userEvent.click(within(rail).getByRole("button", { name: "Show projects" }));
+    await userEvent.click(within(rail).getByRole("button", { name: "显示项目" }));
 
     expect(document.querySelector("[data-sidebar-mode]")).toBe(shell);
     expect(
-      within(rail).getByRole("button", { name: "Show projects" }).getAttribute("aria-pressed"),
+      within(rail).getByRole("button", { name: "显示项目" }).getAttribute("aria-pressed"),
     ).toBe("true");
-    expect(screen.getByRole("heading", { name: "Projects" })).toBeTruthy();
+    expect(document.querySelector('[aria-label="任务导航"]')).toBeTruthy();
     expect(document.querySelectorAll('[data-slot="sidebar-header"]')).toHaveLength(1);
     expect(document.querySelectorAll('[data-slot="sidebar-footer"]')).toHaveLength(1);
 
-    await userEvent.click(within(rail).getByRole("button", { name: "Show inbox" }));
+    await userEvent.click(within(rail).getByRole("button", { name: "显示收件箱" }));
 
     expect(document.querySelector("[data-sidebar-mode]")).toBe(shell);
-    expect(screen.getByRole("button", { name: "Filter tasks" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "筛选任务" })).toBeTruthy();
   });
 
   it("keeps server controls in the Palot menu and destinations on the rail", async () => {
@@ -109,40 +109,40 @@ describe("WorkspaceSidebar", () => {
       store,
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "Open Palot menu" }));
-    expect(await screen.findByText("OpenCode 0.0.0-beta-19425 · Disconnected")).toBeTruthy();
-    const serverMenu = screen.getByRole("menuitem", { name: "Servers" });
+    await userEvent.click(screen.getByRole("button", { name: "打开 Palot 菜单" }));
+    expect(await screen.findByText("OpenCode 0.0.0-beta-19425 · 已断开")).toBeTruthy();
+    const serverMenu = screen.getByRole("menuitem", { name: "服务器" });
     expect(listProfiles).not.toHaveBeenCalled();
     serverMenu.focus();
     await userEvent.keyboard("{ArrowRight}");
     expect(
-      await screen.findByRole("menuitemcheckbox", { name: "Local OpenCode Enabled" }),
+      await screen.findByRole("menuitemcheckbox", { name: "Local OpenCode 已启用" }),
     ).toBeTruthy();
-    const remote = screen.getByRole("menuitemcheckbox", { name: "Remote workstation Disabled" });
+    const remote = screen.getByRole("menuitemcheckbox", { name: "Remote workstation 已禁用" });
     const before = router.state.location.href;
     await userEvent.click(remote);
     expect(store.get(includedProfileIDsAtom)).toEqual(["local", "remote"]);
     expect(router.state.location.href).toBe(before);
-    await userEvent.click(screen.getByRole("menuitemcheckbox", { name: "Local OpenCode Enabled" }));
+    await userEvent.click(screen.getByRole("menuitemcheckbox", { name: "Local OpenCode 已启用" }));
     expect(store.get(includedProfileIDsAtom)).toEqual(["remote"]);
     expect(router.state.location.href).toBe(before);
     expect(listProfiles).toHaveBeenCalledTimes(1);
     await userEvent.keyboard("{Escape}{Escape}");
 
-    await userEvent.click(screen.getByRole("button", { name: "Open Palot menu" }));
-    expect(screen.getByRole("menuitem", { name: "About" })).toBeTruthy();
-    for (const moved of ["Usage", "Worktrees", "Settings"])
-      expect(screen.queryByRole("menuitem", { name: moved })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "打开 Palot 菜单" }));
+    expect(screen.getByRole("menuitem", { name: "关于" })).toBeTruthy();
+    for (const moved of [/^用量/, /^工作树/, /^设置/])
+      expect(screen.queryByRole("menuitem", { name: moved })).toBeTruthy();
     await userEvent.keyboard("{Escape}");
 
     const rail = screen.getByRole("navigation", { name: "Palot" });
-    await userEvent.click(within(rail).getByRole("button", { name: "Usage" }));
+    await userEvent.click(within(rail).getByRole("button", { name: "用量" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/usage"));
-    expect(within(rail).getByRole("button", { name: "Usage" }).getAttribute("aria-current")).toBe(
+    expect(within(rail).getByRole("button", { name: "用量" }).getAttribute("aria-current")).toBe(
       "page",
     );
 
-    await userEvent.click(within(rail).getByRole("button", { name: "Worktrees" }));
+    await userEvent.click(within(rail).getByRole("button", { name: "工作树" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/worktrees"));
   });
 });

@@ -12,6 +12,32 @@ import {
 } from "./tool-execution";
 
 describe("ToolExecution", () => {
+  it("keeps a plan update to one compact row because the pinned card lists the items", () => {
+    render(
+      <ToolExecution
+        index={0}
+        part={{
+          type: "tool",
+          id: "plan",
+          name: "todowrite",
+          state: {
+            status: "completed",
+            input: {
+              todos: [
+                { id: "1", content: "Map the events", status: "completed" },
+                { id: "2", content: "Render the card", status: "in_progress" },
+                { id: "3", content: "Drop the old path", status: "cancelled" },
+              ],
+            },
+          },
+        }}
+      />,
+    );
+    const row = screen.getByRole("button", { name: /Updated plan/ });
+    expect(row.textContent).toContain("1/2 done");
+    expect(screen.queryByText("Render the card")).toBeNull();
+  });
+
   it("shows Python separately from combined output and preserves the exact raw command", async () => {
     const code = "import json\nprint(json.dumps({'ok': True}))\n";
     const command = `python3 - <<'PY'\n${code}PY\nprintf 'validated\\n'`;
@@ -969,15 +995,15 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Open preview of palot.png" });
+    const trigger = screen.getByRole("button", { name: "打开预览：palot.png" });
     expect(screen.getByRole("img", { name: "palot.png" }).getAttribute("src")).toBe(
       "data:image/png;base64,AAAA",
     );
     fireEvent.click(trigger);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeTruthy());
-    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
-    expect(screen.getByRole("button", { name: "Zoom out" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Close image preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "放大" }));
+    expect(screen.getByRole("button", { name: "缩小" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "关闭图片预览" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 

@@ -679,7 +679,7 @@ function MarkdownImageView({
     <>
       <button
         type="button"
-        aria-label={`Open image preview: ${name}`}
+        aria-label={`打开图片预览：${name}`}
         onClick={() => setOpen(true)}
         className="group relative inline-flex max-w-full cursor-zoom-in overflow-hidden rounded-lg align-middle outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >

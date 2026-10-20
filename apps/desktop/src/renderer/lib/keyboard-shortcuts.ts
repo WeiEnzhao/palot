@@ -46,11 +46,13 @@ export type KeyboardShortcutID =
   | "task.previous"
   | "task.changes.toggle"
   | "task.terminal.toggle"
+  | "workbench.tab.close"
   | "composer.focus"
   | "composer.send"
   | "composer.newline"
   | "composer.steer"
   | "composer.model"
+  | "composer.reasoning.cycle"
   | "composer.agent.next"
   | "composer.agent.previous"
   | "composer.attach"
@@ -89,6 +91,8 @@ export interface KeyboardShortcut {
 }
 
 const COMPOSER_TYPING = "Part of typing in the composer";
+const WORKBENCH_TAB_CYCLING =
+  "Switches workbench tabs instead while a workbench with several tabs has focus";
 
 export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
@@ -127,12 +131,19 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     note: "Same order as Recent tasks in the command palette",
     locked: "Uses the number keys as a range",
   },
-  { id: "task.next", group: "tasks", label: "下一个最近任务", keys: ["Control", "Tab"] },
+  {
+    id: "task.next",
+    group: "tasks",
+    label: "下一个最近任务",
+    keys: ["Control", "Tab"],
+    note: WORKBENCH_TAB_CYCLING,
+  },
   {
     id: "task.previous",
     group: "tasks",
     label: "上一个最近任务",
     keys: ["Control", "Shift", "Tab"],
+    note: WORKBENCH_TAB_CYCLING,
   },
   {
     id: "task.changes.toggle",
@@ -145,6 +156,14 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     group: "panels",
     label: "显示或隐藏终端",
     keys: ["Control", "`"],
+  },
+  {
+    id: "workbench.tab.close",
+    group: "panels",
+    label: "关闭工作台标签",
+    keys: ["Mod", "W"],
+    note: "While the workbench has focus; elsewhere it closes the window",
+    locked: "Shares the system Close window shortcut",
   },
   {
     id: "composer.focus",
@@ -176,6 +195,13 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     locked: COMPOSER_TYPING,
   },
   { id: "composer.model", group: "composer", label: "选择模型", keys: ["Mod", "'"] },
+  {
+    id: "composer.reasoning.cycle",
+    group: "composer",
+    label: "循环推理强度",
+    keys: ["Mod", "Shift", "D"],
+    note: "适用于提供推理选项的模型",
+  },
   { id: "composer.agent.next", group: "composer", label: "循环智能体", keys: ["Mod", "."] },
   {
     id: "composer.agent.previous",
@@ -689,7 +715,7 @@ const SYSTEM_SHORTCUTS: readonly { keys: ShortcutKeys; label: string; macOnly?: 
   { keys: ["Mod", "A"], label: "全选" },
   { keys: ["Mod", "Z"], label: "撤销" },
   { keys: ["Mod", "Shift", "Z"], label: "重做" },
-  { keys: ["Mod", "W"], label: "关闭窗口" },
+  { keys: ["Mod", "W"], label: "关闭窗口或工作台标签" },
   { keys: ["Mod", "M"], label: "最小化" },
   { keys: ["Mod", "Q"], label: "退出", macOnly: true },
   { keys: ["Mod", "H"], label: "隐藏 Palot", macOnly: true },

@@ -64,12 +64,12 @@ describe("welcome project creation ownership", () => {
         </Provider>
       </QueryClientProvider>,
     );
-    expect(screen.queryByRole("button", { name: "Back to Palot" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Skip for now" })));
+    expect(screen.queryByRole("button", { name: "返回 Palot" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "继续" }));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "暂时跳过" })));
     expect(store.get(onboardingCompletedVersionAtom)).toBe(ONBOARDING_VERSION);
     act(() => store.set(runtimeAtom, { ...runtime, profileID: "remote", connectionID: "remote" }));
-    expect(screen.getByRole("button", { name: "Back to Palot" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "返回 Palot" })).toBeTruthy();
   });
 
   it("offers local release setup on the initial step without checking releases or changing the service", async () => {
@@ -130,8 +130,8 @@ describe("welcome project creation ownership", () => {
             profileID: "other-profile",
           }),
         );
-      fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-      fireEvent.click(screen.getByRole("button", { name: "Add project folder" }));
+      fireEvent.click(screen.getByRole("button", { name: "继续" }));
+      fireEvent.click(screen.getByRole("button", { name: "添加项目文件夹" }));
       if (change === "picker") switchFocus();
       await act(async () => directory.resolve("/repo"));
       expect(create).toHaveBeenCalledWith("/repo", undefined, "origin");
@@ -143,7 +143,7 @@ describe("welcome project creation ownership", () => {
       expect(openCodeReconciler(queryClient).session("other", session.id)).toBeNull();
       if (change !== "unmount") {
         expect(
-          screen.getByLabelText(change === "unchanged" ? "Step 3 of 3" : "Step 2 of 3"),
+          screen.getByLabelText(change === "unchanged" ? "第 3 步，共 3 步" : "第 2 步，共 3 步"),
         ).toBeTruthy();
       }
     },

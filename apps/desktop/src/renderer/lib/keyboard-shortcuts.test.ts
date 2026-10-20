@@ -233,9 +233,9 @@ describe("personal bindings", () => {
     expect(shortcutBindingProblem("task.new", ["Shift", "J"])).toMatch(/Ctrl/);
     expect(shortcutBindingProblem("task.new", ["Mod", "Alt", "J"])).toMatch(/Alt/);
     expect(shortcutBindingProblem("task.turn.next", ["Mod", "Alt", "J"])).toBeNull();
-    expect(shortcutBindingProblem("task.new", ["Mod", "C"])).toMatch(/Copy/);
+    expect(shortcutBindingProblem("task.new", ["Mod", "C"])).toMatch(/复制/);
     expect(shortcutBindingProblem("task.new", ["Mod", "Q"], "Linux")).toBeNull();
-    expect(shortcutBindingProblem("task.new", ["Mod", "Q"], "MacIntel")).toMatch(/Quit/);
+    expect(shortcutBindingProblem("task.new", ["Mod", "Q"], "MacIntel")).toMatch(/退出/);
   });
 });
 

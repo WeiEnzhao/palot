@@ -49,15 +49,15 @@ it("cancels without answering and sends the trimmed reason through the official 
       />
     </Provider>,
   );
-  await user.click(screen.getByRole("button", { name: "Deny" }));
+  await user.click(screen.getByRole("button", { name: "拒绝" }));
   await user.type(
-    screen.getByRole("textbox", { name: "Rejection reason (optional)" }),
+    screen.getByRole("textbox", { name: "拒绝原因（可选）" }),
     "  Use a read-only command  ",
   );
-  await user.click(screen.getByRole("button", { name: "Cancel" }));
+  await user.click(screen.getByRole("button", { name: "取消" }));
   expect(reply).not.toHaveBeenCalled();
-  await user.click(screen.getByRole("button", { name: "Deny" }));
-  await user.click(screen.getByRole("button", { name: "Confirm denial" }));
+  await user.click(screen.getByRole("button", { name: "拒绝" }));
+  await user.click(screen.getByRole("button", { name: "确认拒绝" }));
   await waitFor(() => expect(reply).toHaveBeenCalledOnce());
   const request = reply.mock.calls[0]![0];
   expect(request).toMatchObject({

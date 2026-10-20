@@ -54,9 +54,9 @@ describe("global command search", () => {
     const groups = groupGlobalCommands(defaultGlobalCommands(commands));
 
     expect(groups.map((group) => group.label)).toEqual([
-      "Recent tasks",
-      "Quick actions",
-      "Settings",
+      "最近任务",
+      "快速操作",
+      "设置",
     ]);
     expect(groups[0]?.commands.map((item) => item.id)).toEqual(
       tasks.slice(0, 9).map((item) => item.id),
@@ -75,9 +75,9 @@ describe("global command search", () => {
     const groups = groupGlobalSearchResults(commands, "restart");
 
     expect(groups.map((group) => [group.label, group.commands.map((item) => item.id)])).toEqual([
-      ["Tasks", ["exact"]],
-      ["Commands", ["restart"]],
-      ["Similar tasks", ["loose"]],
+      ["任务", ["exact"]],
+      ["命令", ["restart"]],
+      ["相似任务", ["loose"]],
     ]);
   });
 });
@@ -101,24 +101,24 @@ describe("palette tabs", () => {
 
   it("keeps the suggestion layout on All and lists each tab's own commands", () => {
     expect(ids("all")).toEqual([
-      ["Recent tasks", ["task-a", "task-b"]],
-      ["Quick actions", ["new"]],
-      ["Settings", ["general", "appearance"]],
+      ["最近任务", ["task-a", "task-b"]],
+      ["快速操作", ["new"]],
+      ["设置", ["general", "appearance"]],
     ]);
-    expect(ids("tasks")).toEqual([["Recent tasks", ["task-a", "task-b"]]]);
+    expect(ids("tasks")).toEqual([["最近任务", ["task-a", "task-b"]]]);
     // The Commands tab reveals commands the empty palette hides, but not per-project rows.
-    expect(ids("commands")).toEqual([["Quick actions", ["new", "copy", "welcome"]]]);
-    expect(ids("settings")).toEqual([["Settings", ["general", "appearance"]]]);
+    expect(ids("commands")).toEqual([["快速操作", ["new", "copy", "welcome"]]]);
+    expect(ids("settings")).toEqual([["设置", ["general", "appearance"]]]);
   });
 
   it("searches only within the selected tab", () => {
     const all = ids("all", "settings");
-    expect(all[0]).toEqual(["Tasks", ["task-a"]]);
-    expect(all[1]?.[0]).toBe("Commands");
+    expect(all[0]).toEqual(["任务", ["task-a"]]);
+    expect(all[1]?.[0]).toBe("命令");
     expect(all[1]?.[1]).toContain("general");
-    expect(ids("tasks", "settings")).toEqual([["Tasks", ["task-a"]]]);
-    expect(ids("settings", "settings")).toEqual([["Settings", ["general"]]]);
-    expect(ids("commands", "new task")).toEqual([["Commands", ["new", "project"]]]);
+    expect(ids("tasks", "settings")).toEqual([["任务", ["task-a"]]]);
+    expect(ids("settings", "settings")).toEqual([["设置", ["general"]]]);
+    expect(ids("commands", "new task")).toEqual([["命令", ["new", "project"]]]);
     expect(ids("settings", "ship")).toEqual([]);
   });
 

@@ -1,12 +1,12 @@
 import { Provider, createStore } from "jotai";
-import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { FormInfo, PermissionRequest } from "@opencode/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OpenCodeRuntimeStatus, PalotSession } from "../../shared";
 import { attentionTargetAtom } from "../atoms/attention";
 import { attentionSeenIDsAtom, sidebarSectionsAtom } from "../atoms/attention";
-import { sessionTriageSnapshotAtom } from "../atoms/inbox";
+import { inboxClockAtom, sessionTriageSnapshotAtom } from "../atoms/inbox";
 import { runtimeAtom, selectedSessionIDAtom } from "../atoms/workspace";
 import { ProjectSidebarContent } from "./sidebar";
 import { SidebarProvider } from "./ui/sidebar";
@@ -15,6 +15,7 @@ import { createRendererQueryClient } from "../lib/query-client";
 import { openCodeReconciler } from "../lib/open-code-reconciler";
 import { setSessionRequestSnapshot } from "../lib/session-request-query";
 import { palot } from "../services/palot";
+import { toast as toastManager } from "./ui/toast";
 
 let showAttentionNotification: ReturnType<typeof vi.fn>;
 let dispatchSessionTriage: ReturnType<typeof vi.fn>;
@@ -150,16 +151,16 @@ describe("ProjectSidebarContent attention", () => {
       const navigate = vi.spyOn(router, "navigate").mockResolvedValue(undefined);
 
       if (action === "import") {
-        fireEvent.click(await screen.findByRole("button", { name: "Import task" }));
+        fireEvent.click(await screen.findByRole("button", { name: "导入任务" }));
         expect(importTask).toHaveBeenCalledWith(undefined, "origin");
       } else {
-        fireEvent.click(screen.getByRole("button", { name: "Add project folder" }));
+        fireEvent.click(screen.getByRole("button", { name: "添加项目文件夹" }));
         if (action === "remote") {
-          fireEvent.change(screen.getByLabelText("Folder path"), {
+          fireEvent.change(screen.getByLabelText("文件夹路径"), {
             target: { value: "/repo" },
           });
-          fireEvent.click(screen.getByRole("button", { name: "Add project" }));
-        } else fireEvent.click(screen.getByRole("button", { name: "Choose local folder…" }));
+          fireEvent.click(screen.getByRole("button", { name: "添加项目" }));
+        } else fireEvent.click(screen.getByRole("button", { name: "选择本地文件夹…" }));
       }
       act(() =>
         store.set(runtimeAtom, {
@@ -170,7 +171,7 @@ describe("ProjectSidebarContent attention", () => {
       );
       if (action === "folder") {
         await act(async () => directory.resolve("/repo"));
-        fireEvent.click(screen.getByRole("button", { name: "Add project" }));
+        fireEvent.click(screen.getByRole("button", { name: "添加项目" }));
       }
       if (action !== "import") expect(create).toHaveBeenCalledWith("/repo", undefined, "origin");
       await act(async () => created.resolve(session));
@@ -215,7 +216,7 @@ describe("ProjectSidebarContent attention", () => {
     );
 
     const root = screen
-      .getByRole("button", { name: "Projects" })
+      .getByRole("button", { name: "项目" })
       .closest('[data-slot="collapsible"]');
     const panel = root?.querySelector('[data-slot="collapsible-content"]');
     expect(root?.classList.contains("flex-col")).toBe(true);
@@ -240,7 +241,7 @@ describe("ProjectSidebarContent attention", () => {
       queryClient,
     );
 
-    const recents = screen.getByRole("navigation", { name: "Recent tasks" });
+    const recents = screen.getByRole("navigation", { name: "最近任务" });
     const rows = await waitFor(() => {
       const rows = recents.querySelectorAll<HTMLElement>("[data-sidebar-fluid-row]");
       expect(rows).toHaveLength(2);
@@ -264,6 +265,52 @@ describe("ProjectSidebarContent attention", () => {
     // Focus leaving the list clears the highlight.
     act(() => other.querySelector("button")!.blur());
     await waitFor(() => expect(list.hasAttribute("data-fluid-hover-active-index")).toBe(false));
+  });
+
+  it("routes a click in the gap beside a lit task row to that row's primary action only", async () => {
+    const store = createStore();
+    const second = { ...session, id: "session-2", title: "Second session", updatedAt: 3 };
+    const queryClient = createRendererQueryClient();
+    seedCatalog(queryClient, { sessions: [session, second] });
+    renderWithRouter(
+      <Provider store={store}>
+        <SidebarProvider>
+          <ProjectSidebarContent onNewSession={vi.fn()} />
+        </SidebarProvider>
+      </Provider>,
+      store,
+      "/new",
+      queryClient,
+    );
+
+    const recents = screen.getByRole("navigation", { name: "最近任务" });
+    const rows = await waitFor(() => {
+      const rows = recents.querySelectorAll<HTMLElement>("[data-sidebar-fluid-row]");
+      expect(rows).toHaveLength(2);
+      return rows;
+    });
+    const list = recents.querySelector<HTMLElement>("[data-sidebar-fluid-list]")!;
+    const target = Array.from(rows).find((row) => row.textContent?.includes("Second session"))!;
+    const primary = target.querySelector("button")!;
+    const clicks = Array.from(recents.querySelectorAll("button")).map((button) =>
+      vi.spyOn(button, "click"),
+    );
+    const primaryClick = clicks[Array.from(recents.querySelectorAll("button")).indexOf(primary)]!;
+    vi.spyOn(target, "getBoundingClientRect").mockReturnValue(
+      DOMRect.fromRect({ x: 0, y: 100, width: 200, height: 28 }),
+    );
+
+    act(() => primary.focus());
+    await waitFor(() => expect(target.hasAttribute("data-fluid-hover-active")).toBe(true));
+
+    // One pixel below the lit row: the gap between rows.
+    fireEvent.click(list, { clientX: 20, clientY: 129 });
+    expect(primaryClick).toHaveBeenCalledTimes(1);
+    expect(clicks.filter((click) => click !== primaryClick && click.mock.calls.length)).toEqual([]);
+
+    // Farther than the gap stays inert.
+    fireEvent.click(list, { clientX: 20, clientY: 140 });
+    expect(primaryClick).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the hover-revealed project action in the tab order", async () => {
@@ -297,7 +344,7 @@ describe("ProjectSidebarContent attention", () => {
     const trigger = await screen.findByRole("button", { name: /^Palot/ });
     act(() => trigger.focus());
     await userEvent.tab();
-    const action = screen.getByRole("button", { name: "Start a new task in Palot" });
+    const action = screen.getByRole("button", { name: "在 Palot 中新建任务" });
     expect(document.activeElement).toBe(action);
     await userEvent.keyboard("{Enter}");
     expect(onNewSession).toHaveBeenCalledWith("/repo");
@@ -359,7 +406,7 @@ describe("ProjectSidebarContent attention", () => {
 
     fireEvent.contextMenu(screen.getAllByRole("button", { name: /Release verification/ })[0]!);
 
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Settle" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "归档" }));
 
     await waitFor(() =>
       expect(dispatchSessionTriage).toHaveBeenCalledWith({
@@ -371,6 +418,130 @@ describe("ProjectSidebarContent attention", () => {
       }),
     );
   });
+
+  it.each([
+    { section: "inbox", action: "归档任务", command: "settle", toast: "任务已归档" },
+    { section: "settled", action: "取消归档任务", command: "inbox", toast: "任务已移至收件箱" },
+    { section: "snoozed", action: "唤醒任务", command: "wake", toast: "任务已唤醒" },
+  ] as const)(
+    "keeps the $section row's $action quick action in the tab order and dispatches it",
+    async ({ section, action, command, toast }) => {
+      const addToast = vi.spyOn(toastManager, "add");
+      const store = createStore();
+      store.set(runtimeAtom, {
+        connectionID: "disconnected",
+        profileID: "local-default",
+        contractVersion: "0.0.0-beta-19425",
+        phase: "idle",
+        connected: false,
+        binaryPath: null,
+        version: null,
+        pid: null,
+        managed: false,
+        lastConnectedAt: null,
+        error: null,
+        versionMismatch: null,
+      });
+      store.set(inboxClockAtom, Date.now());
+      const wakeAt = Date.now() + 3_600_000;
+      const through = { updatedAt: session.updatedAt, sessionID: session.id };
+      store.set(sessionTriageSnapshotAtom, {
+        profileID: "local-default",
+        bootstrapThrough: null,
+        sessions:
+          section === "inbox"
+            ? []
+            : [
+                {
+                  sessionID: session.id,
+                  disposition: section === "settled" ? "settled" : null,
+                  settledThrough: section === "settled" ? through : null,
+                  pinnedAt: null,
+                  snoozedUntil: section === "snoozed" ? wakeAt : null,
+                  snoozedThrough: section === "snoozed" ? through : null,
+                  updatedAt: 3,
+                },
+              ],
+      });
+      const queryClient = createRendererQueryClient();
+      seedCatalog(queryClient, {
+        projects: [
+          {
+            id: "project-1",
+            name: "Palot",
+            canonical: "/repo",
+            sandboxes: [],
+            vcs: null,
+            updatedAt: 1,
+          },
+        ],
+        sessions: [session],
+      });
+      renderWithRouter(
+        <Provider store={store}>
+          <SidebarProvider>
+            <ProjectSidebarContent onNewSession={vi.fn()} />
+          </SidebarProvider>
+        </Provider>,
+        store,
+        "/new",
+        queryClient,
+      );
+
+      const row = await waitFor(() => {
+        const row = document.querySelector<HTMLElement>("[data-palot-task-row]");
+        expect(row?.getAttribute("data-palot-triage-section")).toBe(section);
+        return row!;
+      });
+      // Rendered at rest, before any hover: the actions are quiet through opacity only.
+      const button = within(row).getByRole("button", { name: action });
+      expect(
+        within(row).queryAllByRole("button", { name: /归档任务|取消归档任务|唤醒任务/ }),
+      ).toHaveLength(1);
+      act(() =>
+        within(row)
+          .getByRole("button", { name: /Release verification/ })
+          .focus(),
+      );
+      await userEvent.tab();
+      expect(document.activeElement).toBe(button);
+      if (section === "inbox") {
+        await userEvent.tab();
+        expect(document.activeElement).toBe(
+          within(row).getByRole("button", { name: "暂停任务" }),
+        );
+        await userEvent.tab({ shift: true });
+      }
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() =>
+        expect(dispatchSessionTriage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: command,
+            profileID: "local-default",
+            sessionID: session.id,
+            ...(command === "settle" ? { through } : {}),
+          }),
+        ),
+      );
+      await waitFor(() =>
+        expect(addToast).toHaveBeenCalledWith(expect.objectContaining({ title: toast })),
+      );
+      // Undo restores the previous shelf.
+      const undo = addToast.mock.calls.at(-1)![0].actionProps!;
+      dispatchSessionTriage.mockClear();
+      act(() => (undo.onClick as () => void)());
+      await waitFor(() =>
+        expect(dispatchSessionTriage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: { settle: "inbox", inbox: "settle", wake: "snooze" }[command],
+            sessionID: session.id,
+            ...(command === "wake" ? { until: wakeAt, through } : {}),
+            ...(command === "inbox" ? { through } : {}),
+          }),
+        ),
+      );
+    },
+  );
 
   it("snoozes sessions from a nested context menu", async () => {
     const store = createStore();
@@ -409,10 +580,10 @@ describe("ProjectSidebarContent attention", () => {
     );
 
     fireEvent.contextMenu(screen.getAllByRole("button", { name: /Release verification/ })[0]!);
-    const submenu = await screen.findByRole("menuitem", { name: "Snooze" });
+    const submenu = await screen.findByRole("menuitem", { name: "暂停" });
     fireEvent.mouseEnter(submenu);
     fireEvent.click(submenu);
-    fireEvent.click(await screen.findByRole("menuitem", { name: /^In 1 hour/ }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /^1 小时后/ }));
 
     await waitFor(() =>
       expect(dispatchSessionTriage).toHaveBeenCalledWith({
@@ -443,7 +614,7 @@ describe("ProjectSidebarContent attention", () => {
       queryClient,
     );
 
-    expect(screen.getAllByLabelText("Unread task activity")).toHaveLength(1);
+    expect(screen.getAllByLabelText("未读任务活动")).toHaveLength(1);
     expect(
       document.querySelectorAll(`time[datetime="${new Date(10).toISOString()}"]`),
     ).toHaveLength(1);
@@ -469,7 +640,7 @@ describe("ProjectSidebarContent attention", () => {
 
     await userEvent.click(screen.getAllByRole("button", { name: /Release verification/ })[0]!);
 
-    await waitFor(() => expect(screen.queryByLabelText("Unread task activity")).toBeNull());
+    await waitFor(() => expect(screen.queryByLabelText("未读任务活动")).toBeNull());
     navigate.mockRestore();
   });
 
@@ -497,8 +668,8 @@ describe("ProjectSidebarContent attention", () => {
       queryClient,
     );
 
-    expect(screen.getAllByLabelText("Task is running")).toHaveLength(1);
-    expect(screen.queryByLabelText("Unread task activity")).toBeNull();
+    expect(screen.getAllByLabelText("任务运行中")).toHaveLength(1);
+    expect(screen.queryByLabelText("未读任务活动")).toBeNull();
     expect(
       document.querySelectorAll(`time[datetime="${new Date(session.updatedAt).toISOString()}"]`),
     ).toHaveLength(1);
@@ -596,7 +767,7 @@ describe("ProjectSidebarContent attention", () => {
       queryClient,
     );
 
-    expect(screen.getByText("Needs attention")).toBeTruthy();
+    expect(screen.getByText("需要关注")).toBeTruthy();
     await userEvent.click(document.querySelector<HTMLElement>("[data-palot-attention-row]")!);
 
     expect(router.state.location.pathname).toBe(`/sessions/${session.id}`);
@@ -630,7 +801,7 @@ describe("ProjectSidebarContent attention", () => {
     );
 
     expect(document.querySelectorAll("[data-palot-attention-row]")).toHaveLength(1);
-    expect(screen.getByText("2 requests · form + permission")).toBeTruthy();
+    expect(screen.getByText("2 个请求 · form + permission")).toBeTruthy();
   });
 
   it("marks only the focused blocker seen when selecting a grouped row", async () => {
@@ -685,7 +856,7 @@ describe("ProjectSidebarContent attention", () => {
       session.title,
     );
     expect(document.querySelector("[data-palot-attention-row]")?.textContent).toContain(
-      "Subagent permission",
+      "子智能体 permission",
     );
     await userEvent.click(document.querySelector<HTMLElement>("[data-palot-attention-row]")!);
 

@@ -149,13 +149,23 @@ export function PullRequestReviewPopover({
   pullRequest,
   commitOid,
   pending,
+  open: openProp,
+  onOpenChange,
 }: {
   pullRequest: PullRequestDetail;
   /** The head the reviewer read the diff at, so comments land on the lines they saw. */
   commitOid: string;
   pending: PendingReviewController;
+  /** Controls the popover, for callers that open it from elsewhere (the guide's Finish review). */
+  open?: boolean;
+  onOpenChange?(open: boolean): void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    onOpenChange?.(next);
+  };
   const submit = useSubmitPullRequestReview();
   const [submitting, setSubmitting] = useState<ReviewEvent | null>(null);
   const { body, comments } = pending.review;
@@ -235,7 +245,7 @@ export function PullRequestReviewPopover({
           <p className="text-meta text-muted-foreground">
             {count === 0
               ? "没有行评论。在 diff 中选择行来添加。"
-              : `${count} 条行${count === 1 ? "评论" : "评论"}将随此评审一起提交。`}
+              : `${count} 条行评论将随此评审一起提交。`}
           </p>
           {isAuthor ? (
             <p className="text-meta text-muted-foreground">

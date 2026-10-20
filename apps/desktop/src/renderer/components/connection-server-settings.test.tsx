@@ -34,9 +34,9 @@ it("enables and disables servers without switching the selected task or opening 
   store.set(includedProfileIDsAtom, ["local"]);
   const { router } = renderWithRouter(<ConnectionSettings tab="profiles" />, store);
   const before = router.state.location.href;
-  await userEvent.click(await screen.findByRole("switch", { name: "Enable Remote" }));
+  await userEvent.click(await screen.findByRole("switch", { name: "启用 Remote" }));
   expect(store.get(includedProfileIDsAtom)).toEqual(["local", "remote"]);
-  await userEvent.click(screen.getByRole("switch", { name: "Enable Local OpenCode" }));
+  await userEvent.click(screen.getByRole("switch", { name: "启用 Local OpenCode" }));
   expect(store.get(includedProfileIDsAtom)).toEqual(["remote"]);
   expect(switchProfile).not.toHaveBeenCalled();
   expect(router.state.location.href).toBe(before);

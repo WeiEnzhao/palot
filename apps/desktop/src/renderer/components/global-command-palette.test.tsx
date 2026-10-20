@@ -190,7 +190,7 @@ describe("GlobalCommandPalette", () => {
 
     fireEvent.keyDown(window, { key: "k", metaKey: true });
     await userEvent.type(
-      await screen.findByRole("combobox", { name: "Search tasks and commands" }),
+      await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "welcome guide",
     );
     await userEvent.click(await screen.findByRole("option", { name: /Open welcome guide/ }));
@@ -292,14 +292,14 @@ describe("GlobalCommandPalette", () => {
     store.set(commandPaletteOpenAtom, true);
 
     await userEvent.type(
-      await screen.findByRole("combobox", { name: "Search tasks and commands" }),
+      await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "restart",
     );
     const localResult = await screen.findByRole("option", { name: /Restart Palot/ });
     await waitFor(() => expect(localResult.hasAttribute("data-highlighted")).toBe(true));
     await waitFor(() => expect(mocks.listRootSessionInfo).toHaveBeenCalled());
 
-    const viewport = screen.getByRole("listbox", { name: "Command results" }).parentElement;
+    const viewport = screen.getByRole("listbox", { name: "命令结果" }).parentElement;
     expect(viewport).toBeTruthy();
     if (!viewport) return;
     viewport.scrollTop = 120;
@@ -330,7 +330,7 @@ describe("GlobalCommandPalette", () => {
     store.set(commandPaletteOpenAtom, true);
 
     await userEvent.type(
-      await screen.findByRole("combobox", { name: "Search tasks and commands" }),
+      await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "archived",
     );
     const firstResult = (await screen.findByText("Archived first")).closest('[role="option"]');
@@ -344,7 +344,7 @@ describe("GlobalCommandPalette", () => {
     await waitFor(() =>
       expect(screen.getByRole("combobox").getAttribute("aria-activedescendant")).toBe(loadMore.id),
     );
-    const viewport = screen.getByRole("listbox", { name: "Command results" }).parentElement;
+    const viewport = screen.getByRole("listbox", { name: "命令结果" }).parentElement;
     expect(viewport).toBeTruthy();
     if (!viewport) return;
     viewport.scrollTop = 120;
@@ -592,7 +592,7 @@ describe("GlobalCommandPalette", () => {
     expect(screen.queryByText("Hidden task")).toBeNull();
 
     await userEvent.type(
-      screen.getByRole("combobox", { name: "Search tasks and commands" }),
+      screen.getByRole("combobox", { name: "搜索任务和命令" }),
       "deploy",
     );
 
@@ -630,7 +630,7 @@ describe("GlobalCommandPalette", () => {
     await router.load();
     store.set(commandPaletteOpenAtom, true);
     await userEvent.type(
-      await screen.findByRole("combobox", { name: "Search tasks and commands" }),
+      await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "compact task",
     );
     await userEvent.click(await screen.findByRole("option", { name: /^Compact task/ }));
@@ -640,7 +640,7 @@ describe("GlobalCommandPalette", () => {
 
     store.set(commandPaletteOpenAtom, true);
     await userEvent.type(
-      await screen.findByRole("combobox", { name: "Search tasks and commands" }),
+      await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "undo last",
     );
     await userEvent.click(await screen.findByRole("option", { name: /^Undo last step/ }));
@@ -747,6 +747,6 @@ describe("GlobalCommandPalette", () => {
     const headings = [...listbox.querySelectorAll('[data-slot="command-group-heading"]')].map(
       (heading) => heading.textContent,
     );
-    expect(headings.indexOf("Files")).toBeGreaterThan(headings.indexOf("Tasks"));
+    expect(headings.indexOf("文件")).toBeGreaterThan(headings.indexOf("任务"));
   });
 });

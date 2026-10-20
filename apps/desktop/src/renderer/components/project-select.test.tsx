@@ -36,7 +36,7 @@ describe("ProjectSelect", () => {
     );
 
     await userEvent.click(screen.getByRole("combobox", { name: "Project" }));
-    await userEvent.type(screen.getByPlaceholderText("Search projects…"), "Other");
+    await userEvent.type(screen.getByPlaceholderText("搜索项目…"), "Other");
 
     expect(screen.queryByText("Palot")).toBeNull();
     await userEvent.keyboard("{Enter}");

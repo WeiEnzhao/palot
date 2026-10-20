@@ -16,6 +16,7 @@ import type {
 } from "../../shared";
 import {
   autoBackgroundOnSteerAtom,
+  compactBeforeSendSuggestionAtom,
   defaultDeliveryAtom,
   defaultModelsAtom,
   modelPickerPreferencesAtom,
@@ -34,6 +35,7 @@ import type { PendingRequestView } from "../lib/view-models";
 import { resetOpenCodeClientForTest, setOpenCodeClientForTest } from "../services/opencode-client";
 import { palot } from "../services/palot";
 import { Composer } from "./composer";
+import { toast } from "./ui/toast";
 
 const session: PalotSession = {
   id: "session-composer",
@@ -176,7 +178,7 @@ describe("Composer discovery", () => {
     const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     fireEvent.change(input, { target: { value: "/btw " } });
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(screen.getByText("Enter a question after /btw.")).toBeTruthy();
+    expect(screen.getByText("请在 /btw 后输入一个问题。")).toBeTruthy();
     expect(generate).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
     expect((input as HTMLTextAreaElement).value).toBe("/btw ");
@@ -201,7 +203,7 @@ describe("Composer discovery", () => {
     const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
     await userEvent.type(input, "Keep this draft");
     await userEvent.click(screen.getByRole("button", { name: "附加文件" }));
-    expect(screen.getByRole("status").textContent).toBe("Preparing attachments…");
+    expect(screen.getByRole("status").textContent).toBe("正在准备附件…");
     expect(screen.getByRole("button", { name: "发送消息" }).hasAttribute("disabled")).toBe(
       true,
     );
@@ -283,7 +285,7 @@ describe("Composer discovery", () => {
         getData: () => "",
       },
     });
-    expect(screen.getByRole("status").textContent).toBe("Preparing attachments…");
+    expect(screen.getByRole("status").textContent).toBe("正在准备附件…");
     fireEvent.keyDown(input, { key: "Enter" });
     expect(send).not.toHaveBeenCalled();
     view.unmount();
@@ -342,10 +344,10 @@ describe("Composer discovery", () => {
         onCreateSession={createSession}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: "审批：默认" }));
-    await userEvent.click(await screen.findByRole("menuitemradio", { name: /^Full access/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Approvals: 默认" }));
+    await userEvent.click(await screen.findByRole("option", { name: /^完全访问/ }));
     await userEvent.click(await screen.findByRole("button", { name: "启用完全访问" }));
-    await screen.findByRole("button", { name: "审批：完全访问" });
+    await screen.findByRole("button", { name: "Approvals: 完全访问" });
     await userEvent.type(
       screen.getByRole("textbox", { name: "向 Palot 发送消息" }),
       "Inspect the project",
@@ -355,7 +357,7 @@ describe("Composer discovery", () => {
       expect(createSession).toHaveBeenCalledWith(expect.objectContaining({ approvalMode: "full" })),
     );
     await waitFor(() => expect(send).toHaveBeenCalledOnce());
-    expect(screen.getByRole("button", { name: "审批：默认" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approvals: 默认" })).toBeTruthy();
   });
 
   it("does not memoize away external session permission updates", () => {
@@ -369,15 +371,15 @@ describe("Composer discovery", () => {
       </QueryClientProvider>
     );
     const view = render(wrap(session));
-    expect(screen.getByRole("button", { name: "审批：默认" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approvals: 默认" })).toBeTruthy();
     view.rerender(
       wrap({ ...session, permissions: [{ action: "*", resource: "*", effect: "allow" }] }),
     );
-    expect(screen.getByRole("button", { name: "审批：完全访问" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approvals: 完全访问" })).toBeTruthy();
     view.rerender(
       wrap({ ...session, permissions: [{ action: "edit", resource: "*", effect: "deny" }] }),
     );
-    expect(screen.getByRole("button", { name: "审批：自定义" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approvals: 自定义" })).toBeTruthy();
   });
 
   it("shows hydrated canonical default reasoning as selected Auto without changing the session", async () => {
@@ -408,11 +410,14 @@ describe("Composer discovery", () => {
     };
     renderComposer(<Composer session={hydratedSession} messages={[]} isWorking={false} />);
     const trigger = await screen.findByRole("button", { name: "模型：Reasoner" });
-    expect(trigger.getAttribute("aria-description")).toBe("Reasoning: Auto");
-    expect(screen.queryByRole("button", { name: /^Reasoning:/ })).toBeNull();
-    await userEvent.click(trigger);
-    expect(screen.getByRole("button", { name: "自动", pressed: true })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "高", pressed: false })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "推理力度：自动" })).not.toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "推理力度：自动" }));
+    expect(screen.getByRole("option", { name: /^自动/ }).getAttribute("aria-selected")).toBe(
+      "true",
+    );
+    expect(screen.getByRole("option", { name: "高" }).getAttribute("aria-selected")).toBe(
+      "false",
+    );
     expect(hydratedSession.model.variant).toBe("default");
     expect(switchModel).not.toHaveBeenCalled();
   });
@@ -460,7 +465,7 @@ describe("Composer discovery", () => {
       />,
       store,
     );
-    await screen.findByRole("button", { name: "模型：全局模型" });
+    await screen.findByRole("button", { name: "模型：Global model" });
     await userEvent.type(
       screen.getByRole("textbox", { name: "向 Palot 发送消息" }),
       "Use the server defaults{Enter}",
@@ -539,8 +544,8 @@ describe("Composer discovery", () => {
     // OpenCode lists its resolved default agent first; the draft shows it by name.
     await userEvent.click(await screen.findByRole("button", { name: "智能体：Plan（默认）" }));
     await userEvent.click(await screen.findByRole("option", { name: "Plan" }));
-    await userEvent.click(screen.getByRole("button", { name: "模型：Reasoner" }));
-    await userEvent.click(screen.getByRole("button", { name: "高" }));
+    await userEvent.click(screen.getByRole("button", { name: /^推理力度：/ }));
+    await userEvent.click(screen.getByRole("option", { name: "高" }));
     await userEvent.click(input);
     await userEvent.keyboard("{Enter}");
     expect(createSession).toHaveBeenCalledWith({
@@ -561,9 +566,7 @@ describe("Composer discovery", () => {
     expect(await screen.findByRole("button", { name: "模型：retired，不可用" })).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "模型：retired，不可用" }));
     expect(
-      screen.getByText(
-        "This task's selected model is no longer available. Choose another model to continue.",
-      ),
+      screen.getByText("此任务选择的模型已不可用。请选择其他模型以继续。"),
     ).toBeTruthy();
   });
 
@@ -780,8 +783,8 @@ describe("Composer discovery", () => {
       store,
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "模型：Reasoner" }));
-    await userEvent.click(screen.getByRole("button", { name: "高" }));
+    await userEvent.click(await screen.findByRole("button", { name: "推理力度：低" }));
+    await userEvent.click(screen.getByRole("option", { name: "高" }));
 
     expect(
       store.get(defaultModelsAtom)[modelProjectPreferenceKey("test-profile", session.projectID)],
@@ -790,9 +793,7 @@ describe("Composer discovery", () => {
       providerID: "openai",
       variant: "low",
     });
-    expect(
-      screen.getByRole("button", { name: "模型：Reasoner" }).getAttribute("aria-description"),
-    ).toBe("Reasoning: High");
+    expect(await screen.findByRole("button", { name: "推理力度：高" })).toBeTruthy();
   });
 
   it.each(["project-1", "global"])(
@@ -922,7 +923,7 @@ describe("Composer discovery", () => {
         profileID,
       );
       const name = model === "fast" ? "Fast" : "Deep";
-      await userEvent.click(await screen.findByRole("button", { name: `Model: ${name}` }));
+      await userEvent.click(await screen.findByRole("button", { name: `模型：${name}` }));
       expect(screen.getByRole("option", { name: new RegExp(name) })).toBeTruthy();
       expect(screen.queryByRole("option", { name: new RegExp(hidden) })).toBeNull();
     },
@@ -985,7 +986,7 @@ describe("Composer discovery", () => {
         store,
       );
 
-      expect(await screen.findByRole("button", { name: `Model: ${expectedName}` })).toBeTruthy();
+      expect(await screen.findByRole("button", { name: `模型：${expectedName}` })).toBeTruthy();
       await userEvent.type(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), "Start here");
       await userEvent.keyboard("{Enter}");
 
@@ -1279,7 +1280,7 @@ describe("Composer discovery", () => {
         requestedAt: Date.now(),
       }),
     );
-    expect(await screen.findByText("模型与推理")).toBeTruthy();
+    expect(await screen.findByRole("combobox", { name: "选择模型" })).toBeTruthy();
     expect(store.get(composerActionRequestAtom)).toBeNull();
 
     // Another task's request is left for its own composer.
@@ -1778,13 +1779,13 @@ describe("Composer steering", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), {
       target: { value: "Change course" },
     });
-    expect(screen.getByRole("button", { name: "在当前回合后排队消息" })).toBeTruthy();
-    expect(screen.getByText("Queue", { exact: true })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "在当前回合后排队" })).toBeTruthy();
+    expect(screen.getByText("排队", { exact: true })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "选择消息投递方式" }));
-    await user.click(await screen.findByRole("menuitemradio", { name: /Steer current turn/i }));
+    await user.click(await screen.findByRole("menuitemradio", { name: /引导当前回合/ }));
 
     expect(screen.getByRole("button", { name: "引导当前回合" })).toBeTruthy();
-    expect(screen.getByText("Steer", { exact: true })).toBeTruthy();
+    expect(screen.getByText("引导", { exact: true })).toBeTruthy();
   });
 
   it("steers directly with Cmd or Ctrl Enter while queue is selected", async () => {
@@ -1955,14 +1956,14 @@ describe("Composer steering", () => {
     await act(() => vi.advanceTimersByTimeAsync(4_999));
     expect(
       screen.queryByRole("button", {
-        name: "将阻塞的工作发送到后台，以便消息可以引导当前回合",
+        name: "将阻塞的工作发送到后台以便消息可以引导此回合",
       }),
     ).toBeNull();
 
     await act(() => vi.advanceTimersByTimeAsync(1));
     fireEvent.click(
       screen.getByRole("button", {
-        name: "将阻塞的工作发送到后台，以便消息可以引导当前回合",
+        name: "将阻塞的工作发送到后台以便消息可以引导此回合",
       }),
     );
     await act(async () => undefined);
@@ -2013,7 +2014,7 @@ describe("Composer steering", () => {
     await act(() => vi.advanceTimersByTimeAsync(10_000));
 
     expect(
-      screen.queryByRole("button", { name: /background .* so the message can steer this turn/i }),
+      screen.queryByRole("button", { name: /将阻塞的工作发送到后台/ }),
     ).toBeNull();
     expect(background).not.toHaveBeenCalled();
   });
@@ -2087,14 +2088,14 @@ describe("Composer steering", () => {
     expect(prompt).toHaveBeenCalledOnce();
     expect(
       screen.getByText(
-        /The subagent 'Map the timeline' is blocking your message from steering this turn/,
+        /子智能体 'Map the timeline' 正在阻止你的消息引导此回合/,
       ),
     ).toBeTruthy();
     expect(
-      screen.getByText(/Could not background the blocking work: No background capacity/),
+      screen.getByText(/无法将阻塞的工作发送到后台：No background capacity/),
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "重试发送阻塞的工作到后台" }),
+      screen.getByRole("button", { name: "重试将阻塞的工作发送到后台" }),
     ).toBeTruthy();
   });
   it("interrupts a working task from the stop control", async () => {
@@ -2189,8 +2190,7 @@ describe("Composer pending inputs", () => {
   }
 
   async function editQueuedDraft() {
-    await userEvent.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "取消并编辑" }));
+    await userEvent.click(screen.getByRole("button", { name: "取消并编辑" }));
   }
 
   it.each(["queue", "steer"] as const)(
@@ -2243,7 +2243,7 @@ describe("Composer pending inputs", () => {
       expect(input().value).toBe("Queued draft");
       expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
       expect(
-        screen.getByText(delivery === "queue" ? "Queue" : "Steer", { exact: true }),
+        screen.getByText(delivery === "queue" ? "排队" : "引导", { exact: true }),
       ).toBeTruthy();
       await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
       expect(input().value).toBe("Original unsent draft");
@@ -2559,7 +2559,7 @@ describe("Composer pending inputs", () => {
       />,
     );
 
-    const pending = screen.getByRole("region", { name: `Pending message actions: ${detail}` });
+    const pending = screen.getByRole("region", { name: `待发送消息操作：${detail}` });
     const rail = screen.getByRole("region", { name: "待发送的消息" });
     const inputGroup = input().closest('[data-slot="input-group"]');
     expect(rail.contains(pending)).toBe(true);
@@ -2571,14 +2571,16 @@ describe("Composer pending inputs", () => {
         .map((row) => row.getAttribute("data-palot-request-id")),
     ).toEqual(["msg-pending", "msg-steering"]);
     expect(screen.getByText(detail).className).toContain("truncate");
-    expect(screen.getByText("Queued")).toBeTruthy();
-    expect(screen.getByText("Steering")).toBeTruthy();
+    expect(screen.getByText("排队中")).toBeTruthy();
+    expect(screen.getByText("待引导")).toBeTruthy();
     expect(screen.getByRole("button", { name: "引导下一个" })).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "更多待发送消息操作" })).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "在当前回合后运行" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "取消并编辑" })).toHaveLength(2);
+    expect(screen.queryByRole("group", { name: "已暂停队列" })).toBeNull();
   });
 
   it.each(["success", "failure"])(
-    "cancels directly without discarding the row or draft before server %s",
+    "deletes directly without discarding the row or draft before server %s",
     async (outcome) => {
       const { mount, cancel } = draftHarness();
       const result = Promise.withResolvers<void>();
@@ -2604,34 +2606,10 @@ describe("Composer pending inputs", () => {
       // Inbox reconciliation, not the click handler, owns removing the row.
       expect(screen.getByText("Queued draft")).toBeTruthy();
       expect(button.disabled).toBe(false);
+      expect(screen.queryByText("失败") === null).toBe(outcome === "success");
       expect(input().value).toBe("Original unsent draft");
       expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
       expect(screen.queryByText(/Resubmitting adds it to the end/)).toBeNull();
-    },
-  );
-
-  it.each([
-    { initial: "queue", action: "Turn off queueing", next: "steer" },
-    { initial: "steer", action: "Turn on queueing", next: "queue" },
-  ] as const)(
-    "$action changes future sends without changing queued inputs",
-    async ({ initial, action, next }) => {
-      const { mount, cancel, send, store } = draftHarness();
-      store.set(defaultDeliveryAtom, initial);
-      mount();
-      await userEvent.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
-      await userEvent.click(screen.getByRole("menuitem", { name: action }));
-      expect(store.get(defaultDeliveryAtom)).toBe(next);
-      expect(cancel).not.toHaveBeenCalled();
-      expect(screen.getByText("Queued")).toBeTruthy();
-      expect(screen.getByRole("button", { name: "引导下一个" })).toBeTruthy();
-      fireEvent.change(input(), { target: { value: "Next follow-up" } });
-      fireEvent.keyDown(input(), { key: "Enter" });
-      await waitFor(() =>
-        expect(send).toHaveBeenCalledWith(
-          expect.objectContaining({ text: "Next follow-up", delivery: next }),
-        ),
-      );
     },
   );
 
@@ -2641,11 +2619,9 @@ describe("Composer pending inputs", () => {
     mount();
     await writeOriginalDraft();
     await editQueuedDraft();
-    await userEvent.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "关闭排队" }));
-    expect(store.get(defaultDeliveryAtom)).toBe("steer");
+    act(() => store.set(defaultDeliveryAtom, "steer"));
     expect(cancel).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "在当前回合后排队消息" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "在当前回合后排队" })).toBeTruthy();
     fireEvent.keyDown(input(), { key: "Enter" });
     await waitFor(() =>
       expect(send).toHaveBeenCalledWith(
@@ -2663,7 +2639,7 @@ describe("Composer pending inputs", () => {
 
   it.each([
     { files: [queuedFile], label: "queued.txt" },
-    { files: [queuedFile, originalFile], label: "queued.txt (+1 more)" },
+    { files: [queuedFile, originalFile], label: "queued.txt（还有 1 条）" },
   ])("labels and edits an attachment-only pending message: $label", async ({ files, label }) => {
     const cancel = vi.spyOn(palot, "updatePending").mockResolvedValue(undefined);
     renderComposer(
@@ -2674,7 +2650,7 @@ describe("Composer pending inputs", () => {
         pendingInputs={[{ ...pendingSteer(queuedMessage.id, 2), detail: " ", delivery: "queue" }]}
       />,
     );
-    const row = screen.getByRole("region", { name: `Pending message actions: ${label}` });
+    const row = screen.getByRole("region", { name: `待发送消息操作：${label}` });
     expect(within(row).getByText(label)).toBeTruthy();
     await editQueuedDraft();
     expect(cancel).toHaveBeenCalledExactlyOnceWith({
@@ -2685,6 +2661,70 @@ describe("Composer pending inputs", () => {
     expect(input().value).toBe("");
     for (const file of files)
       expect(screen.getByRole("button", { name: `Remove ${file.name}` })).toBeTruthy();
+  });
+
+  it("undoes a deleted pending message by returning it to the composer", async () => {
+    const { mount, cancel, send } = draftHarness();
+    const add = vi.spyOn(toast, "add");
+    mount();
+    await writeOriginalDraft();
+    await userEvent.click(screen.getByRole("button", { name: "取消待发送的消息" }));
+    expect(cancel).toHaveBeenCalledExactlyOnceWith({
+      sessionID: session.id,
+      inputID: queuedMessage.id,
+      action: "cancel",
+    });
+    await waitFor(() =>
+      expect(add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "已取消待发送的消息",
+          actionProps: expect.objectContaining({ children: "撤销" }),
+        }),
+      ),
+    );
+    expect(input().value).toBe("Original unsent draft");
+
+    const undo = add.mock.calls.at(-1)![0].actionProps!.onClick as () => void;
+    act(() => undo());
+    expect(input().value).toBe("Queued draft");
+    expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+    expect(screen.getByText(/重新提交将添加到末尾/)).toBeTruthy();
+    // Undo never re-admits on its own; a paused queue stays paused.
+    expect(send).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(input(), { key: "Enter" });
+    await waitFor(() =>
+      expect(send).toHaveBeenCalledWith(
+        expect.objectContaining({ text: "Queued draft", delivery: "queue" }),
+      ),
+    );
+    await waitFor(() => expect(input().value).toBe("Original unsent draft"));
+  });
+
+  it("shows a paused queue instead of sending when the task is idle", async () => {
+    const update = vi.spyOn(palot, "updatePending").mockResolvedValue(undefined);
+    const send = vi.spyOn(palot, "sendComposerPrompt");
+    renderComposer(
+      <Composer
+        session={session}
+        messages={[queuedMessage]}
+        isWorking={false}
+        pendingInputs={[
+          { ...pendingSteer(queuedMessage.id, 2), delivery: "queue", detail: "Queued draft" },
+        ]}
+      />,
+    );
+    const paused = screen.getByRole("group", { name: "已暂停队列" });
+    expect(within(paused).getByText("队列已暂停")).toBeTruthy();
+    expect(update).not.toHaveBeenCalled();
+    await userEvent.click(within(paused).getByRole("button", { name: "恢复" }));
+    expect(update).toHaveBeenCalledExactlyOnceWith({
+      sessionID: session.id,
+      inputID: queuedMessage.id,
+      action: "steer",
+    });
+    expect(send).not.toHaveBeenCalled();
   });
 
   it("does not reserve a rail when there are no pending inputs", () => {
@@ -2740,17 +2780,118 @@ describe("Composer pending inputs", () => {
 
     const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
     await user.type(input, "Existing composer draft");
-    await user.click(screen.getByRole("button", { name: "更多待发送消息操作" }));
-    await user.click(screen.getByRole("menuitem", { name: "取消并编辑" }));
+    await user.click(screen.getByRole("button", { name: "取消并编辑" }));
 
     await waitFor(() =>
       expect(cancel).toHaveBeenCalledWith({ sessionID: session.id, inboxID: message.id }),
     );
     expect(input.value).toBe("Pending message to revise");
-    expect(screen.getByText(/Resubmitting adds it to the end/)).toBeTruthy();
+    expect(screen.getByText(/重新提交将添加到末尾/)).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input.value).toBe("Existing composer draft");
+  });
+});
+
+describe("Composer compact before send", () => {
+  function idleTask(idleMs: number, input = 150_000): PalotMessage[] {
+    const completedAt = Date.now() - idleMs;
+    return [
+      {
+        id: "assistant-large",
+        type: "assistant",
+        createdAt: completedAt - 1_000,
+        completedAt,
+        text: "Done",
+        agent: "build",
+        model: { id: "large", providerID: "anthropic" },
+        tokens: { input: 2, output: 500, reasoning: 0, cache: { read: input, write: 0 } },
+        finish: "stop",
+        content: [],
+        data: null,
+      },
+    ];
+  }
+
+  function setup(messages: PalotMessage[], compactResult?: Promise<unknown>) {
+    const prompt = vi.fn().mockResolvedValue({
+      id: "message-after-compaction",
+      sessionID: session.id,
+      type: "user" as const,
+      time: { created: Date.now() },
+    });
+    const compact = vi.fn(() => compactResult ?? Promise.resolve({ id: "compaction-1" }));
+    Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
+    setOpenCodeClientForTest(client({ session: { prompt, compact } }));
+    const store = createStore();
+    store.set(workbenchStateAtom, createWorkbenchState());
+    renderComposer(<Composer session={session} messages={messages} isWorking={false} />, store);
+    return { prompt, compact, store };
+  }
+
+  it("compacts a large task whose prompt cache has likely expired, then sends", async () => {
+    const user = userEvent.setup();
+    const { prompt, compact } = setup(idleTask(61 * 60_000));
+    await user.type(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), "Pick it back up");
+    expect(screen.queryByRole("button", { name: "发送消息" })).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "压缩后发送" }));
+
+    await waitFor(() => expect(prompt).toHaveBeenCalled());
+    expect(compact).toHaveBeenCalledWith({ sessionID: session.id });
+    expect(compact.mock.invocationCallOrder[0]).toBeLessThan(prompt.mock.invocationCallOrder[0]!);
+    expect(prompt).toHaveBeenCalledWith(
+      expect.objectContaining({ text: "Pick it back up", delivery: "steer" }),
+      expect.anything(),
+    );
+  });
+
+  it("keeps plain Send for recent or small tasks", () => {
+    setup(idleTask(30 * 60_000));
+    expect(screen.getByRole("button", { name: "发送消息" })).toBeTruthy();
+    cleanup();
+    setup(idleTask(3 * 60 * 60_000, 50_000));
+    expect(screen.getByRole("button", { name: "发送消息" })).toBeTruthy();
+  });
+
+  it("sends without compacting from the menu", async () => {
+    const user = userEvent.setup();
+    const { prompt, compact } = setup(idleTask(2 * 60 * 60_000));
+    await user.type(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), "Just send it");
+    await user.click(screen.getByRole("button", { name: "更多发送选项" }));
+    await user.click(await screen.findByRole("menuitem", { name: "不压缩直接发送" }));
+
+    await waitFor(() => expect(prompt).toHaveBeenCalled());
+    expect(compact).not.toHaveBeenCalled();
+  });
+
+  it("stops suggesting after Don't suggest again and remembers it", async () => {
+    const user = userEvent.setup();
+    const { store } = setup(idleTask(2 * 60 * 60_000));
+    await user.click(screen.getByRole("button", { name: "更多发送选项" }));
+    await user.click(await screen.findByRole("menuitem", { name: "不再建议" }));
+
+    expect(await screen.findByRole("button", { name: "发送消息" })).toBeTruthy();
+    expect(store.get(compactBeforeSendSuggestionAtom)).toBe(false);
+  });
+
+  it("keeps the draft and reports a failed compaction without sending", async () => {
+    const user = userEvent.setup();
+    const notice = vi.spyOn(toast, "add").mockReturnValue("notice");
+    const failure = Promise.reject(new Error("Busy"));
+    failure.catch(() => undefined);
+    const { prompt } = setup(idleTask(2 * 60 * 60_000), failure);
+    const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "向 Palot 发送消息" });
+    await user.type(input, "Try again later");
+    await user.keyboard("{Enter}");
+
+    await waitFor(() =>
+      expect(notice).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "error", title: "Could not compact before sending" }),
+      ),
+    );
+    expect(prompt).not.toHaveBeenCalled();
+    expect(input.value).toBe("Try again later");
   });
 });
 
@@ -2767,7 +2908,7 @@ describe("Composer blocking requests", () => {
         session={session}
         messages={[]}
         isWorking
-        requestBody={<section aria-label="Blocking question">Choose an approach</section>}
+        requestBody={<section aria-label="阻塞问题">Choose an approach</section>}
         pendingInputs={[pendingSteer("msg-waiting", 2)]}
       />,
     );
@@ -2781,10 +2922,10 @@ describe("Composer blocking requests", () => {
     expect(within(rail).getByRole("button", { name: "在当前回合后运行" })).toBeTruthy();
     expect(screen.queryByRole("textbox", { name: "向 Palot 发送消息" })).toBeNull();
     expect(screen.queryByRole("button", { name: "附加文件" })).toBeNull();
-    expect(screen.queryByRole("button", { name: /^Model:/ })).toBeNull();
-    expect(screen.queryByRole("button", { name: /^Agent:/ })).toBeNull();
-    expect(screen.getByRole("button", { name: "审批：默认" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "打开上下文标签" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^模型：/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^智能体：/ })).toBeNull();
+    expect(screen.getByRole("button", { name: "Approvals: 默认" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^上下文窗口/ })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "停止任务" }));
     expect(interrupt).toHaveBeenCalledWith(session.id);
   });
@@ -2838,7 +2979,7 @@ describe("Composer shell mode", () => {
     await user.type(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), "!");
     const input = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Shell 命令" });
     expect(input.value).toBe("");
-    expect(input.placeholder).toBe("Run a shell command");
+    expect(input.placeholder).toBe("运行 Shell 命令");
     expect(screen.getByRole("button", { name: "退出 Shell 模式" })).toBeTruthy();
 
     await user.type(input, "/bin/ls @src $HOME");
@@ -3016,14 +3157,44 @@ describe("Composer shortcuts", () => {
       code: "Quote",
       ctrlKey: true,
     });
-    expect(screen.queryByText("模型与推理")).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "选择模型" })).toBeNull();
 
     fireEvent.keyDown(screen.getByRole("textbox", { name: "向 Palot 发送消息" }), {
       key: "'",
       code: "Quote",
       ctrlKey: true,
     });
-    expect(await screen.findByText("模型与推理")).toBeTruthy();
+    expect(await screen.findByRole("combobox", { name: "选择模型" })).toBeTruthy();
+  });
+
+  it("使用 Mod+Shift+D 循环推理力度，最后一档后回到自动", async () => {
+    const reasoner: PalotModel = { ...shortcutModel, name: "Reasoner", variants: ["low", "high"] };
+    Object.defineProperty(window, "palot", { configurable: true, value: bridge({}) });
+    vi.spyOn(palot, "listModels").mockResolvedValue({
+      models: [reasoner],
+      defaultModel: reasoner,
+      providers: [],
+      errors: [],
+    });
+    renderComposer(
+      <Composer
+        session={{ ...session, id: "new:project-1" }}
+        messages={[]}
+        isWorking={false}
+        onCreateSession={vi.fn()}
+      />,
+    );
+    await screen.findByRole("button", { name: "推理力度：自动" });
+    const input = screen.getByRole("textbox", { name: "向 Palot 发送消息" });
+    const cycle = () =>
+      fireEvent.keyDown(input, { key: "D", code: "KeyD", ctrlKey: true, shiftKey: true });
+
+    cycle();
+    expect(await screen.findByRole("button", { name: "推理力度：低" })).toBeTruthy();
+    cycle();
+    expect(await screen.findByRole("button", { name: "推理力度：高" })).toBeTruthy();
+    cycle();
+    expect(await screen.findByRole("button", { name: "推理力度：自动" })).toBeTruthy();
   });
 
   it("cycles primary agents forward and backward, loading them on demand", async () => {
@@ -3061,7 +3232,7 @@ describe("Composer shortcuts", () => {
 
     await waitFor(() => expect(switchModel).toHaveBeenCalled());
     await waitFor(() =>
-      expect(screen.getByRole<HTMLButtonElement>("button", { name: /^Agent:/ }).disabled).toBe(
+      expect(screen.getByRole<HTMLButtonElement>("button", { name: /^智能体：/ }).disabled).toBe(
         false,
       ),
     );

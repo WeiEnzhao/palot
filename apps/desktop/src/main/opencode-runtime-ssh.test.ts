@@ -132,8 +132,8 @@ describe("SSH lifecycle", () => {
     await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
     const second = runtime.stop();
     expect(second).toBe(first);
-    await expect(runtime.connect({}, connector)).rejects.toThrow("disposed");
-    await expect(runtime.client()).rejects.toThrow("disposed");
+    await expect(runtime.connect({}, connector)).rejects.toThrow("连接已断开");
+    await expect(runtime.client()).rejects.toThrow("连接已断开");
     finish();
     await Promise.all([first, second]);
     expect(connector).toHaveBeenCalledOnce();
@@ -187,7 +187,7 @@ describe("SSH lifecycle", () => {
       throw new Error("Expected abort");
     };
     const connecting = runtime.connect({}, connector);
-    const rejection = expect(connecting).rejects.toThrow("stopped");
+    const rejection = expect(connecting).rejects.toThrow("connection stopped");
     await vi.waitFor(() => expect(runtime.status().phase).toBe("discovering"));
     await new Promise((resolve) => setImmediate(resolve));
     let stopped = false;

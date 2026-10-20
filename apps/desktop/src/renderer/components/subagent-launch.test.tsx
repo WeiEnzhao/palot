@@ -112,9 +112,9 @@ describe("SubagentLaunch", () => {
       parentID: "parent",
     });
 
-    const row = screen.getByRole("button", { name: "Explore subagent running: Map the timeline" });
+    const row = screen.getByRole("button", { name: "Explore 子智能体 运行中：Map the timeline" });
     expect(row.textContent).toMatch(/Explore · Map the timeline.*\ds/);
-    await userEvent.click(screen.getByRole("button", { name: "Stop Explore subagent" }));
+    await userEvent.click(screen.getByRole("button", { name: "停止 Explore 子智能体" }));
 
     await waitFor(() => expect(mocks.interrupt).toHaveBeenCalledWith({ sessionID: child.id }));
     expect(mocks.client).toHaveBeenCalledWith("origin");
@@ -130,7 +130,7 @@ describe("SubagentLaunch", () => {
       parentID: "parent",
     });
 
-    await userEvent.click(screen.getByRole("button", { name: "Stop Explore subagent" }));
+    await userEvent.click(screen.getByRole("button", { name: "停止 Explore 子智能体" }));
     expect((await screen.findByRole("alert")).textContent).toBe("Session is not running");
   });
 
@@ -143,9 +143,9 @@ describe("SubagentLaunch", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: "Explore subagent finished: Map the timeline" }),
+      screen.getByRole("button", { name: "Explore 子智能体 已完成：Map the timeline" }),
     ).toBeTruthy();
     expect(screen.getByText("20s")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /^Stop/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^停止/ })).toBeNull();
   });
 });

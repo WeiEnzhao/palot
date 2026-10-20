@@ -158,11 +158,11 @@ export function paletteResultGroups(
   if (tab === "tasks") {
     if (searching) return groupGlobalSearchResults(inTab, rawQuery);
     const recent = inTab.slice(0, TAB_TASK_LIMIT);
-    return recent.length > 0 ? [{ group: "tasks", label: "Recent tasks", commands: recent }] : [];
+    return recent.length > 0 ? [{ group: "tasks", label: "最近任务", commands: recent }] : [];
   }
   if (searching) {
     const ranked = rankGlobalCommands(inTab, rawQuery);
-    const label = tab === "settings" ? "Settings" : "Commands";
+    const label = tab === "settings" ? "设置" : "命令";
     return ranked.length > 0 ? [{ group: tab, label, commands: ranked }] : [];
   }
   // Without a query, per-project "New task in …" rows stay behind the project chooser.

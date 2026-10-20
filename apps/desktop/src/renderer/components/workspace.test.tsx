@@ -119,7 +119,7 @@ describe("Workspace pane visibility", () => {
       expect(screen.getByRole("button", { name: "Hide navigation" }).querySelector("svg")).not.toBe(
         null,
       );
-      expect(screen.getByRole("button", { name: "Show projects" }).querySelector("svg")).not.toBe(
+      expect(screen.getAllByRole("button", { name: "显示项目" })[0]!.querySelector("svg")).not.toBe(
         null,
       );
       expect(screen.getByTestId("right-workbench-panel").getAttribute("data-collapsed")).toBe(
@@ -137,8 +137,8 @@ describe("Workspace pane visibility", () => {
     store.set(navigationOpenAtom, false);
     store.set(sidebarModeAtom, "inbox");
     renderWithRouter(<Workspace content={null} />, store);
-    const inbox = await screen.findByRole("button", { name: "Show inbox" });
-    const projects = screen.getByRole("button", { name: "Show projects" });
+    const inbox = (await screen.findAllByRole("button", { name: "显示收件箱" }))[0]!;
+    const projects = screen.getAllByRole("button", { name: "显示项目" })[0]!;
 
     // Passing over a view button without resting does not peek.
     fireEvent.pointerEnter(projects, { pointerType: "mouse" });
@@ -162,6 +162,27 @@ describe("Workspace pane visibility", () => {
 
     expect(store.get(navigationOpenAtom)).toBe(false);
     expect(store.get(sidebarModeAtom)).toBe("inbox");
+  });
+
+  it("keeps the task column hidden on full-page routes and shows it as an overlay", async () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+    const store = createStore();
+    store.set(phaseAtom, "ready");
+    store.set(navigationOpenAtom, true);
+    renderWithRouter(<Workspace content={null} />, store, "/pull-requests");
+
+    const toggle = await screen.findByRole("button", { name: "Show navigation" });
+    await waitFor(() =>
+      expect(screen.getByTestId("navigation-panel").getAttribute("data-collapsed")).toBe("true"),
+    );
+    // Showing navigation here opens an overlay; the saved column preference is untouched.
+    fireEvent.click(toggle);
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(screen.getByTestId("navigation-panel").getAttribute("data-collapsed")).toBe("true");
+    expect(store.get(navigationOpenAtom)).toBe(true);
   });
 
   it("describes service startup without showing fake progress", () => {

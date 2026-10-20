@@ -48,10 +48,10 @@ describe("process footer", () => {
       />,
     );
     fireEvent.click(
-      screen.getByRole("button", { name: "Commands & terminals: Recently finished" }),
+      screen.getByRole("button", { name: "命令和终端：最近完成" }),
     );
-    expect(await screen.findByRole("region", { name: "Recently finished" })).toBeTruthy();
-    expect(screen.queryByRole("region", { name: "Running commands" })).toBeNull();
+    expect(await screen.findByRole("region", { name: "最近完成" })).toBeTruthy();
+    expect(screen.queryByRole("region", { name: "运行中的命令" })).toBeNull();
     expect(screen.getByRole("button", { name: /echo done/ })).toBeTruthy();
   });
 
@@ -63,7 +63,7 @@ describe("process footer", () => {
       terminals: 0,
       owners: new Map(),
       terminalsSupported: true,
-      error: "Terminals could not be refreshed.",
+      error: "无法刷新终端。",
       retry,
     });
     render(
@@ -72,11 +72,11 @@ describe("process footer", () => {
         sessionIDs={new Set(["error"])}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Commands & terminals" }));
+    fireEvent.click(screen.getByRole("button", { name: "命令和终端" }));
     expect((await screen.findByRole("alert")).textContent).toBe(
-      "Terminals could not be refreshed.",
+      "无法刷新终端。",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    fireEvent.click(screen.getByRole("button", { name: "重试" }));
     expect(retry).toHaveBeenCalledOnce();
   });
   it("labels command, terminal, and mixed counts", () => {
@@ -143,9 +143,9 @@ describe("process footer", () => {
         sessionIDs={new Set(["root"])}
       />,
     );
-    const trigger = screen.getByRole("button", { name: "Commands & terminals: 1 command" });
+    const trigger = screen.getByRole("button", { name: "命令和终端：1 command" });
     fireEvent.click(trigger);
-    expect(await screen.findByRole("region", { name: "Running commands" })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "运行中的命令" })).toBeTruthy();
     expect(screen.getByText("1m 5s")).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: /sleep 30/ }));
     expect(mocks.openTab).toHaveBeenCalledWith(
@@ -182,8 +182,8 @@ describe("process footer", () => {
         sessionIDs={new Set(["parent", "child"])}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Commands & terminals: 1 terminal" }));
-    expect(await screen.findByRole("region", { name: "Terminals" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "命令和终端：1 terminal" }));
+    expect(await screen.findByRole("region", { name: "终端" })).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: /Dev server.*Build UI/ }));
     expect(mocks.openTab).toHaveBeenLastCalledWith(
       {

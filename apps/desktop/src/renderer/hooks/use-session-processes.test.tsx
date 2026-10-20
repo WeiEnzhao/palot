@@ -299,7 +299,7 @@ describe("session process scope", () => {
       await client.invalidateQueries({ queryKey: openCodeKeys.all("one") });
     });
     await waitFor(() =>
-      expect(hook.result.current.error).toBe("Terminals could not be refreshed."),
+      expect(hook.result.current.error).toBe("无法刷新终端。"),
     );
     mocks.terminals.mockResolvedValue([]);
     await act(async () => {

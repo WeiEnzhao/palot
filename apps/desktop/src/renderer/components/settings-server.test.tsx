@@ -180,7 +180,7 @@ describe("independent settings server", () => {
     expect(screen.getByRole("combobox", { name: "配置服务器" }).textContent).toContain(
       "Server A",
     );
-    await userEvent.setup().click(screen.getByRole("button", { name: "Use" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "使用" }));
     await waitFor(() => expect(activate).toHaveBeenCalled());
     expect(activate).toHaveBeenCalledWith(
       expect.objectContaining({ connectionID: "connection-a", directory: "/repo/connection-a" }),

@@ -50,7 +50,7 @@ it("keeps the transcript and composer mounted while an older page hydrates", asy
     "/new",
     queryClient,
   );
-  expect(screen.queryByRole("region", { name: "Task transcript" })).toBeNull();
+  expect(screen.queryByRole("region", { name: "任务记录" })).toBeNull();
   const pendingComposer = container.querySelector("[data-palot-composer-dock]");
   expect(pendingComposer).not.toBeNull();
   expect(pendingComposer?.hasAttribute("inert")).toBe(true);
@@ -76,17 +76,17 @@ it("keeps the transcript and composer mounted while an older page hydrates", asy
       ],
     })),
   );
-  const viewport = await screen.findByRole("region", { name: "Task transcript" });
+  const viewport = await screen.findByRole("region", { name: "任务记录" });
   const composer = container.querySelector("[data-palot-composer-dock]");
   expect(composer).toBe(pendingComposer);
   expect(composer?.hasAttribute("inert")).toBe(false);
   viewport.scrollTop = 120;
 
   act(() => store.set(state, (current) => ({ ...current, isHydrating: true })));
-  expect(screen.getByRole("region", { name: "Task transcript" })).toBe(viewport);
+  expect(screen.getByRole("region", { name: "任务记录" })).toBe(viewport);
   expect(container.querySelector("[data-palot-composer-dock]")).toBe(composer);
   expect(viewport.scrollTop).toBe(120);
 
   act(() => store.set(state, (current) => ({ ...current, isHydrating: false })));
-  expect(screen.getByRole("region", { name: "Task transcript" })).toBe(viewport);
+  expect(screen.getByRole("region", { name: "任务记录" })).toBe(viewport);
 });

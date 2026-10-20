@@ -351,7 +351,7 @@ it("buffers webview hosts before registration and keeps hidden guest nodes mount
     notify({ bindingID: "binding-one", type: "inspect", tabID: hosts[0].tabID, active: true }),
   );
   expect(
-    mounted.getByRole("button", { name: "Cancel element picker" }).getAttribute("aria-pressed"),
+    mounted.getByRole("button", { name: "取消元素选择器" }).getAttribute("aria-pressed"),
   ).toBe("true");
   const assertInventoryKeepsActiveGuest = async (nextState: Browser.State) => {
     const previousCalls = layout.mock.calls.length;
@@ -528,17 +528,17 @@ it("applies buffered popup state and clears popup metadata on later states and d
     resolve("binding-one");
   });
   expect(mounted.getByTestId("popup-tabs").textContent).toBe(popup);
-  expect(mounted.getByText("Open in a separate browser window")).toBeTruthy();
+  expect(mounted.getByText("在单独的浏览器窗口中打开")).toBeTruthy();
   await act(async () => notify({ bindingID: "binding-one", type: "state", state }));
   expect(mounted.getByTestId("popup-tabs").textContent).toBe("");
-  expect(mounted.queryByText("Open in a separate browser window")).toBeNull();
+  expect(mounted.queryByText("在单独的浏览器窗口中打开")).toBeNull();
   await act(async () =>
     notify({ bindingID: "binding-one", type: "state", state, popupTabIDs: [popup] }),
   );
   expect(mounted.getByTestId("popup-tabs").textContent).toBe(popup);
   await act(async () => notify({ bindingID: "binding-one", type: "state", state: null }));
   expect(mounted.getByTestId("popup-tabs").textContent).toBe("");
-  expect(mounted.queryByText("Open in a separate browser window")).toBeNull();
+  expect(mounted.queryByText("在单独的浏览器窗口中打开")).toBeNull();
 });
 
 it("shows a popup placeholder while retaining embedded guests and normal tab commands", async () => {
@@ -609,7 +609,7 @@ it("shows a popup placeholder while retaining embedded guests and normal tab com
       <BrowserTab scope={scope} tabID={popup} active />
     </Provider>,
   );
-  expect(mounted.getByText("Open in a separate browser window")).toBeTruthy();
+  expect(mounted.getByText("在单独的浏览器窗口中打开")).toBeTruthy();
   expect(mounted.container.querySelectorAll("webview")).toHaveLength(1);
   expect(mounted.container.querySelector("webview")).toBe(guest);
   await waitFor(() => expectGuestVisibility(guest, false));
@@ -618,11 +618,11 @@ it("shows a popup placeholder while retaining embedded guests and normal tab com
       expect.objectContaining({ bindingID: "binding-one", tabID: popup, visible: true }),
     ),
   );
-  fireEvent.click(mounted.getByRole("button", { name: "Focus popup window" }));
+  fireEvent.click(mounted.getByRole("button", { name: "聚焦弹出窗口" }));
   await waitFor(() =>
     expect(command).toHaveBeenCalledWith("binding-one", { type: "tabs.focus", tabID: popup }),
   );
-  fireEvent.click(mounted.getByRole("button", { name: "Reload page" }));
+  fireEvent.click(mounted.getByRole("button", { name: "重新加载页面" }));
   await waitFor(() =>
     expect(command).toHaveBeenCalledWith("binding-one", { type: "reload", tabID: popup }),
   );
@@ -647,7 +647,7 @@ it("shows a popup placeholder while retaining embedded guests and normal tab com
   await act(async () =>
     notify({ bindingID: "binding-one", type: "state", state: { ...state, focusedTabID: popup } }),
   );
-  expect(mounted.queryByText("Open in a separate browser window")).toBeNull();
+  expect(mounted.queryByText("在单独的浏览器窗口中打开")).toBeNull();
   expect(mounted.container.querySelector("webview")).toBe(guest);
   expect(mounted.container.querySelectorAll("webview")).toHaveLength(2);
   mounted.rerender(
@@ -786,10 +786,10 @@ it("keeps pages behind overlays and hides them when their workbench tab becomes 
       expect.objectContaining({ bindingID: "binding-one", tabID: "page", visible: true }),
     ),
   );
-  fireEvent.change(mounted.getByRole("textbox", { name: "Browser address" }), {
+  fireEvent.change(mounted.getByRole("textbox", { name: "浏览器地址" }), {
     target: { value: "https://example.com" },
   });
-  fireEvent.submit(mounted.getByRole("textbox", { name: "Browser address" }).closest("form")!);
+  fireEvent.submit(mounted.getByRole("textbox", { name: "浏览器地址" }).closest("form")!);
   await waitFor(() =>
     expect(command).toHaveBeenCalledWith("binding-one", {
       type: "navigate",
@@ -817,14 +817,14 @@ it("keeps pages behind overlays and hides them when their workbench tab becomes 
     }),
   );
   expect(
-    (mounted.getByRole("textbox", { name: "Browser address" }) as HTMLInputElement).disabled,
+    (mounted.getByRole("textbox", { name: "浏览器地址" }) as HTMLInputElement).disabled,
   ).toBe(true);
   await act(async () => notify({ bindingID: "binding-one", type: "state", state }));
   expect(
-    (mounted.getByRole("textbox", { name: "Browser address" }) as HTMLInputElement).disabled,
+    (mounted.getByRole("textbox", { name: "浏览器地址" }) as HTMLInputElement).disabled,
   ).toBe(true);
-  fireEvent.click(mounted.getByRole("button", { name: "Reconnect browser" }));
+  fireEvent.click(mounted.getByRole("button", { name: "重新连接浏览器" }));
   await waitFor(() => expect(palot.browserRegister).toHaveBeenCalledTimes(2));
   await act(async () => notify({ bindingID: "binding-two", type: "state", state }));
-  expect(mounted.queryByRole("button", { name: "Reconnect browser" })).toBeNull();
+  expect(mounted.queryByRole("button", { name: "重新连接浏览器" })).toBeNull();
 });

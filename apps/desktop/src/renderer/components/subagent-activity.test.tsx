@@ -558,7 +558,7 @@ describe("subagent activity", () => {
     expect(onBackground).toHaveBeenCalledOnce();
   });
 
-  it("replaces the composer with parent and sibling navigation in a child session", async () => {
+  it("replaces the composer with sibling navigation in a child session", async () => {
     const store = createStore();
     const parent = session({ id: "parent" });
     const first = session({
@@ -592,9 +592,8 @@ describe("subagent activity", () => {
 
     expect(screen.getByText(/Explore 子智能体 · 第 1 个，共 2 个/)).toBeTruthy();
     expect(screen.getByText(/只读会话/)).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "父任务" }));
+    // Parent navigation moved to the task header breadcrumb.
     await userEvent.click(screen.getByRole("button", { name: "下一个子智能体" }));
-    expect(mocks.openSession).toHaveBeenCalledWith(parent.id);
     expect(mocks.openSession).toHaveBeenCalledWith(second.id);
   });
 
@@ -627,7 +626,5 @@ describe("subagent activity", () => {
     expect(mocks.openSession).toHaveBeenLastCalledWith(first.id);
     await userEvent.click(screen.getByRole("button", { name: "下一个子智能体" }));
     expect(mocks.openSession).toHaveBeenLastCalledWith(last.id);
-    await userEvent.click(screen.getByRole("button", { name: "父任务" }));
-    expect(mocks.openSession).toHaveBeenLastCalledWith("parent");
   });
 });

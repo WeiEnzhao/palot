@@ -36,8 +36,8 @@ describe("SSH profile editor", () => {
         onSaved={vi.fn()}
       />,
     );
-    fireEvent.change(screen.getByLabelText("SSH target"), { target: { value: "new-host" } });
-    fireEvent.click(screen.getByRole("button", { name: "Test and save" }));
+    fireEvent.change(screen.getByLabelText("SSH 目标"), { target: { value: "new-host" } });
+    fireEvent.click(screen.getByRole("button", { name: "测试并保存" }));
     await waitFor(() =>
       expect(palot.updateOpenCodeProfile).toHaveBeenCalledWith({
         id: "ssh-1",
@@ -60,12 +60,12 @@ describe("SSH profile editor", () => {
     );
     const saved = vi.fn();
     render(<SshConnectionDialog onClose={vi.fn()} onSaved={saved} />);
-    fireEvent.change(screen.getByLabelText("SSH target"), { target: { value: " dev-box " } });
-    fireEvent.change(screen.getByLabelText("Port (optional)"), { target: { value: "2222" } });
-    fireEvent.change(screen.getByLabelText("Identity file (optional)"), {
+    fireEvent.change(screen.getByLabelText("SSH 目标"), { target: { value: " dev-box " } });
+    fireEvent.change(screen.getByLabelText("端口（可选）"), { target: { value: "2222" } });
+    fireEvent.change(screen.getByLabelText("身份文件（可选）"), {
       target: { value: "~/.ssh/work" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Test and save" }));
+    fireEvent.click(screen.getByRole("button", { name: "测试并保存" }));
     expect(palot.createOpenCodeProfile).not.toHaveBeenCalled();
     await act(async () => finish());
     expect(palot.createOpenCodeProfile).toHaveBeenCalledWith({
@@ -87,8 +87,8 @@ describe("SSH profile editor", () => {
           onSaved={vi.fn()}
         />,
       );
-      fireEvent.change(screen.getByLabelText("SSH target"), { target: { value: "new-host" } });
-      fireEvent.click(screen.getByRole("button", { name: "Test and save" }));
+      fireEvent.change(screen.getByLabelText("SSH 目标"), { target: { value: "new-host" } });
+      fireEvent.click(screen.getByRole("button", { name: "测试并保存" }));
       await screen.findByRole("alert");
       expect(palot.updateOpenCodeProfile).not.toHaveBeenCalled();
       expect(palot.createOpenCodeProfile).not.toHaveBeenCalled();
@@ -105,8 +105,8 @@ describe("SSH profile editor", () => {
         }),
     );
     const view = render(<SshConnectionDialog onClose={vi.fn()} onSaved={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText("SSH target"), { target: { value: "dev-box" } });
-    fireEvent.click(screen.getByRole("button", { name: "Test and save" }));
+    fireEvent.change(screen.getByLabelText("SSH 目标"), { target: { value: "dev-box" } });
+    fireEvent.click(screen.getByRole("button", { name: "测试并保存" }));
     view.unmount();
     await act(async () => finish());
     expect(palot.createOpenCodeProfile).not.toHaveBeenCalled();

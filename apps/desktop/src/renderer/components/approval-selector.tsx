@@ -1,17 +1,11 @@
-import { memo, useState } from "react";
-import { ChevronDown, Shield, ShieldAlert } from "lucide-react";
+import { memo, useCallback, useState } from "react";
+import { Shield, ShieldAlert } from "lucide-react";
 import type { ApprovalPreset, SessionApprovalMode } from "../lib/session-permissions";
-import { cn } from "../lib/cn";
-import { showErrorToast } from "../lib/toast-error";
-import { InputGroupButton } from "./ui/input-group";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+  ComposerPicker,
+  useComposerPickerAction,
+  type ComposerPickerSection,
+} from "./ui/composer-picker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +16,27 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+
+const SECTIONS: ComposerPickerSection<ApprovalPreset>[] = [
+  {
+    key: "presets",
+    options: [
+      {
+        key: "normal",
+        value: "normal",
+        label: "默认",
+        description: "使用项目和智能体权限规则。",
+      },
+      {
+        key: "full",
+        value: "full",
+        label: "完全访问",
+        description: "允许工具操作而无需常规审批提示。",
+        tone: "warning",
+      },
+    ],
+  },
+];
 
 export const ApprovalSelector = memo(function ApprovalSelector({
   mode,
@@ -43,87 +58,64 @@ export const ApprovalSelector = memo(function ApprovalSelector({
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const label = mode === "full" ? "完全访问" : mode === "custom" ? "自定义" : "默认";
-
-  async function apply(next: ApprovalPreset) {
-    if (busy || disabled) return;
-    setError(null);
-    try {
-      await onSelect(next);
-      setConfirm(false);
-      onOpenChange(false);
-      onSelectionComplete();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "无法更改权限。");
-      showErrorToast("无法更改权限", error);
-    }
-  }
+  const confirmed = useCallback(() => {
+    setConfirm(false);
+    onSelectionComplete();
+  }, [onSelectionComplete]);
+  const failed = useCallback((cause: unknown) => {
+    setError(cause instanceof Error ? cause.message : "无法更改权限。");
+  }, []);
+  const confirmAction = useComposerPickerAction({
+    errorTitle: "无法更改权限",
+    onSuccess: confirmed,
+    onError: failed,
+  });
+  const updating = busy || confirmAction.busy;
+  // Custom rules match neither preset, so nothing is marked current.
+  const selectedKey = mode === "custom" ? null : mode;
 
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger
-          render={
-            <InputGroupButton
-              type="button"
-              size="composer"
-              aria-label={`Approvals: ${label}`}
-              disabled={disabled || busy}
-              className={cn("shrink-0 gap-1 px-2", mode === "full" && "text-warning")}
-            />
-          }
-        >
-          {mode === "full" ? <ShieldAlert aria-hidden="true" /> : <Shield aria-hidden="true" />}
-          <span>{label}</span>
-          <ChevronDown aria-hidden="true" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="top" align="start" className="w-80 max-w-[calc(100vw-24px)]">
-          {mode === "custom" && (
-            <p className="px-2 py-1 text-meta text-muted-foreground">
-              自定义会话规则已生效。选择预设将替换它们。
-            </p>
-          )}
-          <DropdownMenuRadioGroup
-            value={mode}
-            onValueChange={(value) => {
-              if (busy || disabled || value === mode) return;
-              if (value === "full") {
-                onOpenChange(false);
-                setError(null);
-                setConfirm(true);
-              } else if (value === "normal") void apply("normal");
-            }}
-          >
-            <DropdownMenuLabel>此线程的审批</DropdownMenuLabel>
-            <DropdownMenuRadioItem value="normal" disabled={disabled || busy}>
-              <div>
-                <div>默认</div>
-                <div className="text-meta text-muted-foreground">
-                  使用项目和智能体权限规则。
-                </div>
-              </div>
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem
-              value="full"
-              disabled={disabled || busy}
-              className="text-warning"
-            >
-              <div>
-                <div>完全访问</div>
-                <div className="text-meta text-muted-foreground">
-                  允许工具操作而无需常规审批提示。
-                </div>
-              </div>
-            </DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-          <p className="px-2 py-1 text-meta text-muted-foreground">
-            已有的审批请求仍需回复。
-          </p>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <ComposerPicker<ApprovalPreset>
+        label={label}
+        ariaLabel={`Approvals: ${label}`}
+        icon={
+          mode === "full" ? (
+            <ShieldAlert className="shrink-0" aria-hidden="true" />
+          ) : (
+            <Shield className="shrink-0" aria-hidden="true" />
+          )
+        }
+        tone={mode === "full" ? "warning" : "default"}
+        triggerClassName="shrink-0 gap-1"
+        disabled={disabled || updating}
+        open={open}
+        onOpenChange={onOpenChange}
+        popupClassName="w-80"
+        title="此线程的审批"
+        notice={
+          mode === "custom"
+            ? "自定义会话规则已生效。选择预设将替换它们。"
+            : undefined
+        }
+        listLabel="审批预设"
+        sections={SECTIONS}
+        selectedKey={selectedKey}
+        footer="已有的审批请求仍需回复。"
+        errorTitle="无法更改权限"
+        confirm={(option) => {
+          if (option.value !== "full") return false;
+          setError(null);
+          setConfirm(true);
+          return true;
+        }}
+        onSelect={(option) => onSelect(option.value)}
+        onSelectionComplete={onSelectionComplete}
+      />
       <AlertDialog
         open={confirm}
         onOpenChange={(value) => {
-          if (!busy) setConfirm(value);
+          if (!updating) setConfirm(value);
         }}
       >
         <AlertDialogContent>
@@ -143,9 +135,15 @@ export const ApprovalSelector = memo(function ApprovalSelector({
             </p>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>取消</AlertDialogCancel>
-            <AlertDialogAction disabled={disabled || busy} onClick={() => void apply("full")}>
-              {busy ? "正在更新权限…" : "启用完全访问"}
+            <AlertDialogCancel disabled={updating}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={disabled || updating}
+              onClick={() => {
+                setError(null);
+                void confirmAction.run(() => onSelect("full"));
+              }}
+            >
+              {updating ? "正在更新权限…" : "启用完全访问"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

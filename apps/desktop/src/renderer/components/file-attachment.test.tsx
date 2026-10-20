@@ -52,7 +52,7 @@ describe("FileAttachment", () => {
     expect(screen.getByRole("img", { name: "screenshot.png" }).getAttribute("src")).toBe(
       "data:image/png;base64,AAAA",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Close image preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭图片预览" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(attachmentPreview).not.toHaveBeenCalled();
   });

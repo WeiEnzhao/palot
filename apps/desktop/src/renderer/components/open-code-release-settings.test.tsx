@@ -403,6 +403,6 @@ describe("OpenCodeReleaseSettings", () => {
     expect(palot.inspectOpenCodeInstallations).toHaveBeenCalledOnce();
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 });

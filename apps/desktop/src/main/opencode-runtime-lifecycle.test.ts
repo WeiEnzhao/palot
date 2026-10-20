@@ -119,7 +119,7 @@ describe("login service lifecycle routing", () => {
     const { runtime, adapter } = lifecycle({ discoveredVersion: "2.0.7" });
     vi.mocked(adapter.discoverService).mockResolvedValue(undefined);
     adapter.controlLoginService = vi.fn().mockResolvedValue(managedEndpoint);
-    await expect(runtime.connect()).rejects.toThrow("No reachable local");
+    await expect(runtime.connect()).rejects.toThrow("未找到可用的本地 OpenCode 服务");
     expect(adapter.controlLoginService).not.toHaveBeenCalled();
     await runtime.connect({ startLocalService: true });
     expect(adapter.controlLoginService).toHaveBeenCalledWith("start", expect.any(Object));
@@ -428,7 +428,7 @@ describe("OpenCodeRuntimeLifecycle local service controls", () => {
       onReconnect: vi.fn(),
       onStatus: vi.fn(),
     });
-    await expect(runtime.connect()).rejects.toThrow("No reachable local");
+    await expect(runtime.connect()).rejects.toThrow("未找到可用的本地 OpenCode 服务");
     expect(discoverLocalBinary).not.toHaveBeenCalled();
     await runtime.connect({ startLocalService: true });
     expect(discoverBinary).not.toHaveBeenCalled();
@@ -586,9 +586,9 @@ describe("OpenCodeRuntimeLifecycle discovery-only connection", () => {
     const stopService = vi.fn();
     const runtime = localRuntime({ discoverBinary, ensureService, stopService });
     await expect(runtime.connect()).rejects.toThrow(
-      "No reachable local OpenCode service was found",
+      "未找到可用的本地 OpenCode 服务",
     );
-    await expect(runtime.client()).rejects.toThrow("start OpenCode explicitly");
+    await expect(runtime.client()).rejects.toThrow("未找到可用的本地 OpenCode 服务");
     expect(runtime.status()).toMatchObject({ canStartLocalService: true, connected: false });
     expect(discoverBinary).not.toHaveBeenCalled();
     expect(ensureService).not.toHaveBeenCalled();
@@ -604,7 +604,7 @@ describe("OpenCodeRuntimeLifecycle discovery-only connection", () => {
     const ensureService = vi.fn();
     const discoverBinary = vi.fn();
     const runtime = localRuntime({ discoverService, ensureService, discoverBinary });
-    await expect(runtime.connect()).rejects.toThrow("No reachable");
+    await expect(runtime.connect()).rejects.toThrow("未找到可用的本地 OpenCode 服务");
     await expect(runtime.connect({ startLocalService: true })).resolves.toMatchObject({
       connected: true,
       canStartLocalService: false,
@@ -648,7 +648,7 @@ describe("OpenCodeRuntimeLifecycle discovery-only connection", () => {
     const ensureService = vi.fn();
     const runtime = localRuntime({ discoverBinary, ensureService });
     const connecting = runtime.connect({ startLocalService: true });
-    const rejected = expect(connecting).rejects.toThrow("stopped");
+    const rejected = expect(connecting).rejects.toThrow("connection stopped");
     await vi.waitFor(() => expect(discoverBinary).toHaveBeenCalledOnce());
     await runtime.stop();
     binary.resolve({ path: "/runtime", version: SUPPORTED_OPENCODE_VERSION });
@@ -663,7 +663,7 @@ describe("OpenCodeRuntimeLifecycle discovery-only connection", () => {
     const stopService = vi.fn();
     const runtime = localRuntime({ ensureService, stopService });
     const connecting = runtime.connect({ startLocalService: true });
-    const rejected = expect(connecting).rejects.toThrow("stopped");
+    const rejected = expect(connecting).rejects.toThrow("连接过程中已停止");
     await vi.waitFor(() => expect(ensureService).toHaveBeenCalledOnce());
     await runtime.stop();
     service.resolve(managedEndpoint);
@@ -753,12 +753,12 @@ describe("OpenCodeRuntimeLifecycle discovery-only connection", () => {
     );
     expect(ensureService).not.toHaveBeenCalled();
     expect(discoverBinary).not.toHaveBeenCalled();
-    await expect(runtime.client()).rejects.toThrow("No reachable local OpenCode service was found");
+    await expect(runtime.client()).rejects.toThrow("未找到可用的本地 OpenCode 服务");
     await expect(runtime.connect()).rejects.toThrow(
-      "No reachable local OpenCode service was found",
+      "未找到可用的本地 OpenCode 服务",
     );
     await expect(runtime.requestConnection()).rejects.toThrow(
-      "No reachable local OpenCode service was found",
+      "未找到可用的本地 OpenCode 服务",
     );
     const firstStart = runtime.connect({ startLocalService: true });
     const duplicateStart = runtime.connect({ startLocalService: true });

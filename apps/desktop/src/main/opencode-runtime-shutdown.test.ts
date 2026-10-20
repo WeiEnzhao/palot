@@ -215,7 +215,7 @@ describe("OpenCode runtime SSH shutdown ownership", () => {
       connected: false,
       phase: "stopped",
     });
-    await expect(runtime.requestConnection()).rejects.toThrow("disposed");
+    await expect(runtime.requestConnection()).rejects.toThrow("连接已断开");
     const enabled = await runtime.connectProfile(profile.id, async () => tunnel());
     expect(enabled.connected).toBe(true);
     expect(enabled.connectionID).not.toBe(connected.connectionID);
@@ -280,7 +280,7 @@ describe("OpenCode runtime SSH shutdown ownership", () => {
         operation === "test"
           ? runtime.testProfile({ kind: "ssh", name: "Test", ssh: { target: "test" } }, connector)
           : runtime.switchProfile(addSshProfile("candidate").id, connector);
-      const rejected = expect(pending).rejects.toThrow(/stopped|disposed/);
+      const rejected = expect(pending).rejects.toThrow(/connection stopped|已断开/);
       await entered.promise;
       let shutdownFinished = false;
       const shutdown = runtime.shutdown().then(() => {

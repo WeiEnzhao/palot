@@ -3,6 +3,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
 import { memo, useState } from "react";
 import type { OpenCodeProfileSnapshot, OpenCodeRuntimeStatus } from "../../shared";
+import type { SidebarMode } from "../../shared/session-triage-contract";
 import { automationUnreadCountAtom } from "../atoms/automations";
 import { sidebarModeAtom } from "../atoms/ui";
 import { runtimeAtom } from "../atoms/workspace";
@@ -47,14 +48,26 @@ interface WorkspaceSidebarProps {
   open: boolean;
   onNewSession(directory?: string): void;
   onSearchTasks(trigger: HTMLElement): void;
+  /** Shows this view instead of the remembered one (a peek shows the hovered view). */
+  mode?: SidebarMode;
+  /**
+   * `peek` renders the column as a floating overlay below the window header: no
+   * drag strip, no shell-transition surface, and no duplicate side effects.
+   */
+  presentation?: "column" | "peek";
 }
 
 export const WorkspaceSidebar = memo(function WorkspaceSidebar({
   open,
   onNewSession,
   onSearchTasks,
+  mode: modeOverride,
+  presentation = "column",
 }: WorkspaceSidebarProps) {
-  const [mode, setMode] = useAtom(sidebarModeAtom);
+  const storedMode = useAtomValue(sidebarModeAtom);
+  const mode = modeOverride ?? storedMode;
+  const [, setMode] = useAtom(sidebarModeAtom);
+  const peek = presentation === "peek";
   const { openScheduled, openSettings, openUsage, openWorktrees } = usePalotNavigation();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const scheduledUnreadCount = useAtomValue(automationUnreadCountAtom);
@@ -75,20 +88,23 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar({
       : enabledConnections.length === 0
         ? "服务器已禁用"
         : `${connectedCount} / ${enabledConnections.length} ${enabledConnections.length === 1 ? "台服务器" : "台服务器"}已连接`;
-  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <SidebarPrimitive
       collapsible="none"
       className="palot-sidebar w-full border-r-0!"
-      data-shell-surface="navigation"
+      // Shell transitions animate the pinned column; a peek animates itself.
+      data-shell-surface={peek ? undefined : "navigation"}
+      data-sidebar-presentation={presentation}
       aria-label={mode === "inbox" ? "收件箱导航" : "任务导航"}
       aria-hidden={!open}
       inert={!open}
       data-sidebar-mode={mode}
     >
       <SidebarHeader className="gap-0 p-0">
-        <div className="window-drag h-(--shell-header-height) shrink-0" aria-hidden="true" />
+        {peek ? null : (
+          <div className="window-drag h-(--shell-header-height) shrink-0" aria-hidden="true" />
+        )}
         <div className="flex h-10 shrink-0 items-center gap-2 px-2.5">
           <div className="flex min-w-0 items-center gap-2 pl-1 text-base font-semibold tracking-tight">
             <PalotMark />
@@ -145,11 +161,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton
                 className={sidebarItemVariants()}
-                onClick={(event) =>
-                  multiConnection
-                    ? setSearchOpen((value) => !value)
-                    : onSearchTasks(event.currentTarget)
-                }
+                onClick={(event) => onSearchTasks(event.currentTarget)}
               >
                 <AppIcon name="search" aria-hidden="true" />
                 <span>搜索任务</span>
@@ -176,11 +188,11 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar({
       </SidebarHeader>
 
       {multiConnection ? (
-        <MultiConnectionSidebar searchOpen={searchOpen} />
+        <MultiConnectionSidebar mode={mode} />
       ) : mode === "inbox" ? (
         <InboxSidebarContent />
       ) : (
-        <ProjectSidebarContent onNewSession={onNewSession} />
+        <ProjectSidebarContent onNewSession={onNewSession} notifyAttention={!peek} />
       )}
 
       <SidebarFooter className="p-2">

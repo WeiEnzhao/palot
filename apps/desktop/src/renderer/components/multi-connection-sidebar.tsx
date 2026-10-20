@@ -1,8 +1,12 @@
 import { Fragment, useEffect, useEffectEvent, useState, type ReactElement, type ReactNode } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
-import { Check, Ellipsis, PinOff, Plus, Server, Undo2 } from "lucide-react";
-import type { SessionTriageCommand, SidebarMode } from "../../shared";
+import { BellRing, Check, Ellipsis, PinOff, Plus, Server, Undo2 } from "lucide-react";
+import {
+  SESSION_TRIAGE_BATCH_LIMIT,
+  type SessionTriageCommand,
+  type SidebarMode,
+} from "../../shared";
 import {
   inboxFiltersAtom,
   inboxShelvesAtom,
@@ -11,6 +15,7 @@ import {
 } from "../atoms/ui";
 import { runtimeAtom } from "../atoms/workspace";
 import { overviewProjectFilterAtom, overviewProjectSectionsAtom } from "../atoms/connections";
+import { useTriageDispatcher } from "../hooks/use-auto-settle";
 import { useConnectionOverview } from "../hooks/use-connection-overview";
 import { usePalotNavigation } from "../hooks/use-navigation";
 import { useSessionWindowDrag } from "../hooks/use-session-window-drag";
@@ -40,6 +45,7 @@ import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 import { sessionSnoozeChoices } from "../lib/session-snooze";
 import { InboxCardSurface, INBOX_CARD_ACTION_BUTTON_CLASS } from "./inbox-card-surface";
 import { PullRequestBadge } from "./pull-requests/pull-request-badge";
+import { announceSettledBatch, SettleIdleMenu } from "./settle-idle-menu";
 import { useOwnedPullRequestLinks } from "./pull-requests/use-owned-pull-request-links";
 import { cn } from "../lib/cn";
 import { Button } from "./ui/button";
@@ -132,6 +138,7 @@ async function attempt(label: string, action: () => Promise<unknown>) {
 
 export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarMode } = {}) {
   const overview = useConnectionOverview();
+  const dispatchTriage = useTriageDispatcher();
   const navigation = usePalotNavigation();
   const runtime = useAtomValue(runtimeAtom);
   const storedMode = useAtomValue(sidebarModeAtom);
@@ -282,6 +289,54 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
   };
   const dispatch = (item: OwnedItem, command: Command) =>
     void run(item, () => overview.dispatch(item.connection.profile.id, command));
+  const canMutate = (connection: Connection) =>
+    connection.runtime?.connected === true &&
+    connection.phase === "ready" &&
+    connection.triageReady;
+  const settleIdle = async (selected: OwnedItem[]) => {
+    const byProfile = new Map<string, OwnedItem[]>();
+    for (const item of selected) {
+      if (!canMutate(item.connection) || busy.has(rowKey(item))) continue;
+      const group = byProfile.get(item.connection.profile.id) ?? [];
+      if (group.length < SESSION_TRIAGE_BATCH_LIMIT) group.push(item);
+      byProfile.set(item.connection.profile.id, group);
+    }
+    const settled = await Promise.all(
+      [...byProfile].map(async ([profileID, group]) => {
+        try {
+          await dispatchTriage(profileID, {
+            type: "settle-many",
+            at: Date.now(),
+            trigger: "bulk",
+            sessions: group.map((item) => ({
+              sessionID: item.session.id,
+              through: item.activityThrough,
+            })),
+          });
+          return { profileID, sessionIDs: group.map((item) => item.session.id) };
+        } catch (error) {
+          showErrorToast(`Could not settle tasks on ${group[0]!.connection.profile.name}`, error);
+          return null;
+        }
+      }),
+    );
+    const batches = settled.filter((batch) => batch !== null);
+    const count = batches.reduce((total, batch) => total + batch.sessionIDs.length, 0);
+    if (count === 0) return;
+    announceSettledBatch({
+      count,
+      undo: () =>
+        Promise.all(
+          batches.map((batch) =>
+            dispatchTriage(batch.profileID, {
+              type: "inbox-many",
+              at: Date.now(),
+              sessionIDs: batch.sessionIDs,
+            }),
+          ),
+        ),
+    });
+  };
   const renderRow = (item: OwnedItem) => {
     const { connection, session } = item;
     const connected = connection.runtime?.connected === true && connection.phase === "ready";
@@ -351,7 +406,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           </DropdownMenuItem>
           {item.section === "settled" ? (
             <DropdownMenuItem disabled={disabled} onClick={() => command("inbox")}>
-              Move to inbox
+              移回收件箱
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
@@ -370,11 +425,11 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           )}
           {item.section === "snoozed" ? (
             <DropdownMenuItem disabled={disabled} onClick={() => command("wake")}>
-              Wake
+              唤醒
             </DropdownMenuItem>
           ) : (
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger disabled={disabled}>Snooze until</DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger disabled={disabled}>暂停到</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 {sessionSnoozeChoices.map(([label, resolve]) => (
                   <DropdownMenuItem
@@ -410,6 +465,42 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    // Project rows lead with the one triage step that fits the task's shelf.
+    const quickAction =
+      item.section === "settled" ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="取消归档"
+          title="取消归档"
+          disabled={disabled}
+          onClick={() => command("inbox")}
+        >
+          <Undo2 aria-hidden="true" />
+        </Button>
+      ) : item.section === "snoozed" ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="唤醒任务"
+          title="立即唤醒"
+          disabled={disabled}
+          onClick={() => command("wake")}
+        >
+          <BellRing aria-hidden="true" />
+        </Button>
+      ) : item.canSettle ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="归档任务"
+          title="归档"
+          disabled={disabled}
+          onClick={settle}
+        >
+          <Check aria-hidden="true" />
+        </Button>
+      ) : null;
     return (
       <OwnedSessionInteractions
         key={rowKey(item)}
@@ -519,11 +610,15 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={item.section === "snoozed" ? "Wake task" : "Unsettle task"}
+                    aria-label={item.section === "snoozed" ? "唤醒任务" : "取消归档"}
                     disabled={disabled}
                     onClick={() => command(item.section === "snoozed" ? "wake" : "inbox")}
                   >
-                    <Undo2 aria-hidden="true" />
+                    {item.section === "snoozed" ? (
+                      <BellRing aria-hidden="true" />
+                    ) : (
+                      <Undo2 aria-hidden="true" />
+                    )}
                   </Button>
                   {menu}
                 </div>
@@ -544,7 +639,10 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   cn(
                     // The actions reserve their gutter only while shown, so titles
                     // use the full row at rest.
-                    "flex min-w-0 flex-1 items-center gap-2 transition-[color,background-color,padding] group-hover/owned-row:pr-8 group-has-[:focus-visible]/owned-row:pr-8 group-has-[[data-popup-open]]/owned-row:pr-8",
+                    "flex min-w-0 flex-1 items-center gap-2 transition-[color,background-color,padding]",
+                    quickAction
+                      ? "group-hover/owned-row:pr-14 group-has-[:focus-visible]/owned-row:pr-14 group-has-[[data-popup-open]]/owned-row:pr-14"
+                      : "group-hover/owned-row:pr-8 group-has-[:focus-visible]/owned-row:pr-8 group-has-[[data-popup-open]]/owned-row:pr-8",
                     connected && "cursor-grab active:cursor-grabbing",
                   ),
                 )}
@@ -568,6 +666,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
               {/* Quiet until the row is hovered or holds keyboard focus; never removed
                   from the tab order. */}
               <div className="absolute top-1/2 right-0.5 flex -translate-y-1/2 items-center opacity-0 transition-opacity group-hover/owned-row:opacity-100 group-has-[:focus-visible]/owned-row:opacity-100 group-has-[[data-popup-open]]/owned-row:opacity-100">
+                {quickAction}
                 {menu}
               </div>
             </div>
@@ -582,7 +681,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         </ContextMenuItem>
         {item.section === "settled" ? (
           <ContextMenuItem disabled={disabled} onClick={() => command("inbox")}>
-            Move to inbox
+            移回收件箱
           </ContextMenuItem>
         ) : (
           <ContextMenuItem disabled={disabled || !item.canSettle} onClick={settle}>
@@ -591,7 +690,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         )}
         {item.section === "snoozed" ? (
           <ContextMenuItem disabled={disabled} onClick={() => command("wake")}>
-            Wake
+            唤醒
           </ContextMenuItem>
         ) : null}
       </OwnedSessionInteractions>
@@ -656,7 +755,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
               visible
                 .filter((c) => c.hasMore && c.runtime?.connected && c.phase === "ready")
                 .map((c) =>
-                  attempt(`Could not load tasks from ${c.profile.name}`, () =>
+                  attempt(`无法从 ${c.profile.name} 加载任务`, () =>
                     overview.loadMore(c.profile.id),
                   ),
                 ),
@@ -667,7 +766,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="min-h-9">
               <Server aria-hidden="true" />
-              <span>Servers</span>
+              <span>服务器</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="max-w-sm">
               <DropdownMenuItem onClick={() => overview.setVisibleProfileIDs(null)}>
@@ -706,7 +805,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           <>
             <DropdownMenuSeparator />
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger>Enabled servers</DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger>已启用的服务器</DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="max-w-sm">
                 {overview.connections.map((c) => (
                   <DropdownMenuCheckboxItem
@@ -721,7 +820,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                       )
                     }
                   >
-                    Enable {connectionDescription(c.profile)}
+                    启用 {connectionDescription(c.profile)}
                   </DropdownMenuCheckboxItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -730,14 +829,14 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                     key={c.profile.id}
                     disabled={c.phase === "loading"}
                     onClick={() =>
-                      void attempt("Could not refresh connection", () =>
+                      void attempt("无法刷新连接", () =>
                         c.runtime?.connected
                           ? overview.refresh(c.profile.id)
                           : overview.connect(c.profile.id),
                       )
                     }
                   >
-                    {c.runtime?.connected ? "Refresh" : "Retry"} {connectionDescription(c.profile)}
+                    {c.runtime?.connected ? "刷新" : "重试"} {connectionDescription(c.profile)}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuSubContent>
@@ -779,7 +878,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
             )}
             {visible.length === 0 ? (
               <p className="px-2 text-meta text-muted-foreground">
-                No servers visible. Choose servers in Filter tasks.
+                没有可见服务器。请在筛选任务中选择服务器。
               </p>
             ) : null}
             {mode === "inbox"
@@ -801,6 +900,15 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                         title={section[0]!.toUpperCase() + section.slice(1)}
                         count={rows.length}
                         open={shelves[section]}
+                        action={
+                          section === "inbox" ? (
+                            <SettleIdleMenu
+                              items={rows}
+                              disabled={!rows.some((item) => canMutate(item.connection))}
+                              onSettle={(selected) => void settleIdle(selected)}
+                            />
+                          ) : undefined
+                        }
                       />
                       <CollapsibleContent>
                         {shelves[section] ? (

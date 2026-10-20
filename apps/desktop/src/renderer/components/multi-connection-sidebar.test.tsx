@@ -257,8 +257,8 @@ describe("MultiConnectionSidebar", () => {
     overview.includedProfileIDs = ["alpha"];
     renderSidebar("inbox", store);
     expect(overview.loadProject).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole("button", { name: "Filter tasks, 1 active" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Clear filters" }));
+    await userEvent.click(screen.getByRole("button", { name: "筛选任务，1 个生效" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "清除筛选" }));
     expect(store.get(overviewProjectFilterAtom)).toBeNull();
     expect(overview.loadProject).not.toHaveBeenCalled();
     expect(
@@ -272,10 +272,10 @@ describe("MultiConnectionSidebar", () => {
     store.set(overviewProjectSectionsAtom, projects);
     renderSidebar("inbox", store);
     for (const name of [
-      "Filter tasks",
-      "Inbox view settings",
-      "Add project folder",
-      "Inbox options",
+      "筛选任务",
+      "收件箱视图设置",
+      "添加项目文件夹",
+      "收件箱选项",
     ])
       expect(screen.getByRole("button", { name })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /^Pinned/ })).toBeNull();
@@ -283,8 +283,8 @@ describe("MultiConnectionSidebar", () => {
     expect(screen.getByRole("button", { name: "Inbox 2" }).getAttribute("aria-expanded")).toBe(
       "true",
     );
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Collapse all sections" }));
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "折叠所有分区" }));
     expect(screen.getByRole("button", { name: "Inbox 2" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
@@ -293,8 +293,8 @@ describe("MultiConnectionSidebar", () => {
     ).toBeNull();
     expect(mocks.vcs).toHaveBeenLastCalledWith([]);
     expect(store.get(overviewProjectSectionsAtom)).toEqual(projects);
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Expand all sections" }));
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "展开所有分区" }));
     expect(screen.getByRole("button", { name: "Inbox 2" }).getAttribute("aria-expanded")).toBe(
       "true",
     );
@@ -304,19 +304,19 @@ describe("MultiConnectionSidebar", () => {
   it("filters owner-qualified projects, hydrates real IDs and clears visibility without monitoring", async () => {
     overview.visibleProfileIDs = ["beta"];
     renderSidebar();
-    await userEvent.click(screen.getByRole("button", { name: /^Filter tasks/ }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Project" }));
+    await userEvent.click(screen.getByRole("button", { name: /^筛选任务/ }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "项目" }));
     await userEvent.keyboard("{ArrowRight}");
     await userEvent.click(
       screen.getByRole("option", { name: /Same project · Same server · beta.example/ }),
     );
     expect(overview.loadProject).toHaveBeenCalledWith("beta", "same-project");
     await userEvent.keyboard("{Escape}{Escape}");
-    await userEvent.click(screen.getByRole("button", { name: /^Filter tasks/ }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Clear filters" }));
+    await userEvent.click(screen.getByRole("button", { name: /^筛选任务/ }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "清除筛选" }));
     expect(overview.setVisibleProfileIDs).toHaveBeenCalledWith(null);
     expect(overview.setIncludedProfileIDs).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Filter tasks, 1 active" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "筛选任务，1 个生效" })).toBeTruthy();
   });
 
   it("renders settled tasks in the original compact shelf, not rich cards", async () => {
@@ -328,7 +328,7 @@ describe("MultiConnectionSidebar", () => {
     const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
     expect(row.closest("[data-inbox-compact-row]")).not.toBeNull();
     expect(row.closest("[data-inbox-card]")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Unsettle task" }));
+    fireEvent.click(screen.getByRole("button", { name: "取消归档" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({ type: "inbox", sessionID: "same-session" }),
@@ -427,7 +427,7 @@ describe("MultiConnectionSidebar", () => {
     const remote = screen
       .getByRole("button", { name: "Same task · Same server · beta.example" })
       .closest<HTMLElement>("[data-inbox-card]")!;
-    await userEvent.click(within(remote).getByRole("button", { name: "Snooze task" }));
+    await userEvent.click(within(remote).getByRole("button", { name: "暂停任务" }));
     await userEvent.click(screen.getAllByRole("menuitem")[0]!);
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
@@ -509,7 +509,11 @@ describe("MultiConnectionSidebar", () => {
   it("keeps project row actions keyboard reachable while they are quiet at rest", async () => {
     renderSidebar("project");
     const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
+    // Present before any hover: the quiet actions are hidden with opacity only.
+    const settle = within(row.parentElement!).getByRole("button", { name: "归档任务" });
     act(() => row.focus());
+    await userEvent.tab();
+    expect(document.activeElement).toBe(settle);
     await userEvent.tab();
     const actions = screen.getByRole("button", {
       name: "Actions for Same task on Same server · beta.example",
@@ -517,7 +521,41 @@ describe("MultiConnectionSidebar", () => {
     expect(document.activeElement).toBe(actions);
     await userEvent.keyboard("{Enter}");
     expect(await screen.findByRole("menuitem", { name: "Rename" })).toBeTruthy();
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(settle);
+    expect(overview.dispatch).toHaveBeenCalledWith(
+      "beta",
+      expect.objectContaining({
+        type: "settle",
+        sessionID: "same-session",
+        through: overview.connections[1]!.inbox.inbox[0]!.activityThrough,
+      }),
+    );
   });
+
+  it.each([
+    ["settled", "取消归档", "inbox"],
+    ["snoozed", "唤醒任务", "wake"],
+  ] as const)(
+    "offers the %s project row's quick action to its owner",
+    async (section, name, type) => {
+      const owner = overview.connections[1]!;
+      const item = owner.inbox.inbox.pop()!;
+      owner.inbox[section].push({
+        ...item,
+        section,
+        snoozedUntil: section === "snoozed" ? 9 : null,
+      });
+      renderSidebar("project");
+      const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
+      expect(within(row.parentElement!).queryByRole("button", { name: "归档任务" })).toBeNull();
+      await userEvent.click(within(row.parentElement!).getByRole("button", { name }));
+      expect(overview.dispatch).toHaveBeenCalledWith(
+        "beta",
+        expect.objectContaining({ type, sessionID: "same-session" }),
+      );
+    },
+  );
 
   it("keeps the project new-task action outside its trigger without changing expansion", async () => {
     renderSidebar("project");
@@ -548,16 +586,16 @@ describe("MultiConnectionSidebar", () => {
     const trigger = screen.getByRole("button", {
       name: "Same project 1 · Same server · beta.example",
     });
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Collapse all sections" }));
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "折叠所有分区" }));
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(store.get(overviewProjectSectionsAtom)).toEqual({ [alphaKey]: false, [betaKey]: false });
     expect(store.get(inboxShelvesAtom)).toEqual(shelves);
     expect(
       screen.queryByRole("button", { name: "Same task · Same server · beta.example" }),
     ).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Expand all sections" }));
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "展开所有分区" }));
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(store.get(overviewProjectSectionsAtom)).toEqual({ [alphaKey]: false, [betaKey]: true });
     expect(store.get(inboxShelvesAtom)).toEqual(shelves);
@@ -617,8 +655,8 @@ describe("MultiConnectionSidebar", () => {
     expect(
       screen.queryByRole("button", { name: "Same task · Same server · alpha.example" }),
     ).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: /^Filter tasks/ }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Servers" }));
+    await userEvent.click(screen.getByRole("button", { name: /^筛选任务/ }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "服务器" }));
     await userEvent.keyboard("{ArrowRight}");
     await userEvent.click(
       screen.getByRole("menuitemcheckbox", { name: "Same server · alpha.example" }),
@@ -626,11 +664,10 @@ describe("MultiConnectionSidebar", () => {
     expect(overview.setVisibleProfileIDs).toHaveBeenCalledWith(["beta", "alpha"]);
     expect(overview.setIncludedProfileIDs).not.toHaveBeenCalled();
     await userEvent.keyboard("{Escape}{Escape}");
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Enabled servers" }));
-    await userEvent.keyboard("{ArrowRight}");
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "已启用的服务器" }));
     await userEvent.click(
-      screen.getByRole("menuitemcheckbox", { name: "Enable Same server · beta.example" }),
+      await screen.findByRole("menuitemcheckbox", { name: "Enable Same server · beta.example" }),
     );
     expect(overview.setIncludedProfileIDs).toHaveBeenCalledWith(["alpha"]);
   });
@@ -640,11 +677,11 @@ describe("MultiConnectionSidebar", () => {
     overview.connections[1]!.phase = "error";
     overview.connections[1]!.error = "Network unavailable";
     renderSidebar();
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Enabled servers" }));
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "已启用的服务器" }));
     await userEvent.keyboard("{ArrowRight}");
     await userEvent.click(
-      screen.getByRole("menuitem", { name: "Retry Same server · beta.example" }),
+      await screen.findByRole("menuitem", { name: "重试 Same server · beta.example" }),
     );
     expect(overview.connect).toHaveBeenCalledWith("beta");
     await userEvent.click(
@@ -710,8 +747,8 @@ describe("MultiConnectionSidebar", () => {
         name: /^Actions for/,
       }),
     ).toHaveLength(80);
-    await userEvent.click(screen.getByRole("button", { name: "Inbox options" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Load older tasks" }));
+    await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "加载更早的任务" }));
     expect(overview.loadMore).toHaveBeenCalledWith("beta");
   });
 });

@@ -262,10 +262,10 @@ describe("ActivityGroup", () => {
     render(<ActivityGroup group={group} live />);
 
     const trigger = screen.getByRole("button", {
-      name: "Running tests Failed",
+      name: "Running tests 已失败",
     });
     expect(trigger.querySelector('[data-slot="badge"]')).toBeNull();
-    expect(screen.getByText("Failed", { selector: ".sr-only" })).toBeTruthy();
+    expect(screen.getByText("已失败", { selector: ".sr-only" })).toBeTruthy();
   });
 
   it("keeps a newly running tool group collapsed until the user opens it", () => {
@@ -337,18 +337,23 @@ describe("ActivityGroup", () => {
       />,
     );
 
-    const trigger = screen.getByRole("button", { name: "Reasoning · 3 steps · 33.5s" });
+    const trigger = screen.getByRole("button", { name: "推理 · 3 步 · 33.5s" });
     expect(
-      screen.queryByRole("button", { name: /Reasoning: Evaluating database options/ }),
+      screen.queryByRole("button", { name: /推理: Evaluating database options/ }),
     ).toBeNull();
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByText("Evaluating database options")).toBeTruthy();
     expect(screen.getByText("Designing shared database services")).toBeTruthy();
     expect(screen.getAllByText("Planning middleware layering")).toHaveLength(2);
+    // Every step reads as one train of thought in a single scroll region.
+    const steps = screen.getByLabelText("Reasoning steps");
+    expect(within(steps).getByText("Evaluating database options")).toBeTruthy();
+    expect(within(steps).getByText("Designing shared database services")).toBeTruthy();
+    expect(within(steps).getByText("Planning middleware layering")).toBeTruthy();
     await user.click(trigger);
     expect(
       screen.getByRole("button", {
-        name: "Reasoning: Planning middleware layering · 3 steps · 33.5s",
+        name: "推理: Planning middleware layering · 3 步 · 33.5s",
       }),
     ).toBeTruthy();
   });
@@ -377,13 +382,13 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    const trigger = boundary.getByRole("button", { name: "Compaction completed" });
+    const trigger = boundary.getByRole("button", { name: "Context compacted" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(boundary.queryByText("Compacted summary")).toBeNull();
     expect(boundary.queryByText("Recent context preserved")).toBeNull();
     await user.click(trigger);
     expect(boundary.getByText("Compacted summary")).toBeTruthy();
-    expect(boundary.getByText(/Compaction request:.*0\.001/)).toBeTruthy();
+    expect(boundary.getByText(/^Summarizing used .*0\.001/)).toBeTruthy();
     expect(boundary.queryByText("Recent context preserved")).toBeNull();
     const recentTrigger = boundary.getByRole("button", {
       name: "Approximately 6 tokens of recent context are kept verbatim",
@@ -416,7 +421,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    const trigger = boundary.getByRole("button", { name: "Compacting..." });
+    const trigger = boundary.getByRole("button", { name: "Compacting context" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(boundary.queryByText("Partial streamed summary")).toBeNull();
     await user.click(trigger);
@@ -448,7 +453,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    const trigger = boundary.getByRole("button", { name: "Compaction failed" });
+    const trigger = boundary.getByRole("button", { name: "Context compaction failed" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(boundary.queryByText("Context is too large")).toBeNull();
     expect(boundary.queryByText("Partial summary")).toBeNull();
@@ -506,7 +511,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    expect(boundary.getByRole("button", { name: "Compaction completed" })).toBeTruthy();
+    expect(boundary.getByRole("button", { name: "Context compacted" })).toBeTruthy();
     expect(boundary.getAllByRole("button")).toHaveLength(1);
     expect(boundary.queryByText("Hydrated summary")).toBeNull();
   });
@@ -547,7 +552,7 @@ describe("ActivityGroup", () => {
 
     expect(
       screen
-        .getByRole("button", { name: "Running 'bun test' Failed" })
+        .getByRole("button", { name: "Running 'bun test' 已失败" })
         .getAttribute("aria-expanded"),
     ).toBe("true");
     expect(result.container.querySelectorAll("button").length).toBeGreaterThan(1);
@@ -815,7 +820,7 @@ describe("TurnActivity", () => {
       />,
     );
     const view = within(result.container);
-    const trigger = view.getByRole("button", { name: "Worked for 1s" });
+    const trigger = view.getByRole("button", { name: "工作耗时 1s" });
 
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(view.getByText("Pinned companion")).toBeTruthy();
@@ -922,7 +927,7 @@ describe("TurnActivity", () => {
       </Provider>,
     );
 
-    const turnTrigger = screen.getByRole("button", { name: "Completed in 1s" });
+    const turnTrigger = screen.getByRole("button", { name: "完成耗时 1s" });
     expect(turnTrigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(turnTrigger);
 
@@ -978,8 +983,8 @@ describe("TurnActivity", () => {
     );
 
     const view = within(result.container);
-    expect(view.queryByRole("button", { name: "Expand all activity" })).toBeNull();
-    await user.click(view.getByRole("button", { name: "Worked for 1s" }));
+    expect(view.queryByRole("button", { name: "展开所有活动" })).toBeNull();
+    await user.click(view.getByRole("button", { name: "工作耗时 1s" }));
     expect(view.getByRole("button", { name: "Read files" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
@@ -1031,9 +1036,9 @@ describe("TurnActivity", () => {
       />,
     );
     const view = within(result.container);
-    const turnTrigger = view.getByRole("button", { name: /^Working for / });
+    const turnTrigger = view.getByRole("button", { name: /^(工作耗时|工作中)/ });
 
-    expect(view.queryByRole("button", { name: "Expand all activity" })).toBeNull();
+    expect(view.queryByRole("button", { name: "展开所有活动" })).toBeNull();
     expect(turnTrigger.getAttribute("aria-expanded")).toBe("true");
     expect(turnTrigger.querySelector(".animate-spin")).toBeNull();
     expect(turnTrigger.querySelectorAll("svg")).toHaveLength(1);
@@ -1111,7 +1116,7 @@ describe("ThoughtDisclosure", () => {
     render(<ThoughtDisclosure entry={entry} live={false} />);
 
     const trigger = screen.getByRole("button", {
-      name: "Reasoning: Inspecting frontend and TUI code 7ms",
+      name: "推理: Inspecting frontend and TUI code 7ms",
     });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(trigger);
@@ -1133,7 +1138,7 @@ describe("ThoughtDisclosure", () => {
     );
 
     expect(within(result.container).queryByRole("button")).toBeNull();
-    expect(within(result.container).getByText("Reasoning: Inspecting the project.")).toBeTruthy();
+    expect(within(result.container).getByText("推理: Inspecting the project.")).toBeTruthy();
     result.rerender(
       <Provider store={store}>
         <ThoughtDisclosure entry={entry} live defaultOpen />
@@ -1163,7 +1168,7 @@ describe("ThoughtDisclosure", () => {
       </>,
     );
 
-    expect(screen.getByText("Update: Inspecting the project.")).toBeTruthy();
-    expect(screen.getByText("Recap: The implementation is understood.")).toBeTruthy();
+    expect(screen.getByText("更新: Inspecting the project.")).toBeTruthy();
+    expect(screen.getByText("回顾: The implementation is understood.")).toBeTruthy();
   });
 });

@@ -1,5 +1,5 @@
 import type { FileContents } from "@pierre/diffs";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkbenchTab } from "../../lib/workbench-tabs";
@@ -196,11 +196,14 @@ describe("workspace file preview classification", () => {
       kind: "too-large",
       limitMiB: 16,
     });
-    const oversizedVideo = new Uint8Array(32 * 1024 * 1024 + 1);
+    const largeVideo = new Uint8Array(32 * 1024 * 1024 + 1);
+    largeVideo.set(mp4());
+    expect(classifyWorkspaceFile("sample.mp4", largeVideo)).toMatchObject({ kind: "video" });
+    const oversizedVideo = new Uint8Array(256 * 1024 * 1024 + 1);
     oversizedVideo.set(mp4());
     expect(classifyWorkspaceFile("sample.mp4", oversizedVideo)).toEqual({
       kind: "too-large",
-      limitMiB: 32,
+      limitMiB: 256,
     });
   });
 });
@@ -229,14 +232,14 @@ describe("FileTab previews", () => {
     expect(document.querySelector("script")).toBeNull();
     expect(mocks.file).not.toHaveBeenCalled();
 
-    await userEvent.setup().click(screen.getByRole("button", { name: "Source" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "源码" }));
     expect(mocks.file.mock.lastCall?.[0].file.contents).toBe(
       "# Hello preview\n\n<script>alert(1)</script>",
     );
-    expect(screen.getByRole("button", { name: "Source" }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("button", { name: "源码" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
-    await userEvent.setup().click(screen.getByRole("button", { name: "Preview" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "预览" }));
     expect(screen.getByRole("heading", { name: "Hello preview" })).toBeTruthy();
   });
 
@@ -252,6 +255,33 @@ describe("FileTab previews", () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:two");
   });
 
+  it("consumes pinch zoom over an image and pans until it is fitted again", () => {
+    mocks.query.data = bytes(137, 80, 78, 71, 13, 10, 26, 10);
+    render(<FileTab tab={tab} />);
+    const stage = screen.getByRole("img", { name: "notes.md" }).parentElement!;
+    const wheel = (init: WheelEventInit) => {
+      const event = new WheelEvent("wheel", { bubbles: true, cancelable: true, ...init });
+      // The test DOM drops modifier keys from WheelEvent's init dictionary.
+      Object.defineProperty(event, "ctrlKey", { value: init.ctrlKey ?? false });
+      act(() => {
+        stage.dispatchEvent(event);
+      });
+      return event.defaultPrevented;
+    };
+
+    // Fitted scrolling stays native.
+    expect(wheel({ deltaY: 40 })).toBe(false);
+    // Chromium reports a trackpad pinch as Ctrl-wheel; the window must not zoom.
+    expect(wheel({ ctrlKey: true, deltaY: -40 })).toBe(true);
+    const fit = screen.getByRole("button", { name: "Fit image to pane" });
+    expect(fit.hasAttribute("disabled")).toBe(false);
+    expect(wheel({ deltaY: 40 })).toBe(true);
+
+    fireEvent.click(fit);
+    expect(fit.hasAttribute("disabled")).toBe(true);
+    expect(wheel({ deltaY: 40 })).toBe(false);
+  });
+
   it("releases a media preview when its workbench tab becomes inactive", () => {
     mocks.query.data = bytes(137, 80, 78, 71, 13, 10, 26, 10);
     const view = render(<FileTab tab={tab} active />);
@@ -264,8 +294,8 @@ describe("FileTab previews", () => {
   });
 
   it.each([
-    ["audio", wave(), "Audio preview: notes.md"],
-    ["video", mp4(), "Video preview: notes.md"],
+    ["audio", wave(), "音频预览：notes.md"],
+    ["video", mp4(), "视频预览：notes.md"],
   ])("renders %s as native controls with revocable URLs", (kind, data, label) => {
     mocks.query.data = data;
     const view = render(<FileTab tab={tab} />);
@@ -291,7 +321,7 @@ describe("FileTab previews", () => {
       kind === "audio" ? "audio/ogg" : "video/webm",
     );
     fireEvent.error(screen.getByLabelText(label));
-    expect(screen.getByText("Could not display notes.md.")).toBeTruthy();
+    expect(screen.getByText("无法显示 notes.md。")).toBeTruthy();
     view.unmount();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:two");
   });
@@ -316,7 +346,7 @@ describe("FileTab previews", () => {
     expect(URL.createObjectURL).not.toHaveBeenCalled();
     mocks.query.data = new Uint8Array(2 * 1024 * 1024 + 1);
     view.rerender(<FileTab tab={tab} />);
-    expect(screen.getByText(/exceeds the 2 MiB preview limit/)).toBeTruthy();
+    expect(screen.getByText(/超过 2 MiB 预览限制/)).toBeTruthy();
   });
 
   it("lazily routes Office bytes through the existing file query and releases the preview on inactive tabs", async () => {
@@ -339,7 +369,7 @@ describe("FileTab previews", () => {
       <FileTab tab={{ ...officeTab, resource: { ...officeTab.resource, path: "legacy.doc" } }} />,
     );
     expect(
-      screen.getByText(/Legacy, template and macro-enabled formats are not supported/),
+      screen.getByText(/Office 预览支持 .docx、.xlsx 和 .pptx。不支持旧版、模板和启用宏的格式。/),
     ).toBeTruthy();
     expect(mocks.office).not.toHaveBeenCalled();
   });

@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OpenCodeRuntimeStatus, PalotFormField, PalotIntegration } from "../../shared";
@@ -13,6 +13,8 @@ vi.mock("../services/palot", () => ({
     connectIntegrationKey: vi.fn(),
     connectIntegrationOAuth: vi.fn(),
     connectIntegrationCommand: vi.fn(),
+    integrationOAuthStatus: vi.fn(),
+    cancelIntegrationOAuth: vi.fn(),
   },
 }));
 
@@ -102,7 +104,7 @@ describe("external provider connection dialog", () => {
     const instructions = screen.getByRole("link", { name: "Set up your profile" });
     expect(instructions.getAttribute("href")).toBe("https://example.com/setup");
     const acknowledgment = screen.getByRole("checkbox", {
-      name: "I completed this step: Set up your profile",
+      name: "我已完成此步骤：Set up your profile",
     });
     expect(acknowledgment.getAttribute("aria-checked")).toBe("false");
     expect(screen.queryByLabelText("API 密钥")).toBeNull();
@@ -178,7 +180,7 @@ describe("external provider connection dialog", () => {
     expect(screen.getByText("file:///setup.txt")).toBeTruthy();
     expect(submit.hasAttribute("disabled")).toBe(true);
     await user.click(
-      screen.getByRole("checkbox", { name: "I completed this step: Configure your profile" }),
+      screen.getByRole("checkbox", { name: "我已完成此步骤：Configure your profile" }),
     );
     expect(submit.hasAttribute("disabled")).toBe(false);
     await user.click(submit);
@@ -194,7 +196,7 @@ describe("external provider connection dialog", () => {
       methods: [{ id: "default", type: "external", label: "Default profile", form: [] }],
     });
     render(<ProviderConnectionDialog {...input} />);
-    await user.click(screen.getByRole("button", { name: "Add and use" }));
+    await user.click(screen.getByRole("button", { name: "添加并使用" }));
     expect(palot.connectIntegrationExternal).toHaveBeenCalledWith(
       expect.objectContaining({ methodID: "default", answer: {} }),
     );
@@ -218,7 +220,7 @@ describe("external provider connection dialog", () => {
       />,
     );
     expect(screen.getByRole("status").textContent).toContain(
-      "Palot does not support the Device sign-in connection method (device)",
+      "Palot 不支持 Device sign-in 连接方式 (device)",
     );
     expect(screen.queryByRole("button", { name: "添加并使用" })).toBeNull();
     expect(screen.queryByLabelText("API 密钥")).toBeNull();
@@ -234,7 +236,7 @@ describe("external provider connection dialog", () => {
       const view = render(<ProviderConnectionDialog {...input} />);
       await user.type(screen.getByLabelText("Credential profile"), "work");
       await user.click(
-        screen.getByRole("checkbox", { name: "I completed this step: Set up your profile" }),
+        screen.getByRole("checkbox", { name: "我已完成此步骤：Set up your profile" }),
       );
       expect(screen.getByRole("button", { name: "添加并使用" }).hasAttribute("disabled")).toBe(
         false,
@@ -253,7 +255,7 @@ describe("external provider connection dialog", () => {
       expect((screen.getByLabelText("Credential profile") as HTMLInputElement).value).toBe("");
       expect(
         screen
-          .getByRole("checkbox", { name: "I completed this step: Set up your profile" })
+          .getByRole("checkbox", { name: "我已完成此步骤：Set up your profile" })
           .getAttribute("aria-checked"),
       ).toBe("false");
       expect(screen.getByRole("button", { name: "添加并使用" }).hasAttribute("disabled")).toBe(
@@ -282,9 +284,9 @@ describe("external provider connection dialog", () => {
         })}
       />,
     );
-    expect(screen.getByLabelText("Credential profile")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: /Device sign-in/ }));
-    expect(screen.getByRole("status").textContent).toContain("Connect it in OpenCode instead.");
+    expect(screen.getByRole("textbox", { name: "Credential profile" })).toBeTruthy();
+    await user.click(screen.getByRole("radio", { name: /Device sign-in/ }));
+    expect(screen.getByRole("status").textContent).toContain("请改为在 OpenCode 中连接它");
     expect(screen.queryByRole("button", { name: "添加并使用" })).toBeNull();
   });
 
@@ -321,4 +323,124 @@ describe("external provider connection dialog", () => {
       expect(input.onOpenChange).toHaveBeenCalledTimes(action === "cancel" ? 1 : 0);
     },
   );
+});
+
+describe("provider connection methods", () => {
+  const keyAndOAuth: PalotIntegration = {
+    id: "acme",
+    name: "Acme",
+    methods: [
+      { id: null, type: "key", label: "API key", form: [] },
+      { id: "browser", type: "oauth", label: "Sign in with Acme", form: [] },
+      { id: null, type: "env", label: "ACME_API_KEY", names: ["ACME_API_KEY"], form: [] },
+    ],
+    connections: [],
+  };
+
+  it("switches methods from the keyboard as a radio group", async () => {
+    const user = userEvent.setup();
+    render(<ProviderConnectionDialog {...props(keyAndOAuth)} />);
+    const group = screen.getByRole("radiogroup", { name: "选择连接方式" });
+    const radios = within(group).getAllByRole("radio");
+    expect(radios.map((radio) => radio.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+    expect(screen.getByLabelText("API 密钥", { selector: "input" })).toBeTruthy();
+    await user.click(radios[0]!);
+    await user.keyboard("{ArrowDown}");
+    expect(radios[1]!.getAttribute("aria-checked")).toBe("true");
+    expect(document.activeElement).toBe(radios[1]);
+    expect(screen.queryByLabelText("API 密钥", { selector: "input" })).toBeNull();
+    await user.keyboard("{ArrowUp}");
+    expect(radios[0]!.getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByLabelText("API 密钥", { selector: "input" })).toBeTruthy();
+  });
+
+  it("shows the OAuth URL and device code as copyable fields while waiting", async () => {
+    const user = userEvent.setup();
+    const clipboard = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window, "palot", {
+      configurable: true,
+      value: { writeClipboardText: clipboard },
+    });
+    const url = "https://auth.example.com/device?user_code=WXYZ-1234";
+    vi.mocked(palot.connectIntegrationOAuth).mockResolvedValue({
+      attemptID: "attempt-1",
+      url,
+      instructions: "Enter code: WXYZ-1234",
+      mode: "auto",
+      createdAt: 1,
+      expiresAt: Number.MAX_SAFE_INTEGER,
+    });
+    vi.mocked(palot.integrationOAuthStatus).mockResolvedValue({
+      status: "pending",
+      message: null,
+      createdAt: 1,
+      expiresAt: Number.MAX_SAFE_INTEGER,
+    });
+    vi.mocked(palot.cancelIntegrationOAuth).mockResolvedValue(undefined);
+    render(<ProviderConnectionDialog {...props(keyAndOAuth)} />);
+    await user.click(screen.getByRole("radio", { name: /Sign in with Acme/ }));
+    await user.click(screen.getByRole("button", { name: "添加并使用" }));
+    expect(await screen.findByText("等待授权")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "打开授权页面" }).getAttribute("href")).toBe(
+      url,
+    );
+    expect(screen.getByRole("group", { name: "设备码" }).textContent).toContain("WXYZ-1234");
+    await user.click(screen.getByRole("button", { name: "Copy 授权 URL" }));
+    expect(clipboard).toHaveBeenCalledWith(url);
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+  });
+
+  it("collects multiselect answers with a check list, keeping custom values", async () => {
+    const user = userEvent.setup();
+    render(
+      <ProviderConnectionDialog
+        {...props({
+          ...integration,
+          methods: [
+            {
+              id: "scopes",
+              type: "external",
+              label: "Scoped profile",
+              form: [
+                {
+                  key: "scopes",
+                  type: "multiselect",
+                  title: "Scopes",
+                  description: null,
+                  required: false,
+                  when: [],
+                  options: [
+                    { value: "read", label: "Read", description: null },
+                    { value: "write", label: "Write", description: "Change resources" },
+                  ],
+                  minItems: null,
+                  maxItems: null,
+                  custom: true,
+                  defaultValue: ["read"],
+                },
+              ],
+            },
+          ],
+        })}
+      />,
+    );
+    const scopes = screen.getByRole("group", { name: "Scopes" });
+    const read = within(scopes).getByRole("checkbox", { name: "Read" });
+    const write = within(scopes).getByRole("checkbox", { name: "Write" });
+    expect(read.getAttribute("aria-checked")).toBe("true");
+    expect(write.getAttribute("aria-checked")).toBe("false");
+    await user.click(write);
+    expect(write.getAttribute("aria-checked")).toBe("true");
+    await user.keyboard(" ");
+    expect(write.getAttribute("aria-checked")).toBe("false");
+    await user.keyboard(" ");
+    expect(write.getAttribute("aria-checked")).toBe("true");
+    await user.type(screen.getByRole("textbox", { name: "自定义 Scopes" }), "admin");
+    await user.click(screen.getByRole("button", { name: "添加" }));
+    await user.click(read);
+    await user.click(screen.getByRole("button", { name: "添加并使用" }));
+    expect(palot.connectIntegrationExternal).toHaveBeenCalledWith(
+      expect.objectContaining({ methodID: "scopes", answer: { scopes: ["write", "admin"] } }),
+    );
+  });
 });

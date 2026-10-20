@@ -8,7 +8,7 @@ describe("SessionRoutePending", () => {
   it("keeps loading confined to an empty task transcript surface", () => {
     render(<SessionRoutePending />);
 
-    const surface = screen.getByLabelText("Loading task transcript");
+    const surface = screen.getByLabelText("加载任务对话记录");
     expect(surface.getAttribute("aria-busy")).toBe("true");
     expect(screen.queryByRole("status")).toBeNull();
   });

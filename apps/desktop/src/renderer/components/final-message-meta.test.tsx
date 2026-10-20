@@ -82,7 +82,7 @@ describe("FinalMessageMeta", () => {
 
     const result = render(<FinalMessageMeta turn={turn} models={[]} sessionID="session" />);
 
-    expect(screen.getByTitle("Worked for 39s").textContent).toBe("39s");
+    expect(screen.getByTitle("工作耗时 39s").textContent).toBe("39s");
     expect(result.container.firstElementChild?.classList.contains("opacity-0")).toBe(true);
   });
 
@@ -121,11 +121,11 @@ describe("FinalMessageMeta", () => {
     render(<FinalMessageMeta turn={turn} models={[]} sessionID="session" />);
 
     expect(
-      screen.getByLabelText("131.4 output tokens per second over provider stream duration")
+      screen.getByLabelText("每秒 131.4 个输出 token（提供者流持续时间）")
         .textContent,
     ).toBe("131.4 tok/s");
     expect(
-      screen.getByTitle("Output tokens per second over provider stream duration"),
+      screen.getByTitle("提供者流持续时间内的每秒输出 token"),
     ).toBeTruthy();
   });
 
@@ -170,7 +170,7 @@ describe("FinalMessageMeta", () => {
         onOpenDetails={onOpenDetails}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Response details" }));
+    fireEvent.click(screen.getByRole("button", { name: "回复详情" }));
 
     expect(onOpenDetails).toHaveBeenCalledWith("assistant-details");
   });
@@ -209,7 +209,7 @@ describe("FinalMessageMeta", () => {
 
     render(<FinalMessageMeta turn={turn} models={[]} sessionID="session" />);
 
-    expect(screen.getByTitle("Completed in 42s").textContent).toBe("42s");
+    expect(screen.getByTitle("完成耗时 42s").textContent).toBe("42s");
   });
 
   it("forks the session after this response", async () => {
@@ -252,7 +252,7 @@ describe("FinalMessageMeta", () => {
         forkBeforeMessageID="next-user"
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Fork from this response" }));
+    fireEvent.click(screen.getByRole("button", { name: "从此回复分叉" }));
 
     await waitFor(() =>
       expect(mocks.forkSession).toHaveBeenCalledWith({

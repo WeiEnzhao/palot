@@ -103,17 +103,19 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
   {
     id: "models",
     label: "模型",
-    description: "项目默认值和目录",
+    description: "默认模型以及模型选择器显示哪些模型",
     icon: Sparkles,
-    keywords: "model provider context output default variant",
+    keywords:
+      "model default override variant effort context output price cost visibility hide show picker order agent",
     group: "OpenCode",
   },
   {
     id: "providers",
     label: "提供者",
-    description: "提供者凭据和模型",
+    description: "提供者连接与凭据",
     icon: Cable,
-    keywords: "provider api key oauth environment credential integration",
+    keywords:
+      "provider connect disconnect api key oauth account environment variable env credential integration source policy",
     group: "OpenCode",
   },
   {

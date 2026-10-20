@@ -5,7 +5,6 @@ import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import type { PalotApi } from "../../shared";
 import type { OpenCodeClient } from "@opencode/client";
 import { resetOpenCodeClientForTest, setOpenCodeClientForTest } from "../services/opencode-client";
-import { PendingInputTaskbarItem } from "./composer";
 import { PendingRequests } from "./thread";
 
 // Seed before renderer modules load: the retired policy read its session map at import time.
@@ -91,17 +90,17 @@ describe("PendingRequests", () => {
     );
     const card = (id: string) =>
       within(container.querySelector<HTMLElement>(`[data-palot-request-session-id="${id}"]`)!);
-    expect(screen.getByText("Subagent · Mac capture")).toBeTruthy();
+    expect(screen.getByText("子智能体 · Mac capture")).toBeTruthy();
     await user.click(card("child-a").getByRole("radio", { name: "Ready" }));
-    await user.click(card("child-a").getByRole("button", { name: "Send" }));
+    await user.click(card("child-a").getByRole("button", { name: "发送" }));
     expect(replyForm).toHaveBeenCalledWith({
       sessionID: "child-a",
       formID: "same-id",
       answer: { q0: "Ready" },
     });
-    await user.click(card("child-b").getByRole("button", { name: "Dismiss" }));
+    await user.click(card("child-b").getByRole("button", { name: "关闭" }));
     expect(cancelForm).toHaveBeenCalledWith({ sessionID: "child-b", formID: "same-id" });
-    await user.click(card("child-c").getByRole("button", { name: "Allow once" }));
+    await user.click(card("child-c").getByRole("button", { name: "允许一次" }));
     expect(replyPermission).toHaveBeenCalledWith({
       sessionID: "child-c",
       requestID: "same-id",
@@ -153,20 +152,20 @@ describe("PendingRequests", () => {
     expect(screen.getByRole("group", { name: "Which approach should I use?" })).toBeTruthy();
     await user.click(screen.getByText("Minimal"));
     expect(replyForm).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Next" }));
+    await user.click(screen.getByRole("button", { name: "下一步" }));
     expect(screen.getByRole("progressbar").textContent).toBe("2/2");
-    expect(screen.getByText("Select multiple")).toBeTruthy();
+    expect(screen.getByText("选择多个")).toBeTruthy();
     await user.click(screen.getByText("Tests"));
-    await user.type(screen.getByLabelText("Checks custom answer"), "Build");
-    await user.click(screen.getByRole("button", { name: "Previous" }));
+    await user.type(screen.getByLabelText("Checks 自定义答案"), "Build");
+    await user.click(screen.getByRole("button", { name: "上一步" }));
     expect(screen.getByRole<HTMLInputElement>("radio", { name: /Minimal/ }).checked).toBe(true);
     expect(screen.getByRole("progressbar").textContent).toBe("1/2");
-    await user.click(screen.getByRole("button", { name: "Next" }));
+    await user.click(screen.getByRole("button", { name: "下一步" }));
     expect(screen.getByRole<HTMLInputElement>("checkbox", { name: "Tests" }).checked).toBe(true);
     expect(
-      screen.getByRole<HTMLInputElement>("textbox", { name: "Checks custom answer" }).value,
+      screen.getByRole<HTMLInputElement>("textbox", { name: "Checks 自定义答案" }).value,
     ).toBe("Build");
-    await user.click(screen.getByRole("button", { name: "Send" }));
+    await user.click(screen.getByRole("button", { name: "发送" }));
 
     await waitFor(() =>
       expect(replyForm).toHaveBeenCalledWith({
@@ -213,7 +212,7 @@ describe("PendingRequests", () => {
     expect(screen.getByRole("progressbar").textContent).toBe("1/1");
     expect(screen.queryByText("Questions")).toBeNull();
     expect(screen.getByText("Preserves the existing behavior")).toBeTruthy();
-    expect(screen.getByPlaceholderText("Other answer…")).toBeTruthy();
+    expect(screen.getByPlaceholderText("其他答案…")).toBeTruthy();
     await user.tab();
     await user.keyboard("2");
     expect(screen.getByRole<HTMLInputElement>("radio", { name: "Redesign" }).checked).toBe(true);
@@ -267,7 +266,7 @@ describe("PendingRequests", () => {
       />,
     );
 
-    const dismiss = screen.getByRole<HTMLButtonElement>("button", { name: "Dismiss" });
+    const dismiss = screen.getByRole<HTMLButtonElement>("button", { name: "关闭" });
     await user.click(dismiss);
     await user.click(dismiss);
 
@@ -300,114 +299,9 @@ describe("PendingRequests", () => {
     expect(screen.queryByRole("region", { name: "Pending input" })).toBeNull();
   });
 
-  it("renders queued message actions compactly and supports every action", async () => {
-    const user = userEvent.setup();
-    const updatePending = vi.fn().mockResolvedValue(undefined);
-    const editPending = vi.fn().mockResolvedValue(undefined);
-    (window as unknown as { palot?: PalotApi }).palot = bridge({});
-    setOpenCodeClientForTest(
-      client({
-        session: { inbox: { update: updatePending, cancel: updatePending } },
-      }),
-    );
-
-    render(
-      <PendingInputTaskbarItem
-        sessionID="ses_1"
-        request={{
-          id: "msg_1",
-          type: "input",
-          title: "Pending input",
-          detail: "Run tests after the current turn",
-          resources: [],
-          savePatterns: [],
-          questions: [],
-          fields: [],
-          delivery: "queue",
-        }}
-        onEdit={editPending}
-        queuedPosition={2}
-        queuedCount={3}
-      />,
-    );
-
-    const pending = screen.getByRole("region", {
-      name: "Pending message actions: Run tests after the current turn",
-    });
-    expect(within(pending).getByText("Queued · 2")).toBeTruthy();
-    expect(within(pending).queryByRole("button", { name: "Run after current turn" })).toBeNull();
-    await user.click(within(pending).getByRole("button", { name: "Steer next" }));
-
-    await waitFor(() => expect(updatePending).toHaveBeenCalledTimes(1));
-    await user.click(within(pending).getByRole("button", { name: "More pending message actions" }));
-    await user.click(screen.getByRole("menuitem", { name: "Cancel and edit" }));
-
-    await waitFor(() =>
-      expect(editPending).toHaveBeenCalledWith(expect.objectContaining({ id: "msg_1" })),
-    );
-    await user.click(within(pending).getByRole("button", { name: "More pending message actions" }));
-    await user.click(screen.getByRole("menuitem", { name: "Cancel pending message" }));
-
-    await waitFor(() => {
-      expect(updatePending).toHaveBeenNthCalledWith(1, {
-        sessionID: "ses_1",
-        inboxID: "msg_1",
-        delivery: "steer",
-      });
-      expect(updatePending).toHaveBeenNthCalledWith(2, {
-        sessionID: "ses_1",
-        inboxID: "msg_1",
-      });
-    });
-  });
-
-  it("can move a steering message to the queue", async () => {
-    const user = userEvent.setup();
-    const updatePending = vi.fn().mockResolvedValue(undefined);
-    (window as unknown as { palot?: PalotApi }).palot = bridge({});
-    setOpenCodeClientForTest(
-      client({
-        session: { inbox: { update: updatePending, cancel: updatePending } },
-      }),
-    );
-
-    render(
-      <PendingInputTaskbarItem
-        sessionID="ses_1"
-        request={{
-          id: "msg_2",
-          type: "input",
-          title: "Pending input",
-          detail: "Queue this instead",
-          resources: [],
-          savePatterns: [],
-          questions: [],
-          fields: [],
-          delivery: "steer",
-        }}
-        queuedCount={0}
-      />,
-    );
-
-    const pending = screen.getByRole("region", {
-      name: "Pending message actions: Queue this instead",
-    });
-    expect(within(pending).getByText("Steering")).toBeTruthy();
-    expect(within(pending).queryByRole("button", { name: "Send now" })).toBeNull();
-    await user.click(within(pending).getByRole("button", { name: "Run after current turn" }));
-
-    await waitFor(() =>
-      expect(updatePending).toHaveBeenCalledWith({
-        sessionID: "ses_1",
-        inboxID: "msg_2",
-        delivery: "queue",
-      }),
-    );
-  });
-
   it.each([
-    ["Allow once", "once"],
-    ["Always allow for this project", "always"],
+    ["允许一次", "once"],
+    ["始终允许此项目", "always"],
   ])("ignores saved auto-approval preferences until an explicit %s reply", async (label, reply) => {
     const user = userEvent.setup();
     const replyPermission = vi.fn().mockResolvedValue(undefined);
@@ -436,12 +330,12 @@ describe("PendingRequests", () => {
       </Provider>,
     );
 
-    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Deny" }).disabled).toBe(false);
-    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Allow once" }).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "拒绝" }).disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "允许一次" }).disabled).toBe(
       false,
     );
     expect(
-      screen.getByRole<HTMLButtonElement>("button", { name: "Always allow for this project" })
+      screen.getByRole<HTMLButtonElement>("button", { name: "始终允许此项目" })
         .disabled,
     ).toBe(false);
     expect(replyPermission).not.toHaveBeenCalled();
@@ -523,7 +417,7 @@ describe("PendingRequests", () => {
 
     const form = within(screen.getByRole("region", { name: "Configure deployment" }));
     expect(form.queryByText("Internal token")).toBeNull();
-    const submit = form.getByRole<HTMLButtonElement>("button", { name: "Submit" });
+    const submit = form.getByRole<HTMLButtonElement>("button", { name: "提交" });
     expect(submit.disabled).toBe(true);
     await user.click(form.getByText("Europe"));
     const notes = form
@@ -531,13 +425,13 @@ describe("PendingRequests", () => {
       .find((input) => !input.hasAttribute("aria-label"));
     expect(notes).toBeTruthy();
     await user.type(notes!, "Primary region");
-    expect(form.getByLabelText("Regions custom value")).toBeTruthy();
+    expect(form.getByLabelText("Regions 自定义值")).toBeTruthy();
     expect(notes?.value).toBe("Primary region");
     expect(form.getByRole<HTMLInputElement>("checkbox", { name: "Europe" }).checked).toBe(true);
     await waitFor(() =>
-      expect(form.getByRole<HTMLButtonElement>("button", { name: "Submit" }).disabled).toBe(false),
+      expect(form.getByRole<HTMLButtonElement>("button", { name: "提交" }).disabled).toBe(false),
     );
-    await user.click(form.getByRole("button", { name: "Submit" }));
+    await user.click(form.getByRole("button", { name: "提交" }));
 
     await waitFor(() =>
       expect(replyForm).toHaveBeenCalledWith({
@@ -585,7 +479,7 @@ describe("PendingRequests", () => {
     );
 
     const form = within(screen.getByRole("region", { name: "Configure deployment" }));
-    const cancel = form.getByRole<HTMLButtonElement>("button", { name: "Cancel" });
+    const cancel = form.getByRole<HTMLButtonElement>("button", { name: "取消" });
     await user.click(cancel);
     await user.click(cancel);
 

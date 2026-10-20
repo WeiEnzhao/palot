@@ -22,10 +22,10 @@ describe("MessageRow", () => {
       data: null,
     };
     const view = render(<MessageRow message={message} />);
-    const row = within(view.container).getByRole("article", { name: "assistant message" });
+    const row = within(view.container).getByRole("article", { name: "助手消息" });
     expect(row.textContent).toContain("Assistant paragraph 0.");
     expect(row.textContent).toContain("Assistant paragraph 19.");
-    expect(within(row).queryByRole("button", { name: "Read more" })).toBeNull();
+    expect(within(row).queryByRole("button", { name: "展开更多" })).toBeNull();
     expect(row.querySelector("[inert]")).toBeNull();
 
     const completedText = `${text}\n\nFinal assistant paragraph.`;
@@ -41,7 +41,7 @@ describe("MessageRow", () => {
     );
     expect(row.textContent).toContain("Assistant paragraph 0.");
     expect(row.textContent).toContain("Final assistant paragraph.");
-    expect(within(row).queryByRole("button", { name: "Read more" })).toBeNull();
+    expect(within(row).queryByRole("button", { name: "展开更多" })).toBeNull();
     expect(row.querySelector("[inert]")).toBeNull();
   });
 
@@ -65,7 +65,7 @@ describe("MessageRow", () => {
     expect(view.container.querySelector("[data-markdown-stream-word]")).toBeNull();
   });
 
-  it("renders user attachments inside the bottom of the message bubble", () => {
+  it("renders user attachments at the top of the message bubble", () => {
     const message: PalotMessage = {
       id: "user-message",
       type: "user",
@@ -91,9 +91,9 @@ describe("MessageRow", () => {
     render(<MessageRow message={message} />);
 
     const bubble = screen.getByText("Review this file").closest('[data-slot="bubble-content"]');
-    const attachments = screen.getByLabelText("Attachments");
+    const attachments = screen.getByLabelText("附件");
     expect(bubble?.contains(attachments)).toBe(true);
-    expect(bubble?.lastElementChild).toBe(attachments);
+    expect(bubble?.firstElementChild).toBe(attachments);
     expect(attachments.classList.contains("justify-start")).toBe(true);
     expect(attachments.querySelector('[data-slot="attachment"]')?.getAttribute("data-size")).toBe(
       "sm",
@@ -128,16 +128,16 @@ describe("MessageRow", () => {
 
     render(<MessageRow message={message} />);
 
-    const row = screen.getAllByRole("article", { name: "user message" }).at(-1)!;
-    const readMore = within(row).getByRole("button", { name: "Read more" });
-    const attachments = within(row).getByLabelText("Attachments");
+    const row = screen.getAllByRole("article", { name: "用户消息" }).at(-1)!;
+    const readMore = within(row).getByRole("button", { name: "展开更多" });
+    const attachments = within(row).getByLabelText("附件");
     expect(readMore.getAttribute("aria-expanded")).toBe("false");
-    expect(attachments.previousElementSibling?.contains(readMore)).toBe(true);
+    expect(attachments.nextElementSibling?.contains(readMore)).toBe(true);
     expect(row.querySelector("[inert]")?.getAttribute("aria-hidden")).toBe("true");
 
     fireEvent.click(readMore);
 
-    expect(screen.getByRole("button", { name: "Show less" }).getAttribute("aria-expanded")).toBe(
+    expect(screen.getByRole("button", { name: "收起" }).getAttribute("aria-expanded")).toBe(
       "true",
     );
     expect(row.querySelector("[inert]")).toBeNull();

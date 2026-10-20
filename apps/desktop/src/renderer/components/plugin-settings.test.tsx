@@ -82,15 +82,15 @@ describe("PluginSettings", () => {
     renderPlugins();
     expect(screen.getByText("@acme/tools@beta")).toBeTruthy();
     expect(screen.getByText("1.0.0")).toBeTruthy();
-    expect(screen.getByText("Server")).toBeTruthy();
+    expect(screen.getByText("服务器")).toBeTruthy();
     expect(screen.getByText("RPC")).toBeTruthy();
-    const failed = within(screen.getByRole("group", { name: "/repo/broken.ts plugin" }));
-    expect(failed.getByText("Failed")).toBeTruthy();
-    await userEvent.setup().click(failed.getByText("Error details for /repo/broken.ts"));
+    const failed = within(screen.getByRole("group", { name: "/repo/broken.ts 插件" }));
+    expect(failed.getByText("失败")).toBeTruthy();
+    await userEvent.setup().click(failed.getByText("/repo/broken.ts 的错误详情"));
     expect(failed.getByText("Could not load plugin")).toBeTruthy();
-    await userEvent.setup().click(screen.getByRole("switch", { name: "Show built-in plugins" }));
+    await userEvent.setup().click(screen.getByRole("switch", { name: "显示内置插件" }));
     expect(screen.getByText("TUI")).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "Update" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "更新" })).toHaveLength(1);
     expect(check).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
   });
@@ -99,7 +99,7 @@ describe("PluginSettings", () => {
     const pending = Promise.withResolvers<PalotPlugin[]>();
     const check = vi.spyOn(palot, "checkPlugins").mockReturnValue(pending.promise);
     renderPlugins();
-    await userEvent.setup().click(screen.getByRole("button", { name: "Check for updates" }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "检查更新" }));
     await waitFor(() =>
       expect(check).toHaveBeenCalledWith({
         connectionID: "plugin-owner",
@@ -107,13 +107,13 @@ describe("PluginSettings", () => {
         ...location,
       }),
     );
-    expect(screen.getByRole("button", { name: "Check for updates" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "检查更新" }).hasAttribute("disabled")).toBe(
       true,
     );
-    expect(screen.getByRole("button", { name: "Update" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "更新" }).hasAttribute("disabled")).toBe(true);
     await act(async () => pending.resolve(plugins));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Update" }).hasAttribute("disabled")).toBe(false),
+      expect(screen.getByRole("button", { name: "更新" }).hasAttribute("disabled")).toBe(false),
     );
   });
 
@@ -125,7 +125,7 @@ describe("PluginSettings", () => {
     const notice = vi.spyOn(toast, "add").mockReturnValue("notice");
     const refresh = renderPlugins();
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Update" }));
+    await user.click(screen.getByRole("button", { name: "更新" }));
     expect(update).toHaveBeenCalledWith({
       connectionID: "plugin-owner",
       projectID: project.id,
@@ -138,7 +138,7 @@ describe("PluginSettings", () => {
       ),
     );
     expect(refresh).toHaveBeenCalledOnce();
-    await user.click(screen.getByRole("button", { name: "Update" }));
+    await user.click(screen.getByRole("button", { name: "更新" }));
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(2));
     expect(notice).toHaveBeenLastCalledWith({ type: "success", title: "Tools updated" });
   });
@@ -147,8 +147,8 @@ describe("PluginSettings", () => {
     renderPlugins([
       { ...plugins[0]!, source: { type: "package", target: "@acme/tools@beta", updating: true } },
     ]);
-    expect(screen.getByRole("button", { name: "Updating" }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: "Check for updates" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "正在更新" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "检查更新" }).hasAttribute("disabled")).toBe(
       true,
     );
   });

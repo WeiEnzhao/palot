@@ -347,9 +347,9 @@ describe("MarkdownContent", () => {
   it("starts rendering Mermaid diagrams without a manual activation step", () => {
     const view = render(<MarkdownContent value={"```mermaid\ngraph TD\nA --> B\n```"} />);
 
-    expect(view.queryByRole("button", { name: "Render diagram" })).toBeNull();
+    expect(view.queryByRole("button", { name: "渲染图表" })).toBeNull();
     expect(view.container.querySelector(".markdown-mermaid")).toBeNull();
-    expect(view.container.textContent).toContain("Rendering diagram…");
+    expect(view.container.textContent).toContain("正在渲染图表…");
   });
 
   it("zooms Mermaid previews with controls and trackpad pinch events", () => {
@@ -361,8 +361,8 @@ describe("MarkdownContent", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
-    expect(screen.getByRole("button", { name: "Fit diagram to window" }).textContent).toBe("125%");
+    fireEvent.click(screen.getByRole("button", { name: "放大" }));
+    expect(screen.getByRole("button", { name: "图表适应窗口" }).textContent).toBe("125%");
     const stage = document.querySelector<HTMLElement>(".markdown-mermaid-lightbox")!;
     expect(stage.style.width).toBe("125%");
     expect(stage.style.height).toBe("125%");
@@ -371,17 +371,17 @@ describe("MarkdownContent", () => {
     const pinch = pinchWheelEvent(false);
     fireEvent(stage.parentElement!, pinch);
     expect(pinch.defaultPrevented).toBe(true);
-    expect(screen.getByRole("button", { name: "Fit diagram to window" }).textContent).toBe("138%");
+    expect(screen.getByRole("button", { name: "图表适应窗口" }).textContent).toBe("138%");
 
     const secondPinch = pinchWheelEvent();
     fireEvent(stage.parentElement!, secondPinch);
     expect(secondPinch.defaultPrevented).toBe(true);
-    expect(screen.getByRole("button", { name: "Fit diagram to window" }).textContent).toBe("153%");
+    expect(screen.getByRole("button", { name: "图表适应窗口" }).textContent).toBe("153%");
 
     const pan = new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: 20 });
     fireEvent(stage.parentElement!, pan);
     expect(pan.defaultPrevented).toBe(false);
-    expect(screen.getByRole("button", { name: "Fit diagram to window" }).textContent).toBe("153%");
+    expect(screen.getByRole("button", { name: "图表适应窗口" }).textContent).toBe("153%");
   });
 
   it("removes the Mermaid pinch listener on close and reattaches it on reopen", () => {
@@ -560,12 +560,12 @@ describe("MarkdownContent", () => {
       <MarkdownContent value="![Architecture](https://example.com/diagram.png)" passiveMedia />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Open image preview: Architecture" }));
+    fireEvent.click(screen.getByRole("button", { name: "打开图片预览：Architecture" }));
 
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("Architecture")).toBeTruthy();
     expect(screen.getByText("image/png")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Close image preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭图片预览" }));
   });
 
   describe("local workspace images", () => {
@@ -624,7 +624,7 @@ describe("MarkdownContent", () => {
         "local-connection",
       );
       expect(
-        screen.getByRole("button", { name: "Open image preview: After: palette" }),
+        screen.getByRole("button", { name: "打开图片预览：After: palette" }),
       ).toBeTruthy();
     });
 
