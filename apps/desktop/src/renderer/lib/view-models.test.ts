@@ -5,6 +5,7 @@ import {
   orderProjects,
   pendingRequestViews,
   projectForSession,
+  projectName,
   selectRecentSessions,
   sessionIsAdditionalCheckout,
   visibleProjects,
@@ -487,5 +488,46 @@ describe("pendingRequestViews", () => {
     };
 
     expect(pendingRequestViews(requests)).toHaveLength(1);
+  });
+});
+
+describe("projectName", () => {
+  it("uses the basename for Windows-style canonical paths", () => {
+    const project: PalotProject = {
+      id: "win",
+      canonical: "C:\\Users\\weien\\.local\\share\\opencode\\worktree\\swift-river",
+      name: null,
+      sandboxes: [],
+      vcs: null,
+      updatedAt: 1,
+    };
+
+    expect(projectName(project)).toBe("swift-river");
+  });
+
+  it("handles mixed separators and trailing slashes", () => {
+    const mixed: PalotProject = {
+      id: "win2",
+      canonical: "D:\\project\\wei-sd/",
+      name: "",
+      sandboxes: [],
+      vcs: null,
+      updatedAt: 1,
+    };
+
+    expect(projectName(mixed)).toBe("wei-sd");
+  });
+
+  it("falls back to Project when the path has no segments", () => {
+    const empty: PalotProject = {
+      id: "empty",
+      canonical: "\\\\",
+      name: null,
+      sandboxes: [],
+      vcs: null,
+      updatedAt: 1,
+    };
+
+    expect(projectName(empty)).toBe("Project");
   });
 });

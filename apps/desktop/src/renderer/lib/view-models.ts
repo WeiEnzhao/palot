@@ -194,7 +194,11 @@ export function sessionIsAdditionalCheckout(
 
 export function projectName(project: PalotProject): string {
   if (project.id === "global" || project.canonical === "/") return "Global";
-  return project.name?.trim() || project.canonical.split("/").filter(Boolean).at(-1) || "Project";
+  return (
+    project.name?.trim() ||
+    project.canonical.split(/[\\/]/).filter(Boolean).at(-1) ||
+    "Project"
+  );
 }
 
 export function messageText(message: PalotMessage, part?: PalotMessageContent): string {
