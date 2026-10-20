@@ -341,7 +341,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
     const buttonProps = {
       "aria-current": selected ? ("page" as const) : undefined,
       "aria-label": `${session.title} · ${connectionDescription(connection.profile)}`,
-      title: `${session.title ?? "Untitled task"} · ${connectionDescription(connection.profile)} · ${connected ? "Connected" : "Disconnected"}`,
+      title: `${session.title ?? "未命名任务"} · ${connectionDescription(connection.profile)} · ${connected ? "已连接" : "未连接"}`,
       onClick: openTask,
       onPointerEnter: preload,
       onFocus: preload,
@@ -434,7 +434,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled={disabled} onClick={startRename}>
-            Rename
+            重命名
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={disabled || item.running || item.attention}
@@ -442,7 +442,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
               void run(item, () => overview.archive(connection.profile.id, session.id))
             }
           >
-            Archive
+            删除
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -557,8 +557,11 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 className={sidebarFluidItemClass(
                   cn(
                     // The actions reserve their gutter only while shown, so titles
-                    // use the full row at rest.
-                    "flex min-w-0 flex-1 items-center gap-2 transition-[color,background-color,padding]",
+                    // use the full row at rest. Selection is a brightened label with
+                    // a hairline accent at the row's left edge, no grey block.
+                    "flex min-w-0 flex-1 items-center gap-2 transition-[color,background-color,padding] relative",
+                    "data-active:font-medium data-active:bg-transparent data-active:hover:bg-transparent",
+                    "data-active:before:absolute data-active:before:-left-1.5 data-active:before:inset-y-1 data-active:before:w-0.5 data-active:before:rounded-full data-active:before:bg-info",
                     quickAction
                       ? "group-hover/owned-row:pr-14 group-has-[:focus-visible]/owned-row:pr-14 group-has-[[data-popup-open]]/owned-row:pr-14"
                       : "group-hover/owned-row:pr-8 group-has-[:focus-visible]/owned-row:pr-8 group-has-[[data-popup-open]]/owned-row:pr-8",
@@ -572,7 +575,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 </span>
                 {item.attention || item.failed || item.running ? (
                   <span
-                    className="size-1.5 shrink-0 rounded-full bg-info"
+                    className="size-1 shrink-0 opacity-80 rounded-full bg-info"
                     role="img"
                     aria-label={
                       item.attention ? "需要关注" : item.running ? "工作中" : "已失败"
@@ -603,7 +606,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           </ContextMenuItem>
         ) : (
           <ContextMenuItem disabled={disabled || !item.canSettle} onClick={settle}>
-            Settle
+            归档
           </ContextMenuItem>
         )}
         {item.section === "snoozed" ? (
@@ -794,8 +797,8 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   <div className="flex items-center gap-1">
                     <span>
                       {c.attentionState === "syncing"
-                        ? "Syncing requests…"
-                        : "Request status unavailable"}
+                        ? "正在同步请求…"
+                        : "请求状态不可用"}
                     </span>
                   </div>
                 </div>
@@ -818,6 +821,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   return (
                     <Collapsible
                       key={section}
+                      className="border-t border-sidebar-border/40 pt-2.5 first:border-0 first:pt-0 [&:not(:first-child)]:mt-3"
                       open={shelves[section]}
                       onOpenChange={(open) => setShelves((s) => ({ ...s, [section]: open }))}
                     >
@@ -865,8 +869,8 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                   <div
                                     className={
                                       section === "pinned" || section === "inbox"
-                                        ? "space-y-0.5 pl-4"
-                                        : "space-y-px pb-2 pl-4"
+                                        ? "space-y-0.5 pl-6 pt-1"
+                                        : "space-y-px pb-2 pl-6 pt-1"
                                     }
                                   >
                                     {elements}
@@ -957,7 +961,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                         />
                         <CollapsibleContent>
                           {open ? (
-                            <SidebarFluidList className="pl-4">{boundedRows(rows)}</SidebarFluidList>
+                            <SidebarFluidList className="pl-6 pt-1">{boundedRows(rows)}</SidebarFluidList>
                           ) : null}
                         </CollapsibleContent>
                       </Collapsible>

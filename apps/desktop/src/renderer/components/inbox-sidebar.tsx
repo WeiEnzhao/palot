@@ -79,7 +79,7 @@ import {
   type InboxSessionView,
 } from "../lib/session-inbox";
 import { usePointerFreeze, useStableOrder } from "../hooks/use-stable-order";
-import { formatRelativeTime, orderProjects, sessionActivityAt } from "../lib/view-models";
+import { orderProjects } from "../lib/view-models";
 import type { OpenCodeVcsInfo } from "../services/opencode-vcs";
 import { listRootSessionInfo } from "../services/opencode-catalog";
 import { mapSession } from "../services/opencode-mappers";
@@ -701,7 +701,7 @@ export function InboxToolbar({
                 }
               />
               <InboxViewToggle
-                label="显示已暂停"
+                label="显示已延后"
                 checked={viewPreferences.showSnoozed}
                 onCheckedChange={(showSnoozed) =>
                   onViewPreferencesChange((current) => ({ ...current, showSnoozed }))
@@ -1276,9 +1276,10 @@ export function InboxCompactRowSurface({
         {...buttonProps}
         type="button"
         className={cn(
-          "flex w-full cursor-grab items-center text-left active:cursor-grabbing",
+          "relative flex w-full cursor-grab items-center text-left active:cursor-grabbing",
           sidebarFluidItemClass(),
-          selected && "bg-(--palot-sidebar-selected) hover:bg-(--palot-sidebar-selected)",
+          selected &&
+            "font-medium text-sidebar-foreground before:absolute before:-left-1.5 before:inset-y-0.5 before:w-0.5 before:rounded-full before:bg-info",
           buttonProps.className,
         )}
       >
@@ -1288,22 +1289,18 @@ export function InboxCompactRowSurface({
         </span>
         {pullRequest}
         {connectionBadge}
-        <span className="flex min-w-0 max-w-28 shrink-0 items-center gap-1 text-right text-micro text-muted-foreground transition-opacity group-hover/compact:opacity-0 group-has-[:focus-visible]/compact:opacity-0">
-          {item.section === "snoozed" && item.snoozedUntil ? (
-            <>
-              <InboxStateGlyph state={visualState} />
-              {formatSnoozeWakeTime(item.snoozedUntil)}
-            </>
-          ) : (
-            <>
-              <span className="truncate">{item.projectName}</span>
-              <span className="flex shrink-0 items-center gap-1">
-                · <InboxStateGlyph state={visualState} />
-                {formatRelativeTime(sessionActivityAt(item.session))}
-              </span>
-            </>
-          )}
-        </span>
+        {item.section === "snoozed" && item.snoozedUntil ? (
+          <span className="flex min-w-0 max-w-28 shrink-0 items-center gap-1 text-right text-micro text-muted-foreground transition-opacity group-hover/compact:opacity-0 group-has-[:focus-visible]/compact:opacity-0">
+            <InboxStateGlyph state={visualState} />
+            {formatSnoozeWakeTime(item.snoozedUntil)}
+          </span>
+        ) : visualState && visualState !== "unread" ? (
+          // Rows read as pure titles at rest; only live states (attention, failed,
+          // running) still surface their glyph.
+          <span className="absolute top-1/2 right-1.5 -translate-y-1/2 transition-opacity group-hover/compact:opacity-0">
+            <InboxStateGlyph state={visualState} />
+          </span>
+        ) : null}
       </button>
       {children}
     </div>

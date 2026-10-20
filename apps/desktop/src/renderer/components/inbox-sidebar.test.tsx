@@ -347,7 +347,7 @@ describe("InboxSidebarContent", () => {
     expect(card).toBeTruthy();
     fireEvent.click(button);
     await vi.waitFor(() =>
-      expect(within(card as HTMLElement).queryByLabelText("Unread task activity")).toBeNull(),
+      expect(within(card as HTMLElement).queryByLabelText("未读任务动态")).toBeNull(),
     );
   });
 
@@ -455,20 +455,20 @@ describe("InboxSidebarContent", () => {
     const runningCard = screen
       .getByRole("button", { name: /^Open Inbox task,/ })
       .closest<HTMLElement>("[data-inbox-card]")!;
-    expect(within(pinnedCard).getByLabelText("Unread task activity")).toBeTruthy();
+    expect(within(pinnedCard).getByLabelText("未读任务动态")).toBeTruthy();
     expect(within(pinnedCard).getByText("Palot")).toBeTruthy();
     expect(within(pinnedCard).getByText("pinned").closest("[data-inbox-location]")).not.toBeNull();
     expect(
       within(pinnedCard).getByText("Pinned task").parentElement?.querySelector("[aria-label]"),
     ).toBeNull();
-    expect(within(runningCard).queryByLabelText("Unread task activity")).toBeNull();
+    expect(within(runningCard).queryByLabelText("未读任务动态")).toBeNull();
     expect(within(runningCard).getByTitle(/Working for/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "添加项目文件夹" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "收件箱视图设置" }));
     expect(await screen.findByText("排序")).toBeTruthy();
     expect(screen.getByRole("combobox").textContent).toContain("最新");
     expect(screen.getByRole("switch", { name: "未读优先" })).toBeTruthy();
-    expect(screen.getByRole("switch", { name: "显示已暂停" })).toBeTruthy();
+    expect(screen.getByRole("switch", { name: "显示已延后" })).toBeTruthy();
     expect(screen.getByRole("switch", { name: "显示已结算" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     store.set(inboxViewPreferencesAtom, {
@@ -502,11 +502,11 @@ describe("InboxSidebarContent", () => {
     expect(screen.getByRole("menuitem", { name: "展开所有分区" })).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: "折叠所有分区" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
-    fireEvent.click(screen.getByRole("button", { name: /^已置顶 1$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^置顶 1$/ }));
     expect(screen.queryByRole("button", { name: /^Open Pinned task,/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /^收件箱 1$/ }));
     expect(screen.queryByRole("button", { name: /^Open Inbox task,/ })).toBeNull();
-    expect(screen.getByRole("button", { name: /已暂停/ }).textContent).toContain("1");
+    expect(screen.getByRole("button", { name: /已延后/ }).textContent).toContain("1");
     expect(screen.getByRole("button", { name: /已结算/ }).textContent).toContain("1");
     expect(screen.queryByText("Snoozed task")).toBeNull();
     expect(screen.queryByText("Settled task")).toBeNull();
@@ -638,7 +638,7 @@ describe("InboxSidebarContent", () => {
       queryClient,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /^已暂停 1$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^已延后 1$/ }));
     fireEvent.contextMenu(screen.getByRole("button", { name: /Snoozed task/ }));
 
     expect(await screen.findByRole("menuitem", { name: "置顶" })).toBeTruthy();
@@ -653,8 +653,8 @@ describe("InboxSidebarContent", () => {
         screen
           .getByRole("button", { name: /Settled task/ })
           .closest<HTMLElement>("[data-inbox-compact-row]")!,
-      ).getByLabelText("Unread task activity"),
-    ).toBeTruthy();
+      ).queryByLabelText("未读任务动态"),
+    ).toBeNull();
     fireEvent.contextMenu(screen.getByRole("button", { name: /Settled task/ }));
 
     expect(await screen.findByRole("menuitem", { name: "置顶" })).toBeTruthy();
@@ -662,7 +662,7 @@ describe("InboxSidebarContent", () => {
     expect(screen.getByRole("menuitem", { name: "移到工作树" })).toBeTruthy();
   });
   it.each([
-    { shelf: "已暂停", title: "Snoozed task", action: "唤醒任务", type: "wake", undo: "snooze" },
+    { shelf: "已延后", title: "Snoozed task", action: "唤醒任务", type: "wake", undo: "snooze" },
     {
       shelf: "已结算",
       title: "Settled task",

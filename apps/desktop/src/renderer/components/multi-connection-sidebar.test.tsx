@@ -154,7 +154,7 @@ describe("MultiConnectionSidebar", () => {
       if (state === "ready") {
         expect(await screen.findByText("收件箱已清空")).toBeTruthy();
       } else {
-        const label = state === "syncing" ? "Syncing requests…" : "Request status unavailable";
+        const label = state === "syncing" ? "正在同步请求…" : "请求状态不可用";
         expect((await screen.findAllByText(label)).length).toBeGreaterThan(0);
         expect(screen.queryByText("收件箱已清空")).toBeNull();
       }
@@ -517,7 +517,7 @@ describe("MultiConnectionSidebar", () => {
     });
     expect(document.activeElement).toBe(actions);
     await userEvent.keyboard("{Enter}");
-    expect(await screen.findByRole("menuitem", { name: "Rename" })).toBeTruthy();
+    expect(await screen.findByRole("menuitem", { name: "重命名" })).toBeTruthy();
     await userEvent.keyboard("{Escape}");
     await userEvent.click(settle);
     expect(overview.dispatch).toHaveBeenCalledWith(
@@ -628,7 +628,7 @@ describe("MultiConnectionSidebar", () => {
     renderSidebar();
     const actionName = "Actions for Same task on Same server · beta.example";
     await userEvent.click(screen.getByRole("button", { name: actionName }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "重命名" }));
     fireEvent.change(screen.getByRole("textbox", { name: "任务标题" }), {
       target: { value: "Renamed remotely" },
     });

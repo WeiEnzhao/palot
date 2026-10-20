@@ -1826,7 +1826,7 @@ function ComposerView({
       ref={composerShellRef}
       data-palot-composer-mode={mode}
       className={cn(
-        "palot-composer-shell relative mx-auto w-[calc(100%-32px)] shrink-0 pb-2 max-[720px]:w-[calc(100%-20px)]",
+        "palot-composer-shell relative mx-auto w-[calc(100%-32px)] shrink-0 pb-3 max-[720px]:w-[calc(100%-20px)]",
         contextBar ? "max-w-[860px]" : "max-w-[760px]",
       )}
     >

@@ -184,7 +184,7 @@ export function InboxStateGlyph({ state }: { state: InboxSessionState }) {
         ? "Task failed"
         : state === "running"
           ? "Task is running"
-          : "Unread task activity";
+          : "未读任务动态";
   return (
     <span
       className={cn(

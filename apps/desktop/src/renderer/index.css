@@ -928,13 +928,16 @@
 }
 
 .palot-composer-frame {
-  border-radius: var(--surface-radius);
+  border-radius: 1rem;
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 6%),
+    0 6px 16px oklch(0 0 0 / 6%);
 }
 
 .palot-composer {
   --palot-composer-border: color-mix(in oklch, var(--foreground) 13%, transparent);
 
-  border-radius: var(--surface-radius);
+  border-radius: 1rem;
   background-color: transparent !important;
   border-color: var(--palot-composer-border);
   transition: border-color 180ms ease;
@@ -1275,7 +1278,8 @@
   .typeset-chat {
     --typeset-size: var(--text-sm);
     --typeset-leading: 1.55;
-    --typeset-flow: 0.85em;
+    /* Wider paragraph flow for chat, closer to Codex's airy rhythm. */
+    --typeset-flow: 1.05em;
   }
 
   .markdown {
@@ -1368,7 +1372,7 @@
   }
 
   .markdown :not(pre) > code {
-    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.88em];
+    @apply rounded border border-foreground/6 bg-muted px-1.5 py-0.5 font-mono text-[0.9em];
   }
 
   .markdown pre {
