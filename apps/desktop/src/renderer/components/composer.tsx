@@ -2470,20 +2470,13 @@ function ComposerView({
               </div>
             </InputGroupAddon>
           )}
+          {contextBar ? (
+            <div className="palot-composer-context relative isolate flex min-h-10 flex-wrap items-center gap-x-2 border-t border-foreground/10 px-4 py-1.5">
+              <SurfaceBackdrop tone="composer" />
+              {contextBar}
+            </div>
+          ) : null}
         </InputGroup>
-        {contextBar ? (
-          <div
-            className={cn(
-              "palot-composer-context relative isolate flex items-center",
-              contextBarMode === "compact"
-                ? "palot-composer-context-compact z-0 mx-[16px] -mt-4 min-h-12 items-end overflow-hidden rounded-b-[16px] border-0 px-3 pt-4 pb-1"
-                : "min-h-12 border-t border-foreground/10 px-4 py-2",
-            )}
-          >
-            <SurfaceBackdrop tone="composer" />
-            {contextBar}
-          </div>
-        ) : null}
       </div>
     </div>
   );

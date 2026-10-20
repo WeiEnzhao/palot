@@ -970,18 +970,6 @@
   container-type: inline-size;
 }
 
-.palot-composer-context-compact::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  pointer-events: none;
-  border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
-  border-radius: 0 0 16px 16px;
-  mask-image: linear-gradient(to bottom, transparent 0 1rem, black 1rem);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0 1rem, black 1rem);
-  content: "";
-}
-
 @container composer (max-width: 34rem) {
   .palot-composer [data-palot-model-detail-label] {
     display: none;
