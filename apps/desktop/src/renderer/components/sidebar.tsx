@@ -627,7 +627,7 @@ export function ProjectSidebarContent({
                                             type="button"
                                             className={cn(
                                               sidebarSectionTriggerVariants(),
-                                              "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid text-[15px] font-medium text-sidebar-foreground/85",
+                                              "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid text-base font-semibold text-sidebar-foreground",
                                             )}
                                           />
                                         }
@@ -635,7 +635,7 @@ export function ProjectSidebarContent({
                                         <span className="flex min-w-0 items-center gap-2 text-left">
                                           <Folder
                                             aria-hidden="true"
-                                            className="size-3.5 shrink-0 text-sidebar-foreground/60"
+                                            className="size-4 shrink-0 text-sidebar-foreground/60"
                                           />
                                           <span className="min-w-0 truncate">{displayName}</span>
                                         </span>

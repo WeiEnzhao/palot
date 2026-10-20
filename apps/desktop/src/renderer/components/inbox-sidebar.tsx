@@ -425,7 +425,7 @@ export function InboxSidebarContent() {
               </div>
             ) : null}
             <RichSection
-              title="已置顶"
+              title="置顶"
               open={shelves.pinned}
               onOpenChange={(value) => setShelves((current) => ({ ...current, pinned: value }))}
               items={filtered.pinned}
@@ -468,7 +468,7 @@ export function InboxSidebarContent() {
             />
             {viewPreferences.showSnoozed && filtered.snoozed.length > 0 ? (
               <CompactShelf
-                title="已暂停"
+                title="已延后"
                 open={shelves.snoozed}
                 onOpenChange={(value) => setShelves((current) => ({ ...current, snoozed: value }))}
                 items={filtered.snoozed}

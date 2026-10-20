@@ -152,11 +152,11 @@ describe("MultiConnectionSidebar", () => {
       overview.connections[1]!.attentionState = state;
       renderSidebar();
       if (state === "ready") {
-        expect(await screen.findByText("Inbox is clear")).toBeTruthy();
+        expect(await screen.findByText("收件箱已清空")).toBeTruthy();
       } else {
         const label = state === "syncing" ? "Syncing requests…" : "Request status unavailable";
         expect((await screen.findAllByText(label)).length).toBeGreaterThan(0);
-        expect(screen.queryByText("Inbox is clear")).toBeNull();
+        expect(screen.queryByText("收件箱已清空")).toBeNull();
       }
     },
   );
@@ -280,12 +280,12 @@ describe("MultiConnectionSidebar", () => {
       expect(screen.getByRole("button", { name })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /^Pinned/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /^Snoozed/ })).toBeNull();
-    expect(screen.getByRole("button", { name: "Inbox 2" }).getAttribute("aria-expanded")).toBe(
+    expect(screen.getByRole("button", { name: "收件箱 2" }).getAttribute("aria-expanded")).toBe(
       "true",
     );
     await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "折叠所有分区" }));
-    expect(screen.getByRole("button", { name: "Inbox 2" }).getAttribute("aria-expanded")).toBe(
+    expect(screen.getByRole("button", { name: "收件箱 2" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
     expect(
@@ -294,7 +294,7 @@ describe("MultiConnectionSidebar", () => {
     expect(store.get(overviewProjectSectionsAtom)).toEqual(projects);
     await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "展开所有分区" }));
-    expect(screen.getByRole("button", { name: "Inbox 2" }).getAttribute("aria-expanded")).toBe(
+    expect(screen.getByRole("button", { name: "收件箱 2" }).getAttribute("aria-expanded")).toBe(
       "true",
     );
     expect(store.get(overviewProjectSectionsAtom)).toEqual(projects);
@@ -323,7 +323,7 @@ describe("MultiConnectionSidebar", () => {
     const item = owner.inbox.inbox.pop()!;
     owner.inbox.settled.push({ ...item, section: "settled" });
     renderSidebar();
-    await userEvent.click(screen.getByRole("button", { name: "Settled 1" }));
+    await userEvent.click(screen.getByRole("button", { name: "已结算 1" }));
     const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
     expect(row.closest("[data-inbox-compact-row]")).not.toBeNull();
     expect(row.closest("[data-inbox-card]")).toBeNull();
@@ -738,7 +738,7 @@ describe("MultiConnectionSidebar", () => {
         name: /^Actions for/,
       }),
     ).toHaveLength(40);
-    fireEvent.click(screen.getByRole("button", { name: "Show more tasks" }));
+    fireEvent.click(screen.getByRole("button", { name: "显示更多任务" }));
     expect(
       screen.getAllByRole("button", {
         name: /^Actions for/,

@@ -86,6 +86,12 @@ type Command = SessionTriageCommand extends infer C
     : never
   : never;
 const sections: InboxSection[] = ["pinned", "inbox", "snoozed", "settled"];
+const SECTION_LABELS: Record<InboxSection, string> = {
+  pinned: "置顶",
+  inbox: "收件箱",
+  snoozed: "已延后",
+  settled: "已结算",
+};
 const pageSize = 40;
 const rowKey = (item: OwnedItem) => JSON.stringify([item.connection.profile.id, item.session.id]);
 const sectionRowKey = (item: OwnedItem) => `${item.section}:${rowKey(item)}`;
@@ -689,7 +695,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="max-w-sm">
               <DropdownMenuItem onClick={() => overview.setVisibleProfileIDs(null)}>
-                All servers
+                全部服务器
               </DropdownMenuItem>
               {included.map((c) => (
                 <DropdownMenuCheckboxItem
@@ -816,7 +822,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                       onOpenChange={(open) => setShelves((s) => ({ ...s, [section]: open }))}
                     >
                       <SectionTrigger
-                        title={section[0]!.toUpperCase() + section.slice(1)}
+                        title={SECTION_LABELS[section]}
                         count={rows.length}
                         open={shelves[section]}
                         action={
@@ -842,11 +848,11 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                               {boundedInboxGroups(rows).map(({ group, badge, rows: elements }) => (
                                 <Fragment key={group.key}>
                                   <div
-                                    className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-[15px] font-medium text-sidebar-foreground/85"
+                                    className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-base font-semibold text-sidebar-foreground"
                                   >
                                     <Folder
                                       aria-hidden="true"
-                                      className="size-3.5 shrink-0 text-sidebar-foreground/60"
+                                      className="size-4 shrink-0 text-sidebar-foreground/60"
                                     />
                                     <span className="truncate">{group.label}</span>
                                     <span className="ml-auto flex shrink-0 items-center gap-1.5">
@@ -856,7 +862,15 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                       </span>
                                     </span>
                                   </div>
-                                  {elements}
+                                  <div
+                                    className={
+                                      section === "pinned" || section === "inbox"
+                                        ? "space-y-0.5 pl-4"
+                                        : "space-y-px pb-2 pl-4"
+                                    }
+                                  >
+                                    {elements}
+                                  </div>
                                 </Fragment>
                               ))}
                             </SidebarFluidList>
@@ -865,12 +879,12 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                               {visible.some(
                                 (c) => !c.runtime?.connected || c.attentionState === "error",
                               )
-                                ? "Request status unavailable"
+                                ? "请求状态不可用"
                                 : visible.some((c) => c.attentionState !== "ready")
-                                  ? "Checking for requests…"
+                                  ? "正在检查请求…"
                                   : visible.some((c) => c.hasMore)
-                                    ? "No loaded tasks are in the inbox"
-                                    : "Inbox is clear"}
+                                    ? "已加载的任务不在收件箱中"
+                                    : "收件箱已清空"}
                             </div>
                           ) : null
                         ) : null}
@@ -906,11 +920,11 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                           count={rows.length}
                           open={open}
                           hideCount
-                          className="text-[15px] font-medium text-sidebar-foreground/85"
+                          className="text-base font-semibold text-sidebar-foreground"
                           icon={
                             <Folder
                               aria-hidden="true"
-                              className="size-3.5 shrink-0 text-sidebar-foreground/60"
+                              className="size-4 shrink-0 text-sidebar-foreground/60"
                             />
                           }
                           label={`${projectName(project)} ${rows.length} · ${connectionDescription(connection.profile)}`}
@@ -942,7 +956,9 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                           }
                         />
                         <CollapsibleContent>
-                          {open ? <SidebarFluidList>{boundedRows(rows)}</SidebarFluidList> : null}
+                          {open ? (
+                            <SidebarFluidList className="pl-4">{boundedRows(rows)}</SidebarFluidList>
+                          ) : null}
                         </CollapsibleContent>
                       </Collapsible>
                     );
@@ -950,7 +966,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 )}
             {items.length > limit ? (
               <Button variant="ghost" size="sm" onClick={() => setLimit((n) => n + pageSize)}>
-                Show more tasks
+                显示更多任务
               </Button>
             ) : null}
           </div>
