@@ -2037,16 +2037,30 @@ function ComposerView({
                 }
               }}
               onDrop={(event) => {
-                const hasImages = Array.from(event.dataTransfer.items).some(
-                  (item) => item.kind === "file" && item.type.startsWith("image/"),
-                );
-                if (!hasImages) return;
+                const entries = Array.from(event.dataTransfer.items).flatMap((item) => {
+                  if (item.kind !== "file") return [];
+                  const file = item.getAsFile();
+                  return file && file.type.startsWith("image/") ? [file] : [];
+                });
+                if (entries.length === 0) return;
                 event.preventDefault();
                 if (!localAttachments) {
                   setAttachmentErrors(["远程 OpenCode 服务器不支持图片附件。"]);
                   return;
                 }
-                void pasteImages(event.dataTransfer.items);
+                const connectionID = runtime?.connectionID;
+                const paths = entries
+                  .map((file) => palot.pathForFile(file))
+                  .filter((value): value is string => typeof value === "string");
+                // Real files (Finder etc.) ride the native picker pipeline, keeping the
+                // original filename; web/remote sources fall back to clipboard staging.
+                if (paths.length === entries.length) {
+                  void attachFiles((requestID) =>
+                    palot.attachDroppedFiles(paths, connectionID, requestID),
+                  );
+                } else {
+                  void pasteImages(event.dataTransfer.items);
+                }
               }}
               aria-label={mode === "shell" ? "Shell 命令" : "向 Palot 发送消息"}
               aria-controls={

@@ -1850,6 +1850,21 @@ export const palot = {
         ) ?? Promise.resolve({ files: [], errors: [] }))
       : Promise.resolve({ files: [], errors: [] }),
 
+  attachDroppedFiles: async (
+    paths: string[],
+    connectionID?: string,
+    requestID?: string,
+  ) =>
+    apiAvailable()
+      ? (getApi()?.attachDroppedFiles(
+          paths,
+          connectionID ?? (await palot.runtimeStatus()).connectionID,
+          requestID,
+        ) ?? Promise.resolve({ files: [], errors: [] }))
+      : Promise.resolve({ files: [], errors: [] }),
+
+  pathForFile: (file: File) => getApi()?.pathForFile(file) ?? null,
+
   cancelAttachmentUpload: async (requestID: string) =>
     apiAvailable() ? getApi()?.cancelAttachmentUpload(requestID) : undefined,
 

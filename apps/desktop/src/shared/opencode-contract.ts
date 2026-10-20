@@ -1244,6 +1244,7 @@ export const IPC_CHANNELS = {
   pickSessionImport: "palot:system:pick-session-import",
   writeClipboardText: "palot:system:write-clipboard-text",
   attachClipboardImages: "palot:system:attach-clipboard-images",
+  attachDroppedFiles: "palot:system:attach-dropped-files",
   attachmentProgress: "palot:system:attachment-progress",
   cancelAttachmentUpload: "palot:system:cancel-attachment-upload",
   attachmentPreview: "palot:system:attachment-preview",
@@ -1393,6 +1394,14 @@ export interface PalotApi {
     connectionID?: string,
     requestID?: string,
   ): Promise<PalotFilePickerResult>;
+  /** Attaches real files dropped in the renderer, reusing the native picker pipeline. */
+  attachDroppedFiles(
+    paths: string[],
+    connectionID?: string,
+    requestID?: string,
+  ): Promise<PalotFilePickerResult>;
+  /** Resolves the absolute path of a dropped File, or null when it has no backing file. */
+  pathForFile(file: File): string | null;
   cancelAttachmentUpload(requestID: string): Promise<void>;
   onAttachmentProgress(listener: (progress: PalotAttachmentProgress) => void): () => void;
   attachmentPreview(grant: string, connectionID?: string): Promise<PalotAttachmentPreview | null>;

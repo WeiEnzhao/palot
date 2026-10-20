@@ -1214,6 +1214,19 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
       return images.length ? stageClipboardImages(images) : { files: [], errors: [] };
     });
   });
+  registerFocusedNative(IPC_CHANNELS.attachDroppedFiles, async (event, input: unknown) => {
+    requireRuntimeCapability("localFileAttachments");
+    return withAttachmentRequest(event, input, async () => {
+      const values = (input as { paths?: unknown }).paths;
+      if (!Array.isArray(values) || values.some((value) => typeof value !== "string")) {
+        throw new Error("Dropped file paths are invalid.");
+      }
+      const paths = values
+        .filter((value): value is string => typeof value === "string")
+        .slice(0, 50);
+      return paths.length ? inspectPickedFiles(paths) : { files: [], errors: [] };
+    });
+  });
   registerFocusedNative(IPC_CHANNELS.attachmentPreview, async (_event, input: unknown) => {
     requireRuntimeCapability("localFileAttachments");
     if (typeof input !== "string") throw new Error("Attachment URL is invalid.");

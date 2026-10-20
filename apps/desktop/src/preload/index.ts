@@ -1,6 +1,6 @@
 /** Narrow, typed bridge from the sandboxed renderer to Electron main. */
 
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 import type { PalotApi, PalotEventBatch, PalotOpenTarget } from "../shared/opencode-contract";
 import type {
   AutomationChangedEvent,
@@ -41,6 +41,14 @@ const api: PalotApi = {
   reducedTransparency: process.argv.includes(REDUCED_TRANSPARENCY_ARGUMENT),
   chromeTier: initialChromeTier(),
   windowManagerOwnsClose: process.argv.includes(WINDOW_MANAGER_OWNS_CLOSE_ARGUMENT),
+  pathForFile: (file: File): string | null => {
+    try {
+      const value = webUtils.getPathForFile(file);
+      return typeof value === "string" && value.length > 0 ? value : null;
+    } catch {
+      return null;
+    }
+  },
   browserRegister: (input) => ipcRenderer.invoke(IPC_CHANNELS.browserRegister, input),
   browserLayout: (input) => ipcRenderer.invoke(IPC_CHANNELS.browserLayout, input),
   browserCommand: (bindingID, command, pane) =>
@@ -187,6 +195,8 @@ const api: PalotApi = {
   writeClipboardText: (value) => ipcRenderer.invoke(IPC_CHANNELS.writeClipboardText, value),
   attachClipboardImages: (images, connectionID, requestID) =>
     ipcRenderer.invoke(IPC_CHANNELS.attachClipboardImages, { images, requestID }, connectionID),
+  attachDroppedFiles: (paths, connectionID, requestID) =>
+    ipcRenderer.invoke(IPC_CHANNELS.attachDroppedFiles, { paths, requestID }, connectionID),
   cancelAttachmentUpload: (requestID) =>
     ipcRenderer.invoke(IPC_CHANNELS.cancelAttachmentUpload, requestID),
   onAttachmentProgress: (listener) => {
