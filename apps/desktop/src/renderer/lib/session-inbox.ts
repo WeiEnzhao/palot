@@ -140,6 +140,33 @@ export function groupInboxSections<T extends InboxSessionView>(
   return result;
 }
 
+export interface InboxProjectGroup<T> {
+  key: string;
+  label: string;
+  items: T[];
+}
+
+/** Sub-groups an ordered section list by project (or project-less name), preserving both orders. */
+export function groupInboxByProject<T extends InboxSessionView>(
+  items: readonly T[],
+  scopeOf: (item: T) => string,
+): Array<InboxProjectGroup<T>> {
+  const groups: Array<InboxProjectGroup<T>> = [];
+  const byKey = new Map<string, InboxProjectGroup<T>>();
+  for (const item of items) {
+    const label = item.project ? projectName(item.project) : item.projectName;
+    const key = `${scopeOf(item)}\u0000${item.project?.id ?? label}`;
+    let group = byKey.get(key);
+    if (!group) {
+      group = { key, label, items: [] };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    group.items.push(item);
+  }
+  return groups;
+}
+
 function comparePinned(left: InboxSessionView, right: InboxSessionView): number {
   return (
     (right.pinnedAt ?? 0) - (left.pinnedAt ?? 0) || left.session.id.localeCompare(right.session.id)

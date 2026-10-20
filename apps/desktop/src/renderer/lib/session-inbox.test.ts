@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { PalotSession, SessionRequestSnapshot, SessionTriageSnapshot } from "../../shared";
+import type { PalotProject, PalotSession, SessionRequestSnapshot, SessionTriageSnapshot } from "../../shared";
 import {
+  groupInboxByProject,
   inboxSessionState,
   orderInboxSection,
   orderInboxSessions,
   projectSessionInbox,
+  type InboxSessionView,
 } from "./session-inbox";
 
 describe("inboxSessionState", () => {
@@ -574,5 +576,68 @@ describe("stable inbox ordering", () => {
         "wake-late",
       ]);
     }
+  });
+});
+
+describe("groupInboxByProject", () => {
+  function inboxView(
+    id: string,
+    project: PalotProject | null,
+    projectName: string,
+  ): InboxSessionView {
+    return {
+      session: { ...root, id },
+      project,
+      projectName,
+      section: "inbox",
+      attention: false,
+      attentionCount: 0,
+      running: false,
+      runningSince: null,
+      failed: false,
+      canSettle: false,
+      pinnedAt: null,
+      snoozedUntil: null,
+      activityThrough: { updatedAt: 1, sessionID: id },
+    };
+  }
+
+  const first: PalotProject = { id: "p1", canonical: "/one", name: "One", sandboxes: [], vcs: null, updatedAt: 1 };
+  const second: PalotProject = { id: "p2", canonical: "/two", name: "Two", sandboxes: [], vcs: null, updatedAt: 1 };
+
+  it("groups consecutive rows by project while keeping first-appearance order", () => {
+    const groups = groupInboxByProject(
+      [
+        inboxView("a", first, "One"),
+        inboxView("b", second, "Two"),
+        inboxView("c", first, "One"),
+      ],
+      () => "mac",
+    );
+
+    expect(groups.map((group) => [group.label, group.items.map((item) => item.session.id)])).toEqual([
+      ["One", ["a", "c"]],
+      ["Two", ["b"]],
+    ]);
+  });
+
+  it("does not merge rows from different scopes that share one project", () => {
+    const groups = groupInboxByProject(
+      [inboxView("a", first, "One"), inboxView("b", first, "One")],
+      (view) => view.session.projectID ?? "",
+    );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]!.items.map((item) => item.session.id)).toEqual(["a", "b"]);
+  });
+
+  it("falls back to the project name when no project record exists", () => {
+    const groups = groupInboxByProject(
+      [inboxView("a", null, "C:/Users/weien/project"), inboxView("b", null, "C:/Users/weien/project")],
+      () => "mac",
+    );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]!.label).toBe("C:/Users/weien/project");
   });
 });

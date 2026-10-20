@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState, type ReactElement, type ReactNode } from "react";
+import { Fragment, useEffect, useEffectEvent, useState, type ReactElement, type ReactNode } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
 import { Check, Ellipsis, PinOff, Plus, Server, Undo2 } from "lucide-react";
@@ -16,9 +16,11 @@ import { usePalotNavigation } from "../hooks/use-navigation";
 import { useSessionWindowDrag } from "../hooks/use-session-window-drag";
 import { useOwnedVcsInfoMap, ownedVcsLocationKey } from "../hooks/use-vcs-info";
 import {
+  groupInboxByProject,
   groupInboxSections,
   orderInboxSection,
   orderInboxSessions,
+  type InboxProjectGroup,
   type InboxSection,
   type InboxSessionView,
 } from "../lib/session-inbox";
@@ -601,6 +603,15 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
     remaining -= rows.length;
     return rows.map(renderRow);
   };
+  const boundedInboxGroups = (list: OwnedItem[]) => {
+    const chunks: Array<{ group: InboxProjectGroup<OwnedItem>; rows: ReactElement[] }> = [];
+    for (const group of groupInboxByProject(list, (row) => row.connection.profile.id)) {
+      const take = group.items.slice(0, remaining);
+      remaining -= take.length;
+      if (take.length) chunks.push({ group, rows: take.map(renderRow) });
+    }
+    return chunks;
+  };
 
   return (
     <>
@@ -801,7 +812,19 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                   : "space-y-px pb-2"
                               }
                             >
-                              {boundedRows(rows)}
+                              {boundedInboxGroups(rows).map(({ group, rows: elements }) => (
+                                <Fragment key={group.key}>
+                                  <div
+                                    className="flex h-6 min-w-0 items-center gap-2 px-1.5 pb-0.5 pt-1.5 text-micro font-semibold text-sidebar-secondary"
+                                  >
+                                    <span className="truncate">{group.label}</span>
+                                    <span className="ml-auto shrink-0 tabular-nums opacity-70">
+                                      {group.items.length}
+                                    </span>
+                                  </div>
+                                  {elements}
+                                </Fragment>
+                              ))}
                             </SidebarFluidList>
                           ) : section === "inbox" ? (
                             <div className="px-2.5 py-4 text-xs text-muted-foreground">
