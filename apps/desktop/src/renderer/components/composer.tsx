@@ -1737,14 +1737,14 @@ function ComposerView({
     await attachFiles((requestID) => palot.pickFiles(connectionID, requestID));
   }
 
-  async function pasteImages(items: DataTransferItemList) {
+  async function pasteImages(items: DataTransferItemList | FileList) {
     const connectionID = runtime?.connectionID;
-    const images = Array.from(items)
-      .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
-      .flatMap((item) => {
-        const file = item.getAsFile();
-        return file ? [file] : [];
-      });
+    const images = Array.from(items as ArrayLike<DataTransferItem | File>).flatMap((entry) => {
+      if (entry instanceof File) return entry.type.startsWith("image/") ? [entry] : [];
+      if (entry.kind !== "file" || !entry.type.startsWith("image/")) return [];
+      const file = entry.getAsFile();
+      return file ? [file] : [];
+    });
     await attachFiles(async (requestID, isCurrent) => {
       const prepared = await Promise.all(
         images.map(async (image) => ({ mime: image.type, data: await image.arrayBuffer() })),
@@ -1808,15 +1808,15 @@ function ComposerView({
     workbench.openTab({ kind: "context", location: session.location }, { pane: "right" });
   }, [session.location, workbench]);
   const compactDisabledReason = !runtime?.connected
-    ? "Connect to OpenCode to compact."
+    ? "先连接 OpenCode 服务器才能压缩。"
     : compacting
-      ? "Compaction is already running."
+      ? "压缩已经在进行中。"
       : isWorking
-        ? "Wait for the current turn to finish."
+        ? "等当前回复结束后再试。"
         : sending
-          ? "Wait for the message to send."
+          ? "等消息发送完成。"
           : !context
-            ? "Nothing to compact yet."
+            ? "还没有可压缩的内容。"
             : null;
   const handleBackground = useCallback(() => {
     if (pendingBackgroundSteer) void backgroundPendingSteer(pendingBackgroundSteer);
@@ -2026,6 +2026,28 @@ function ComposerView({
             <InputGroupTextarea
               ref={composerRef}
               data-palot-composer-input
+              onDragOver={(event) => {
+                if (
+                  Array.from(event.dataTransfer.items).some(
+                    (item) => item.kind === "file" && item.type.startsWith("image/"),
+                  )
+                ) {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "copy";
+                }
+              }}
+              onDrop={(event) => {
+                const hasImages = Array.from(event.dataTransfer.items).some(
+                  (item) => item.kind === "file" && item.type.startsWith("image/"),
+                );
+                if (!hasImages) return;
+                event.preventDefault();
+                if (!localAttachments) {
+                  setAttachmentErrors(["远程 OpenCode 服务器不支持图片附件。"]);
+                  return;
+                }
+                void pasteImages(event.dataTransfer.items);
+              }}
               aria-label={mode === "shell" ? "Shell 命令" : "向 Palot 发送消息"}
               aria-controls={
                 discoveryOpen

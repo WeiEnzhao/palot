@@ -35,9 +35,9 @@ import { Spinner } from "./ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const SEGMENTS = [
-  { key: "cached", label: "Cached input", swatch: "bg-muted-foreground/45" },
-  { key: "uncached", label: "Uncached input", swatch: "bg-foreground/75" },
-  { key: "output", label: "Output", swatch: "bg-primary" },
+  { key: "cached", label: "缓存输入", swatch: "bg-muted-foreground/45" },
+  { key: "uncached", label: "未缓存输入", swatch: "bg-foreground/75" },
+  { key: "output", label: "输出", swatch: "bg-primary" },
 ] as const satisfies ReadonlyArray<{ key: keyof ContextBreakdown; label: string; swatch: string }>;
 
 const STATUS_TEXT: Record<ContextStatus, string> = {
@@ -68,7 +68,7 @@ export function ContextBar({
   return (
     <div
       role="meter"
-      aria-label="Context window usage"
+      aria-label="上下文用量"
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={used}
@@ -245,26 +245,26 @@ export const ContextMeter = memo(function ContextMeter({
             <p className="m-0 text-compact text-muted-foreground">
               {usage?.compacted
                 ? "已压缩上下文。用量将在下一次回复后更新。"
-                : "No model replies yet. Usage appears after the first reply."}
+                : "还没有模型回复。用量会在第一次回复后显示。"}
             </p>
           )}
         </section>
         <dl className="m-0 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-meta">
-          <dt className="text-muted-foreground">Session cost</dt>
+          <dt className="text-muted-foreground">会话成本</dt>
           <dd className="m-0 text-right font-medium tabular-nums">
-            {cost === null ? "Unavailable" : formatUsd(cost)}
+            {cost === null ? "未知" : formatUsd(cost)}
           </dd>
-          <dt className="text-muted-foreground">Total processed</dt>
+          <dt className="text-muted-foreground">累计处理</dt>
           <dd className="m-0 text-right tabular-nums">{formatTokenCount(processed)} tokens</dd>
           {lastCompactedAt !== null ? (
             <>
-              <dt className="text-muted-foreground">Last compacted</dt>
+              <dt className="text-muted-foreground">上次压缩</dt>
               <dd className="m-0 text-right tabular-nums">{formatAgo(lastCompactedAt)}</dd>
             </>
           ) : null}
         </dl>
         <div className="flex flex-col gap-1.5">
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             <Button
               type="button"
               variant="outline"
@@ -278,7 +278,7 @@ export const ContextMeter = memo(function ContextMeter({
               }}
             >
               {compacting ? <Spinner aria-hidden="true" /> : <Shrink aria-hidden="true" />}
-              {compacting ? "Compacting…" : "Compact now"}
+              {compacting ? "压缩中…" : "立即压缩"}
             </Button>
             <Button
               type="button"
@@ -291,7 +291,7 @@ export const ContextMeter = memo(function ContextMeter({
               }}
             >
               <PanelRight aria-hidden="true" />
-              Context details
+              上下文详情
             </Button>
           </div>
           {compactDisabledReason ? (

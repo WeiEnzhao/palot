@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useEffectEvent, useState, type ReactElement, type ReactNode } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
-import { BellRing, Check, Ellipsis, PinOff, Plus, Server, Undo2 } from "lucide-react";
+import { BellRing, Check, Ellipsis, Folder, PinOff, Plus, Server, Undo2 } from "lucide-react";
 import {
   SESSION_TRIAGE_BATCH_LIMIT,
   type SessionTriageCommand,
@@ -953,7 +953,12 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   );
                 })
               : visible.flatMap((connection) =>
-                  connection.projects.map((project) => {
+                  connection.projects
+                    .filter((project) => {
+                      const rows = stableRows.filter(inProject(connection, project.id));
+                      return rows.length > 0;
+                    })
+                    .map((project) => {
                     const key = JSON.stringify([connection.profile.id, project.id]);
                     const open = projectSections[key] ?? true;
                     const rows = stableRows.filter(inProject(connection, project.id));
@@ -963,6 +968,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                         data-project-section
                         data-profile-id={connection.profile.id}
                         data-project-id={project.id}
+                        className="border-t border-sidebar-border/50 pt-2 first:border-0 first:pt-0 [&:not(:first-child)]:mt-1"
                         open={open}
                         onOpenChange={(value) =>
                           setProjectSections((current) => ({ ...current, [key]: value }))
@@ -973,6 +979,14 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                           title={projectName(project)}
                           count={rows.length}
                           open={open}
+                          hideCount
+                          className="text-[13px] font-medium text-sidebar-foreground/85"
+                          icon={
+                            <Folder
+                              aria-hidden="true"
+                              className="size-3.5 shrink-0 text-sidebar-foreground/60"
+                            />
+                          }
                           label={`${projectName(project)} ${rows.length} · ${connectionDescription(connection.profile)}`}
                           badge={
                             connection.profile.kind !== "local" ? (

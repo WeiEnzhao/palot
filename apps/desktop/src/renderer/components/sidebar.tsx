@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   FolderPlus,
+  Folder,
   FolderGit2,
   GitBranch,
   Plus,
@@ -593,14 +594,18 @@ export function ProjectSidebarContent({
               <SidebarGroupContent className="min-h-0 flex-1">
                 <ScrollArea className="h-full min-h-0">
                   <nav aria-label="项目和任务">
-                    <SidebarMenu>
+                    <SidebarMenu className="gap-2">
                       {groups.map(({ project, sessions: projectSessions }) => {
                         const projectKey = JSON.stringify([runtime?.profileID, project.id]);
                         const projectOpen =
                           projectSections[projectKey] ?? projectSessions.length > 0;
                         const displayName = projectName(project);
                         return (
-                          <SidebarMenuItem key={project.id} data-palot-project-row>
+                          <SidebarMenuItem
+                            key={project.id}
+                            data-palot-project-row
+                            className="border-t border-sidebar-border/50 pt-2 first:border-0 first:pt-0"
+                          >
                             <Collapsible
                               className="relative"
                               open={projectOpen}
@@ -622,19 +627,20 @@ export function ProjectSidebarContent({
                                             type="button"
                                             className={cn(
                                               sidebarSectionTriggerVariants(),
-                                              "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid",
+                                              "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid text-[13px] font-medium text-sidebar-foreground/85",
                                             )}
                                           />
                                         }
                                       >
-                                        <span className="min-w-0 truncate text-left">
-                                          {displayName}
+                                        <span className="flex min-w-0 items-center gap-2 text-left">
+                                          <Folder
+                                            aria-hidden="true"
+                                            className="size-3.5 shrink-0 text-sidebar-foreground/60"
+                                          />
+                                          <span className="min-w-0 truncate">{displayName}</span>
                                         </span>
                                         <span className="w-7" aria-hidden="true" />
                                         <span className="ml-auto flex items-center">
-                                          <span className="mr-2 text-micro text-sidebar-foreground/45 tabular-nums">
-                                            {projectSessions.length}
-                                          </span>
                                           {projectOpen ? (
                                             <ChevronDown
                                               className={sidebarSectionIconVariants()}

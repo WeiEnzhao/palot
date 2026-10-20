@@ -1110,6 +1110,9 @@ export function SectionTrigger({
   badge,
   action,
   label,
+  icon,
+  className,
+  hideCount,
 }: {
   title: string;
   count: number;
@@ -1117,6 +1120,9 @@ export function SectionTrigger({
   badge?: ReactNode;
   action?: ReactNode;
   label?: string;
+  icon?: ReactNode;
+  className?: string;
+  hideCount?: boolean;
 }) {
   const trigger = (
     <CollapsibleTrigger
@@ -1127,19 +1133,23 @@ export function SectionTrigger({
           className={cn(
             sidebarSectionTriggerVariants(),
             action && "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid",
+            className,
           )}
         />
       }
     >
       <span className="flex min-w-0 items-center gap-1">
+        {icon}
         <span className="truncate">{title}</span>
         {badge}
       </span>
       {action ? <span className="w-7" aria-hidden="true" /> : null}
       <span className="ml-auto flex items-center">
-        <span className="ml-auto mr-2 text-micro text-sidebar-foreground/45 tabular-nums transition-colors group-hover/section-label:text-sidebar-foreground/70 group-focus-visible/section-label:text-sidebar-foreground/70">
-          {count}
-        </span>
+        {hideCount ? null : (
+          <span className="ml-auto mr-2 text-micro text-sidebar-foreground/45 tabular-nums transition-colors group-hover/section-label:text-sidebar-foreground/70 group-focus-visible/section-label:text-sidebar-foreground/70">
+            {count}
+          </span>
+        )}
         {open ? (
           <ChevronDown
             className={cn(sidebarSectionIconVariants(), sectionChevronRevealClass(true))}

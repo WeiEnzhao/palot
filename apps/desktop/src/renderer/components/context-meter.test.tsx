@@ -80,7 +80,7 @@ describe("ContextMeter", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("上下文窗口：已用 45%（剩余 55%）")).toBeTruthy();
     expect(within(dialog).getByText("已使用 450k / 1M tokens")).toBeTruthy();
-    expect(within(dialog).getByRole("meter", { name: "Context window usage" })).toBeTruthy();
+    expect(within(dialog).getByRole("meter", { name: "上下文用量" })).toBeTruthy();
     expect(within(dialog).getByText("$1.23")).toBeTruthy();
     expect(within(dialog).getByText("2.4M tokens")).toBeTruthy();
     expect(within(dialog).getByText("2小时前")).toBeTruthy();
@@ -89,22 +89,22 @@ describe("ContextMeter", () => {
   it("compacts and opens details from the popover", async () => {
     const { onCompact, onOpenDetails } = renderMeter();
     await userEvent.click(screen.getByRole("button", { name: /^上下文窗口/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "Compact now" }));
+    await userEvent.click(await screen.findByRole("button", { name: "立即压缩" }));
     expect(onCompact).toHaveBeenCalledOnce();
 
     await userEvent.click(screen.getByRole("button", { name: /^上下文窗口/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "Context details" }));
+    await userEvent.click(await screen.findByRole("button", { name: "上下文详情" }));
     expect(onOpenDetails).toHaveBeenCalledOnce();
   });
 
   it("disables Compact now with the reason while work is running", async () => {
     const { onCompact } = renderMeter({
-      compactDisabledReason: "Wait for the current turn to finish.",
+      compactDisabledReason: "等当前回复结束后再试。",
     });
     await userEvent.click(screen.getByRole("button", { name: /^上下文窗口/ }));
-    const compact = await screen.findByRole("button", { name: "Compact now" });
+    const compact = await screen.findByRole("button", { name: "立即压缩" });
     expect((compact as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText("Wait for the current turn to finish.")).toBeTruthy();
+    expect(screen.getByText("等当前回复结束后再试。")).toBeTruthy();
     expect(compact.getAttribute("aria-describedby")).toBeTruthy();
     expect(onCompact).not.toHaveBeenCalled();
   });
