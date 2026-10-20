@@ -292,7 +292,7 @@ export function InboxSidebarContent() {
           type: "success",
           title: "Task moved to Inbox",
           actionProps: {
-            children: "Undo",
+            children: "撤销",
             onClick: () =>
               void dispatch({
                 type: "settle",
@@ -310,7 +310,7 @@ export function InboxSidebarContent() {
           ...(until !== null && until > Date.now()
             ? {
                 actionProps: {
-                  children: "Undo",
+                  children: "撤销",
                   onClick: () =>
                     void dispatch({
                       type: "snooze",

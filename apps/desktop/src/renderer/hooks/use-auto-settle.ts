@@ -77,12 +77,18 @@ export function useAutoSettle(): void {
         })),
       })
         .then(() => {
-          const tasks = candidates.length === 1 ? "1 idle task" : `${candidates.length} idle tasks`;
-          const where = snapshot.length > 1 ? ` on ${connection.profile.name}` : "";
+          const tasks = candidates.length === 1 ? "1 个闲置任务" : `${candidates.length} 个闲置任务`;
+          const where =
+            snapshot.length > 1 && connection.profile.name
+              ? `已自动归档 ${connection.profile.name} 的 ${tasks}`
+              : `已自动归档 ${tasks}`;
           announceSettledBatch({
             count: candidates.length,
-            title: `Auto-settled ${tasks}${where}`,
-            description: `No activity for ${afterDays === 1 ? "a day" : `${afterDays} days`}. Change this in Settings.`,
+            title: where,
+            description:
+              afterDays === 1
+                ? "已闲置一天没有活动。可在设置中调整。"
+                : `已闲置 ${afterDays} 天没有活动。可在设置中调整。`,
             undo: () => dispatch(profileID, { type: "inbox-many", at: Date.now(), sessionIDs }),
           });
         })

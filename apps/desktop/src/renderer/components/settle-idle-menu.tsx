@@ -86,18 +86,18 @@ export function announceSettledBatch(input: {
   description?: string;
   undo(): Promise<unknown>;
 }): void {
-  const tasks = input.count === 1 ? "1 task" : `${input.count} tasks`;
+  const tasks = input.count === 1 ? "1 个任务" : `${input.count} 个任务`;
   toast.add({
     type: "success",
-    title: input.title ?? `Settled ${tasks}`,
+    title: input.title ?? `已归档 ${tasks}`,
     ...(input.description ? { description: input.description } : {}),
     actionProps: {
-      children: "Undo",
+      children: "撤销",
       onClick: () =>
         void input.undo().catch((error: unknown) =>
           toast.add({
             type: "error",
-            title: "Could not move tasks back to Inbox",
+            title: "无法把任务移回收件箱",
             description: error instanceof Error ? error.message : undefined,
           }),
         ),
