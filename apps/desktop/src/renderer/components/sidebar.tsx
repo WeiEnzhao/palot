@@ -604,7 +604,7 @@ export function ProjectSidebarContent({
                           <SidebarMenuItem
                             key={project.id}
                             data-palot-project-row
-                            className="border-t border-sidebar-border/50 pt-2 first:border-0 first:pt-0"
+                            className="border-t border-sidebar-border/40 pt-2.5 first:border-0 first:pt-0"
                           >
                             <Collapsible
                               className="relative"
@@ -627,7 +627,7 @@ export function ProjectSidebarContent({
                                             type="button"
                                             className={cn(
                                               sidebarSectionTriggerVariants(),
-                                              "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid text-[13px] font-medium text-sidebar-foreground/85",
+                                              "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid text-[15px] font-medium text-sidebar-foreground/85",
                                             )}
                                           />
                                         }

@@ -19,7 +19,6 @@ import { useTriageDispatcher } from "../hooks/use-auto-settle";
 import { useConnectionOverview } from "../hooks/use-connection-overview";
 import { usePalotNavigation } from "../hooks/use-navigation";
 import { useSessionWindowDrag } from "../hooks/use-session-window-drag";
-import { useOwnedVcsInfoMap, ownedVcsLocationKey } from "../hooks/use-vcs-info";
 import {
   groupInboxByProject,
   groupInboxSections,
@@ -38,12 +37,11 @@ import { ContextMenuItem } from "./ui/context-menu";
 import {
   InboxToolbar,
   SectionTrigger,
-  SnoozeButton,
   InboxCompactRowSurface,
 } from "./inbox-sidebar";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 import { sessionSnoozeChoices } from "../lib/session-snooze";
-import { InboxCardSurface, INBOX_CARD_ACTION_BUTTON_CLASS } from "./inbox-card-surface";
+import { INBOX_CARD_ACTION_BUTTON_CLASS } from "./inbox-card-surface";
 import { PullRequestBadge } from "./pull-requests/pull-request-badge";
 import { announceSettledBatch, SettleIdleMenu } from "./settle-idle-menu";
 import { useOwnedPullRequestLinks } from "./pull-requests/use-owned-pull-request-links";
@@ -54,7 +52,6 @@ import { SidebarContent } from "./ui/sidebar";
 import { ScrollArea } from "./ui/scroll-area";
 import {
   SidebarFluidList,
-  sidebarFluidCardClass,
   sidebarFluidItemClass,
   sidebarFluidRowProps,
 } from "./sidebar-fluid-list";
@@ -255,22 +252,6 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
   const { frozen, freezeProps } = usePointerFreeze();
   const stableRows = useStableOrder(liveRows, mode === "inbox" ? sectionRowKey : rowKey, frozen);
   const sectionRows = groupInboxSections(stableRows);
-  let richRemaining = limit;
-  const richLocations =
-    mode === "inbox"
-      ? (["pinned", "inbox"] as const).flatMap((section) => {
-          if (!shelves[section]) return [];
-          const rows = sectionRows[section].slice(0, richRemaining);
-          richRemaining -= rows.length;
-          return rows.flatMap((item) => {
-            const owner = item.connection.runtime;
-            return owner?.connected && item.connection.phase === "ready"
-              ? [{ connectionID: owner.connectionID, location: item.session.location }]
-              : [];
-          });
-        })
-      : [];
-  const branches = useOwnedVcsInfoMap(richLocations);
   // Source control is local-only: one links query per visible local server.
   const pullRequestsByProfile = useOwnedPullRequestLinks(
     visible
@@ -373,12 +354,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
     const pullRequestLinks = pullRequestsByProfile.get(connection.profile.id)?.get(session.id);
     const badge =
       connection.profile.kind === "local" ? null : (
-        <ConnectionBadge
-          profile={connection.profile}
-          connected={connected}
-          compact
-          iconOnly={mode === "inbox" && (item.section === "pinned" || item.section === "inbox")}
-        />
+        <ConnectionBadge profile={connection.profile} connected={connected} compact />
       );
     const menu = (
       <DropdownMenu>
@@ -489,6 +465,17 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         >
           <BellRing aria-hidden="true" />
         </Button>
+      ) : item.section === "pinned" ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="取消置顶任务"
+          title="取消置顶"
+          disabled={disabled}
+          onClick={() => command("unpin")}
+        >
+          <PinOff aria-hidden="true" />
+        </Button>
       ) : item.canSettle ? (
         <Button
           variant="ghost"
@@ -517,85 +504,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           })
         }
         renderRow={(windowDrag) => {
-          if (mode === "inbox" && (item.section === "pinned" || item.section === "inbox"))
-            return (
-              <InboxCardSurface
-                {...sidebarFluidRowProps}
-                key={rowKey(item)}
-                className={sidebarFluidCardClass}
-                item={item}
-                hint={windowDrag.hint}
-                vcs={
-                  connection.runtime
-                    ? branches.get(
-                        ownedVcsLocationKey({
-                          connectionID: connection.runtime.connectionID,
-                          location: session.location,
-                        }),
-                      )
-                    : undefined
-                }
-                selected={selected}
-                profileID={connection.profile.id}
-                connectionBadge={badge}
-                pullRequest={<PullRequestBadge links={pullRequestLinks} onActivate={openTask} />}
-                buttonProps={{
-                  ...windowDrag.handleProps,
-                  ...buttonProps,
-                  className: connected ? "cursor-grab active:cursor-grabbing" : undefined,
-                  onDoubleClick: (event) => {
-                    event.preventDefault();
-                    if (!disabled) startRename();
-                  },
-                }}
-                actions={
-                  <>
-                    {item.pinnedAt !== null ? (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="取消置顶任务"
-                        className={INBOX_CARD_ACTION_BUTTON_CLASS}
-                        disabled={disabled}
-                        onClick={() => command("unpin")}
-                      >
-                        <PinOff aria-hidden="true" />
-                      </Button>
-                    ) : null}
-                    {item.canSettle && !disabled ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-6 gap-0.5 px-2 text-micro!",
-                          INBOX_CARD_ACTION_BUTTON_CLASS,
-                        )}
-                        aria-label="归档任务"
-                        onClick={settle}
-                      >
-                        <Check aria-hidden="true" />
-                        归档
-                      </Button>
-                    ) : null}
-                    <SnoozeButton
-                      item={item}
-                      disabled={disabled}
-                      onSnooze={(_, until) =>
-                        dispatch(item, {
-                          type: "snooze",
-                          sessionID: session.id,
-                          at: Date.now(),
-                          until,
-                          through: item.activityThrough,
-                        })
-                      }
-                    />
-                    {menu}
-                  </>
-                }
-              />
-            );
-          if (mode === "inbox")
+          if (mode === "inbox" && (item.section === "snoozed" || item.section === "settled"))
             return (
               <InboxCompactRowSurface
                 key={rowKey(item)}
@@ -635,6 +544,10 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 type="button"
                 {...windowDrag.handleProps}
                 {...buttonProps}
+                onDoubleClick={(event) => {
+                  event.preventDefault();
+                  if (!disabled) startRename();
+                }}
                 className={sidebarFluidItemClass(
                   cn(
                     // The actions reserve their gutter only while shown, so titles
@@ -661,7 +574,6 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   />
                 ) : null}
                 <PullRequestBadge links={pullRequestLinks} />
-                {badge}
               </button>
               {/* Quiet until the row is hovered or holds keyboard focus; never removed
                   from the tab order. */}
@@ -703,11 +615,18 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
     return rows.map(renderRow);
   };
   const boundedInboxGroups = (list: OwnedItem[]) => {
-    const chunks: Array<{ group: InboxProjectGroup<OwnedItem>; rows: ReactElement[] }> = [];
+    const chunks: Array<{ group: InboxProjectGroup<OwnedItem>; badge: ReactNode; rows: ReactElement[] }> = [];
     for (const group of groupInboxByProject(list, (row) => row.connection.profile.id)) {
       const take = group.items.slice(0, remaining);
       remaining -= take.length;
-      if (take.length) chunks.push({ group, rows: take.map(renderRow) });
+      if (take.length) {
+        const connection = take[0]!.connection;
+        const badge =
+          connection.profile.kind === "local" || !connection.runtime ? null : (
+            <ConnectionBadge profile={connection.profile} connected={connection.runtime.connected === true} compact />
+          );
+        chunks.push({ group, badge, rows: take.map(renderRow) });
+      }
     }
     return chunks;
   };
@@ -920,14 +839,21 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                   : "space-y-px pb-2"
                               }
                             >
-                              {boundedInboxGroups(rows).map(({ group, rows: elements }) => (
+                              {boundedInboxGroups(rows).map(({ group, badge, rows: elements }) => (
                                 <Fragment key={group.key}>
                                   <div
-                                    className="flex h-6 min-w-0 items-center gap-2 px-1.5 pb-0.5 pt-1.5 text-micro font-semibold text-sidebar-secondary"
+                                    className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-[15px] font-medium text-sidebar-foreground/85"
                                   >
+                                    <Folder
+                                      aria-hidden="true"
+                                      className="size-3.5 shrink-0 text-sidebar-foreground/60"
+                                    />
                                     <span className="truncate">{group.label}</span>
-                                    <span className="ml-auto shrink-0 tabular-nums opacity-70">
-                                      {group.items.length}
+                                    <span className="ml-auto flex shrink-0 items-center gap-1.5">
+                                      {badge}
+                                      <span className="tabular-nums opacity-70">
+                                        {group.items.length}
+                                      </span>
                                     </span>
                                   </div>
                                   {elements}
@@ -968,7 +894,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                         data-project-section
                         data-profile-id={connection.profile.id}
                         data-project-id={project.id}
-                        className="border-t border-sidebar-border/50 pt-2 first:border-0 first:pt-0 [&:not(:first-child)]:mt-1"
+                        className="border-t border-sidebar-border/40 pt-2.5 first:border-0 first:pt-0 [&:not(:first-child)]:mt-3"
                         open={open}
                         onOpenChange={(value) =>
                           setProjectSections((current) => ({ ...current, [key]: value }))
@@ -980,7 +906,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                           count={rows.length}
                           open={open}
                           hideCount
-                          className="text-[13px] font-medium text-sidebar-foreground/85"
+                          className="text-[15px] font-medium text-sidebar-foreground/85"
                           icon={
                             <Folder
                               aria-hidden="true"

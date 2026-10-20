@@ -291,7 +291,6 @@ describe("MultiConnectionSidebar", () => {
     expect(
       screen.queryByRole("button", { name: "Same task · Same server · beta.example" }),
     ).toBeNull();
-    expect(mocks.vcs).toHaveBeenLastCalledWith([]);
     expect(store.get(overviewProjectSectionsAtom)).toEqual(projects);
     await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "展开所有分区" }));
@@ -335,45 +334,39 @@ describe("MultiConnectionSidebar", () => {
     );
   });
 
-  it("renders rich Inbox cards with project, status, title, location fallback and owner badge", () => {
+  it("renders grouped Inbox rows owned by the profile with title-only lines and per-group badges", () => {
     const item = overview.connections[1]!.inbox.inbox[0]!;
     item.attention = true;
     item.attentionCount = 2;
     item.canSettle = false;
     item.session.location.directory = "/remote/checkouts/feature-work";
     renderSidebar();
-    const button = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
-    const card = button.closest<HTMLElement>("[data-inbox-card]");
-    expect(card).not.toBeNull();
-    expect(card!.getAttribute("data-profile-id")).toBe("beta");
-    expect(within(card!).getByText("Same project")).toBeTruthy();
-    expect(within(card!).getByText("Same task")).toBeTruthy();
-    expect(within(card!).getByText("Needs input · 2")).toBeTruthy();
-    expect(within(card!).getByLabelText("Task needs attention")).toBeTruthy();
-    expect(within(card!).getByText("feature-work").closest("[data-inbox-location]")).not.toBeNull();
-    expect(within(card!).getByTitle("/remote/checkouts/feature-work")).toBeTruthy();
+    const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
+    // Grouped Inbox rows are plain single-line rows: title only, no duplicate
+    // project label, no rich card surface.
+    expect(row.closest("[data-inbox-card]")).toBeNull();
+    expect(within(row).getByText("Same task")).toBeTruthy();
+    expect(within(row).queryByText("Same project")).toBeNull();
+    expect(within(row).queryByText("Needs input · 2")).toBeNull();
+    expect(within(row).getByLabelText("需要关注")).toBeTruthy();
+    // The project + server badge move up to the group header.
     expect(
-      within(card!).getByRole("img", { name: "Same server · beta.example · Connected" }),
+      screen.getByRole("img", { name: "Same server · beta.example · Connected" }),
     ).toBeTruthy();
-    const serverIcon = within(card!).getByRole("img", {
-      name: "Same server · beta.example · Connected",
-    });
-    const projectLabel = within(card!).getByText("Same project");
-    expect(projectLabel.parentElement?.firstElementChild).toBe(serverIcon);
-    expect(within(card!).queryByText("Same server")).toBeNull();
+    const wrapper = row.closest("div")!;
     expect(
-      within(card!).getByRole("button", {
+      within(wrapper).getByRole("button", {
         name: "Actions for Same task on Same server · beta.example",
       }),
     ).toBeTruthy();
   });
 
-  it("keeps rich-card hover actions explicitly owned by the background profile", () => {
+  it("keeps grouped-row hover actions explicitly owned by the background profile", () => {
     renderSidebar();
-    const card = screen
+    const wrapper = screen
       .getByRole("button", { name: "Same task · Same server · beta.example" })
-      .closest<HTMLElement>("[data-inbox-card]")!;
-    fireEvent.click(within(card).getByRole("button", { name: "归档任务" }));
+      .closest("div")!;
+    fireEvent.click(within(wrapper).getByRole("button", { name: "归档任务" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({ type: "settle", sessionID: "same-session" }),
@@ -400,7 +393,10 @@ describe("MultiConnectionSidebar", () => {
     const badge = await screen.findByRole("img", {
       name: "Pull request #21, open, checks passing",
     });
-    expect(badge.closest("[data-inbox-card]")?.getAttribute("data-profile-id")).toBe("beta");
+    const betaRow = screen.getByRole("button", { name: "Same task · Local beta · Local" });
+    expect(within(betaRow).getByRole("img", {
+      name: "Pull request #21, open, checks passing",
+    })).toBeTruthy();
     expect(screen.getAllByRole("img", { name: /^Pull request/ })).toHaveLength(1);
     expect(listPullRequestLinks.mock.calls.map(([input]) => input)).toEqual([
       { profileID: "alpha" },
@@ -412,23 +408,24 @@ describe("MultiConnectionSidebar", () => {
   it("omits redundant local badges while retaining explicit row ownership", () => {
     overview.connections[0]!.profile = { id: "alpha", name: "Local", kind: "local" };
     renderSidebar();
-    const local = screen
-      .getByRole("button", { name: "Same task · Local · Local" })
-      .closest<HTMLElement>("[data-inbox-card]")!;
-    expect(within(local).queryByRole("img", { name: /Local · Local/ })).toBeNull();
-    expect(local.getAttribute("data-profile-id")).toBe("alpha");
-    expect(
-      screen.getByRole("img", { name: "Same server · beta.example · Connected" }),
-    ).toBeTruthy();
+    const localRow = screen.getByRole("button", { name: "Same task · Local · Local" });
+    expect(within(localRow).queryByRole("img", { name: /Local · Local/ })).toBeNull();
+    expect(screen.getByRole("img", { name: "Same server · beta.example · Connected" })).toBeTruthy();
   });
 
-  it("uses the original snooze choices with the clicked card owner", async () => {
+  it("uses the original snooze choices with the clicked row owner", async () => {
     renderSidebar();
-    const remote = screen
+    const wrapper = screen
       .getByRole("button", { name: "Same task · Same server · beta.example" })
-      .closest<HTMLElement>("[data-inbox-card]")!;
-    await userEvent.click(within(remote).getByRole("button", { name: "暂停任务" }));
-    await userEvent.click(screen.getAllByRole("menuitem")[0]!);
+      .closest("div")!;
+    await userEvent.click(
+      within(wrapper).getByRole("button", {
+        name: "Actions for Same task on Same server · beta.example",
+      }),
+    );
+    await userEvent.click(screen.getByRole("menuitem", { name: "暂停到" }));
+    const choice = await screen.findAllByRole("menuitem", { name: "1 小时后" });
+    await userEvent.click(choice.at(-1)!);
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({
