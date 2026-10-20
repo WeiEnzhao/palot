@@ -2280,6 +2280,10 @@ function ComposerView({
                     : "远程服务器不支持附件"}
                 </TooltipContent>
               </Tooltip>
+              <div className="contents">
+                {/* Session location meta joins the control row as plain inline items. */}
+                {contextBar}
+              </div>
               {mode === "shell" ? (
                 <Tooltip>
                   <TooltipTrigger
@@ -2470,12 +2474,6 @@ function ComposerView({
               </div>
             </InputGroupAddon>
           )}
-          {contextBar ? (
-            <div className="palot-composer-context relative isolate flex min-h-10 flex-wrap items-center gap-x-2 border-t border-foreground/10 px-4 py-1.5">
-              <SurfaceBackdrop tone="composer" />
-              {contextBar}
-            </div>
-          ) : null}
         </InputGroup>
       </div>
     </div>

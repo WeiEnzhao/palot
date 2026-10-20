@@ -1782,7 +1782,7 @@ const ParentSessionComposer = memo(function ParentSessionComposer({
   );
   const composerContextBar = useMemo(
     () => (
-      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-0.5 gap-y-1">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-0.5 gap-y-1">
         <ConnectionDestination />
         <div
           className="flex h-6 min-w-0 items-center gap-1 px-1.5 text-meta leading-none font-medium text-foreground"
@@ -1791,7 +1791,7 @@ const ParentSessionComposer = memo(function ParentSessionComposer({
           <FolderGit2 className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
           <span className="truncate">{isAdditionalCheckout ? "工作树" : "检出"}</span>
         </div>
-        <div className="ml-auto flex h-6 min-w-0 items-center gap-2 px-1.5 text-meta leading-none text-muted-foreground max-[560px]:ml-0">
+        <div className="flex h-6 min-w-0 items-center gap-2 px-1.5 text-meta leading-none text-muted-foreground">
           {runtime ? (
             <RunningWorkControl
               session={session}
