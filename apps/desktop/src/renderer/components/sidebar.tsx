@@ -2,7 +2,6 @@ import {
   BellRing,
   Check,
   CircleAlert,
-  CircleStop,
   ChevronDown,
   ChevronRight,
   FolderPlus,
@@ -1032,7 +1031,7 @@ function SessionStatusIndicator({
   status: SidebarSessionState;
   reserveSpace?: boolean;
 }) {
-  if (!status)
+  if (!status || status === "interrupted")
     return reserveSpace ? <span className="size-3.5 shrink-0" aria-hidden="true" /> : null;
   const label =
     status === "attention"
@@ -1041,9 +1040,7 @@ function SessionStatusIndicator({
         ? "任务运行中"
         : status === "failed"
           ? "任务失败"
-          : status === "interrupted"
-            ? "任务已中断"
-            : "未读任务活动";
+          : "未读任务活动";
   return (
     <span
       className={
@@ -1060,10 +1057,8 @@ function SessionStatusIndicator({
         <span className="m-auto size-[5px] rounded-full bg-info" aria-hidden="true" />
       ) : status === "running" ? (
         <PulseDot className="size-3.5 [&>span]:size-[5px]" aria-hidden="true" />
-      ) : status === "failed" || status === "attention" ? (
-        <CircleAlert className="size-3.5" aria-hidden="true" />
       ) : (
-        <CircleStop className="size-3.5" aria-hidden="true" />
+        <CircleAlert className="size-3.5" aria-hidden="true" />
       )}
     </span>
   );
