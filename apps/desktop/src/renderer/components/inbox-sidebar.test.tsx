@@ -456,11 +456,16 @@ describe("InboxSidebarContent", () => {
       .getByRole("button", { name: /^Open Inbox task,/ })
       .closest<HTMLElement>("[data-inbox-card]")!;
     expect(within(pinnedCard).getByLabelText("未读任务动态")).toBeTruthy();
-    expect(within(pinnedCard).getByText("Palot")).toBeTruthy();
-    expect(within(pinnedCard).getByText("pinned").closest("[data-inbox-location]")).not.toBeNull();
+    // Grouped shelves carry the project name on the folder header, not on each card.
+    expect(within(pinnedCard).queryByText("Palot")).toBeNull();
+    expect(screen.getAllByText("Palot").length).toBeGreaterThan(0);
+    expect(within(pinnedCard).getByText("pinned")).toBeTruthy();
+    // Grouped rows are single-line: the status glyph sits inline with the title.
     expect(
-      within(pinnedCard).getByText("Pinned task").parentElement?.querySelector("[aria-label]"),
-    ).toBeNull();
+      within(pinnedCard).getByText("Pinned task").parentElement?.parentElement?.querySelector(
+        "[aria-label]",
+      ),
+    ).not.toBeNull();
     expect(within(runningCard).queryByLabelText("未读任务动态")).toBeNull();
     expect(within(runningCard).getByTitle(/Working for/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "添加项目文件夹" })).toBeTruthy();

@@ -32,10 +32,13 @@ export function InboxCardSurface({
   ownerLabel,
   profileID,
   pullRequest,
+  grouped,
   ...props
 }: ComponentProps<"div"> & {
   item: InboxSessionView;
   selected: boolean;
+  /** The card sits under a project group header — hide its own project label. */
+  grouped?: boolean;
   vcs?: OpenCodeVcsInfo;
   buttonProps: ComponentProps<"button">;
   titleEditor?: ReactNode;
@@ -93,32 +96,81 @@ export function InboxCardSurface({
           sidebarItemVariants({ density: "rich", interactive: false, icons: "custom" }),
         )}
       >
-        <div className="flex min-w-0 items-center gap-2 text-meta text-muted-foreground">
-          <span className="flex min-w-0 flex-1 items-center gap-1.5 font-medium text-sidebar-foreground/70">
-            {connectionBadge}
-            <span className="truncate">{item.projectName}</span>
-          </span>
-          {visualState === "running" ? (
-            <WorkingStatus startedAt={item.runningSince} />
-          ) : (
-            <span
-              data-inbox-status
-              className={cn(
-                "flex shrink-0 items-center gap-1 tabular-nums transition-opacity group-hover/inbox-card:opacity-0 group-has-[:focus-visible]/inbox-card:opacity-0",
-                item.attention && "text-warning",
-                item.failed && "text-destructive",
-              )}
-            >
-              <InboxStateGlyph state={visualState} />
-              {visualState === "unread" ? (
-                <span>New · {formatRelativeTime(sessionActivityAt(item.session))}</span>
+        {grouped ? (
+          <div className="flex min-w-0 items-center gap-2 text-compact">
+            {titleEditor ?? (
+              <div className="min-w-0 flex-1 truncate font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
+                {item.session.title ?? "Untitled task"}
+              </div>
+            )}
+            <span className="flex shrink-0 items-center gap-1 text-meta text-muted-foreground opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
+              {detachedWorktree ? (
+                <FolderGit2
+                  className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
+                  aria-hidden="true"
+                />
               ) : (
-                status
+                <GitBranch
+                  className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
+                  aria-hidden="true"
+                />
               )}
+              <span
+                className="max-w-40 -translate-y-px truncate"
+                title={item.session.location.directory}
+              >
+                {branchLabel(vcs, item)}
+              </span>
             </span>
-          )}
-        </div>
-        <div className="mt-1 flex min-w-0 items-center gap-1.5" data-inbox-location>
+            {pullRequest ? <span className="shrink-0">{pullRequest}</span> : null}
+            {visualState === "running" ? (
+              <WorkingStatus startedAt={item.runningSince} />
+            ) : (
+              <span
+                data-inbox-status
+                className={cn(
+                  "flex shrink-0 items-center gap-1 text-meta tabular-nums text-muted-foreground transition-opacity group-hover/inbox-card:opacity-0 group-has-[:focus-visible]/inbox-card:opacity-0",
+                  item.attention && "text-warning",
+                  item.failed && "text-destructive",
+                )}
+              >
+                <InboxStateGlyph state={visualState} />
+                {visualState === "unread" ? (
+                  <span>New · {formatRelativeTime(sessionActivityAt(item.session))}</span>
+                ) : (
+                  status
+                )}
+              </span>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="flex min-w-0 items-center gap-2 text-meta text-muted-foreground">
+              <span className="flex min-w-0 flex-1 items-center gap-1.5 font-medium text-sidebar-foreground/70">
+                {connectionBadge}
+                <span className="truncate">{item.projectName}</span>
+              </span>
+              {visualState === "running" ? (
+                <WorkingStatus startedAt={item.runningSince} />
+              ) : (
+                <span
+                  data-inbox-status
+                  className={cn(
+                    "flex shrink-0 items-center gap-1 tabular-nums transition-opacity group-hover/inbox-card:opacity-0 group-has-[:focus-visible]/inbox-card:opacity-0",
+                    item.attention && "text-warning",
+                    item.failed && "text-destructive",
+                  )}
+                >
+                  <InboxStateGlyph state={visualState} />
+                  {visualState === "unread" ? (
+                    <span>New · {formatRelativeTime(sessionActivityAt(item.session))}</span>
+                  ) : (
+                    status
+                  )}
+                </span>
+              )}
+            </div>
+            <div className="mt-1 flex min-w-0 items-center gap-1.5" data-inbox-location>
           {titleEditor ?? (
             <div className="min-w-0 flex-1 truncate text-compact font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
               {item.session.title ?? "Untitled task"}
@@ -147,6 +199,8 @@ export function InboxCardSurface({
             <span className="shrink-0">{pullRequest}</span>
           ) : null}
         </div>
+          </>
+        )}
       </div>
       <div className="absolute top-0 right-1.5 z-20 flex items-center gap-0 opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
         {actions}

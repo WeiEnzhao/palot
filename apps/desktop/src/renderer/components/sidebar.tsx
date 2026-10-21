@@ -481,7 +481,7 @@ export function ProjectSidebarContent({
           </Collapsible>
         ) : null}
         <Collapsible
-          open={sectionOpen("recents")}
+          open={sectionOpen("recents", false)}
           onOpenChange={(value) => setSectionOpen("recents", value)}
         >
           <SidebarGroup className="shrink-0 pt-2 pb-1">

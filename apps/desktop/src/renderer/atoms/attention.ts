@@ -23,7 +23,9 @@ export const attentionSeenIDsAtom = persistedAtom({
 });
 export const sidebarSectionsAtom = persistedAtom({
   key: "ui.sidebar-sections",
-  initialValue: { attention: true, recents: true, projects: true } as Record<string, boolean>,
+  // recents defaults collapsed: the v0.18 sidebar gained a "最近任务" section that
+  // pushed the project tree below the fold — old installs showed 收件箱 → 项目 directly.
+  initialValue: { attention: true, recents: false, projects: true } as Record<string, boolean>,
   validate: booleans,
 });
 export const attentionTargetAtom = atom<{

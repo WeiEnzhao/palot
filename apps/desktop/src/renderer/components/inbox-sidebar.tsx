@@ -9,6 +9,7 @@ import {
   FolderPlus,
   FolderGit2,
   Ellipsis,
+  Folder,
   ListFilter,
   LoaderCircle,
   PinOff,
@@ -20,6 +21,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
 import type { LocationRef } from "@opencode/client";
 import {
+  Fragment,
   memo,
   useCallback,
   useEffect,
@@ -71,6 +73,7 @@ import {
   sessionSnoozeChoices,
 } from "../lib/session-snooze";
 import {
+  groupInboxByProject,
   groupInboxSections,
   inboxSessionState,
   orderInboxSection,
@@ -825,10 +828,25 @@ function RichSection({
   action?: ReactNode;
 }) {
   if (!items.length && !empty) return null;
+  // Group the flat card pile by project, matching the multi-connection sidebar's
+  // grouped shelves (folder icon + bold label + count, rows nested beneath) —
+  // headers render even for a single project, same as the multi-connection path.
+  const groups = groupInboxByProject(items, () => "single-connection");
   const content = (
     <SidebarFluidList className="space-y-0.5">
-      {items.map((item) => (
-        <InboxCard key={item.session.id} item={item} {...props} />
+      {groups.map((group) => (
+        <Fragment key={group.key}>
+          <div className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-base font-semibold text-sidebar-foreground">
+            <Folder aria-hidden="true" className="size-4 shrink-0 text-sidebar-foreground/60" />
+            <span className="truncate">{group.label}</span>
+            <span className="ml-auto shrink-0 tabular-nums opacity-70">{group.items.length}</span>
+          </div>
+          <div className="space-y-0.5 pl-6 pt-1">
+            {group.items.map((item) => (
+              <InboxCard key={item.session.id} item={item} grouped {...props} />
+            ))}
+          </div>
+        </Fragment>
       ))}
       {!items.length ? (
         <div className="px-2.5 py-4 text-xs text-muted-foreground">{empty}</div>
@@ -865,6 +883,8 @@ interface SectionProps {
   branches?: ReadonlyMap<string, OpenCodeVcsInfo>;
   /** Linked pull requests by session, from the list's single links query. */
   pullRequests?: ReadonlyMap<string, PullRequestLink[]>;
+  /** Cards sit under a project group header — hide the per-card project label. */
+  grouped?: boolean;
 }
 
 type InboxRowProps = Omit<SectionProps, "items"> & { item: InboxSessionView };
@@ -879,6 +899,7 @@ const InboxCard = memo(function InboxCard({
   actionsDisabled,
   branches,
   pullRequests,
+  grouped,
 }: InboxRowProps) {
   const title = useSessionTitleEditor(item.session);
   const windowDrag = useSessionWindowDrag(item.session.id);
@@ -890,6 +911,7 @@ const InboxCard = memo(function InboxCard({
       className={sidebarFluidCardClass}
       item={item}
       selected={selected}
+      grouped={grouped}
       vcs={vcs}
       hint={windowDrag.hint}
       pullRequest={
@@ -1004,6 +1026,7 @@ function sameInboxCardProps(previous: InboxRowProps, next: InboxRowProps): boole
     previous.onAction === next.onAction &&
     previous.onSnooze === next.onSnooze &&
     previous.actionsDisabled === next.actionsDisabled &&
+    previous.grouped === next.grouped &&
     location === vcsLocationKey(next.item.session.location) &&
     previous.branches?.get(location) === next.branches?.get(location) &&
     samePullRequestLinks(

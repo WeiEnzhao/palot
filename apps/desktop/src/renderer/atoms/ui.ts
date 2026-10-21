@@ -94,7 +94,9 @@ export const sidebarModeAtom = persistedAtom({
 });
 export const defaultSidebarModeAtom = persistedAtom({
   key: "ui.default-sidebar-mode",
-  initialValue: "inbox" as DefaultSidebarMode,
+  // Boot forces sidebar mode to this value (routes/__root.tsx) — default to the project
+  // tree (bold folder headers + nested tasks) instead of the flat inbox cards.
+  initialValue: "project" as DefaultSidebarMode,
   validate: (value): value is DefaultSidebarMode =>
     value === "remember" || value === "project" || value === "inbox",
 });

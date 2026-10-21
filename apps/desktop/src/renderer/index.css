@@ -794,6 +794,20 @@
   background-color: color-mix(in oklch, var(--muted) 30%, transparent);
 }
 
+/* Translucent: markdown code blocks stop being a solid white slab and read as glass —
+   the same 30% wash the inline chips use, carried over the wallpaper. Covers the
+   highlight engine (pre.th-code), the plain pre fallback and tool-highlight blocks.
+   Must live in the components layer: an unlayered !important loses to the layered
+   !important in `.markdown-highlight pre.th-code` (important reverses layer order). */
+@layer components {
+  :root:is([data-chrome-tier="liquid-glass"], [data-chrome-tier="vibrancy"])[data-content-translucent="true"]:not(
+      [data-reduced-transparency="true"]
+    )
+    :is(.markdown pre, .markdown-highlight pre.th-code, .tool-highlight pre.th-code) {
+    background: color-mix(in oklch, var(--code-background) 30%, transparent) !important;
+  }
+}
+
 /* Translucent: a dark sidebar base over a bright wallpaper leaves the theme's light
    sidebar text unreadable — retint sidebar text to the standard foreground tokens
    (scheme-aware), while keeping hover/selected surfaces. */
