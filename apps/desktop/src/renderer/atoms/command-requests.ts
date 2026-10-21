@@ -20,7 +20,7 @@ export const requestGlobalCommandAtom = atom(null, (_get, set, commandID: string
 });
 
 /** Palette task actions that the open task's composer performs with its own draft and menus. */
-export type ComposerAction = "undo" | "redo" | "model" | "agent";
+export type ComposerAction = "undo" | "redo" | "model" | "agent" | "reedit" | "retry";
 
 export interface ComposerActionRequest {
   action: ComposerAction;
@@ -28,6 +28,11 @@ export interface ComposerActionRequest {
   profileID: string | null;
   sessionID: string;
   requestedAt: number;
+  /**
+   * Target user message for the targeted revert actions. `reedit` puts that
+   * prompt back in the composer, `retry` re-sends it.
+   */
+  messageID?: string;
 }
 
 export const composerActionRequestAtom = atom<ComposerActionRequest | null>(null);

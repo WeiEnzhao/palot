@@ -55,6 +55,7 @@ import {
   useWorkbenchCommands,
 } from "../atoms/workbench";
 import { attentionTargetAtom } from "../atoms/attention";
+import { composerActionRequestAtom } from "../atoms/command-requests";
 import { resolvedAppearanceAtom } from "../atoms/appearance";
 import { retainedTranscriptLayouts } from "../lib/transcript-layout-cache";
 import { useSessionTranscript } from "../hooks/use-session-transcript";
@@ -2175,7 +2176,7 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
   if (row.kind === "user-message") {
     return (
       <>
-        <MessageRow message={row.message} />
+        <MessageRow message={row.message} sessionID={sessionID} />
         {showCacheBust ? (
           <CacheBustWarning warning={cacheBust} onOpen={onOpenCacheDiagnostic} />
         ) : null}
@@ -2183,7 +2184,7 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
     );
   }
   if (row.kind === "boundary") {
-    return <TimelineBoundary group={row.group} />;
+    return <TimelineBoundary group={row.group} sessionID={sessionID} />;
   }
   if (row.kind === "shell") {
     return (
@@ -2200,7 +2201,13 @@ const TranscriptPresentationRowContent = memo(function TranscriptPresentationRow
           role="group"
           aria-label={turn.kind === "shell" ? "Shell 活动" : "时间线活动"}
         >
-          <ActivityGroups groups={turn.activity} live={false} reveal sessionID={sessionID} />
+          <ActivityGroups
+          groups={turn.activity}
+          live={false}
+          reveal
+          sessionID={sessionID}
+          userMessageID={turn.user?.id ?? null}
+        />
           {showCacheBust ? (
             <CacheBustWarning warning={cacheBust} onOpen={onOpenCacheDiagnostic} />
           ) : null}
@@ -2620,7 +2627,12 @@ export function TurnActivity({
 
   // A returned child is a chronological event, not another timed period of parent work.
   if (turn.kind === "subagent") {
-    return <ActivityGroups groups={turn.activity} live={false} sessionID={sessionID} />;
+    return <ActivityGroups
+      groups={turn.activity}
+      live={false}
+      sessionID={sessionID}
+      userMessageID={turn.user?.id ?? null}
+    />;
   }
 
   if (turn.activity.length > 0 && turn.activity.every((group) => group.kind === "compaction")) {
@@ -2630,6 +2642,7 @@ export function TurnActivity({
           groups={turn.activity}
           live={turn.status === "working"}
           sessionID={sessionID}
+          userMessageID={turn.user?.id ?? null}
         />
       </div>
     );
@@ -2645,6 +2658,7 @@ export function TurnActivity({
           groups={turn.activity}
           live={turn.status === "working"}
           sessionID={sessionID}
+          userMessageID={turn.user?.id ?? null}
         />
       </div>
     );
@@ -2685,7 +2699,12 @@ export function TurnActivity({
         </CollapsibleTrigger>
         {!open ? (
           <div className="pt-2">
-            <ActivityGroups groups={pinnedActivity} live={false} sessionID={sessionID} />
+            <ActivityGroups
+              groups={pinnedActivity}
+              live={false}
+              sessionID={sessionID}
+              userMessageID={turn.user?.id ?? null}
+            />
           </div>
         ) : null}
         <CollapsibleContent smooth animate={interacted} className="pt-2">
@@ -2693,6 +2712,7 @@ export function TurnActivity({
             groups={turn.activity}
             live={turn.status === "working"}
             sessionID={sessionID}
+            userMessageID={turn.user?.id ?? null}
           />
         </CollapsibleContent>
       </Collapsible>
@@ -2731,6 +2751,7 @@ export function TurnActivity({
           groups={turn.activity}
           live={turn.status === "working"}
           sessionID={sessionID}
+          userMessageID={turn.user?.id ?? null}
         />
       </CollapsibleContent>
     </Collapsible>
@@ -2741,12 +2762,15 @@ function ActivityGroups({
   groups,
   live,
   sessionID,
+  userMessageID = null,
   reveal = false,
   revealGeneration = 0,
 }: {
   groups: TurnActivityGroup[];
   live: boolean;
   sessionID: string;
+  /** User message that started the turn, so a failed turn can retry its prompt. */
+  userMessageID?: string | null;
   reveal?: boolean;
   revealGeneration?: number;
 }) {
@@ -2760,6 +2784,7 @@ function ActivityGroups({
           reveal={reveal}
           revealGeneration={revealGeneration}
           sessionID={sessionID}
+          userMessageID={userMessageID}
         />
       ))}
     </div>
@@ -2773,25 +2798,29 @@ const ActivityGroupItem = memo(
     reveal,
     revealGeneration,
     sessionID,
+    userMessageID = null,
   }: {
     group: TurnActivityGroup;
     live: boolean;
     reveal: boolean;
     revealGeneration: number;
     sessionID: string;
+    userMessageID?: string | null;
   }) {
     if (group.kind === "input") {
       return (
         <div className="my-2 flex flex-col gap-2">
           {(group.messages ?? []).map((message) => (
-            <MessageRow key={message.id} message={message} />
+            <MessageRow key={message.id} message={message} sessionID={sessionID} />
           ))}
         </div>
       );
     }
     if (group.kind === "content") return <ActivityParts entries={group.entries} live={live} />;
     if (group.kind === "compaction") return <CompactionBoundary group={group} />;
-    if (group.kind === "boundary") return <TimelineBoundary group={group} />;
+    if (group.kind === "boundary") {
+      return <TimelineBoundary group={group} sessionID={sessionID} userMessageID={userMessageID} />;
+    }
     if (group.kind === "subagent") return <SubagentResponse group={group} />;
     if (group.kind === "subagent-tool") {
       return <SubagentLaunch group={group} parentSessionID={sessionID} />;
@@ -3224,21 +3253,40 @@ function entryID(entry: TurnPart): string {
   return entry.part.id ?? `${entry.message.id}:${entry.part.type}:${entry.index}`;
 }
 
-export function TimelineBoundary({ group }: { group: TurnActivityGroup }) {
+export function TimelineBoundary({
+  group,
+  sessionID,
+  userMessageID,
+}: {
+  group: TurnActivityGroup;
+  sessionID?: string;
+  userMessageID?: string | null;
+}) {
   const part = group.entries[0]?.part;
   if (!part) return null;
   const data =
     part.data && typeof part.data === "object" && !Array.isArray(part.data) ? part.data : {};
   if (data.kind === "synthetic") return <SyntheticUpdate group={group} />;
-  return <StandardTimelineBoundary group={group} part={part} />;
+  return (
+    <StandardTimelineBoundary
+      group={group}
+      part={part}
+      sessionID={sessionID}
+      userMessageID={userMessageID}
+    />
+  );
 }
 
 function StandardTimelineBoundary({
   group,
   part,
+  sessionID,
+  userMessageID,
 }: {
   group: TurnActivityGroup;
   part: PalotMessageContent;
+  sessionID?: string;
+  userMessageID?: string | null;
 }) {
   const data =
     part.data && typeof part.data === "object" && !Array.isArray(part.data) ? part.data : {};
@@ -3250,6 +3298,8 @@ function StandardTimelineBoundary({
   const label = part.name ?? group.title;
   const retryAt = typeof data.at === "number" ? data.at : null;
   const [now, setNow] = useState(() => Date.now());
+  const requestComposerAction = useSetAtom(composerActionRequestAtom);
+  const runtime = useAtomValue(runtimeAtom);
 
   useEffect(() => {
     if (!running || retryAt === null) return;
@@ -3297,6 +3347,26 @@ function StandardTimelineBoundary({
             >
               {detail}
             </p>
+          ) : null}
+          {failed && sessionID ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className="mt-1 h-6 text-destructive/90 hover:text-destructive"
+              onClick={() => {
+                requestComposerAction({
+                  action: "retry",
+                  profileID: runtime?.profileID ?? null,
+                  sessionID,
+                  requestedAt: Date.now(),
+                  ...(userMessageID ? { messageID: userMessageID } : {}),
+                });
+              }}
+            >
+              <RotateCcw aria-hidden="true" />
+              重试
+            </Button>
           ) : null}
         </div>
       </div>
@@ -3643,10 +3713,12 @@ export const MessageRow = memo(function MessageRow({
   message,
   parts: selectedParts,
   className,
+  sessionID,
 }: {
   message: PalotMessage;
   parts?: PalotMessageContent[];
   className?: string;
+  sessionID?: string;
 }) {
   const role = messageRole(message);
   const parts =
@@ -3660,6 +3732,8 @@ export const MessageRow = memo(function MessageRow({
       parts.some(
         (part) => !("text" in part) || (typeof part.text === "string" && part.text.trim() !== ""),
       ));
+  const requestComposerAction = useSetAtom(composerActionRequestAtom);
+  const runtime = useAtomValue(runtimeAtom);
   const userContent = (
     <>
       {message.fileReferences?.length || message.skillReferences?.length ? (
@@ -3704,6 +3778,29 @@ export const MessageRow = memo(function MessageRow({
             )}
           </BubbleContent>
         </Bubble>
+        {role === "user" && sessionID ? (
+          <div
+            data-slot="message-actions"
+            className="flex h-6 items-center gap-1 opacity-0 transition-opacity duration-150 ease-out group-hover/message:opacity-100 group-focus-within/message:opacity-100 motion-reduce:transition-none"
+          >
+            <IconButton
+              label="撤回重编"
+              size="icon-sm"
+              className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
+              onClick={() => {
+                requestComposerAction({
+                  action: "reedit",
+                  profileID: runtime?.profileID ?? null,
+                  sessionID,
+                  requestedAt: Date.now(),
+                  messageID: message.id,
+                });
+              }}
+            >
+              <Undo2 aria-hidden="true" />
+            </IconButton>
+          </div>
+        ) : null}
       </MessageContent>
     </Message>
   );

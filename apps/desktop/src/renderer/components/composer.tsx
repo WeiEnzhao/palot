@@ -447,6 +447,8 @@ function ComposerView({
   const pendingInputsRef = useRef(pendingInputs);
   const backgroundActionRef = useRef(false);
   const activeDraftScopeRef = useRef<string | null>(draftScope);
+  /** Set when a revert restored a prompt that should be sent on the next commit. */
+  const pendingAutoSendRef = useRef(false);
 
   useLayoutEffect(() => {
     activeDraftScopeRef.current = draftScope;
@@ -1383,11 +1385,55 @@ function ComposerView({
     return false;
   }
 
+  /**
+   * Reverts the session to one user message and restores its prompt.
+   * `mode: "send"` re-sends the restored prompt, which is how a failed turn retries.
+   */
+  async function revertToUserMessage(messageID: string | undefined, mode: "draft" | "send") {
+    const userMessages = messages.filter((message) => message.type === "user");
+    const target = messageID
+      ? userMessages.find((message) => message.id === messageID)
+      : userMessages[userMessages.length - 1];
+    if (!target) {
+      if (activeDraftScopeRef.current === draftScope) {
+        setAttachmentErrors(["没有可撤回的消息。"]);
+      }
+      return;
+    }
+    try {
+      setSending(true);
+      const connectionID = runtime?.connectionID;
+      await palot.interrupt(session.id, connectionID);
+      await palot.waitForSessionIdle(session.id, connectionID);
+      const updated = await palot.stageSessionRevert(
+        { sessionID: session.id, messageID: target.id },
+        connectionID,
+      );
+      if (updated) cacheSession(updated);
+      setDraft(composerDraftWithRetainedFiles(target));
+      setFiles(retainedComposerFiles(target));
+      setComments(() => reviewCommentsFromMessage(target) ?? []);
+      setBrowserComments(() => browserCommentsFromMessage(target) ?? []);
+      // The restored prompt is sent on the next commit, once the draft state lands.
+      if (mode === "send") pendingAutoSendRef.current = true;
+    } catch (error) {
+      if (activeDraftScopeRef.current === draftScope) {
+        setAttachmentErrors([error instanceof Error ? error.message : "撤回失败"]);
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
   // Palette task actions that need this composer's draft or menus.
   const handleComposerAction = useEffectEvent((request: ComposerActionRequest) => {
     if (requestBody || locationRecovery.missing) return;
     if (request.action === "model" || request.action === "agent") {
       if (!sending && !composerSelection.busy) setActiveMenu(request.action);
+      return;
+    }
+    if (request.action === "reedit" || request.action === "retry") {
+      void revertToUserMessage(request.messageID, request.action === "retry" ? "send" : "draft");
       return;
     }
     void runBuiltinCommand(request.action, undefined, "palette");
@@ -1401,6 +1447,18 @@ function ComposerView({
     if (Date.now() - request.requestedAt > COMPOSER_ACTION_TTL_MS) return;
     handleComposerAction(request);
   }, [composerActionRequest, onCreateSession, runtime?.profileID, session.id, store]);
+
+  const sendPendingAutoSend = useEffectEvent(() => {
+    pendingAutoSendRef.current = false;
+    void submit();
+  });
+  useEffect(() => {
+    // A retry restores the prompt and sends it once the restored draft lands.
+    if (!pendingAutoSendRef.current) return;
+    if (!draft.text.trim() && files.length === 0 && comments.length === 0 && browserComments.length === 0)
+      return;
+    sendPendingAutoSend();
+  }, [browserComments, comments, draft, files]);
 
   async function submit(
     deliveryOverride?: ComposerDelivery,
