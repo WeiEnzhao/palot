@@ -989,6 +989,52 @@
   backdrop-filter: none !important;
 }
 
+/* Native liquid glass paints its pane and leaves the CSS surface transparent — which
+   means the sidebar opacity knob (外观 → 侧边栏不透明度 →
+   --sidebar-background-translucent) has no surface to act on in that tier. In
+   translucent wallpaper mode the sidebar instead re-paints an ALIGNED slice of the
+   wallpaper and tints it with the knob, exactly like the composer card, so the
+   slider has a real effect. Non-wallpaper tiers keep the native pane. */
+:root[data-platform="darwin"][data-theme="macos"][data-chrome-tier="liquid-glass"][data-sidebar-material="translucent"][data-palot-wallpaper="image"][data-content-translucent="true"]:not(
+    [data-reduced-transparency="true"]
+  )
+  :is(.palot-sidebar[data-slot="sidebar"], .palot-settings-sidebar, .palot-navigation-rail) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+:root[data-platform="darwin"][data-theme="macos"][data-chrome-tier="liquid-glass"][data-sidebar-material="translucent"][data-palot-wallpaper="image"][data-content-translucent="true"]:not(
+    [data-reduced-transparency="true"]
+  )
+  :is(.palot-sidebar[data-slot="sidebar"], .palot-settings-sidebar, .palot-navigation-rail)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: linear-gradient(
+      var(--sidebar-background-translucent),
+      var(--sidebar-background-translucent)
+    ),
+    var(--palot-wallpaper-image);
+  background-size: auto, cover;
+  background-position: 0 0, center;
+  background-attachment: scroll, fixed;
+  filter: blur(28px) saturate(1.5) brightness(1.05);
+  transform: scale(1.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+  pointer-events: none;
+}
+
+/* Gradient wallpaper fallback: nothing to re-paint, so give the knob a plain fill. */
+:root[data-platform="darwin"][data-theme="macos"][data-chrome-tier="liquid-glass"][data-sidebar-material="translucent"][data-palot-wallpaper="gradient"][data-content-translucent="true"]:not(
+    [data-reduced-transparency="true"]
+  )
+  :is(.palot-sidebar[data-slot="sidebar"], .palot-settings-sidebar, .palot-navigation-rail) {
+  background-color: var(--sidebar-background-translucent) !important;
+}
+
 :root:is(
     [data-chrome-tier="liquid-glass"],
     [data-chrome-tier="vibrancy"]
