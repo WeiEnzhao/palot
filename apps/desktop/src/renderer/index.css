@@ -700,6 +700,29 @@
   backdrop-filter: saturate(var(--glass-content-saturation)) blur(var(--glass-content-blur));
 }
 
+/* Fullscreen: markdown table headers join the content wash instead of a solid muted band. */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  .markdown th {
+  background-color: color-mix(in oklch, var(--muted) var(--content-surface-opacity), transparent);
+}
+
+/* Fullscreen: translucent dark sidebar base over a bright wallpaper leaves the
+   theme's light sidebar text unreadable — retint sidebar text to the standard
+   foreground tokens (scheme-aware), while keeping hover/selected surfaces. */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  :is(
+    .palot-sidebar[data-slot="sidebar"],
+    .palot-navigation-rail,
+    .palot-settings-sidebar,
+    .palot-sidebar-peek
+  ) {
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-secondary-foreground: color-mix(in oklch, var(--foreground) 70%, transparent);
+  --color-sidebar-tertiary-foreground: color-mix(in oklch, var(--foreground) 50%, transparent);
+  --color-sidebar-primary-foreground: var(--foreground);
+  --color-sidebar-accent-foreground: var(--foreground);
+}
+
 .palot-onboarding-surface {
   background: var(--content-background-opaque);
   opacity: 1;
