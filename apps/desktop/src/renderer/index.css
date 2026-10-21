@@ -721,6 +721,13 @@
   background-color: color-mix(in oklch, var(--muted) var(--queue-surface-opacity), transparent);
 }
 
+/* Fullscreen: the user message bubble loses the solid secondary pill and reads as a
+   dark-tinted glass pill over the wash (a light mix double-stacks to ~80% white). */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  [data-slot="message"][data-align="end"] [data-slot="bubble-content"] {
+  background-color: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
 /* Fullscreen: inline code chips go from a solid light pill to a glass-like translucent
    pill (the solid --code-background/--muted double-stacks into an opaque white blob). */
 :root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])

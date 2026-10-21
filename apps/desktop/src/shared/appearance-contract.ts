@@ -164,7 +164,7 @@ export const DEFAULT_APPEARANCE_PREFERENCES: AppearancePreferences = Object.free
   glassOpacity: "theme",
   sidebarOpacity: "theme",
   contentOpacity: 100,
-  queueOpacity: 100,
+  queueOpacity: 30,
   nativeGlassTint: "theme",
   nativeGlassVariant: "theme",
   windowMaterial: "automatic",
