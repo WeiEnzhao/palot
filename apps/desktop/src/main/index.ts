@@ -98,7 +98,7 @@ const temporaryUserData =
   process.env.PALOT_E2E_USER_DATA ?? process.env.PALOT_RELEASE_SMOKE_USER_DATA;
 if (temporaryUserData) {
   app.setPath("userData", temporaryUserData);
-} else if (buildIdentity.channel !== "stable") {
+} else {
   const userDataPath = path.join(app.getPath("appData"), buildIdentity.userDataName);
   app.setPath("userData", userDataPath);
 }
@@ -217,6 +217,12 @@ async function createWindow(
   if (sessionID)
     windowTargets.set(window, { type: "session", sessionID, ...(profileID ? { profileID } : {}) });
   window.on("focus", () => openCodeRuntime.recoverEventStream("focus"));
+  window.on("enter-full-screen", () => {
+    window.webContents.send(IPC_CHANNELS.wallpaperFullscreenChanged, true);
+  });
+  window.on("leave-full-screen", () => {
+    window.webContents.send(IPC_CHANNELS.wallpaperFullscreenChanged, false);
+  });
   let rendererLoaded = false;
   registerWindowRole(window, "main");
   installNativeContextMenu(window);
