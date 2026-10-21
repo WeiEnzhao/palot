@@ -687,6 +687,14 @@
   );
 }
 
+/* Fullscreen: the drag header merges into the surface wash entirely — an extra white
+   scrim on top turns into a floating white block over light wallpaper bands. */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  :is(.palot-main-surface-header, .palot-workbench-surface-header) {
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+}
+
 /* Fullscreen: the composer card joins the content wash. Its own translucent token
    (--glass-composer-opacity) follows the composer *material* preference (often solid),
    not the content-opacity slider, so drive it from the baked content-header mix instead. */
