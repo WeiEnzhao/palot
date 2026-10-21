@@ -584,8 +584,11 @@ describe("InboxSidebarContent", () => {
         ),
       ).toEqual({ currentBranch: null, defaultBranch: "main" }),
     );
-    const label = await screen.findByTitle("/data/opencode/worktree/projec/quiet-river");
-    expect(label.textContent).toBe("quiet-river");
+    const label = await screen.findByText("Worktree task");
+    expect(label).toBeTruthy();
+    // Grouped rows mirror the multi-connection layout: no branch/worktree label.
+    expect(screen.queryByTitle("/data/opencode/worktree/projec/quiet-river")).toBeNull();
+    expect(screen.queryByText("quiet-river")).toBeNull();
     expect(screen.queryByText("Detached HEAD")).toBeNull();
   });
 

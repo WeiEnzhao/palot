@@ -103,22 +103,6 @@ export function InboxCardSurface({
                 {item.session.title ?? "Untitled task"}
               </div>
             )}
-            <span className="flex min-w-0 shrink items-center gap-1 text-meta text-muted-foreground opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
-              {detachedWorktree ? (
-                <FolderGit2
-                  className="size-[11px] shrink-0 text-sidebar-foreground/55"
-                  aria-hidden="true"
-                />
-              ) : (
-                <GitBranch
-                  className="size-[11px] shrink-0 text-sidebar-foreground/55"
-                  aria-hidden="true"
-                />
-              )}
-              <span className="max-w-32 truncate" title={item.session.location.directory}>
-                {branchLabel(vcs, item)}
-              </span>
-            </span>
             {item.attention || item.failed || item.running ? (
               <span
                 className="size-1 shrink-0 rounded-full bg-info opacity-80"

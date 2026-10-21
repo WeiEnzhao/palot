@@ -1106,6 +1106,86 @@ describe("applyOpenCodeEvents", () => {
     });
   });
 
+  it("keeps an inline image preview on the enqueued attachment", () => {
+    const png =
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+    const next = applyOpenCodeEvents([], "session", [
+      event("session.inbox.enqueued", {
+        sessionID: "session",
+        inboxID: "user-1",
+        item: {
+          type: "user",
+          delivery: "steer",
+          payload: {
+            text: "Look at this",
+            files: [
+              {
+                data: png,
+                mime: "image/png",
+                name: "shot.png",
+                source: { type: "uri", uri: "file:///tmp/shot.png" },
+              },
+            ],
+          },
+        },
+      }),
+    ]);
+
+    expect(next[0]?.files?.[0]?.previewDataUrl).toBe(`data:image/png;base64,${png}`);
+  });
+
+  it("keeps the optimistic image preview when the server echo drops the bytes", () => {
+    const previewDataUrl = "data:image/png;base64,iVBORw0KGgo=";
+    const optimistic: PalotMessage = {
+      id: "user-1",
+      type: "user",
+      optimistic: true,
+      createdAt: 1,
+      completedAt: 1,
+      text: "Look at this",
+      agent: null,
+      model: null,
+      tokens: null,
+      finish: null,
+      content: [],
+      data: null,
+      delivery: "steer",
+      files: [
+        {
+          uri: "file:///tmp/shot.png",
+          name: "shot.png",
+          mime: "image/png",
+          size: null,
+          previewDataUrl,
+        },
+      ],
+    };
+
+    const next = applyOpenCodeEvents([optimistic], "session", [
+      event("session.inbox.enqueued", {
+        sessionID: "session",
+        inboxID: "user-1",
+        item: {
+          type: "user",
+          delivery: "steer",
+          payload: {
+            text: "Look at this",
+            files: [
+              {
+                data: "",
+                mime: "image/png",
+                name: "shot.png",
+                source: { type: "uri", uri: "file:///tmp/shot.png" },
+              },
+            ],
+          },
+        },
+      }),
+    ]);
+
+    expect(next[0]?.files?.[0]?.previewDataUrl).toBe(previewDataUrl);
+  });
+
   it("keeps a locally submitted inbox item optimistic until transcript history contains it", () => {
     const optimistic: PalotMessage = {
       id: "user-1",

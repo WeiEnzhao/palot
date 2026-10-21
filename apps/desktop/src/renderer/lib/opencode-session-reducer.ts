@@ -10,6 +10,7 @@ import type {
   PalotSession,
 } from "../../shared";
 import type { SessionExecutionState, SessionRuntimeStatus } from "../atoms/workspace";
+import { attachmentImageDataUrl } from "./attachment-image";
 import {
   createStreamingPatchInputState,
   streamingPatchInputFromJson,
@@ -305,16 +306,35 @@ function admittedAttachment(
   const source = record(data.source);
   const mime = string(data.mime);
   if (!mime) return null;
+  const previewDataUrl = attachmentImageDataUrl(mime, data.data);
   return {
     uri: string(source.uri) ?? `opencode-inline:${messageID}:attachment-${index + 1}`,
     name: string(data.name) ?? `Attachment ${index + 1}`,
     mime,
+    ...(previewDataUrl ? { previewDataUrl } : {}),
     size: null,
   };
 }
 
-function admittedMention(value: JsonValue | undefined) {
-  const data = record(value);
+/**
+ * Keep the optimistic inline preview when the server echo omits the attachment
+ * bytes: without this the image collapses to a plain file card right after send.
+ */
+function mergeAttachmentPreviews(
+  next: PalotFileAttachment[] | undefined,
+  current: PalotFileAttachment[] | undefined,
+): PalotFileAttachment[] | undefined {
+  if (!next) return current;
+  if (!current?.length) return next;
+  const previous = new Map(current.map((file) => [file.uri, file]));
+  return next.map((file) => {
+    if (file.previewDataUrl) return file;
+    const before = previous.get(file.uri);
+    return before?.previewDataUrl ? { ...file, previewDataUrl: before.previewDataUrl } : file;
+  });
+}
+
+function admittedMention(value: JsonValue | undefined) {  const data = record(value);
   const start = number(data.start);
   const end = number(data.end);
   const text = string(data.text);
@@ -524,7 +544,7 @@ export function applyOpenCodeEvents(
               ? {
                   ...value,
                   ...(current.optimistic === true ? { optimistic: true } : {}),
-                  files: value.files ?? current.files,
+                  files: mergeAttachmentPreviews(value.files, current.files),
                   ...(current.timelineAt !== undefined ? { timelineAt: current.timelineAt } : {}),
                   ...(current.runStartedAt !== undefined
                     ? { runStartedAt: current.runStartedAt }

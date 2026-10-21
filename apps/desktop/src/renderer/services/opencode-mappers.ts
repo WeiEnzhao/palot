@@ -28,6 +28,7 @@ import type {
   PalotSession,
   PalotSkill,
 } from "../../shared";
+import { attachmentImageDataUrl } from "../lib/attachment-image";
 
 const projectCache = new WeakMap<Project, PalotProject>();
 const sessionCache = new WeakMap<SessionInfo, PalotSession>();
@@ -209,25 +210,6 @@ function record(value: JsonValue): Record<string, JsonValue> {
 }
 
 // Match the read-image preview raster allowlist and native attachment byte limit.
-const ATTACHMENT_IMAGE_MIMES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
-const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
-
-function attachmentImageDataUrl(attachment: PromptFileAttachment): string | undefined {
-  const mime = attachment.mime.toLowerCase();
-  const data = attachment.data;
-  if (
-    !ATTACHMENT_IMAGE_MIMES.has(mime) ||
-    !data ||
-    data.length > Math.ceil(MAX_IMAGE_BYTES / 3) * 4 ||
-    data.length % 4 !== 0 ||
-    !/^[A-Za-z0-9+/]+={0,2}$/.test(data)
-  )
-    return undefined;
-  const padding = data.endsWith("==") ? 2 : data.endsWith("=") ? 1 : 0;
-  if ((data.length / 4) * 3 - padding > MAX_IMAGE_BYTES) return undefined;
-  return `data:${mime};base64,${data}`;
-}
-
 function mapFiles(files: PromptFileAttachment[] | undefined) {
   if (!files) return {};
   const attachments = files
@@ -239,7 +221,7 @@ function mapFiles(files: PromptFileAttachment[] | undefined) {
           : `opencode-inline:attachment-${index + 1}`,
       name: attachment.name ?? `Attachment ${index + 1}`,
       mime: attachment.mime,
-      previewDataUrl: attachmentImageDataUrl(attachment),
+      previewDataUrl: attachmentImageDataUrl(attachment.mime, attachment.data),
       size: null,
     }));
   return {
