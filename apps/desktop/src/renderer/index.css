@@ -697,11 +697,11 @@
   backdrop-filter: none !important;
 }
 
-/* Fullscreen: the composer card is thickness-adjustable via its own knob
-   (外观 → 输入框不透明度, baked as --composer-surface-opacity).
-   It sits INSIDE .palot-main-surface (which already paints the content wash), so any
-   extra translucent layer here double-stacks — the knob mixes the *card* only. */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+/* Translucent (fullscreen or plain): the composer card is thickness-adjustable via its
+   own knob (外观 → 输入框不透明度, baked as --composer-surface-opacity).
+   It sits INSIDE the washed surface, so any extra translucent layer double-stacks —
+   the knob mixes the *card* only. */
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer .palot-surface-backdrop[data-tone="composer"] {
   background-color: color-mix(in oklch, var(--muted) var(--composer-surface-opacity), transparent);
   backdrop-filter: none !important;
@@ -714,16 +714,17 @@
   background-color: color-mix(in oklch, var(--foreground) 14%, transparent);
 }
 
-/* Fullscreen: the composer queue stack follows its own opacity knob
+/* Translucent (fullscreen or plain): queue stack thickness via its own knob
    (外观 → 队列卡片不透明度, baked as --queue-surface-opacity). 0 = melts into the wash. */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer-queue {
   background-color: color-mix(in oklch, var(--muted) var(--queue-surface-opacity), transparent);
 }
 
-/* Fullscreen: the user message bubble loses the solid secondary pill and reads as a
-   dark-tinted glass pill over the wash (a light mix double-stacks to ~80% white). */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+/* Translucent (fullscreen or plain): the user message bubble loses the solid secondary
+   pill and reads as a dark-tinted glass pill over the wash (a light mix double-stacks
+   to ~80% white). */
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   [data-slot="message"][data-align="end"] [data-slot="bubble-content"] {
   background-color: color-mix(in oklch, var(--foreground) 10%, transparent);
 }
