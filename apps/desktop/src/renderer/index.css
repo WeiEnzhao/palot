@@ -699,14 +699,41 @@
 
 /* Translucent (fullscreen or plain): the composer card is thickness-adjustable via its
    own knob (外观 → 输入框不透明度 → --composer-surface-mix).
-   It sits INSIDE the washed surface, so any extra translucent layer double-stacks —
-   the knob mixes the *card* only. The backdrop blur stays: transcript rows scroll
-   UNDER the glass dock while scrolling, and a frosted pass turns that from "text
-   overlapping the input" into an intentional glass effect. */
+   The card sits INSIDE the washed surface with the scroll region clipped above the
+   dock — there is no textured content behind it, so a translucent fill + backdrop
+   blur just reads as a flat milky slab. Instead the card re-paints an ALIGNED slice
+   of the wallpaper itself (background-attachment: fixed + cover = the same viewport
+   mapping as the global backdrop layer) and tints it with the knob: a true
+   frosted-glass card rather than a wash-on-wash stack. */
 :root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer .palot-surface-backdrop[data-tone="composer"] {
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  overflow: hidden;
+}
+
+/* Gradient fallback (no static wallpaper source): simple translucent fill. */
+:root[data-content-translucent="true"][data-palot-wallpaper="gradient"]:not([data-reduced-transparency="true"])
+  .palot-composer .palot-surface-backdrop[data-tone="composer"] {
   background-color: var(--composer-surface-mix) !important;
-  backdrop-filter: saturate(1.15) blur(20px) !important;
+}
+
+/* Static wallpaper: local re-paint. The tint layer rides on top; scale buys room
+   for the blur edge fade, clipped by the backdrop's rounded overflow box. */
+:root[data-content-translucent="true"][data-palot-wallpaper="image"]:not([data-reduced-transparency="true"])
+  .palot-composer .palot-surface-backdrop[data-tone="composer"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(var(--composer-surface-mix), var(--composer-surface-mix)),
+    var(--palot-wallpaper-image);
+  background-size: auto, cover;
+  background-position: 0 0, center;
+  background-attachment: scroll, fixed;
+  filter: blur(28px) saturate(1.5) brightness(1.05);
+  transform: scale(1.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 
 /* Translucent: markdown table headers join the content wash with a *dark* tint instead
@@ -720,9 +747,36 @@
    (外观 → 队列卡片不透明度 → --queue-surface-mix). 0% = melts into the wash. */
 :root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer-queue {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+}
+
+/* Gradient fallback (no static wallpaper source): simple translucent fill. */
+:root[data-content-translucent="true"][data-palot-wallpaper="gradient"]:not([data-reduced-transparency="true"])
+  .palot-composer-queue {
   background-color: var(--queue-surface-mix) !important;
-  /* Same frosted pass as the composer: transcript rows pass under the queue strip. */
-  backdrop-filter: saturate(1.15) blur(20px) !important;
+}
+
+/* Static wallpaper: aligned local re-paint, tinted by the queue knob. z-index:-1
+   plus the section's isolation keeps the paint under the strip's own content. */
+:root[data-content-translucent="true"][data-palot-wallpaper="image"]:not([data-reduced-transparency="true"])
+  .palot-composer-queue::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: linear-gradient(var(--queue-surface-mix), var(--queue-surface-mix)),
+    var(--palot-wallpaper-image);
+  background-size: auto, cover;
+  background-position: 0 0, center;
+  background-attachment: scroll, fixed;
+  filter: blur(28px) saturate(1.5) brightness(1.05);
+  transform: scale(1.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22), inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 
 /* Translucent (fullscreen or plain): the user message bubble loses the solid secondary

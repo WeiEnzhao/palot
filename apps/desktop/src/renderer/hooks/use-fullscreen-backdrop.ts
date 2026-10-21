@@ -70,5 +70,23 @@ export function useFullscreenBackdrop(): FullscreenBackdropLayer | null {
     };
   }, []);
 
+  useEffect(() => {
+    // Mirror the resolved layer onto :root so translucent glass cards (composer,
+    // queue) can re-paint an aligned slice of the wallpaper locally.
+    const root = document.documentElement;
+    if (!layer) {
+      delete root.dataset.palotWallpaper;
+      root.style.removeProperty("--palot-wallpaper-image");
+      return;
+    }
+    if (layer.kind === "image") {
+      root.dataset.palotWallpaper = "image";
+      root.style.setProperty("--palot-wallpaper-image", `url(${layer.url})`);
+    } else {
+      root.dataset.palotWallpaper = "gradient";
+      root.style.removeProperty("--palot-wallpaper-image");
+    }
+  }, [layer]);
+
   return layer;
 }
