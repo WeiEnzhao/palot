@@ -447,27 +447,20 @@ describe("InboxSidebarContent", () => {
     expect(screen.getByRole("button", { name: /^Open Inbox task,/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "取消置顶任务" })).toBeTruthy();
     expect(screen.getAllByRole("button", { name: "结算任务" })).toHaveLength(1);
-    expect(screen.getByTitle(/Working for/)).toBeTruthy();
-    expect(screen.getByText(/^New · /)).toBeTruthy();
     const pinnedCard = screen
       .getByRole("button", { name: /^Open Pinned task,/ })
       .closest<HTMLElement>("[data-inbox-card]")!;
     const runningCard = screen
       .getByRole("button", { name: /^Open Inbox task,/ })
       .closest<HTMLElement>("[data-inbox-card]")!;
-    expect(within(pinnedCard).getByLabelText("未读任务动态")).toBeTruthy();
-    // Grouped shelves carry the project name on the folder header, not on each card.
+    // Grouped rows mirror the multi-connection layout: title + state dot + PR only,
+    // no per-card project label, branch label or relative time.
     expect(within(pinnedCard).queryByText("Palot")).toBeNull();
     expect(screen.getAllByText("Palot").length).toBeGreaterThan(0);
-    expect(within(pinnedCard).getByText("pinned")).toBeTruthy();
-    // Grouped rows are single-line: the status glyph sits inline with the title.
-    expect(
-      within(pinnedCard).getByText("Pinned task").parentElement?.parentElement?.querySelector(
-        "[aria-label]",
-      ),
-    ).not.toBeNull();
-    expect(within(runningCard).queryByLabelText("未读任务动态")).toBeNull();
-    expect(within(runningCard).getByTitle(/Working for/)).toBeTruthy();
+    expect(screen.queryByTitle(/Working for/)).toBeNull();
+    expect(screen.queryByText(/^New · /)).toBeNull();
+    expect(within(pinnedCard).queryByLabelText("需要关注")).toBeNull();
+    expect(within(runningCard).getByLabelText("工作中")).toBeTruthy();
     expect(screen.getByRole("button", { name: "添加项目文件夹" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "收件箱视图设置" }));
     expect(await screen.findByText("排序")).toBeTruthy();

@@ -93,55 +93,40 @@ export function InboxCardSurface({
       <div
         className={cn(
           "pointer-events-none relative z-10 flex flex-col justify-center pr-3 leading-4",
-          sidebarItemVariants({ density: "rich", interactive: false, icons: "custom" }),
+          sidebarItemVariants({ density: grouped ? "single" : "rich", interactive: false, icons: "custom" }),
         )}
       >
         {grouped ? (
-          <div className="flex min-w-0 items-center gap-2 text-compact">
+          <div className="flex min-w-0 items-center gap-2 text-compact transition-[padding] group-hover/inbox-card:pr-14">
             {titleEditor ?? (
               <div className="min-w-0 flex-1 truncate font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
                 {item.session.title ?? "Untitled task"}
               </div>
             )}
-            <span className="flex shrink-0 items-center gap-1 text-meta text-muted-foreground opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
+            <span className="flex min-w-0 shrink items-center gap-1 text-meta text-muted-foreground opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
               {detachedWorktree ? (
                 <FolderGit2
-                  className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
+                  className="size-[11px] shrink-0 text-sidebar-foreground/55"
                   aria-hidden="true"
                 />
               ) : (
                 <GitBranch
-                  className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
+                  className="size-[11px] shrink-0 text-sidebar-foreground/55"
                   aria-hidden="true"
                 />
               )}
-              <span
-                className="max-w-40 -translate-y-px truncate"
-                title={item.session.location.directory}
-              >
+              <span className="max-w-32 truncate" title={item.session.location.directory}>
                 {branchLabel(vcs, item)}
               </span>
             </span>
-            {pullRequest ? <span className="shrink-0">{pullRequest}</span> : null}
-            {visualState === "running" ? (
-              <WorkingStatus startedAt={item.runningSince} />
-            ) : (
+            {item.attention || item.failed || item.running ? (
               <span
-                data-inbox-status
-                className={cn(
-                  "flex shrink-0 items-center gap-1 text-meta tabular-nums text-muted-foreground transition-opacity group-hover/inbox-card:opacity-0 group-has-[:focus-visible]/inbox-card:opacity-0",
-                  item.attention && "text-warning",
-                  item.failed && "text-destructive",
-                )}
-              >
-                <InboxStateGlyph state={visualState} />
-                {visualState === "unread" ? (
-                  <span>New · {formatRelativeTime(sessionActivityAt(item.session))}</span>
-                ) : (
-                  status
-                )}
-              </span>
-            )}
+                className="size-1 shrink-0 rounded-full bg-info opacity-80"
+                role="img"
+                aria-label={item.attention ? "需要关注" : item.running ? "工作中" : "已失败"}
+              />
+            ) : null}
+            {pullRequest ? <span className="shrink-0">{pullRequest}</span> : null}
           </div>
         ) : (
           <>
