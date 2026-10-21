@@ -1786,23 +1786,26 @@ const ParentSessionComposer = memo(function ParentSessionComposer({
         <ConnectionDestination />
         <div
           className="flex h-6 min-w-0 items-center gap-1 px-1.5 text-meta leading-none text-muted-foreground"
+          data-palot-meta-checkout
           title={isAdditionalCheckout ? "额外检出 · 工作树" : "当前检出"}
         >
           <FolderGit2 className="size-3 shrink-0" aria-hidden="true" />
           <span className="truncate">{isAdditionalCheckout ? "工作树" : "检出"}</span>
         </div>
         <div className="flex h-6 min-w-0 items-center gap-2 px-1.5 text-meta leading-none text-muted-foreground">
-          {runtime ? (
-            <RunningWorkControl
-              session={session}
-              sessionIDs={shellSessionIDs}
-              items={backgroundWork}
-              profileID={runtime.profileID}
-              connectionID={runtime.connectionID}
-            />
-          ) : null}
+          <span className="contents" data-palot-meta-work>
+            {runtime ? (
+              <RunningWorkControl
+                session={session}
+                sessionIDs={shellSessionIDs}
+                items={backgroundWork}
+                profileID={runtime.profileID}
+                connectionID={runtime.connectionID}
+              />
+            ) : null}
+          </span>
           <GitBranch className="size-3 shrink-0" aria-hidden="true" />
-          <span className="truncate">
+          <span className="truncate" data-palot-meta-branch>
             {branchQuery.isPending
               ? "正在加载分支"
               : (branchQuery.data?.currentBranch ?? "分离 HEAD")}
@@ -3784,7 +3787,7 @@ function MessageAttachments({
 }) {
   return (
     <AttachmentGroup
-      className={cn("max-w-full justify-start py-0", className)}
+      className={cn("palot-user-attachments max-w-full justify-start py-0", className)}
       aria-label="附件"
     >
       {attachmentKeys(files).map(({ key, file }) => (

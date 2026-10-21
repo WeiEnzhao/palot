@@ -670,7 +670,7 @@
   user-select: none;
   background-size: cover;
   background-position: center;
-  filter: blur(48px) saturate(1.12) brightness(1.06);
+  filter: blur(var(--palot-backdrop-blur, 48px)) saturate(1.12) brightness(1.06);
   transform: scale(1.05);
 }
 
@@ -685,6 +685,19 @@
     #7ac7c1 80%,
     #a8d8b0 100%
   );
+}
+
+/* Fullscreen: the drag header and the composer card join the content wash, so the
+   wallpaper reads as one continuous surface instead of white blocks floating on it. */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  .palot-main-surface-header {
+  background-color: var(--content-background-translucent) !important;
+}
+
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  .palot-composer .palot-surface-backdrop[data-tone="composer"] {
+  background-color: var(--composer-background-translucent);
+  backdrop-filter: saturate(var(--glass-content-saturation)) blur(var(--glass-content-blur));
 }
 
 .palot-onboarding-surface {
@@ -1010,6 +1023,33 @@
 @container composer (max-width: 25rem) {
   .palot-composer [data-palot-model-name] {
     max-width: 6.75rem;
+  }
+}
+
+/* Fullscreen-adjacent: user-message attachments live inline in the bubble — no second card. */
+.palot-user-attachments [data-slot="attachment"] {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Composer meta cluster collapses by priority instead of wrapping into extra rows:
+   checkout label goes first, then the running-work chip, then the branch name. */
+@container composer (max-width: 50rem) {
+  .palot-composer [data-palot-meta-checkout] {
+    display: none;
+  }
+}
+
+@container composer (max-width: 42rem) {
+  .palot-composer [data-palot-meta-work] {
+    display: none;
+  }
+}
+
+@container composer (max-width: 34rem) {
+  .palot-composer [data-palot-meta-branch] {
+    display: none;
   }
 }
 
