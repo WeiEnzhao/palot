@@ -2053,6 +2053,20 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
+            title="队列卡片不透明度"
+            description="排队消息卡的厚度，0 = 完全融入壁纸水洗层。"
+            control={
+              <AppearanceSlider
+                label="队列卡片不透明度"
+                value={preferences.queueOpacity}
+                min={0}
+                max={100}
+                defaultValue={DEFAULT_APPEARANCE_PREFERENCES.queueOpacity}
+                onChange={(queueOpacity) => update({ queueOpacity })}
+              />
+            }
+          />
+          <SettingsRow
             title="原生玻璃色调"
             description="将 macOS Liquid Glass 着色为当前主题背景色。"
             control={

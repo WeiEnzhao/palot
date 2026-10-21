@@ -688,8 +688,10 @@
 }
 
 /* Fullscreen: the drag header merges into the surface wash entirely — an extra white
-   scrim on top turns into a floating white block over light wallpaper bands. */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+   scrim on top turns into a floating white block over light wallpaper bands.
+   The doubled [data-palot-fullscreen] bumps specificity to (0,6,0) so this outranks
+   the (0,5,0) !important tier-gated upstream rule regardless of source order. */
+:root[data-palot-fullscreen="true"][data-palot-fullscreen][data-content-translucent="true"]:not([data-reduced-transparency="true"])
   :is(.palot-main-surface-header, .palot-workbench-surface-header) {
   background-color: transparent !important;
   backdrop-filter: none !important;
@@ -710,6 +712,13 @@
 :root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .markdown th {
   background-color: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+/* Fullscreen: the composer queue stack follows its own opacity knob
+   (外观 → 队列卡片不透明度, baked as --queue-surface-opacity). 0 = melts into the wash. */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  .palot-composer-queue {
+  background-color: color-mix(in oklch, var(--muted) var(--queue-surface-opacity), transparent);
 }
 
 /* Fullscreen: inline code chips go from a solid light pill to a glass-like translucent

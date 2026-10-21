@@ -136,7 +136,7 @@ export function ComposerQueue({
   return (
     <section
       aria-label="待发送的消息"
-      className="relative mx-2 -mb-4 min-w-0 rounded-t-2xl border border-b-0 border-foreground/10 bg-muted px-1 pt-1 pb-4"
+      className="relative mx-2 -mb-4 min-w-0 rounded-t-2xl border border-b-0 border-foreground/10 bg-muted palot-composer-queue px-1 pt-1 pb-4"
     >
       {paused ? (
         <PausedQueueRow sessionID={sessionID} requests={requests} onClearFailed={markFailed} />

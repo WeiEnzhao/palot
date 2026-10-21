@@ -257,6 +257,7 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--command-surface-strong": `color-mix(in ${commandBlendSpace}, ${popoverSurface.surface} 88%, ${treatment.text.primary} 4%)`,
     "--command-backdrop": `color-mix(in oklch, ${palette.background} ${resolved.scheme === "light" ? 18 : 30}%, transparent)`,
     "--content-surface-opacity": `${contentOpacity}%`,
+    "--queue-surface-opacity": `${resolved.preferences.queueOpacity}%`,
     "--content-header-opacity": `${contentHeaderOpacity}%`,
     "--content-background-opaque": palette.background,
     "--content-background-translucent": translucentContent,
