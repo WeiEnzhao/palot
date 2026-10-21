@@ -135,6 +135,7 @@ export interface AppearancePreferences {
   sidebarOpacity: ThemeNumericPreference;
   contentOpacity: number;
   queueOpacity: number;
+  composerOpacity: number;
   nativeGlassTint: ThemeNumericPreference;
   nativeGlassVariant: NativeGlassVariantPreference;
   windowMaterial: WindowMaterialPreference;
@@ -165,6 +166,7 @@ export const DEFAULT_APPEARANCE_PREFERENCES: AppearancePreferences = Object.free
   sidebarOpacity: "theme",
   contentOpacity: 100,
   queueOpacity: 30,
+  composerOpacity: 30,
   nativeGlassTint: "theme",
   nativeGlassVariant: "theme",
   windowMaterial: "automatic",
@@ -2308,6 +2310,12 @@ export function normalizeAppearancePreferences(value: unknown): AppearancePrefer
       DEFAULT_APPEARANCE_PREFERENCES.contentOpacity,
     ),
     queueOpacity: number(input.queueOpacity, 0, 100, DEFAULT_APPEARANCE_PREFERENCES.queueOpacity),
+    composerOpacity: number(
+      input.composerOpacity,
+      0,
+      100,
+      DEFAULT_APPEARANCE_PREFERENCES.composerOpacity,
+    ),
     nativeGlassTint: themeNumber(input.nativeGlassTint, 0, 30, 0),
     nativeGlassVariant: pick(
       input.nativeGlassVariant,

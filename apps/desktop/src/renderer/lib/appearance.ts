@@ -258,6 +258,7 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--command-backdrop": `color-mix(in oklch, ${palette.background} ${resolved.scheme === "light" ? 18 : 30}%, transparent)`,
     "--content-surface-opacity": `${contentOpacity}%`,
     "--queue-surface-opacity": `${resolved.preferences.queueOpacity}%`,
+    "--composer-surface-opacity": `${resolved.preferences.composerOpacity}%`,
     "--content-header-opacity": `${contentHeaderOpacity}%`,
     "--content-background-opaque": palette.background,
     "--content-background-translucent": translucentContent,
