@@ -56,6 +56,7 @@ import {
   appearanceTheme,
   effectiveNativeGlass,
 } from "../../shared";
+import type { WallpaperBackdropBlur } from "../../shared/window-chrome";
 import type {
   AppearanceMode,
   AppearancePreferences,
@@ -1803,10 +1804,14 @@ function AppearanceSettings() {
     reducedTransparency: document.documentElement.dataset.reducedTransparency === "true",
   }));
   const [source, setSource] = useState<string | null>(null);
+  const [backdropBlur, setBackdropBlur] = useState<WallpaperBackdropBlur>("strong");
   useEffect(() => {
     void window.palot
       .getWallpaperBackdrop()
-      .then((state) => setSource(state.source))
+      .then((state) => {
+        setSource(state.source);
+        setBackdropBlur(state.blur);
+      })
       .catch(() => setSource(null));
   }, []);
   const [fontAvailability] = useState<Record<string, boolean>>(() => {
@@ -2116,6 +2121,26 @@ function AppearanceSettings() {
             }
           />
           <SettingsRow
+            title="侧边栏不透明度"
+            description="仅作用于半透明材质下的导航与设置侧栏。主题默认跟随当前调色板；拖低可在全屏背景下让壁纸整幅透上来。"
+            control={
+              <AppearanceSlider
+                label="侧边栏不透明度"
+                value={
+                  preferences.sidebarOpacity === "theme"
+                    ? themeTreatment.sidebar.opacity
+                    : preferences.sidebarOpacity
+                }
+                min={30}
+                max={100}
+                defaultValue={themeTreatment.sidebar.opacity}
+                isDefault={preferences.sidebarOpacity === "theme"}
+                onChange={(sidebarOpacity) => update({ sidebarOpacity })}
+                onReset={() => update({ sidebarOpacity: "theme" })}
+              />
+            }
+          />
+          <SettingsRow
             title="全屏背景"
             description={`真全屏时垫在半透明面板下的壁纸快照，当前来源：${fullscreenBackdropSourceLabel(source)}。普通窗口与原生材质不受影响。`}
             control={
@@ -2161,6 +2186,29 @@ function AppearanceSettings() {
                 </Button>
               </div>
             }
+          />
+          <AppearanceSelectRow
+            title="壁纸模糊强度"
+            description="全屏背景图的导光模糊档位；档位越低，原始构图越可辨认。"
+            value={backdropBlur}
+            options={[
+              { value: "soft", label: "轻" },
+              { value: "medium", label: "中" },
+              { value: "strong", label: "重（默认）" },
+            ]}
+            onChange={(tier) => {
+              setBackdropBlur(tier as WallpaperBackdropBlur);
+              window.palot
+                .setWallpaperBackdropBlur(tier as WallpaperBackdropBlur)
+                .then((next) => {
+                  setSource(next.source);
+                  setBackdropBlur(next.blur);
+                  toast.add({ type: "success", title: "模糊强度已更新" });
+                })
+                .catch((error) => {
+                  showErrorToast("模糊强度设置失败", error);
+                });
+            }}
           />
           <SettingsRow
             title="有效材质"

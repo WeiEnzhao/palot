@@ -132,6 +132,7 @@ export interface AppearancePreferences {
   lightContrast: number;
   darkContrast: number;
   glassOpacity: ThemeNumericPreference;
+  sidebarOpacity: ThemeNumericPreference;
   contentOpacity: number;
   nativeGlassTint: ThemeNumericPreference;
   nativeGlassVariant: NativeGlassVariantPreference;
@@ -160,6 +161,7 @@ export const DEFAULT_APPEARANCE_PREFERENCES: AppearancePreferences = Object.free
   lightContrast: 50,
   darkContrast: 50,
   glassOpacity: "theme",
+  sidebarOpacity: "theme",
   contentOpacity: 100,
   nativeGlassTint: "theme",
   nativeGlassVariant: "theme",
@@ -2087,7 +2089,9 @@ export function effectiveAppearanceTreatment(
   const themeBackdrop = treatment?.native?.backdrop ?? "adaptive";
   const explicitGlassOpacity =
     preferences.glassOpacity === "theme" ? null : preferences.glassOpacity;
-  const sidebarOpacity = themeSidebarOpacity;
+  const explicitSidebarOpacity =
+    preferences.sidebarOpacity === "theme" ? null : preferences.sidebarOpacity;
+  const sidebarOpacity = explicitSidebarOpacity ?? themeSidebarOpacity;
   const surfaceOpacity = (themeValue: number | undefined, offset: number) =>
     Math.min(
       100,
@@ -2095,7 +2099,7 @@ export function effectiveAppearanceTreatment(
         0,
         explicitGlassOpacity !== null
           ? explicitGlassOpacity + offset
-          : (themeValue ?? sidebarOpacity + offset),
+          : (themeValue ?? themeSidebarOpacity + offset),
       ),
     );
   const compositeSurface = (
@@ -2294,6 +2298,7 @@ export function normalizeAppearancePreferences(value: unknown): AppearancePrefer
     ),
     darkContrast: number(input.darkContrast, 0, 100, DEFAULT_APPEARANCE_PREFERENCES.darkContrast),
     glassOpacity: themeNumber(input.glassOpacity, 30, 100, 82),
+    sidebarOpacity: themeNumber(input.sidebarOpacity, 30, 100, 67),
     contentOpacity: number(
       input.contentOpacity,
       55,
