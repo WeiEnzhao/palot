@@ -8,7 +8,6 @@ import {
   FolderPlus,
   Folder,
   FolderGit2,
-  GitBranch,
   Plus,
   Undo2,
   Upload,
@@ -40,7 +39,6 @@ import {
   projectName,
   selectRecentSessions,
   sessionActivityAt,
-  sessionIsAdditionalCheckout,
 } from "../lib/view-models";
 import {
   sidebarSessionState,
@@ -834,7 +832,6 @@ const SessionRow = memo(function SessionRow({
 }) {
   const title = useSessionTitleEditor(session);
   const windowDrag = useSessionWindowDrag(session.id);
-  const isAdditionalCheckout = sessionIsAdditionalCheckout(session, project);
   const state = sidebarSessionState(
     status ?? sidebarSessionStatus(undefined, session.outcome),
     attention,
@@ -956,15 +953,6 @@ const SessionRow = memo(function SessionRow({
                   "transition-opacity group-hover/menu-sub-item:opacity-0 group-has-[:focus-visible]/menu-sub-item:opacity-0 group-has-[[data-popup-open]]/menu-sub-item:opacity-0 pointer-coarse:opacity-0",
               )}
             >
-              {isAdditionalCheckout ? (
-                <span
-                  className="flex shrink-0 text-muted-foreground"
-                  title="额外检出"
-                  aria-label="额外检出"
-                >
-                  <GitBranch aria-hidden="true" />
-                </span>
-              ) : null}
               <PullRequestBadge links={pullRequests} />
               <SessionStatusIndicator status={state} reserveSpace={recent} />
               {recent ? (

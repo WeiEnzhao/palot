@@ -1,5 +1,5 @@
 import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
-import { CircleAlert, FolderGit2, GitBranch } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { catalogSessionIsUnread } from "../hooks/use-session-info";
 import { cn } from "../lib/cn";
 import {
@@ -7,11 +7,7 @@ import {
   type InboxSessionState,
   type InboxSessionView,
 } from "../lib/session-inbox";
-import {
-  formatRelativeTime,
-  sessionActivityAt,
-  sessionIsAdditionalCheckout,
-} from "../lib/view-models";
+import { formatRelativeTime, sessionActivityAt } from "../lib/view-models";
 import type { OpenCodeVcsInfo } from "../services/opencode-vcs";
 import { PulseDot } from "./ui/pulse-dot";
 import { sidebarItemVariants } from "./ui/sidebar-styles";
@@ -23,7 +19,6 @@ export const INBOX_CARD_ACTION_BUTTON_CLASS =
 export function InboxCardSurface({
   item,
   selected,
-  vcs,
   buttonProps,
   titleEditor,
   actions,
@@ -63,11 +58,6 @@ export function InboxCardSurface({
         : visualState === "unread"
           ? `New, ${formatRelativeTime(sessionActivityAt(item.session))}`
           : formatRelativeTime(sessionActivityAt(item.session));
-  const detachedWorktree = Boolean(
-    vcs &&
-    !vcs.currentBranch &&
-    sessionIsAdditionalCheckout(item.session, item.project ?? undefined),
-  );
   return (
     <div
       {...props}
@@ -145,25 +135,6 @@ export function InboxCardSurface({
               {item.session.title ?? "Untitled task"}
             </div>
           )}
-          <span className="flex shrink-0 items-center gap-1 text-meta text-muted-foreground opacity-0 transition-opacity group-hover/inbox-card:opacity-100 group-has-[:focus-visible]/inbox-card:opacity-100 group-has-[[data-popup-open]]/inbox-card:opacity-100">
-            {detachedWorktree ? (
-              <FolderGit2
-                className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
-                aria-hidden="true"
-              />
-            ) : (
-              <GitBranch
-                className="size-[11px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover/inbox-card:text-sidebar-foreground/70"
-                aria-hidden="true"
-              />
-            )}
-            <span
-              className="max-w-40 -translate-y-px truncate"
-              title={item.session.location.directory}
-            >
-              {branchLabel(vcs, item)}
-            </span>
-          </span>
           {pullRequest ? (
             <span className="shrink-0">{pullRequest}</span>
           ) : null}
@@ -227,15 +198,6 @@ export function InboxStateGlyph({ state }: { state: InboxSessionState }) {
       )}
     </span>
   );
-}
-
-function branchLabel(vcs: OpenCodeVcsInfo | undefined, item: InboxSessionView): string {
-  if (vcs?.currentBranch) return vcs.currentBranch;
-  const directoryName = item.session.location.directory.split(/[\\/]/).filter(Boolean).at(-1);
-  if (vcs && sessionIsAdditionalCheckout(item.session, item.project ?? undefined))
-    return directoryName ?? "Worktree";
-  if (vcs) return "Detached HEAD";
-  return directoryName ?? "Branch unavailable";
 }
 
 function formatWorkingDuration(startedAt: number, now: number): string {
