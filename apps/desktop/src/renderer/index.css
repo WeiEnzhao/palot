@@ -695,19 +695,28 @@
   backdrop-filter: none !important;
 }
 
-/* Fullscreen: the composer card joins the content wash. Its own translucent token
-   (--glass-composer-opacity) follows the composer *material* preference (often solid),
-   not the content-opacity slider, so drive it from the exact content mix instead. */
+/* Fullscreen: the composer card melts into the surface wash. It sits INSIDE
+   .palot-main-surface (which already paints the content wash), so any extra
+   translucent layer here double-stacks to ~80% white. Only the shell's ring
+   remains as the affordance. */
 :root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer .palot-surface-backdrop[data-tone="composer"] {
-  background-color: var(--content-background-translucent) !important;
-  backdrop-filter: saturate(var(--glass-content-saturation)) blur(var(--glass-content-blur)) !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
 }
 
-/* Fullscreen: markdown table headers join the content wash instead of a solid muted band. */
+/* Fullscreen: markdown table headers join the content wash with a *dark* tint instead
+   of a light muted band — a light mix double-stacks to ~80% white over the surface wash. */
 :root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .markdown th {
-  background-color: color-mix(in oklch, var(--muted) var(--content-surface-opacity), transparent);
+  background-color: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+/* Fullscreen: inline code chips go from a solid light pill to a glass-like translucent
+   pill (the solid --code-background/--muted double-stacks into an opaque white blob). */
+:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  .markdown :not(pre) > code {
+  background-color: color-mix(in oklch, var(--muted) 30%, transparent);
 }
 
 /* Fullscreen: translucent dark sidebar base over a bright wallpaper leaves the
