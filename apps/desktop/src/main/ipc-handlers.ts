@@ -73,7 +73,7 @@ import { externalOpenService } from "./external-open/service";
 import { refreshTrayMenu } from "./tray";
 import { appearanceService } from "./appearance-service";
 import { wallpaperBackdropService } from "./wallpaper-service";
-import type { WallpaperBackdropState } from "../shared/window-chrome";
+import type { WallpaperBackdropBlur, WallpaperBackdropState } from "../shared/window-chrome";
 
 function broadcastWallpaperBackdrop(state: WallpaperBackdropState): void {
   for (const window of BrowserWindow.getAllWindows()) {
@@ -718,6 +718,12 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
     assertTrustedMainFrame(event);
     const state = await wallpaperBackdropService().clear();
     broadcastWallpaperBackdrop(state);
+    return state;
+  });
+  register(IPC_CHANNELS.wallpaperBackdropBlur, (event, tier: WallpaperBackdropBlur) => {
+    assertTrustedMainFrame(event);
+    const state = wallpaperBackdropService().setBlur(tier);
+    void state.then((resolved) => broadcastWallpaperBackdrop(resolved));
     return state;
   });
   register(IPC_CHANNELS.openSessionWindow, (event, input: unknown, connectionID: unknown) => {

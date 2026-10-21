@@ -19,6 +19,7 @@ import {
   isWindowChromeTier,
   WINDOW_MANAGER_OWNS_CLOSE_ARGUMENT,
   type WindowChromeTier,
+  type WallpaperBackdropBlur,
   type WallpaperBackdropState,
 } from "../shared/window-chrome";
 
@@ -97,6 +98,8 @@ const api: PalotApi = {
   getWallpaperBackdrop: () => ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdrop),
   chooseWallpaperBackdrop: () => ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdropChoose),
   clearWallpaperBackdrop: () => ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdropClear),
+  setWallpaperBackdropBlur: (tier: WallpaperBackdropBlur) =>
+    ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdropBlur, tier),
   onWallpaperBackdropChanged: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, state: WallpaperBackdropState) =>
       listener(state);

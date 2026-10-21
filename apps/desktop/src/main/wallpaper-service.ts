@@ -6,10 +6,11 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import Store from "electron-store";
-import type { WallpaperBackdropState } from "../shared/window-chrome";
+import type { WallpaperBackdropBlur, WallpaperBackdropState } from "../shared/window-chrome";
 
 interface WallpaperStore {
   customPath?: string | null;
+  blur?: WallpaperBackdropBlur;
 }
 
 const RASTER_WIDTH = 1_600;
@@ -27,6 +28,13 @@ const WALLPAPER_INDEX = path.join(
 );
 
 const backdropStore = new Store<WallpaperStore>({ name: "wallpaper-backdrop" });
+
+const BLUR_TIERS: readonly WallpaperBackdropBlur[] = ["soft", "medium", "strong"];
+
+export function currentBackdropBlur(): WallpaperBackdropBlur {
+  const stored = backdropStore.get("blur");
+  return stored && BLUR_TIERS.includes(stored) ? stored : "strong";
+}
 
 /** Photo files referenced by non-dynamic wallpaper choices in the wallpaper Index.plist. */
 function wallpaperIndexFiles(): string[] {
@@ -93,21 +101,22 @@ async function rasterize(sourcePath: string): Promise<string | null> {
 }
 
 async function resolveBackdrop(): Promise<WallpaperBackdropState> {
+  const blur = currentBackdropBlur();
   // 1. Custom pick stored by the settings pane always wins.
   const customPath = backdropStore.get("customPath");
   if (customPath && (await exists(customPath))) {
     const image = await rasterize(customPath);
-    if (image) return { image, source: "custom" };
+    if (image) return { image, source: "custom", blur };
   }
 
   // 2. Whatever the system currently shows behind windows (custom photos set in System Settings).
   for (const file of wallpaperIndexFiles()) {
     const image = await rasterize(file);
-    if (image) return { image, source: "system" };
+    if (image) return { image, source: "system", blur };
   }
 
   // 3. Dynamic/system-default wallpapers have no static file; the renderer falls back to its own still.
-  return { image: null, source: "builtin" };
+  return { image: null, source: "builtin", blur };
 }
 
 export function wallpaperBackdropService() {
@@ -141,10 +150,14 @@ export function wallpaperBackdropService() {
       const image = await rasterize(picked);
       if (!image) throw new Error("无法读取所选图片");
       backdropStore.set("customPath", picked);
-      return { image, source: "custom" };
+      return { image, source: "custom", blur: currentBackdropBlur() };
     },
     async clear(): Promise<WallpaperBackdropState> {
       backdropStore.set("customPath", null);
+      return resolveBackdrop();
+    },
+    async setBlur(tier: WallpaperBackdropBlur): Promise<WallpaperBackdropState> {
+      backdropStore.set("blur", BLUR_TIERS.includes(tier) ? tier : "strong");
       return resolveBackdrop();
     },
   };

@@ -16,7 +16,7 @@ import { DEFAULT_APPEARANCE_PREFERENCES, effectiveCodeTheme } from "../shared";
 import { AppearanceSync, PierreAppearanceSync } from "./components/appearance-sync";
 import { MotionPreferences } from "./components/motion-preferences";
 import { useWindowChrome } from "./hooks/use-window-chrome";
-import { useFullscreenBackdrop } from "./hooks/use-fullscreen-backdrop";
+import { useFullscreenBackdrop, BACKDROP_BLUR_PX } from "./hooks/use-fullscreen-backdrop";
 import { useDesktopPresentation } from "./hooks/use-desktop-presentation";
 import { rendererStore, router } from "./router";
 import { rendererQueryClient } from "./lib/query-client";
@@ -63,7 +63,14 @@ export function App() {
                 fullscreenBackdrop.kind === "image" ? (
                   <div
                     className="palot-fullscreen-backdrop"
-                    style={{ backgroundImage: `url(${fullscreenBackdrop.url})` }}
+                    style={
+                      {
+                        "--palot-backdrop-blur": fullscreenBackdrop.blur
+                          ? `${BACKDROP_BLUR_PX[fullscreenBackdrop.blur]}px`
+                          : undefined,
+                        backgroundImage: `url(${fullscreenBackdrop.url})`,
+                      } as React.CSSProperties
+                    }
                     aria-hidden="true"
                   />
                 ) : (
