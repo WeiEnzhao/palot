@@ -970,17 +970,23 @@ const InboxCard = memo(function InboxCard({
             </Tooltip>
           ) : null}
           {item.canSettle && !actionsDisabled ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn("h-6 gap-0.5 px-2 text-micro!", INBOX_ACTION_BUTTON_CLASS)}
-              aria-label="结算任务"
-              onClick={() => void onAction(item, "settle")}
-            >
-              <Check aria-hidden="true" />
-              结算
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={cn("h-6 gap-0.5 px-2 text-micro!", INBOX_ACTION_BUTTON_CLASS)}
+                    aria-label="结算任务"
+                    onClick={() => void onAction(item, "settle")}
+                  />
+                }
+              >
+                <Check aria-hidden="true" />
+              </TooltipTrigger>
+              <TooltipContent>结算</TooltipContent>
+            </Tooltip>
           ) : null}
           {onSnooze ? (
             <SnoozeButton item={item} onSnooze={onSnooze} disabled={actionsDisabled} />
