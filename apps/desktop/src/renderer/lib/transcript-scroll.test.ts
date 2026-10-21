@@ -5,10 +5,29 @@ import {
   normalizeTranscriptWheelDelta,
   readTranscriptScrollUpdate,
   scheduleTranscriptScrollFrame,
+  snapToDevicePixel,
   transcriptDistanceFromBottom,
   transcriptKeyboardScrollDelta,
   transcriptScrollTargetConsumesDelta,
 } from "./transcript-scroll";
+
+describe("device pixel snapping", () => {
+  it("lands the offset on whole device pixels", () => {
+    // A fractional offset repaints the transcript text at subpixel positions, so
+    // the glyphs swim whenever the fraction changes.
+    expect(snapToDevicePixel(5233.03, 2)).toBe(5233);
+    expect(snapToDevicePixel(5301.12, 2)).toBe(5301);
+    expect(snapToDevicePixel(5301.5, 2)).toBe(5301.5);
+  });
+  it("keeps the ratio for scaled displays", () => {
+    expect(snapToDevicePixel(100.4, 2.5)).toBe(100.4);
+    expect(snapToDevicePixel(100.42, 2.5)).toBe(100.4);
+  });
+  it("passes through invalid offsets safely", () => {
+    expect(snapToDevicePixel(Number.NaN, 2)).toBe(0);
+    expect(snapToDevicePixel(Number.POSITIVE_INFINITY, 2)).toBe(0);
+  });
+});
 
 describe("transcript keyboard intent", () => {
   const event = {

@@ -89,8 +89,10 @@ import {
   readTranscriptScrollUpdate,
   normalizeTranscriptWheelDelta,
   scheduleTranscriptScrollFrame,
+  snapToDevicePixel,
   transcriptKeyboardScrollDelta,
   transcriptScrollTargetConsumesDelta,
+  TRANSCRIPT_BOTTOM_THRESHOLD,
   type TranscriptScrollIntent,
 } from "../lib/transcript-scroll";
 import { showErrorToast } from "../lib/toast-error";
@@ -366,7 +368,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     bottomLockedRef.current = locked;
     setBottomLocked((current) => (current === locked ? current : locked));
   }, []);
-  const scrollToBottomNow = useCallback(() => {
+  const scrollToBottomNow = useCallback((mode: "exact" | "grow" = "exact") => {
     const viewport = scrollRef.current;
     if (
       !viewport ||
@@ -376,7 +378,20 @@ const SessionThreadContents = memo(function SessionThreadContents({
     )
       return;
     const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-    if (Math.abs(viewport.scrollTop - target) > 0.5) viewport.scrollTop = target;
+    // Growing follow never moves the view back up for a small shrink (the
+    // server echo replacing the optimistic bubble, markdown re-wrapping):
+    // bouncing backwards there is the visible "抖". A large shift is a real
+    // layout change (a replaced message), so that one still follows exactly.
+    if (mode === "grow" && target <= viewport.scrollTop) {
+      if (viewport.scrollTop - target > TRANSCRIPT_BOTTOM_THRESHOLD) {
+        viewport.scrollTop = snapToDevicePixel(target);
+        previousScrollTopRef.current = viewport.scrollTop;
+      }
+      return;
+    }
+    // Snap to whole device pixels so the text is painted on the pixel grid.
+    const snapped = snapToDevicePixel(target);
+    if (Math.abs(viewport.scrollTop - snapped) > 0.5) viewport.scrollTop = snapped;
     previousScrollTopRef.current = viewport.scrollTop;
   }, []);
   const scheduleScrollToBottom = useCallback(() => {
@@ -609,7 +624,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       const height = instance.getTotalSize();
       if (height === lastFollowedVirtualHeightRef.current) return;
       lastFollowedVirtualHeightRef.current = height;
-      scrollToBottomNow();
+      scrollToBottomNow("grow");
     },
   });
   virtualizer.shouldAdjustScrollPositionOnItemSizeChange = bottomLocked ? () => false : undefined;
@@ -656,13 +671,19 @@ const SessionThreadContents = memo(function SessionThreadContents({
   useLayoutEffect(() => {
     // The adapter's layout effect has already applied geometry for new refs and
     // option changes (e.g. composer padding). Correct before this commit paints.
-    scrollToBottomNow();
+    scrollToBottomNow("grow");
   }, [composerDockHeight, scrollToBottomNow, turnRows.length, virtualTranscriptHeight]);
+  useLayoutEffect(() => {
+    // A finished turn is the one moment the transcript must sit flush: the last
+    // render can shrink the content (markdown re-wrap, dropped placeholder).
+    if (isWorking) return;
+    scrollToBottomNow();
+  }, [isWorking, scrollToBottomNow, turnRows.length]);
   useEffect(() => {
     const viewport = scrollRef.current;
     const content = transcriptContentRef.current;
     if (!viewport || !content) return;
-    const observer = new ResizeObserver(scrollToBottomNow);
+    const observer = new ResizeObserver(() => scrollToBottomNow());
     observer.observe(viewport);
     // Virtual content is already handled after the adapter's measured writes.
     // Observing that ancestor as well can create skipped RO notifications when
@@ -701,12 +722,16 @@ const SessionThreadContents = memo(function SessionThreadContents({
         const viewportTop = viewport.getBoundingClientRect().top;
         const correction =
           anchorElement.getBoundingClientRect().top - viewportTop - anchor.viewportTop;
-        if (Math.abs(correction) > 0.5) viewport.scrollTop += correction;
+        if (Math.abs(correction) > 0.5) {
+          viewport.scrollTop = snapToDevicePixel(viewport.scrollTop + correction);
+        }
         stableFrames = Math.abs(correction) <= 0.5 ? stableFrames + 1 : 0;
       } else {
         const target =
           anchor.fallbackScrollTop + Math.max(0, viewport.scrollHeight - anchor.fallbackHeight);
-        if (Math.abs(target - viewport.scrollTop) > 0.5) viewport.scrollTop = target;
+        if (Math.abs(target - viewport.scrollTop) > 0.5) {
+          viewport.scrollTop = snapToDevicePixel(target);
+        }
         stableFrames = 0;
       }
       previousScrollTopRef.current = viewport.scrollTop;

@@ -1,5 +1,15 @@
 export const TRANSCRIPT_BOTTOM_THRESHOLD = 40;
 
+/**
+ * Rounds a scroll offset to whole device pixels. Text painted at a fractional
+ * offset is rasterized at subpixel positions, so the glyphs visibly swim each
+ * time the fraction changes — the transcript "抖" while a reply streams.
+ */
+export function snapToDevicePixel(value: number, ratio = globalThis.devicePixelRatio || 1): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.round(value * ratio) / ratio;
+}
+
 /** Direction of a browser scroll key, excluding controls that own keyboard input. */
 export function transcriptKeyboardScrollDelta(event: {
   key: string;
