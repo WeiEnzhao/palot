@@ -14,3 +14,12 @@ export function isWindowChromeTier(value: string): value is WindowChromeTier {
 
 /** Present when a Linux tiling compositor owns window closing, so Palot omits its own close button. */
 export const WINDOW_MANAGER_OWNS_CLOSE_ARGUMENT = "--palot-window-manager-owns-close";
+
+/** Resolved fullscreen backdrop snapshot, sent to the renderer as a rasterized data URL. */
+export type WallpaperBackdropSource = "custom" | "system" | "builtin";
+
+export interface WallpaperBackdropState {
+  /** JPEG data URL for the resolved backdrop, or null when only the builtin asset applies. */
+  image: string | null;
+  source: WallpaperBackdropSource;
+}

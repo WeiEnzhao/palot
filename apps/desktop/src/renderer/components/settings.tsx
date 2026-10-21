@@ -1802,6 +1802,13 @@ function AppearanceSettings() {
     tier: document.documentElement.dataset.chromeTier ?? "opaque",
     reducedTransparency: document.documentElement.dataset.reducedTransparency === "true",
   }));
+  const [source, setSource] = useState<string | null>(null);
+  useEffect(() => {
+    void window.palot
+      .getWallpaperBackdrop()
+      .then((state) => setSource(state.source))
+      .catch(() => setSource(null));
+  }, []);
   const [fontAvailability] = useState<Record<string, boolean>>(() => {
     const platform = document.documentElement.dataset.platform ?? "browser";
     return Object.fromEntries(
@@ -2106,6 +2113,53 @@ function AppearanceSettings() {
               update({
                 sidebarMaterial: sidebarMaterial as AppearancePreferences["sidebarMaterial"],
               })
+            }
+          />
+          <SettingsRow
+            title="全屏背景"
+            description={`真全屏时垫在半透明面板下的壁纸快照，当前来源：${fullscreenBackdropSourceLabel(source)}。普通窗口与原生材质不受影响。`}
+            control={
+              <div className="flex w-full flex-wrap items-center gap-2 @lg/settings:w-auto">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    void window.palot
+                      .chooseWallpaperBackdrop()
+                      .then((next) => {
+                        if (next) {
+                          setSource(next.source);
+                          toast.add({ type: "success", title: "全屏背景已更新" });
+                        }
+                      })
+                      .catch((error) => {
+                        showErrorToast("全屏背景设置失败", error);
+                      });
+                  }}
+                >
+                  选择图片…
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={source !== "custom"}
+                  onClick={() => {
+                    void window.palot
+                      .clearWallpaperBackdrop()
+                      .then((next) => {
+                        setSource(next.source);
+                        toast.add({ type: "success", title: "已恢复跟随系统壁纸" });
+                      })
+                      .catch((error) => {
+                        showErrorToast("全屏背景恢复失败", error);
+                      });
+                  }}
+                >
+                  清除自定义
+                </Button>
+              </div>
             }
           />
           <SettingsRow
@@ -2499,6 +2553,13 @@ function codeThemeOptions(preferences: AppearancePreferences, scheme: "light" | 
       />
     ),
   }));
+}
+
+function fullscreenBackdropSourceLabel(source: string | null): string {
+  if (source === "custom") return "自定义图片";
+  if (source === "system") return "系统壁纸";
+  if (source === "builtin") return "默认（渐变重建）";
+  return "尚未解析";
 }
 
 function titleCase(value: string): string {

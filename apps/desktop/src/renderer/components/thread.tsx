@@ -1785,10 +1785,10 @@ const ParentSessionComposer = memo(function ParentSessionComposer({
       <div className="flex min-w-0 flex-wrap items-center gap-x-0.5 gap-y-1">
         <ConnectionDestination />
         <div
-          className="flex h-6 min-w-0 items-center gap-1 px-1.5 text-meta leading-none font-medium text-foreground"
-          title={isAdditionalCheckout ? "额外检出" : "当前检出"}
+          className="flex h-6 min-w-0 items-center gap-1 px-1.5 text-meta leading-none text-muted-foreground"
+          title={isAdditionalCheckout ? "额外检出 · 工作树" : "当前检出"}
         >
-          <FolderGit2 className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <FolderGit2 className="size-3 shrink-0" aria-hidden="true" />
           <span className="truncate">{isAdditionalCheckout ? "工作树" : "检出"}</span>
         </div>
         <div className="flex h-6 min-w-0 items-center gap-2 px-1.5 text-meta leading-none text-muted-foreground">

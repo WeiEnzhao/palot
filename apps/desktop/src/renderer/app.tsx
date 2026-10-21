@@ -16,6 +16,7 @@ import { DEFAULT_APPEARANCE_PREFERENCES, effectiveCodeTheme } from "../shared";
 import { AppearanceSync, PierreAppearanceSync } from "./components/appearance-sync";
 import { MotionPreferences } from "./components/motion-preferences";
 import { useWindowChrome } from "./hooks/use-window-chrome";
+import { useFullscreenBackdrop } from "./hooks/use-fullscreen-backdrop";
 import { useDesktopPresentation } from "./hooks/use-desktop-presentation";
 import { rendererStore, router } from "./router";
 import { rendererQueryClient } from "./lib/query-client";
@@ -47,6 +48,7 @@ document.documentElement.dataset.windowClose = showWindowCloseButton ? "visible"
 export function App() {
   useWindowChrome();
   useDesktopPresentation();
+  const fullscreenBackdrop = useFullscreenBackdrop();
 
   return (
     <QueryClientProvider client={rendererQueryClient}>
@@ -57,6 +59,17 @@ export function App() {
         >
           <MotionPreferences>
             <TooltipProvider delay={150}>
+              {fullscreenBackdrop ? (
+                fullscreenBackdrop.kind === "image" ? (
+                  <div
+                    className="palot-fullscreen-backdrop"
+                    style={{ backgroundImage: `url(${fullscreenBackdrop.url})` }}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <div className="palot-fullscreen-backdrop palot-fullscreen-backdrop-gradient" aria-hidden="true" />
+                )
+              ) : null}
               <SurfaceBackdropFilters />
               <OpenCodeQueryEvents />
               <AppearanceSync />

@@ -2280,10 +2280,6 @@ function ComposerView({
                     : "远程服务器不支持附件"}
                 </TooltipContent>
               </Tooltip>
-              <div className="contents">
-                {/* Session location meta joins the control row as plain inline items. */}
-                {contextBar}
-              </div>
               {mode === "shell" ? (
                 <Tooltip>
                   <TooltipTrigger
@@ -2329,6 +2325,10 @@ function ComposerView({
                 onSelect={permissionSelection.select}
                 onSelectionComplete={focusComposer}
               />
+              <div className="contents">
+                {/* Session location meta trails the mode controls, before the right-anchored run cluster. */}
+                {contextBar}
+              </div>
               <div
                 className="ml-auto flex min-w-0 max-w-full items-center gap-1.5"
                 data-palot-composer-run-controls

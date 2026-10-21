@@ -72,6 +72,14 @@ import { desktopNotificationService } from "./notification-service";
 import { externalOpenService } from "./external-open/service";
 import { refreshTrayMenu } from "./tray";
 import { appearanceService } from "./appearance-service";
+import { wallpaperBackdropService } from "./wallpaper-service";
+import type { WallpaperBackdropState } from "../shared/window-chrome";
+
+function broadcastWallpaperBackdrop(state: WallpaperBackdropState): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) window.webContents.send(IPC_CHANNELS.wallpaperBackdropChanged, state);
+  }
+}
 import { openCodeAttentionIndex } from "./attention-index";
 import { registerTrustedIpcHandler } from "./ipc-security";
 import {
@@ -699,6 +707,19 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
     return renderNativeSymbol(input);
   });
   register(IPC_CHANNELS.chromeTier, () => getResolvedChromeTier());
+  register(IPC_CHANNELS.wallpaperBackdrop, () => wallpaperBackdropService().resolve());
+  register(IPC_CHANNELS.wallpaperBackdropChoose, async (event) => {
+    assertTrustedMainFrame(event);
+    const state = await wallpaperBackdropService().choose();
+    if (state) broadcastWallpaperBackdrop(state);
+    return state;
+  });
+  register(IPC_CHANNELS.wallpaperBackdropClear, async (event) => {
+    assertTrustedMainFrame(event);
+    const state = await wallpaperBackdropService().clear();
+    broadcastWallpaperBackdrop(state);
+    return state;
+  });
   register(IPC_CHANNELS.openSessionWindow, (event, input: unknown, connectionID: unknown) => {
     assertTrustedMainFrame(event);
     const sessionID = v.parse(identifier, input);

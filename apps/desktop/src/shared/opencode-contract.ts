@@ -43,7 +43,7 @@ import type {
   AppearanceUpdateResult,
   NativeSystemAppearance,
 } from "./appearance-contract";
-import type { WindowChromeTier } from "./window-chrome";
+import type { WindowChromeTier, WallpaperBackdropState } from "./window-chrome";
 import type { SessionTriageCommand, SessionTriageSnapshot } from "./session-triage-contract";
 import type {
   AutomationChangedEvent,
@@ -1184,6 +1184,11 @@ export const IPC_CHANNELS = {
   openSessionWindow: "palot:window:open-session",
   closeWindow: "palot:window:close",
   chromeTierChanged: "palot:window:chrome-tier-changed",
+  wallpaperBackdrop: "palot:wallpaper:backdrop",
+  wallpaperBackdropChoose: "palot:wallpaper:backdrop-choose",
+  wallpaperBackdropClear: "palot:wallpaper:backdrop-clear",
+  wallpaperBackdropChanged: "palot:wallpaper:backdrop-changed",
+  wallpaperFullscreenChanged: "palot:wallpaper:fullscreen-changed",
   runtimeStatus: "palot:opencode:runtime-status",
   openCodeReleaseStatus: "palot:opencode:release-status",
   openCodeReleaseChannel: "palot:opencode:release-channel",
@@ -1325,6 +1330,11 @@ export interface PalotApi {
   onReducedTransparencyChanged(listener: (reduced: boolean) => void): () => void;
   getChromeTier(): Promise<WindowChromeTier>;
   onChromeTierChanged(listener: (tier: WindowChromeTier) => void): () => void;
+  getWallpaperBackdrop(): Promise<WallpaperBackdropState>;
+  chooseWallpaperBackdrop(): Promise<WallpaperBackdropState | null>;
+  clearWallpaperBackdrop(): Promise<WallpaperBackdropState>;
+  onWallpaperBackdropChanged(listener: (state: WallpaperBackdropState) => void): () => void;
+  onFullscreenChanged(listener: (fullscreen: boolean) => void): () => void;
   runtimeStatus(): Promise<OpenCodeRuntimeStatus>;
   openCodeReleaseStatus(): Promise<OpenCodeReleaseStatus>;
   setOpenCodeReleaseChannel(channel: OpenCodeReleaseChannel): Promise<OpenCodeReleaseStatus>;

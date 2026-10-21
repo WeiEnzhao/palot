@@ -660,6 +660,33 @@
   background: transparent;
 }
 
+/* Fullscreen fake-vibrancy backdrop: wallpaper still rasterized behind translucent panels.
+   Sits below all page content; opaque-tier body backgrounds naturally cover it. */
+.palot-fullscreen-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  user-select: none;
+  background-size: cover;
+  background-position: center;
+  filter: blur(48px) saturate(1.12) brightness(1.06);
+  transform: scale(1.05);
+}
+
+/* Gradient wash mimicking the default dynamic wallpaper when no static source exists. */
+.palot-fullscreen-backdrop-gradient {
+  background-image: linear-gradient(
+    160deg,
+    #ffd9a0 0%,
+    #f4a9b8 22%,
+    #d98ac2 42%,
+    #8f9fd4 62%,
+    #7ac7c1 80%,
+    #a8d8b0 100%
+  );
+}
+
 .palot-onboarding-surface {
   background: var(--content-background-opaque);
   opacity: 1;

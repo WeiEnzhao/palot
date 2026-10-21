@@ -19,6 +19,7 @@ import {
   isWindowChromeTier,
   WINDOW_MANAGER_OWNS_CLOSE_ARGUMENT,
   type WindowChromeTier,
+  type WallpaperBackdropState,
 } from "../shared/window-chrome";
 
 const CHROME_TIER_ARGUMENT = "--palot-chrome-tier=";
@@ -93,6 +94,20 @@ const api: PalotApi = {
     return () => ipcRenderer.removeListener(IPC_CHANNELS.reducedTransparencyChanged, handler);
   },
   getChromeTier: () => ipcRenderer.invoke(IPC_CHANNELS.chromeTier),
+  getWallpaperBackdrop: () => ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdrop),
+  chooseWallpaperBackdrop: () => ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdropChoose),
+  clearWallpaperBackdrop: () => ipcRenderer.invoke(IPC_CHANNELS.wallpaperBackdropClear),
+  onWallpaperBackdropChanged: (listener) => {
+    const handler = (_event: Electron.IpcRendererEvent, state: WallpaperBackdropState) =>
+      listener(state);
+    ipcRenderer.on(IPC_CHANNELS.wallpaperBackdropChanged, handler);
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.wallpaperBackdropChanged, handler);
+  },
+  onFullscreenChanged: (listener) => {
+    const handler = (_event: Electron.IpcRendererEvent, fullscreen: boolean) => listener(fullscreen);
+    ipcRenderer.on(IPC_CHANNELS.wallpaperFullscreenChanged, handler);
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.wallpaperFullscreenChanged, handler);
+  },
   onChromeTierChanged: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, tier: WindowChromeTier) => listener(tier);
     ipcRenderer.on(IPC_CHANNELS.chromeTierChanged, handler);
