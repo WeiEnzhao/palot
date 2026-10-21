@@ -687,38 +687,38 @@
   );
 }
 
-/* Fullscreen: the drag header merges into the surface wash entirely — an extra white
-   scrim on top turns into a floating white block over light wallpaper bands.
-   The doubled [data-palot-fullscreen] bumps specificity to (0,6,0) so this outranks
-   the (0,5,0) !important tier-gated upstream rule regardless of source order. */
-:root[data-palot-fullscreen="true"][data-palot-fullscreen][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+/* Translucent (fullscreen or plain): the drag header merges into the surface wash
+   entirely — an extra white scrim on top turns into a floating white block over light
+   wallpaper bands. The tripled [data-content-translucent] bumps specificity to (0,6,0)
+   so this outranks the (0,5,0) !important tier-gated upstream rule regardless of order. */
+:root[data-content-translucent="true"][data-content-translucent="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
   :is(.palot-main-surface-header, .palot-workbench-surface-header) {
   background-color: transparent !important;
   backdrop-filter: none !important;
 }
 
 /* Translucent (fullscreen or plain): the composer card is thickness-adjustable via its
-   own knob (外观 → 输入框不透明度, baked as --composer-surface-opacity).
+   own knob (外观 → 输入框不透明度 → --composer-surface-mix).
    It sits INSIDE the washed surface, so any extra translucent layer double-stacks —
    the knob mixes the *card* only. */
 :root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer .palot-surface-backdrop[data-tone="composer"] {
-  background-color: color-mix(in oklch, var(--muted) var(--composer-surface-opacity), transparent);
+  background-color: var(--composer-surface-mix) !important;
   backdrop-filter: none !important;
 }
 
-/* Fullscreen: markdown table headers join the content wash with a *dark* tint instead
+/* Translucent: markdown table headers join the content wash with a *dark* tint instead
    of a light muted band — a light mix double-stacks to ~80% white over the surface wash. */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .markdown th {
   background-color: color-mix(in oklch, var(--foreground) 14%, transparent);
 }
 
 /* Translucent (fullscreen or plain): queue stack thickness via its own knob
-   (外观 → 队列卡片不透明度, baked as --queue-surface-opacity). 0 = melts into the wash. */
+   (外观 → 队列卡片不透明度 → --queue-surface-mix). 0% = melts into the wash. */
 :root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer-queue {
-  background-color: color-mix(in oklch, var(--muted) var(--queue-surface-opacity), transparent);
+  background-color: var(--queue-surface-mix) !important;
 }
 
 /* Translucent (fullscreen or plain): the user message bubble loses the solid secondary
@@ -729,17 +729,17 @@
   background-color: color-mix(in oklch, var(--foreground) 10%, transparent);
 }
 
-/* Fullscreen: inline code chips go from a solid light pill to a glass-like translucent
+/* Translucent: inline code chips go from a solid light pill to a glass-like translucent
    pill (the solid --code-background/--muted double-stacks into an opaque white blob). */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .markdown :not(pre) > code {
   background-color: color-mix(in oklch, var(--muted) 30%, transparent);
 }
 
-/* Fullscreen: translucent dark sidebar base over a bright wallpaper leaves the
-   theme's light sidebar text unreadable — retint sidebar text to the standard
-   foreground tokens (scheme-aware), while keeping hover/selected surfaces. */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
+/* Translucent: a dark sidebar base over a bright wallpaper leaves the theme's light
+   sidebar text unreadable — retint sidebar text to the standard foreground tokens
+   (scheme-aware), while keeping hover/selected surfaces. */
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   :is(
     .palot-sidebar[data-slot="sidebar"],
     .palot-navigation-rail,

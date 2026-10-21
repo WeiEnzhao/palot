@@ -21,48 +21,52 @@ function toLayer(state: WallpaperBackdropState | null | undefined): FullscreenBa
 }
 
 /**
- * Resolves the fullscreen backdrop once per fullscreen entry; normal (non-fullscreen)
- * windows never render the layer, so native vibrancy is untouched.
+ * Resolves the wallpaper backdrop. The layer follows the *translucency* switch, not
+ * the fullscreen state: every translucent window gets the same wash, fullscreen or not.
  */
 export function useFullscreenBackdrop(): FullscreenBackdropLayer | null {
   const [layer, setLayer] = useState<FullscreenBackdropLayer | null>(null);
 
   useEffect(() => {
     const api = window.palot;
-    if (!api.onFullscreenChanged) return;
+    if (!api.onWallpaperBackdropChanged && !api.getWallpaperBackdrop) return;
 
-    let lastFullscreen = false;
     let lastState: WallpaperBackdropState | null = null;
-    const swap = (state: WallpaperBackdropState | null | undefined) => {
+
+    const translucent = () =>
+      document.documentElement.dataset.contentTranslucent === "true" &&
+      document.documentElement.dataset.reducedTransparency !== "true";
+
+    const refresh = (state: WallpaperBackdropState | null | undefined) => {
       if (state) lastState = state;
-      setLayer(lastFullscreen ? toLayer(state ?? lastState) : null);
+      setLayer(translucent() ? toLayer(state ?? lastState) : null);
     };
 
-    const onEnter = async () => {
-      lastFullscreen = true;
-      document.documentElement.dataset.palotFullscreen = "true";
+    const resolve = async () => {
+      if (!translucent()) return setLayer(null);
       // Serve the cached snapshot instantly, then confirm with a fresh resolve.
       setLayer(toLayer(lastState));
       try {
-        swap(await api.getWallpaperBackdrop());
+        refresh(await api.getWallpaperBackdrop());
       } catch {
         setLayer(lastState ? toLayer(lastState) : { kind: "gradient", blur: null });
       }
     };
-    const onExit = () => {
-      lastFullscreen = false;
-      document.documentElement.dataset.palotFullscreen = "false";
-      setLayer(null);
-    };
 
-    const unsubscribeBackdrop = api.onWallpaperBackdropChanged?.((state) => swap(state));
-    const unsubscribeFullscreen = api.onFullscreenChanged((fullscreen) => {
-      if (fullscreen) void onEnter();
-      else onExit();
+    // The appearance sync flips data-content-translucent / data-reduced-transparency
+    // on :root; watch it so the layer follows the opacity slider live.
+    const observer = new MutationObserver(() => {
+      void resolve();
     });
+    observer.observe(document.documentElement, {
+      attributeFilter: ["data-content-translucent", "data-reduced-transparency"],
+    });
+    const unsubscribeBackdrop = api.onWallpaperBackdropChanged?.((state) => refresh(state));
+    void resolve();
+
     return () => {
+      observer.disconnect();
       unsubscribeBackdrop?.();
-      unsubscribeFullscreen();
     };
   }, []);
 

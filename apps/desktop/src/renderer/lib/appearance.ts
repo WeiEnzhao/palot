@@ -161,6 +161,8 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
   );
   const contentOpacity = resolved.preferences.contentOpacity;
   const contentHeaderOpacity = Math.min(100, contentOpacity + 4);
+  const queueOpacity = resolved.preferences.queueOpacity;
+  const composerOpacity = resolved.preferences.composerOpacity;
   const translucentContent = `color-mix(in oklch, ${palette.background} ${contentOpacity}%, transparent)`;
   const translucentContentHeader = `color-mix(in oklch, ${palette.background} ${contentHeaderOpacity}%, transparent)`;
   const commandBlendSpace = popoverSurface.blendSpace;
@@ -257,8 +259,10 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--command-surface-strong": `color-mix(in ${commandBlendSpace}, ${popoverSurface.surface} 88%, ${treatment.text.primary} 4%)`,
     "--command-backdrop": `color-mix(in oklch, ${palette.background} ${resolved.scheme === "light" ? 18 : 30}%, transparent)`,
     "--content-surface-opacity": `${contentOpacity}%`,
-    "--queue-surface-opacity": `${resolved.preferences.queueOpacity}%`,
-    "--composer-surface-opacity": `${resolved.preferences.composerOpacity}%`,
+    // lightningcss drops color-mix declarations with a var in the percentage slot, so
+    // bake the full mix here (re-baked on every appearance change; reacts live).
+    "--queue-surface-mix": `color-mix(in oklch, ${palette.muted} ${queueOpacity}%, transparent)`,
+    "--composer-surface-mix": `color-mix(in oklch, ${palette.muted} ${composerOpacity}%, transparent)`,
     "--content-header-opacity": `${contentHeaderOpacity}%`,
     "--content-background-opaque": palette.background,
     "--content-background-translucent": translucentContent,
