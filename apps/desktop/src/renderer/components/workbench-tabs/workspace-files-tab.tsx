@@ -132,8 +132,8 @@ export function WorkspaceFilesTab({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-card">
-      <div className="flex shrink-0 flex-col gap-2 border-b border-border bg-background p-2">
+    <div className="palot-files-panel flex min-h-0 flex-1 flex-col bg-card">
+      <div className="palot-files-panel-header flex shrink-0 flex-col gap-2 border-b border-border bg-background p-2">
         <nav className="flex min-w-0 items-center gap-1" aria-label="工作区路径">
           <button
             ref={directory ? undefined : currentDirectoryRef}

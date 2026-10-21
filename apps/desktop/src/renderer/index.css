@@ -1035,6 +1035,24 @@
   background-color: var(--sidebar-background-translucent) !important;
 }
 
+/* Translucent wallpaper mode: the workspace files explorer paints solid bg-card +
+   bg-background over the washed surface, reading as an untouched white slab beside
+   the glassed chat. Clear both so the workbench wash (and wallpaper) carries
+   through, exactly like the center panel. */
+:root:is([data-chrome-tier="liquid-glass"], [data-chrome-tier="vibrancy"])[data-content-translucent="true"]:not(
+    [data-reduced-transparency="true"]
+  )
+  .palot-files-panel {
+  background-color: transparent !important;
+}
+
+:root:is([data-chrome-tier="liquid-glass"], [data-chrome-tier="vibrancy"])[data-content-translucent="true"]:not(
+    [data-reduced-transparency="true"]
+  )
+  .palot-files-panel-header {
+  background-color: transparent !important;
+}
+
 :root:is(
     [data-chrome-tier="liquid-glass"],
     [data-chrome-tier="vibrancy"]
