@@ -565,17 +565,16 @@ const SessionThreadContents = memo(function SessionThreadContents({
       ),
     [inlineRequestIDs, requestViews],
   );
+  // The dock no longer overlays the transcript (see marginBottom on the
+  // transcript surface), so no dock-height reserve is needed at the content end.
   const scrollerContentStyle = useMemo(
     () => ({
       paddingTop: cursor ? 64 : 32,
-      paddingBottom: composerDockHeight === null ? 16 : composerDockHeight + 16,
+      paddingBottom: 16,
     }),
-    [composerDockHeight, cursor],
+    [cursor],
   );
-  const scrollButtonStyle = useMemo(
-    () => ({ bottom: (composerDockHeight ?? 0) + 12 }),
-    [composerDockHeight],
-  );
+  const scrollButtonStyle = useMemo(() => ({ bottom: 12 }), []);
   const virtualizer = useVirtualizer({
     // The dock's first layout gives us the actual pane width before seeding
     // measurements. Never reuse wrapping estimates based on window width alone.
@@ -587,8 +586,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
     rangeExtractor: extractVirtualTurnRange,
     overscan: initialTranscriptVisible ? 1 : 0,
     paddingStart: cursor ? 64 : 32,
-    paddingEnd: (composerDockHeight ?? 0) + 16,
-    scrollPaddingEnd: (composerDockHeight ?? 0) + 16,
+    paddingEnd: 16,
+    scrollPaddingEnd: 16,
     // Bottom-follow positions the real viewport. An out-of-range initial offset
     // never gets a correcting scroll event while a short transcript still fits.
     initialMeasurementsCache: restoredLayout?.measurements,
@@ -889,7 +888,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     indexedPrompts: promptIndex.prompts,
     viewport: scrollRef,
     virtualizer,
-    bottomInset: composerDockHeight ?? 0,
+    bottomInset: 16,
     pin: setNavigationPinnedTurnID,
     unlock: () => setBottomLock(false),
     clearAnchor: clearPrependAnchor,
@@ -946,7 +945,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     rows: turnRows,
     viewport: scrollRef,
     virtualizer,
-    bottomInset: composerDockHeight ?? 0,
+    bottomInset: 16,
     pin: setFindPinnedTurnID,
     unlock: () => setBottomLock(false),
     cancelNavigation: navigation.cancel,
@@ -1219,6 +1218,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
           style={{
             opacity: initialTranscriptVisible ? 1 : 0,
             pointerEvents: initialTranscriptVisible ? undefined : "none",
+            // End the scroll region ABOVE the dock instead of letting the dock
+            // overlay it: content never passes under the glass composer/queue.
+            marginBottom: composerDockHeight ?? 0,
           }}
         >
           <ScrollAreaRoot
