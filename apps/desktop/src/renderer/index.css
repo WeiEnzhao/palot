@@ -687,17 +687,13 @@
   );
 }
 
-/* Fullscreen: the drag header and the composer card join the content wash, so the
-   wallpaper reads as one continuous surface instead of white blocks floating on it. */
-:root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
-  .palot-main-surface-header {
-  background-color: var(--content-background-translucent) !important;
-}
-
+/* Fullscreen: the composer card joins the content wash. Its own translucent token
+   (--glass-composer-opacity) follows the composer *material* preference (often solid),
+   not the content-opacity slider, so drive it from the baked content-header mix instead. */
 :root[data-palot-fullscreen="true"][data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .palot-composer .palot-surface-backdrop[data-tone="composer"] {
-  background-color: var(--composer-background-translucent);
-  backdrop-filter: saturate(var(--glass-content-saturation)) blur(var(--glass-content-blur));
+  background-color: var(--content-header-background-translucent) !important;
+  backdrop-filter: saturate(var(--glass-content-saturation)) blur(var(--glass-content-blur)) !important;
 }
 
 /* Fullscreen: markdown table headers join the content wash instead of a solid muted band. */
