@@ -285,8 +285,21 @@ class AppearanceService {
   ): void {
     const color = this.backgroundColor(preferences, scheme);
     for (const window of BrowserWindow.getAllWindows()) {
-      if (!window.isDestroyed()) window.setBackgroundColor(color);
+      if (!window.isDestroyed()) this.setWindowBackground(window, color);
     }
+  }
+
+  /**
+   * Native background per window. Re-setting the same color still forces a
+   * native update, and in the glass tier the window is transparent — the
+   * recomposite can show a black frame. Skip redundant writes.
+   */
+  private readonly appliedWindowBackgrounds = new WeakMap<BrowserWindow, string>();
+
+  private setWindowBackground(window: BrowserWindow, color: string): void {
+    if (this.appliedWindowBackgrounds.get(window) === color) return;
+    this.appliedWindowBackgrounds.set(window, color);
+    window.setBackgroundColor(color);
   }
 
   private currentScheme(preferences: AppearancePreferences): AppearanceColorScheme {
@@ -358,7 +371,7 @@ class AppearanceService {
     const appearance = this.nativeSystemAppearance();
     for (const window of BrowserWindow.getAllWindows()) {
       if (window.isDestroyed()) continue;
-      window.setBackgroundColor(background);
+      this.setWindowBackground(window, background);
       window.webContents.send(IPC_CHANNELS.reducedTransparencyChanged, reduced);
       window.webContents.send(IPC_CHANNELS.chromeTierChanged, tier);
       window.webContents.send(IPC_CHANNELS.nativeSystemAppearanceChanged, appearance);

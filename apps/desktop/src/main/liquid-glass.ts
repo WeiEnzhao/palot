@@ -89,7 +89,10 @@ let glassImport: LiquidGlassImport | null = null;
 let glassSupport: boolean | null = null;
 let resolvedTier: WindowChromeTier = "opaque";
 let resolvedVibrancy: "menu" | "sidebar" = "sidebar";
-const activeGlassViews = new Map<LiquidGlassWindow, { id: number; module: LiquidGlassModule }>();
+const activeGlassViews = new Map<
+  LiquidGlassWindow,
+  { id: number; module: LiquidGlassModule; appliedOptions: string }
+>();
 const observedWindows = new WeakSet<LiquidGlassWindow>();
 let removalGeneration = 0;
 
@@ -247,11 +250,16 @@ function applyLiquidGlassSettings(
 }
 
 export function updateLiquidGlassSettings(options: LiquidGlassOptions): void {
+  // Re-applying identical options re-renders the native glass layer, which can
+  // flash the window black for a frame. Only push real changes.
+  const serialized = JSON.stringify(options);
   for (const [window, installed] of activeGlassViews) {
     if (window.isDestroyed?.()) {
       removeWindowGlassView(window);
       continue;
     }
+    if (installed.appliedOptions === serialized) continue;
+    installed.appliedOptions = serialized;
     applyLiquidGlassSettings(installed.module, installed.id, options);
   }
 }
@@ -284,7 +292,7 @@ export function applyLiquidGlassView(
       return useVibrancyFallback(window);
     }
 
-    activeGlassViews.set(window, { id: viewId, module });
+    activeGlassViews.set(window, { id: viewId, module, appliedOptions: JSON.stringify(options) });
     if (window.once && !observedWindows.has(window)) {
       observedWindows.add(window);
       window.once("closed", () => removeWindowGlassView(window));
