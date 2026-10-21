@@ -148,6 +148,29 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     contrast,
     12,
   );
+  const lightScheme = resolved.scheme === "light";
+  // The contrast slider spans 0..100 and 50 keeps the theme's own palette.
+  const contrastRatio = Math.min(1, Math.max(0, contrast / 100));
+  const contrastBoost = Math.max(0, (contrast - 50) / 50);
+  /**
+   * Light scheme layering: surfaces, controls, hairlines and secondary text
+   * separate by translucency and mix strength instead of by lightness alone.
+   * Every layer keeps an alpha so the wallpaper reads through the wash, and a
+   * hairline stays a hairline on a bright band instead of washing into it.
+   */
+  const foregroundAlpha = (alpha: number) =>
+    `color-mix(in oklch, ${palette.foreground} ${alpha}%, transparent)`;
+  const layer = (base: string, mix: number, alpha: number) =>
+    `color-mix(in oklch, color-mix(in oklch, ${palette.foreground} ${mix}%, ${base}) ${alpha}%, transparent)`;
+  const controlFill = lightScheme
+    ? layer(palette.muted, 10 + contrastBoost * 10, 74 + contrastRatio * 22)
+    : contrastColor(palette.muted, palette.background, palette.foreground, contrast, 20);
+  const secondaryText = lightScheme
+    ? foregroundAlpha(62 + contrastRatio * 24)
+    : treatment.text.secondary;
+  const tertiaryText = lightScheme
+    ? foregroundAlpha(44 + contrastRatio * 20)
+    : treatment.text.tertiary;
   const inspectorSurface = adjustedCompositeSurface(
     treatment.surfaces.inspector,
     palette.card,
@@ -169,24 +192,18 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
   const variables: Record<string, string> = {
     "--background": palette.background,
     "--foreground": treatment.text.primary,
-    "--text-secondary": treatment.text.secondary,
-    "--text-tertiary": treatment.text.tertiary,
-    "--card": card,
+    "--text-secondary": secondaryText,
+    "--text-tertiary": tertiaryText,
+    "--card": lightScheme ? layer(palette.card, 0, 82 + contrastRatio * 18) : card,
     "--card-foreground": treatment.text.primary,
-    "--popover": popover,
+    "--popover": lightScheme ? layer(palette.popover, 0, 86 + contrastRatio * 12) : popover,
     "--popover-foreground": treatment.text.primary,
     "--primary": palette.primary,
     "--primary-foreground": palette.primaryForeground,
-    "--secondary": contrastColor(
-      palette.muted,
-      palette.background,
-      palette.foreground,
-      contrast,
-      20,
-    ),
+    "--secondary": controlFill,
     "--secondary-foreground": treatment.text.primary,
-    "--muted": contrastColor(palette.muted, palette.background, palette.foreground, contrast, 20),
-    "--muted-foreground": treatment.text.secondary,
+    "--muted": controlFill,
+    "--muted-foreground": secondaryText,
     "--accent": treatment.interaction.hover,
     "--accent-foreground": treatment.text.primary,
     "--control-hover": treatment.interaction.hover,
@@ -197,8 +214,12 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--placeholder-foreground": treatment.interaction.placeholderForeground,
     "--link-foreground": treatment.interaction.linkForeground,
     "--destructive": palette.destructive,
-    "--border": contrastColor(palette.border, palette.background, palette.foreground, contrast, 58),
-    "--input": contrastColor(palette.input, palette.background, palette.foreground, contrast, 48),
+    "--border": lightScheme
+      ? foregroundAlpha(9 + contrastRatio * 15)
+      : contrastColor(palette.border, palette.background, palette.foreground, contrast, 58),
+    "--input": lightScheme
+      ? foregroundAlpha(15 + contrastRatio * 17)
+      : contrastColor(palette.input, palette.background, palette.foreground, contrast, 48),
     "--ring": palette.ring,
     "--success": palette.success,
     "--warning": palette.warning,
@@ -211,13 +232,15 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--sidebar-primary-foreground": palette.sidebarPrimaryForeground ?? palette.primaryForeground,
     "--sidebar-accent": treatment.sidebar.selected,
     "--sidebar-accent-foreground": treatment.text.sidebarPrimary,
-    "--sidebar-border": contrastColor(
-      palette.sidebarBorder,
-      treatment.sidebar.surface,
-      treatment.text.sidebarPrimary,
-      contrast,
-      58,
-    ),
+    "--sidebar-border": lightScheme
+      ? foregroundAlpha(8 + contrastRatio * 14)
+      : contrastColor(
+          palette.sidebarBorder,
+          treatment.sidebar.surface,
+          treatment.text.sidebarPrimary,
+          contrast,
+          58,
+        ),
     "--sidebar-ring": palette.ring,
     "--code-background": resolved.terminal.background,
     "--code-foreground": resolved.terminal.foreground,

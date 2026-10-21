@@ -788,10 +788,12 @@
 }
 
 /* Translucent: inline code chips go from a solid light pill to a glass-like translucent
-   pill (the solid --code-background/--muted double-stacks into an opaque white blob). */
+   pill (the solid --code-background/--muted double-stacks into an opaque white blob).
+   The tint rides on --foreground: --muted is itself translucent now, so mixing it
+   with transparent again would wash the chip out. */
 :root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
   .markdown :not(pre) > code {
-  background-color: color-mix(in oklch, var(--muted) 30%, transparent);
+  background-color: color-mix(in oklch, var(--foreground) 8%, transparent);
 }
 
 /* Translucent: markdown code blocks stop being a solid white slab and read as glass —
@@ -1638,7 +1640,7 @@
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    background: color-mix(in oklch, var(--muted) 28%, transparent);
+    background: color-mix(in oklch, var(--foreground) 6%, transparent);
   }
 
   .markdown-details > summary {
@@ -1650,7 +1652,7 @@
   }
 
   .markdown-details > summary:hover {
-    background: color-mix(in oklch, var(--muted) 45%, transparent);
+    background: color-mix(in oklch, var(--foreground) 10%, transparent);
   }
 
   .markdown-details > summary:focus-visible {
@@ -1834,7 +1836,7 @@
 
   .markdown-alert {
     @apply rounded-lg border px-3 py-2;
-    background: color-mix(in oklch, var(--muted) 22%, transparent);
+    background: color-mix(in oklch, var(--foreground) 7%, transparent);
   }
 
   .markdown-alert-title {
