@@ -1103,7 +1103,8 @@ function startsBlock(value: string): boolean {
   return /^ {0,3}(?:#{1,6}(?:\s|$)|>|`{3,}|~{3,}|(?:[*+-]|\d+[.)])\s+)/.test(value);
 }
 
-const ANGLED_AUTOLINK_PATTERN = /<(https?:\/\/[^\s<>]+|www\.[^\s<>]+)>/gi;
+const ANGLED_AUTOLINK_PATTERN =
+  /<(https?:\/\/[^\s<>]+|www\.[^\s<>]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})>/gi;
 
 function autoLinkExtension(): MarkdownExtension {
   return {

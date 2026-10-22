@@ -497,6 +497,14 @@ describe("MarkdownContent", () => {
     );
   });
 
+  it("links an angled email autolink as a mailto without the brackets", () => {
+    const view = render(<MarkdownContent value={"<support@example.com>"} />);
+
+    const link = view.container.querySelector("a.markdown-link");
+    expect(link?.getAttribute("href")).toBe("mailto:support@example.com");
+    expect(view.container.textContent).toBe("support@example.com");
+  });
+
   it("loads a DuckDuckGo favicon only after the preference is enabled", () => {
     const store = createStore();
     store.set(remoteMarkdownFaviconsAtom, true);
