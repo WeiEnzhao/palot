@@ -35,11 +35,11 @@ describe("ActiveTurnMeta", () => {
 
     render(<ActiveTurnMeta startedAt={Date.now() - 5_000} />);
 
-    expect(screen.getByRole("status", { name: "工作中 for 5s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "工作中，已用时 5 秒" })).toBeTruthy();
     act(() => {
       vi.advanceTimersByTime(61_000);
     });
-    expect(screen.getByRole("status", { name: "工作中 for 1m 06s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "工作中，已用时 1 分 06 秒" })).toBeTruthy();
   });
 
   it("distinguishes execution cleanup after the final response", () => {
@@ -48,7 +48,7 @@ describe("ActiveTurnMeta", () => {
 
     render(<ActiveTurnMeta startedAt={Date.now() - 5_000} label="收尾中" />);
 
-    expect(screen.getByRole("status", { name: "收尾中 for 5s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "收尾中，已用时 5 秒" })).toBeTruthy();
   });
 
   it("does not call streaming preamble text final before tool activity appears", () => {

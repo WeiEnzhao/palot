@@ -7,6 +7,7 @@ import {
   type InboxSessionState,
   type InboxSessionView,
 } from "../lib/session-inbox";
+import { formatDurationCnWithHours } from "../lib/format-duration";
 import { formatRelativeTime, sessionActivityAt } from "../lib/view-models";
 import type { OpenCodeVcsInfo } from "../services/opencode-vcs";
 import { PulseDot } from "./ui/pulse-dot";
@@ -202,9 +203,5 @@ export function InboxStateGlyph({ state }: { state: InboxSessionState }) {
 
 function formatWorkingDuration(startedAt: number, now: number): string {
   const seconds = Math.max(0, Math.floor((now - startedAt) / 1_000));
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ${String(seconds % 60).padStart(2, "0")}s`;
-  const hours = Math.floor(minutes / 60);
-  return `${hours}h ${String(minutes % 60).padStart(2, "0")}m`;
+  return formatDurationCnWithHours(seconds);
 }

@@ -113,7 +113,7 @@ describe("SubagentLaunch", () => {
     });
 
     const row = screen.getByRole("button", { name: "Explore 子智能体 运行中：Map the timeline" });
-    expect(row.textContent).toMatch(/Explore · Map the timeline.*\ds/);
+    expect(row.textContent).toMatch(/Explore · Map the timeline.*\d+ 秒/);
     await userEvent.click(screen.getByRole("button", { name: "停止 Explore 子智能体" }));
 
     await waitFor(() => expect(mocks.interrupt).toHaveBeenCalledWith({ sessionID: child.id }));
@@ -145,7 +145,7 @@ describe("SubagentLaunch", () => {
     expect(
       screen.getByRole("button", { name: "Explore 子智能体 已完成：Map the timeline" }),
     ).toBeTruthy();
-    expect(screen.getByText("20s")).toBeTruthy();
+    expect(screen.getByText("20 秒")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /^停止/ })).toBeNull();
   });
 });

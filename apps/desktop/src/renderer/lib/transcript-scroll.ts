@@ -142,3 +142,92 @@ export function normalizeTranscriptWheelDelta(input: {
   if (input.deltaMode === 2) return input.deltaY * input.viewportHeight;
   return input.deltaY;
 }
+
+/** 加载更早的消息时，重建阅读位置所需的逐帧输入。 */
+export interface PrependAnchorFrameInput {
+  /** 记锚点时，锚点行顶部相对视口顶部的位置。 */
+  anchorViewportTop: number;
+  /** 锚点行当前的视口顶部；行不在虚拟窗口里时为 null。 */
+  anchorTop: number | null;
+  viewportTop: number;
+  scrollTop: number;
+  scrollHeight: number;
+  /** 记锚点时的滚动高度与 scrollTop，用于锚点行不可见时的整体平移。 */
+  fallbackHeight: number;
+  fallbackScrollTop: number;
+  /** 新一页是否已经落地（行数变多，或滚动高度变大）。 */
+  landed: boolean;
+  /** 上一帧的滚动高度，用来判断行高是否还在变。 */
+  previousScrollHeight: number;
+  stableFrames: number;
+  /** 新一页落地的那一刻；还没落地为 null。 */
+  landedAt: number | null;
+  waitStartedAt: number;
+  now: number;
+  waitTimeoutMs: number;
+  settleTimeoutMs: number;
+  stableFrameTarget: number;
+}
+
+export interface PrependAnchorFrameResult {
+  /** 这一帧应该写入的 scrollTop；null 表示不用动。 */
+  scrollTop: number | null;
+  previousScrollHeight: number;
+  landedAt: number | null;
+  stableFrames: number;
+  /** 锚点使命结束（已稳定，或等超时）。 */
+  done: boolean;
+}
+
+/**
+ * 逐帧决定「加载更早消息」之后怎么保住阅读位置。
+ *
+ * 关键点：新一页还没落地时**不能**提前收工 —— 内容晚到一步就没人补偿，
+ * 视图会整体上移，用户看到的是「滑上去加载，结果跳回对话开头」。
+ * 同理，落地后要等行高也稳下来（图片、字体、高亮都是后到的），不然
+ * 补偿过的位置会被后到的测量再次顶走。
+ */
+export function prependAnchorFrame(input: PrependAnchorFrameInput): PrependAnchorFrameResult {
+  if (!input.landed) {
+    return {
+      scrollTop: null,
+      previousScrollHeight: input.scrollHeight,
+      landedAt: null,
+      stableFrames: input.stableFrames,
+      done: input.now - input.waitStartedAt >= input.waitTimeoutMs,
+    };
+  }
+  const landedAt = input.landedAt ?? input.now;
+  let scrollTop: number | null = null;
+  let stableFrames = input.stableFrames;
+  let corrected = false;
+
+  if (input.anchorTop !== null) {
+    const correction = input.anchorTop - input.viewportTop - input.anchorViewportTop;
+    if (Math.abs(correction) > 0.5) {
+      scrollTop = snapToDevicePixel(input.scrollTop + correction);
+      corrected = true;
+    }
+    stableFrames = Math.abs(correction) <= 0.5 ? stableFrames + 1 : 0;
+  } else {
+    // 锚点行不在虚拟窗口里，只能按新增高度整体平移。
+    const target = input.fallbackScrollTop + Math.max(0, input.scrollHeight - input.fallbackHeight);
+    if (Math.abs(target - input.scrollTop) > 0.5) {
+      scrollTop = snapToDevicePixel(target);
+      corrected = true;
+    }
+    stableFrames = 0;
+  }
+
+  const heightChanged = input.scrollHeight !== input.previousScrollHeight;
+  if (heightChanged || corrected) stableFrames = 0;
+
+  const timedOut = input.now - landedAt >= input.settleTimeoutMs;
+  return {
+    scrollTop,
+    previousScrollHeight: input.scrollHeight,
+    landedAt,
+    stableFrames,
+    done: stableFrames >= input.stableFrameTarget || timedOut,
+  };
+}

@@ -34,6 +34,7 @@ import { useClipboardCopy } from "../hooks/use-clipboard-copy";
 import { usePalotNavigation } from "../hooks/use-navigation";
 import { useSessionCatalog } from "../hooks/use-session-catalog";
 import { cn } from "../lib/cn";
+import { formatDurationCn } from "../lib/format-duration";
 import { writeClipboardText } from "../lib/clipboard";
 import {
   projectToolExecution,
@@ -213,8 +214,8 @@ function baseName(path: string) {
 function targetLabel(files: string[]) {
   const names = files.map(baseName).filter((name, index, values) => values.indexOf(name) === index);
   if (names.length === 1) return names[0]!;
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names[0]}, ${names[1]} and ${names.length - 2} more`;
+  if (names.length === 2) return `${names[0]}、${names[1]}`;
+  return `${names[0]}、${names[1]}，另有 ${names.length - 2} 个`;
 }
 
 type WorkspaceFileOpener = WorkspaceFileOpenHandler | null;
@@ -292,13 +293,13 @@ function WorkspaceFileTargets({ files, opener }: { files: string[]; opener: Work
     <>
       {targets.slice(0, 2).map((file, index) => (
         <Fragment key={file}>
-          {index === 0 ? null : targets.length === 2 ? " and " : ", "}
+          {index === 0 ? null : "、"}
           <WorkspaceFileTarget path={file} opener={opener}>
             {duplicateNames.has(baseName(file)) ? file : undefined}
           </WorkspaceFileTarget>
         </Fragment>
       ))}
-      {targets.length > 2 ? ` and ${targets.length - 2} more` : null}
+      {targets.length > 2 ? `，另有 ${targets.length - 2} 个` : null}
     </>
   );
 }
@@ -314,20 +315,14 @@ function executeToolLabel(view: ExecuteExecution) {
 }
 
 function durationLabel(durationMs: number) {
-  if (durationMs < 1_000) return `${Math.round(durationMs)} ms`;
-  if (durationMs < 10_000) return `${(durationMs / 1_000).toFixed(1)} s`;
-  if (durationMs < 60_000) return `${Math.round(durationMs / 1_000)} s`;
-  const minutes = Math.floor(durationMs / 60_000);
-  const seconds = Math.round((durationMs % 60_000) / 1_000);
-  return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+  if (durationMs < 1_000) return `${Math.round(durationMs)} 毫秒`;
+  if (durationMs < 10_000) return `${(durationMs / 1_000).toFixed(1)} 秒`;
+  if (durationMs < 60_000) return `${Math.round(durationMs / 1_000)} 秒`;
+  return formatDurationCn(Math.round(durationMs / 1_000), { hideZeroSeconds: true });
 }
 
 function elapsedLabel(durationMs: number) {
-  const seconds = Math.max(0, Math.floor(durationMs / 1_000));
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}m ${remainder.toString().padStart(2, "0")}s`;
+  return formatDurationCn(Math.max(0, Math.floor(durationMs / 1_000)), { padSeconds: true });
 }
 
 function executionTitle(view: ToolExecutionView) {

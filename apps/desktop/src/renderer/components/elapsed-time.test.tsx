@@ -36,13 +36,13 @@ describe("ElapsedTime", () => {
     }
     const view = render(<Parent />);
 
-    expect(screen.getByText("20s")).toBeTruthy();
-    expect(screen.getByText("1m 4s")).toBeTruthy();
+    expect(screen.getByText("20 秒")).toBeTruthy();
+    expect(screen.getByText("1 分 4 秒")).toBeTruthy();
     expect(intervals).toHaveBeenCalledTimes(1);
     expect(intervals).toHaveBeenCalledWith(expect.any(Function), 1_000);
     act(() => vi.advanceTimersByTime(1_000));
-    expect(screen.getByText("21s")).toBeTruthy();
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("21 秒")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
     expect(parentRender).toHaveBeenCalledTimes(1);
     expect(intervals).toHaveBeenCalledTimes(1);
 
@@ -56,7 +56,7 @@ describe("ElapsedTime", () => {
       vi.setSystemTime(epoch + 44_000);
       vi.advanceTimersByTime(1_000);
     });
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
   });
 
   it("pauses while hidden and catches up immediately on visibility", () => {
@@ -64,13 +64,13 @@ describe("ElapsedTime", () => {
     setVisibility("hidden");
     expect(vi.getTimerCount()).toBe(0);
     act(() => vi.advanceTimersByTime(45_000));
-    expect(screen.getByText("20s")).toBeTruthy();
+    expect(screen.getByText("20 秒")).toBeTruthy();
 
     setVisibility("visible");
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
     expect(vi.getTimerCount()).toBe(1);
     act(() => vi.advanceTimersByTime(1_000));
-    expect(screen.getByText("1m 6s")).toBeTruthy();
+    expect(screen.getByText("1 分 6 秒")).toBeTruthy();
   });
 
   it("does not start a clock when mounted hidden and removes its listener on cleanup", () => {
@@ -78,7 +78,7 @@ describe("ElapsedTime", () => {
     const addListener = vi.spyOn(document, "addEventListener");
     const removeListener = vi.spyOn(document, "removeEventListener");
     const view = render(<ElapsedTime startedAt={epoch - 5_000} completedAt={null} running />);
-    expect(screen.getByText("5s")).toBeTruthy();
+    expect(screen.getByText("5 秒")).toBeTruthy();
     expect(vi.getTimerCount()).toBe(0);
     const visibilityListener = addListener.mock.calls.find(([type]) => type === "visibilitychange");
     expect(visibilityListener).toBeDefined();
@@ -94,7 +94,7 @@ describe("ElapsedTime", () => {
     first.unmount();
     expect(vi.getTimerCount()).toBe(1);
     act(() => vi.advanceTimersByTime(1_000));
-    expect(screen.getByText("11s")).toBeTruthy();
+    expect(screen.getByText("11 秒")).toBeTruthy();
     second.unmount();
     expect(vi.getTimerCount()).toBe(0);
   });
@@ -107,13 +107,13 @@ describe("ElapsedTime", () => {
         completedAt={epoch - 5_000}
         fallbackDurationMs={99_000}
         running={false}
-        titlePrefix="Returned after"
+        titlePrefix="返回于"
       />,
     );
-    expect(screen.getByTitle("Returned after 15s").textContent).toBe("15s");
+    expect(screen.getByTitle("返回于 15 秒").textContent).toBe("15 秒");
     expect(vi.getTimerCount()).toBe(0);
     act(() => vi.advanceTimersByTime(10_000));
-    expect(screen.getByText("15s")).toBeTruthy();
+    expect(screen.getByText("15 秒")).toBeTruthy();
     view.rerender(
       <ElapsedTime
         startedAt={epoch + 8_000}
@@ -122,10 +122,10 @@ describe("ElapsedTime", () => {
         running
       />,
     );
-    expect(screen.getByText("2s")).toBeTruthy();
+    expect(screen.getByText("2 秒")).toBeTruthy();
     expect(vi.getTimerCount()).toBe(1);
     act(() => vi.advanceTimersByTime(1_000));
-    expect(screen.getByText("3s")).toBeTruthy();
+    expect(screen.getByText("3 秒")).toBeTruthy();
   });
 
   it("freezes to a fallback without subscribing when completion timestamps are missing", () => {
@@ -138,11 +138,11 @@ describe("ElapsedTime", () => {
         running={false}
       />,
     );
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
     expect(vi.getTimerCount()).toBe(0);
     expect(addListener.mock.calls.filter(([type]) => type === "visibilitychange")).toHaveLength(0);
     act(() => vi.advanceTimersByTime(60_000));
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
   });
 
   it.each([
@@ -171,7 +171,7 @@ describe("ElapsedTime", () => {
         running={false}
       />,
     );
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
     view.rerender(
       <ElapsedTime startedAt={null} completedAt={null} fallbackDurationMs={65_000} running />,
     );
@@ -186,12 +186,12 @@ describe("ElapsedTime", () => {
     { startedAt: 0, completedAt: 0, running: false },
   ])("clamps negative durations and preserves zero: %j", (props) => {
     render(<ElapsedTime {...props} />);
-    expect(screen.getByText("0s")).toBeTruthy();
+    expect(screen.getByText("0 秒")).toBeTruthy();
   });
 
   it("preserves large duration text without adding live announcements", () => {
     const view = render(<ElapsedTime startedAt={0} completedAt={60_000_005_000} running={false} />);
-    expect(screen.getByText("1000000m 5s")).toBeTruthy();
+    expect(screen.getByText("1000000 分 5 秒")).toBeTruthy();
     expect(view.container.querySelector("[aria-live], [role='status']")).toBeNull();
   });
 });

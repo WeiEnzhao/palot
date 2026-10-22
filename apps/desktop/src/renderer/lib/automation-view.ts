@@ -1,6 +1,7 @@
 import { formatDistanceToNowStrict } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import type { AutomationRecord, AutomationRun, AutomationTrigger } from "../../shared";
+import { formatDurationCn } from "./format-duration";
 
 export function automationScheduleLabel(trigger: AutomationTrigger): string {
   if (trigger.type === "once") {
@@ -110,8 +111,5 @@ export function runExecutionDuration(run: AutomationRun): string | null {
     0,
     Math.round((run.executionCompletedAt - run.executionStartedAt) / 1_000),
   );
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return remainder === 0 ? `${minutes}m` : `${minutes}m ${remainder}s`;
+  return formatDurationCn(seconds, { hideZeroSeconds: true });
 }

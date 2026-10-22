@@ -158,7 +158,7 @@ describe("subagent activity", () => {
     const cardName = "Explore 子智能体 已完成：Map the timeline";
     const oneVisibleCard = () =>
       expect(screen.getAllByRole("button", { name: cardName })).toHaveLength(1);
-    const turnSummary = screen.getByRole("button", { name: "完成耗时 1s" });
+    const turnSummary = screen.getByRole("button", { name: "完成耗时 1 秒" });
     expect(turnSummary.getAttribute("aria-expanded")).toBe("false");
     oneVisibleCard();
 
@@ -207,7 +207,7 @@ describe("subagent activity", () => {
     const card = screen.getByRole("button", {
       name: "Explore 子智能体 已完成：Map the timeline",
     });
-    expect(screen.getByText("20s")).toBeTruthy();
+    expect(screen.getByText("20 秒")).toBeTruthy();
     await userEvent.click(card);
     expect(mocks.openSession).toHaveBeenCalledWith(child.id);
   });
@@ -253,7 +253,7 @@ describe("subagent activity", () => {
       name: "Explore 子智能体 运行中：Map the timeline",
     });
     expect(screen.queryByText("Reviewing the timeline projection")).toBeNull();
-    expect(screen.getByText(/\d+s/)).toBeTruthy();
+    expect(screen.getByText(/\d+ 秒/)).toBeTruthy();
     await userEvent.click(card);
     expect(mocks.openSession).toHaveBeenCalledWith(child.id);
   });
@@ -421,7 +421,7 @@ describe("subagent activity", () => {
       });
     });
     await screen.findByRole("button", { name: "Explore 子智能体 已完成：Map the timeline" });
-    expect(screen.getAllByText("20s")).toHaveLength(2);
+    expect(screen.getAllByText("20 秒")).toHaveLength(2);
     expect(commits).toHaveBeenCalled();
   });
 

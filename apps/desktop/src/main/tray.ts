@@ -40,10 +40,10 @@ const REFRESH_EVENT_TYPES = new Set<OpenCodeEvent["type"]>([
   "session.status",
 ]);
 const SECTION_LABELS: Record<TrayTaskSection, string> = {
-  attention: "Needs Attention",
-  pinned: "Pinned",
-  running: "Running",
-  recent: "Recent",
+  attention: "需要处理",
+  pinned: "已固定",
+  running: "运行中",
+  recent: "最近",
 };
 
 let controller: TrayController | null = null;
@@ -441,7 +441,7 @@ class TrayController {
     const template: MenuItemConstructorOptions[] = [];
     if (this.connections.size && this.attentionState !== "ready") {
       template.push({
-        label: this.attentionState === "syncing" ? "Syncing requests…" : "Requests unavailable",
+        label: this.attentionState === "syncing" ? "正在同步请求…" : "请求状态不可用",
         enabled: false,
       });
     }
@@ -458,20 +458,20 @@ class TrayController {
         })),
       );
     }
-    if (template.length === 0) template.push({ label: "No tasks yet", enabled: false });
+    if (template.length === 0) template.push({ label: "暂无任务", enabled: false });
     template.push(
       { type: "separator" },
       {
-        label: `Open ${this.displayName}`,
+        label: `打开 ${this.displayName}`,
         click: () => desktopNavigation.request({ type: "open" }),
       },
-      { label: "New Task", click: () => desktopNavigation.request({ type: "new-task" }) },
+      { label: "新建任务", click: () => desktopNavigation.request({ type: "new-task" }) },
       {
-        label: "Notification Settings...",
+        label: "通知设置…",
         click: () => desktopNavigation.request({ type: "notification-settings" }),
       },
       { type: "separator" },
-      { label: `Quit ${this.displayName}`, role: "quit" },
+      { label: `退出 ${this.displayName}`, role: "quit" },
     );
     return Menu.buildFromTemplate(template);
   }

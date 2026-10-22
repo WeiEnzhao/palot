@@ -1311,21 +1311,22 @@
   border-radius: 9999px;
   background: currentColor;
   content: "";
-  animation: palot-thinking-pulse 1.6s ease-in-out infinite;
+  /* 只呼吸透明度，不做缩放：4px 圆点的 scale 每轮都像在「跳一下」，
+     是这一行被读成「闪动」的主因。 */
+  transform: translateY(-50%);
+  animation: palot-thinking-pulse 2.4s ease-in-out infinite;
   animation-delay: inherit;
-  will-change: opacity, transform;
+  will-change: opacity;
 }
 
 @keyframes palot-thinking-pulse {
   0%,
   100% {
-    opacity: 0.4;
-    transform: translateY(-50%) scale(0.72);
+    opacity: 0.55;
   }
 
   50% {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
   }
 }
 

@@ -337,7 +337,7 @@ describe("ActivityGroup", () => {
       />,
     );
 
-    const trigger = screen.getByRole("button", { name: "推理 · 3 步 · 33.5s" });
+    const trigger = screen.getByRole("button", { name: "推理 · 3 步 · 33.5 秒" });
     expect(
       screen.queryByRole("button", { name: /推理: Evaluating database options/ }),
     ).toBeNull();
@@ -353,7 +353,7 @@ describe("ActivityGroup", () => {
     await user.click(trigger);
     expect(
       screen.getByRole("button", {
-        name: "推理: Planning middleware layering · 3 步 · 33.5s",
+        name: "推理: Planning middleware layering · 3 步 · 33.5 秒",
       }),
     ).toBeTruthy();
   });
@@ -820,7 +820,7 @@ describe("TurnActivity", () => {
       />,
     );
     const view = within(result.container);
-    const trigger = view.getByRole("button", { name: "工作耗时 1s" });
+    const trigger = view.getByRole("button", { name: "工作耗时 1 秒" });
 
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(view.getByText("Pinned companion")).toBeTruthy();
@@ -927,7 +927,7 @@ describe("TurnActivity", () => {
       </Provider>,
     );
 
-    const turnTrigger = screen.getByRole("button", { name: "完成耗时 1s" });
+    const turnTrigger = screen.getByRole("button", { name: "完成耗时 1 秒" });
     expect(turnTrigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(turnTrigger);
 
@@ -984,7 +984,7 @@ describe("TurnActivity", () => {
 
     const view = within(result.container);
     expect(view.queryByRole("button", { name: "展开所有活动" })).toBeNull();
-    await user.click(view.getByRole("button", { name: "工作耗时 1s" }));
+    await user.click(view.getByRole("button", { name: "工作耗时 1 秒" }));
     expect(view.getByRole("button", { name: "读取文件" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
@@ -1116,7 +1116,7 @@ describe("ThoughtDisclosure", () => {
     render(<ThoughtDisclosure entry={entry} live={false} />);
 
     const trigger = screen.getByRole("button", {
-      name: "推理: Inspecting frontend and TUI code 7ms",
+      name: "推理: Inspecting frontend and TUI code 7 毫秒",
     });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(trigger);

@@ -146,7 +146,7 @@ describe("process footer", () => {
     const trigger = screen.getByRole("button", { name: "命令和终端：1 个命令" });
     fireEvent.click(trigger);
     expect(await screen.findByRole("region", { name: "运行中的命令" })).toBeTruthy();
-    expect(screen.getByText("1m 5s")).toBeTruthy();
+    expect(screen.getByText("1 分 5 秒")).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: /sleep 30/ }));
     expect(mocks.openTab).toHaveBeenCalledWith(
       { kind: "command", location, shellID: "shell-1", sessionID: "root", command: "sleep 30" },

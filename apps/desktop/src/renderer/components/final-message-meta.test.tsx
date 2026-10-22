@@ -82,7 +82,7 @@ describe("FinalMessageMeta", () => {
 
     const result = render(<FinalMessageMeta turn={turn} models={[]} sessionID="session" />);
 
-    expect(screen.getByTitle("工作耗时 39s").textContent).toBe("39s");
+    expect(screen.getByTitle("工作耗时 39 秒").textContent).toBe("39 秒");
     expect(result.container.firstElementChild?.classList.contains("opacity-0")).toBe(true);
   });
 
@@ -209,7 +209,7 @@ describe("FinalMessageMeta", () => {
 
     render(<FinalMessageMeta turn={turn} models={[]} sessionID="session" />);
 
-    expect(screen.getByTitle("完成耗时 42s").textContent).toBe("42s");
+    expect(screen.getByTitle("完成耗时 42 秒").textContent).toBe("42 秒");
   });
 
   it("forks the session after this response", async () => {

@@ -88,11 +88,11 @@ function runSummary(run: ProjectScriptRun): string {
   const seconds = Math.max(0, (run.finishedAt - run.startedAt) / 1_000);
   const parts = [
     run.exitCode !== null
-      ? `Exit code ${run.exitCode}`
+      ? `退出码 ${run.exitCode}`
       : run.signal
-        ? `Stopped by ${run.signal}`
+        ? `被 ${run.signal} 终止`
         : null,
-    run.status === "error" ? null : `${seconds < 10 ? seconds.toFixed(1) : Math.round(seconds)}s`,
+    run.status === "error" ? null : `${seconds < 10 ? seconds.toFixed(1) : Math.round(seconds)} 秒`,
     run.error,
   ].filter(Boolean);
   return parts.join(" · ");

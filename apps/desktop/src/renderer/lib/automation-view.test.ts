@@ -43,7 +43,7 @@ describe("runExecutionDuration", () => {
         executionStartedAt: 1_000,
         executionCompletedAt: 66_000,
       } as AutomationRun),
-    ).toBe("1m 5s");
+    ).toBe("1 分 5 秒");
   });
 
   it("stays unknown until both execution boundaries are available", () => {

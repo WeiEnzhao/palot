@@ -1,4 +1,5 @@
 import { memo, useSyncExternalStore } from "react";
+import { formatDurationCn } from "../lib/format-duration";
 
 export interface ElapsedTimeProps {
   startedAt: number | null;
@@ -63,7 +64,7 @@ function isFiniteNumber(value: number | null | undefined): value is number {
 
 function Duration({ durationMs, titlePrefix }: { durationMs: number; titlePrefix?: string }) {
   const seconds = Math.floor(Math.max(0, durationMs) / 1_000);
-  const formatted = seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  const formatted = formatDurationCn(seconds);
   return (
     <span
       className="inline-block min-w-[8ch] shrink-0 text-right whitespace-nowrap tabular-nums"

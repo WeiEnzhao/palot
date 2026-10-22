@@ -3,6 +3,7 @@ import { useAtomValue } from "jotai";
 import { useState } from "react";
 import type { PalotSession } from "../../shared";
 import { runtimeAtom } from "../atoms/workspace";
+import { formatDurationCn } from "../lib/format-duration";
 import { useWorkbenchCommands } from "../atoms/workbench";
 import { useSessionProcesses, type SessionProcess } from "../hooks/use-session-processes";
 import { Button } from "./ui/button";
@@ -36,7 +37,7 @@ export function processStatus(row: SessionProcess): string {
 
 function elapsed(startedAt: number, now: number): string {
   const seconds = Math.max(0, Math.floor((now - startedAt) / 1_000));
-  return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  return formatDurationCn(seconds);
 }
 
 export function ProcessFooterControl({

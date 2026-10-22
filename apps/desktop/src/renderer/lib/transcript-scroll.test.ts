@@ -4,6 +4,7 @@ import {
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
   pinnedTranscriptScrollTop,
+  prependAnchorFrame,
   readTranscriptScrollUpdate,
   scheduleTranscriptScrollFrame,
   snapToDevicePixel,
@@ -266,5 +267,93 @@ describe("streaming live edge pin", () => {
         { maxDistance: 578 },
       ),
     ).toBe(3422);
+  });
+});
+
+describe("prependAnchorFrame", () => {
+  const base = {
+    anchorViewportTop: 0,
+    anchorTop: 0,
+    viewportTop: 0,
+    scrollTop: 5000,
+    scrollHeight: 10_000,
+    fallbackHeight: 10_000,
+    fallbackScrollTop: 5000,
+    landed: true,
+    previousScrollHeight: 10_000,
+    stableFrames: 0,
+    landedAt: 1_000,
+    waitStartedAt: 0,
+    now: 1_016,
+    waitTimeoutMs: 4_000,
+    settleTimeoutMs: 2_500,
+    stableFrameTarget: 8,
+  };
+
+  it("keeps waiting while the page has not landed instead of dropping the anchor", () => {
+    // Dropping here is what made a late page shift the whole view up: nothing
+    // compensates afterwards, so the reader lands near the start of the session.
+    const result = prependAnchorFrame({
+      ...base,
+      landed: false,
+      landedAt: null,
+      now: 2_000,
+    });
+    expect(result.done).toBe(false);
+    expect(result.scrollTop).toBeNull();
+    expect(result.landedAt).toBeNull();
+  });
+
+  it("gives up only after the wait window", () => {
+    const result = prependAnchorFrame({ ...base, landed: false, landedAt: null, now: 4_001 });
+    expect(result.done).toBe(true);
+  });
+
+  it("compensates the height the new page inserted above the anchor", () => {
+    const result = prependAnchorFrame({
+      ...base,
+      anchorTop: 3000,
+      scrollHeight: 13_000,
+      previousScrollHeight: 10_000,
+    });
+    expect(result.scrollTop).toBe(8000);
+    expect(result.stableFrames).toBe(0);
+    expect(result.done).toBe(false);
+  });
+
+  it("keeps the anchor while late measurement still changes row heights", () => {
+    const result = prependAnchorFrame({
+      ...base,
+      anchorViewportTop: 120,
+      anchorTop: 120,
+      scrollTop: 8000,
+      scrollHeight: 13_120,
+      previousScrollHeight: 13_000,
+      stableFrames: 5,
+    });
+    expect(result.stableFrames).toBe(0);
+    expect(result.done).toBe(false);
+  });
+
+  it("finishes once position and height are both stable", () => {
+    const result = prependAnchorFrame({ ...base, stableFrames: 7 });
+    expect(result.stableFrames).toBe(8);
+    expect(result.done).toBe(true);
+  });
+
+  it("shifts by the inserted height when the anchor row is virtualized away", () => {
+    const result = prependAnchorFrame({
+      ...base,
+      anchorTop: null,
+      scrollHeight: 13_000,
+      previousScrollHeight: 10_000,
+    });
+    expect(result.scrollTop).toBe(8000);
+    expect(result.stableFrames).toBe(0);
+  });
+
+  it("stops settling after the settle window", () => {
+    const result = prependAnchorFrame({ ...base, now: 3_500 });
+    expect(result.done).toBe(true);
   });
 });

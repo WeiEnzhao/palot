@@ -18,6 +18,7 @@ import type {
   PullRequestReviewerState,
 } from "../../../shared/source-control-contract";
 import { SourceControlError } from "../../hooks/use-source-control";
+import { formatDurationCnWithHours } from "../../lib/format-duration";
 
 export const PULL_REQUEST_STATE_ICON: Record<PullRequestState, LucideIcon> = {
   open: GitPullRequest,
@@ -241,10 +242,7 @@ export function groupChecks(checks: readonly PullRequestCheck[]) {
 
 export function formatDuration(milliseconds: number): string {
   const seconds = Math.max(0, Math.round(milliseconds / 1_000));
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ${String(seconds % 60).padStart(2, "0")}s`;
-  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
+  return formatDurationCnWithHours(seconds);
 }
 
 export function checkDuration(check: PullRequestCheck, now = Date.now()): string | null {

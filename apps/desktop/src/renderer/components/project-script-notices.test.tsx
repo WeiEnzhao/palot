@@ -65,7 +65,7 @@ describe("ProjectScriptNotices", () => {
     );
     act(() => (add.mock.calls[0]![0].actionProps!.onClick as () => void)());
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Exit code 2 · 2.5s")).toBeTruthy();
+    expect(within(dialog).getByText("退出码 2 · 2.5 秒")).toBeTruthy();
     expect(within(dialog).getByLabelText("Script output").textContent).toBe("1 failing\n");
     expect(within(dialog).getByRole("group", { name: "Command" }).textContent).toContain(
       "bun test",

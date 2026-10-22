@@ -79,8 +79,8 @@ describe("pull request summary", () => {
       "通过的检查",
     ]);
     expect(within(groups[0]!).getByText("必需")).toBeTruthy();
-    expect(groups[0]!.textContent).toContain("Failed · 3s");
-    expect(groups[2]!.textContent).toContain("Passed · 1m 05s");
+    expect(groups[0]!.textContent).toContain("Failed · 3 秒");
+    expect(groups[2]!.textContent).toContain("Passed · 1 分 05 秒");
     expect(within(checks).getByText("1 失败, 1 运行中, 1 通过")).toBeTruthy();
     expect(within(checks).getByText(/此列表不完整/)).toBeTruthy();
   });

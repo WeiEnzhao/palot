@@ -427,7 +427,7 @@ describe("ToolExecution", () => {
     const card = within(result.container);
 
     const trigger = card.getByRole("button", {
-      name: "读取 a.ts 第 1–2 行 耗时 250 ms",
+      name: "读取 a.ts 第 1–2 行 耗时 250 毫秒",
     });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(trigger);
@@ -463,7 +463,7 @@ describe("ToolExecution", () => {
 
     render(<ReadToolExecutionGroup entries={reads.map((part, index) => ({ part, index }))} />);
 
-    expect(screen.getByLabelText("耗时 300 ms").textContent).toBe("300 ms");
+    expect(screen.getByLabelText("耗时 300 毫秒").textContent).toBe("300 毫秒");
   });
 
   it("shows completed tool duration instead of a checkmark", () => {
@@ -484,7 +484,7 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    expect(screen.getByLabelText("耗时 1.3 s").textContent).toBe("1.3 s");
+    expect(screen.getByLabelText("耗时 1.3 秒").textContent).toBe("1.3 秒");
     expect(container.querySelector(".lucide-check")).toBeNull();
   });
 
@@ -653,10 +653,10 @@ describe("ToolExecution", () => {
       );
 
       expect(within(result.container).getByText("执行中")).toBeTruthy();
-      expect(within(result.container).queryByText("0s")).toBeNull();
+      expect(within(result.container).queryByText("0 秒")).toBeNull();
 
       act(() => vi.advanceTimersByTime(1_000));
-      expect(within(result.container).getByText("1s")).toBeTruthy();
+      expect(within(result.container).getByText("1 秒")).toBeTruthy();
 
       result.rerender(
         <Provider store={store}>
@@ -671,7 +671,7 @@ describe("ToolExecution", () => {
         </Provider>,
       );
       expect(within(result.container).getByText("待处理")).toBeTruthy();
-      expect(within(result.container).getByText("2s")).toBeTruthy();
+      expect(within(result.container).getByText("2 秒")).toBeTruthy();
     } finally {
       vi.useRealTimers();
     }

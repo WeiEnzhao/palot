@@ -54,10 +54,9 @@ export function countTrayTasks(input: TrayTaskSections): TrayTaskCounts {
 
 export function trayToolTip(displayName: string, counts: TrayTaskCounts): string {
   const parts: string[] = [];
-  if (counts.attention === 1) parts.push("1 task needs input");
-  else if (counts.attention > 1) parts.push(`${counts.attention} tasks need input`);
-  if (counts.running > 0) parts.push(`${counts.running} running`);
-  return parts.length ? `${displayName}: ${parts.join(", ")}` : displayName;
+  if (counts.attention > 0) parts.push(`${counts.attention} 个任务等待处理`);
+  if (counts.running > 0) parts.push(`${counts.running} 个运行中`);
+  return parts.length ? `${displayName}：${parts.join("，")}` : displayName;
 }
 
 function trayTaskKey(item: TrayTaskItem): string {
@@ -69,9 +68,9 @@ function trayTaskKey(item: TrayTaskItem): string {
 
 export function formatTrayRelativeTime(timestamp: number, now = Date.now()): string {
   const elapsed = Math.max(0, now - timestamp);
-  if (elapsed < 60_000) return "now";
-  if (elapsed < 3_600_000) return `${Math.floor(elapsed / 60_000)}m ago`;
-  if (elapsed < 86_400_000) return `${Math.floor(elapsed / 3_600_000)}h ago`;
-  if (elapsed < 604_800_000) return `${Math.floor(elapsed / 86_400_000)}d ago`;
+  if (elapsed < 60_000) return "刚刚";
+  if (elapsed < 3_600_000) return `${Math.floor(elapsed / 60_000)} 分钟前`;
+  if (elapsed < 86_400_000) return `${Math.floor(elapsed / 3_600_000)} 小时前`;
+  if (elapsed < 604_800_000) return `${Math.floor(elapsed / 86_400_000)} 天前`;
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(timestamp);
 }

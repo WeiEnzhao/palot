@@ -81,6 +81,7 @@ import { likelyCacheBusts, type LikelyCacheBust } from "../lib/cache-bust";
 import { resolveSessionProjectionPreference } from "../lib/session-projection-policy";
 import { withPersistedTurnFailures } from "../lib/persisted-turn-failures";
 import { parallelActivityLabel } from "../lib/parallel-activity";
+import { formatDurationCn } from "../lib/format-duration";
 import { canFetchOpenCode } from "../lib/opencode-runtime-query";
 import { reviewOfferUserMessageID } from "../lib/turn-review-offer";
 import { TurnReviewOffer } from "./turn-review-offer";
@@ -88,6 +89,7 @@ import { projectToolExecution } from "../lib/tool-executions";
 import { recordStreamingCommit } from "../lib/streaming-latency";
 import {
   pinnedTranscriptScrollTop,
+  prependAnchorFrame,
   readTranscriptScrollUpdate,
   normalizeTranscriptWheelDelta,
   scheduleTranscriptScrollFrame,
@@ -208,7 +210,10 @@ const MAX_PINNED_VIRTUAL_TURNS = 16;
 const INITIAL_TRANSCRIPT_STABLE_FRAMES = 3;
 const MAX_INITIAL_TRANSCRIPT_SETTLE_MS = 250;
 const PREPEND_ANCHOR_STABLE_FRAMES = 8;
-const MAX_PREPEND_ANCHOR_SETTLE_MS = 1_000;
+/** 等新一页落地的上限：本地服务通常几十毫秒，远端连接可能久一点。 */
+const MAX_PREPEND_ANCHOR_WAIT_MS = 4_000;
+/** 落地后继续补偿的行高变化（图片、字体、高亮）上限。 */
+const MAX_PREPEND_ANCHOR_SETTLE_MS = 2_500;
 
 function nestedScrollConsumesDelta(root: HTMLElement, target: EventTarget | null, delta: number) {
   let element = target instanceof HTMLElement ? target : null;
@@ -740,20 +745,13 @@ const SessionThreadContents = memo(function SessionThreadContents({
     if (!pendingAnchor || !viewport) return;
     let frame = 0;
     let stableFrames = 0;
-    const startedAt = performance.now();
+    let lastHeight = viewport.scrollHeight;
+    const waitStartedAt = performance.now();
+    let landedAt: number | null = null;
     const restoreAnchor = () => {
       const anchor = prependAnchorRef.current;
       if (!anchor) return;
-      const timedOut = performance.now() - startedAt >= MAX_PREPEND_ANCHOR_SETTLE_MS;
-      if (turnRows.length <= anchor.turnCount && viewport.scrollHeight <= anchor.fallbackHeight) {
-        if (timedOut) {
-          clearPrependAnchor();
-          return;
-        }
-        frame = requestAnimationFrame(restoreAnchor);
-        return;
-      }
-      scrollIntentRef.current = "anchor";
+      const now = performance.now();
       const anchorIndex = anchor.turnID
         ? turnRows.findIndex((row) => row.id === anchor.turnID)
         : -1;
@@ -761,24 +759,34 @@ const SessionThreadContents = memo(function SessionThreadContents({
         anchorIndex >= 0
           ? viewport.querySelector<HTMLElement>(`[data-index="${anchorIndex}"]`)
           : null;
-      if (anchorElement) {
-        const viewportTop = viewport.getBoundingClientRect().top;
-        const correction =
-          anchorElement.getBoundingClientRect().top - viewportTop - anchor.viewportTop;
-        if (Math.abs(correction) > 0.5) {
-          viewport.scrollTop = snapToDevicePixel(viewport.scrollTop + correction);
-        }
-        stableFrames = Math.abs(correction) <= 0.5 ? stableFrames + 1 : 0;
-      } else {
-        const target =
-          anchor.fallbackScrollTop + Math.max(0, viewport.scrollHeight - anchor.fallbackHeight);
-        if (Math.abs(target - viewport.scrollTop) > 0.5) {
-          viewport.scrollTop = snapToDevicePixel(target);
-        }
-        stableFrames = 0;
+      const height = viewport.scrollHeight;
+      const result = prependAnchorFrame({
+        anchorViewportTop: anchor.viewportTop,
+        anchorTop: anchorElement?.getBoundingClientRect().top ?? null,
+        viewportTop: viewport.getBoundingClientRect().top,
+        scrollTop: viewport.scrollTop,
+        scrollHeight: height,
+        fallbackHeight: anchor.fallbackHeight,
+        fallbackScrollTop: anchor.fallbackScrollTop,
+        landed: turnRows.length > anchor.turnCount || height > anchor.fallbackHeight,
+        previousScrollHeight: lastHeight,
+        stableFrames,
+        landedAt,
+        waitStartedAt,
+        now,
+        waitTimeoutMs: MAX_PREPEND_ANCHOR_WAIT_MS,
+        settleTimeoutMs: MAX_PREPEND_ANCHOR_SETTLE_MS,
+        stableFrameTarget: PREPEND_ANCHOR_STABLE_FRAMES,
+      });
+      lastHeight = result.previousScrollHeight;
+      landedAt = result.landedAt;
+      stableFrames = result.stableFrames;
+      if (result.scrollTop !== null) {
+        scrollIntentRef.current = "anchor";
+        viewport.scrollTop = result.scrollTop;
+        previousScrollTopRef.current = viewport.scrollTop;
       }
-      previousScrollTopRef.current = viewport.scrollTop;
-      if (stableFrames >= PREPEND_ANCHOR_STABLE_FRAMES || timedOut) {
+      if (result.done) {
         clearPrependAnchor();
         return;
       }
@@ -935,7 +943,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       return true;
     } catch (error) {
       clearPrependAnchor();
-      showErrorToast("Could not load earlier messages", error);
+      showErrorToast("无法加载更早的消息", error);
       return false;
     } finally {
       olderRequestRef.current = false;
@@ -1444,7 +1452,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                       <div className="absolute inset-x-0 top-2 flex justify-center pb-4">
                         {transcript.isFetchNextPageError ? (
                           <LoadingButton loading={loadingOlder} onClick={() => void loadOlder()}>
-                            Retry loading earlier messages
+                            重试加载更早的消息
                           </LoadingButton>
                         ) : loadingOlder ? (
                           <span
@@ -2522,18 +2530,12 @@ export const FinalMessageMeta = memo(
 
 function formatWorkedFor(startedAt: number, completedAt: number): string {
   const seconds = Math.max(1, Math.round((completedAt - startedAt) / 1_000));
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return remainder > 0 ? `${minutes}m ${remainder}s` : `${minutes}m`;
+  return formatDurationCn(seconds, { hideZeroSeconds: true });
 }
 
 function formatWorkingFor(startedAt: number, now: number): string {
   const seconds = Math.max(0, Math.floor((now - startedAt) / 1_000));
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}m ${remainder.toString().padStart(2, "0")}s`;
+  return formatDurationCn(seconds, { padSeconds: true });
 }
 
 function useCurrentTime(active = true): number {
@@ -2572,7 +2574,7 @@ export function ActiveTurnMeta({
       <span
         className="flex min-w-0 items-center gap-1.5"
         role="status"
-        aria-label={`${label}${activity ? `, ${activity.toLowerCase()},` : ""} for ${duration}`}
+        aria-label={`${label}${activity ? `，${activity}` : ""}，已用时 ${duration}`}
       >
         <ThinkingShimmer>{label}</ThinkingShimmer>
         {activity ? (
@@ -3731,8 +3733,8 @@ export function ThoughtDisclosure({
 
 function formatThoughtDuration(durationMs: number): string {
   const clamped = Math.max(0, durationMs);
-  if (clamped < 1_000) return `${Math.round(clamped)}ms`;
-  return `${(clamped / 1_000).toFixed(1).replace(/\.0$/, "")}s`;
+  if (clamped < 1_000) return `${Math.round(clamped)} 毫秒`;
+  return `${(clamped / 1_000).toFixed(1).replace(/\.0$/, "")} 秒`;
 }
 
 function ActivityParts({ entries, live }: { entries: TurnPart[]; live: boolean }) {

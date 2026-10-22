@@ -14,7 +14,7 @@ describe("InboxCardSurface", () => {
     {
       attentionCount: 3,
       runningSince: 60_000,
-      workingLabel: "已工作 1m 00s",
+      workingLabel: "已工作 1 分 00 秒",
       status: "需要输入 · 3",
     },
   ])(

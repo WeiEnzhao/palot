@@ -69,15 +69,15 @@ describe("tray task menu", () => {
     });
 
     expect(counts).toEqual({ attention: 4, running: 1 });
-    expect(trayToolTip("Palot", counts)).toBe("Palot: 4 tasks need input, 1 running");
-    expect(trayToolTip("Palot", { attention: 1, running: 0 })).toBe("Palot: 1 task needs input");
+    expect(trayToolTip("Palot", counts)).toBe("Palot：4 个任务等待处理，1 个运行中");
+    expect(trayToolTip("Palot", { attention: 1, running: 0 })).toBe("Palot：1 个任务等待处理");
     expect(trayToolTip("Palot", { attention: 0, running: 0 })).toBe("Palot");
   });
 
   it("formats compact relative times", () => {
     const now = 10 * 24 * 60 * 60 * 1_000;
-    expect(formatTrayRelativeTime(now - 30_000, now)).toBe("now");
-    expect(formatTrayRelativeTime(now - 5 * 60_000, now)).toBe("5m ago");
-    expect(formatTrayRelativeTime(now - 2 * 3_600_000, now)).toBe("2h ago");
+    expect(formatTrayRelativeTime(now - 30_000, now)).toBe("刚刚");
+    expect(formatTrayRelativeTime(now - 5 * 60_000, now)).toBe("5 分钟前");
+    expect(formatTrayRelativeTime(now - 2 * 3_600_000, now)).toBe("2 小时前");
   });
 });

@@ -81,7 +81,7 @@ describe("SubagentResponse", () => {
 
     const trigger = screen.getByRole("button", { name: /Explore 已返回：Map the sidebar/i });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("5s").getAttribute("title")).toBe("返回于 5s");
+    expect(screen.getByText("5 秒").getAttribute("title")).toBe("返回于 5 秒");
     expect(screen.queryByText("Use sparse metadata.")).toBeNull();
 
     await user.click(trigger);
