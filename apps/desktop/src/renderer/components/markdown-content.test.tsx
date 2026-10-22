@@ -473,6 +473,30 @@ describe("MarkdownContent", () => {
     expect(view.container.querySelector(".markdown-link-favicon")).toBeNull();
   });
 
+  it("links CommonMark autolinks without leaking the angle brackets into text or href", () => {
+    const view = render(
+      <MarkdownContent value={"<https://github.com/LAYTAT/macOS-Wallpapers>"} />,
+    );
+
+    const link = view.container.querySelector("a.markdown-link");
+    expect(link?.getAttribute("href")).toBe("https://github.com/LAYTAT/macOS-Wallpapers");
+    expect(view.container.textContent).toBe("https://github.com/LAYTAT/macOS-Wallpapers");
+  });
+
+  it("keeps a trailing slash inside an angled autolink", () => {
+    const view = render(
+      <MarkdownContent value={"<https://512pixels.net/projects/default-mac-wallpapers-in-5k/>"} />,
+    );
+
+    const link = view.container.querySelector("a.markdown-link");
+    expect(link?.getAttribute("href")).toBe(
+      "https://512pixels.net/projects/default-mac-wallpapers-in-5k/",
+    );
+    expect(view.container.textContent).toBe(
+      "https://512pixels.net/projects/default-mac-wallpapers-in-5k/",
+    );
+  });
+
   it("loads a DuckDuckGo favicon only after the preference is enabled", () => {
     const store = createStore();
     store.set(remoteMarkdownFaviconsAtom, true);

@@ -1103,6 +1103,8 @@ function startsBlock(value: string): boolean {
   return /^ {0,3}(?:#{1,6}(?:\s|$)|>|`{3,}|~{3,}|(?:[*+-]|\d+[.)])\s+)/.test(value);
 }
 
+const ANGLED_AUTOLINK_PATTERN = /<(https?:\/\/[^\s<>]+|www\.[^\s<>]+)>/gi;
+
 function autoLinkExtension(): MarkdownExtension {
   return {
     name: "palot-auto-links",
@@ -1122,25 +1124,47 @@ function autoLinkNodes(nodes: InlineNode[]): InlineNode[] {
 
 function autoLinkText(value: string): InlineNode[] {
   const nodes: InlineNode[] = [];
-  const pattern = /(?:https?:\/\/|file:\/\/|www\.)[^\s<]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+  let offset = 0;
+  // The parser keeps CommonMark autolinks (<https://…>) as plain text, so the
+  // opening bracket leaks into the prose and the closing one gets glued onto
+  // the URL: the link reads as "<🌐 https://host/path>" and opens a dead
+  // address. Link the bare target and drop both brackets.
+  for (const match of value.matchAll(ANGLED_AUTOLINK_PATTERN)) {
+    const start = match.index;
+    if (start > offset) nodes.push(...autoLinkPlainText(value.slice(offset, start)));
+    const literal = trimAutoLinkLiteral(match[1]!);
+    nodes.push(autoLinkNode(literal));
+    offset = start + match[0].length;
+  }
+  if (offset < value.length) nodes.push(...autoLinkPlainText(value.slice(offset)));
+  return nodes.length > 0 ? nodes : [{ type: "text", value }];
+}
+
+function autoLinkPlainText(value: string): InlineNode[] {
+  const nodes: InlineNode[] = [];
+  const pattern = /(?:https?:\/\/|file:\/\/|www\.)[^\s<>]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
   let offset = 0;
   for (const match of value.matchAll(pattern)) {
     const start = match.index;
     if (insideIncompleteLinkDestination(value, start)) continue;
     const literal = trimAutoLinkLiteral(match[0]);
-    const href = literal.startsWith("www.")
-      ? `http://${literal}`
-      : literal.startsWith("http://") ||
-          literal.startsWith("https://") ||
-          literal.startsWith("file://")
-        ? literal
-        : `mailto:${literal}`;
     if (start > offset) nodes.push({ type: "text", value: value.slice(offset, start) });
-    nodes.push({ type: "link", href, children: [{ type: "text", value: literal }] });
+    nodes.push(autoLinkNode(literal));
     offset = start + literal.length;
   }
   if (offset < value.length) nodes.push({ type: "text", value: value.slice(offset) });
-  return nodes.length > 0 ? nodes : [{ type: "text", value }];
+  return nodes;
+}
+
+function autoLinkNode(literal: string): InlineNode {
+  const href = literal.startsWith("www.")
+    ? `http://${literal}`
+    : literal.startsWith("http://") ||
+        literal.startsWith("https://") ||
+        literal.startsWith("file://")
+      ? literal
+      : `mailto:${literal}`;
+  return { type: "link", href, children: [{ type: "text", value: literal }] };
 }
 
 function trimAutoLinkLiteral(value: string): string {
