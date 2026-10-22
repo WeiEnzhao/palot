@@ -40,8 +40,29 @@ export interface TranscriptScrollMetrics {
   clientHeight: number;
 }
 
-/** 缓动到底时允许的残差（CSS px）。 */
-export const BOTTOM_FOLLOW_SETTLE_PX = 0.5;
+/** 缓动到底时允许的残差（CSS px）。浏览器真实可滚动的最大值常常比
+ * `scrollHeight - clientHeight` 小零点几像素，阈值取 0.5 会让跟随停在
+ * “差一点点”的状态里反复重写，所以要留出 1px 的余量。 */
+/** 上方内容长高会把可见文字整体推下去，补回同样的滚动量即可让它原地不动。
+ * 返回修正后的 scrollTop；不需要修正时返回 null。
+ * - `previousAnchorTop` / `anchorTop` 用分数坐标（offsetTop 是整数，dpr=2.4 下会
+ *   在相邻帧之间来回取整，照着补就是 0.2~1px 的高频抖动）。
+ * - 阈值取 0.5px：更小的位移肉眼不可见，补了只是徒增重绘。 */
+export function anchorScrollCompensation(input: {
+  scrollTop: number;
+  previousAnchorTop: number;
+  anchorTop: number;
+  devicePixelRatio?: number;
+  thresholdPx?: number;
+}): number | null {
+  const shift = input.anchorTop - input.previousAnchorTop;
+  const threshold = input.thresholdPx ?? 0.5;
+  if (Math.abs(shift) <= threshold) return null;
+  const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
+  return snapToDevicePixel(input.scrollTop + shift, ratio);
+}
+
+export const BOTTOM_FOLLOW_SETTLE_PX = 1;
 
 /** 用户要求减少动效时，底边跟随直接落位，不再逐帧滑过去。 */
 export function prefersReducedMotion(): boolean {
@@ -79,7 +100,7 @@ export function easedBottomFollow(
   const distance = target - current;
   if (Math.abs(distance) <= BOTTOM_FOLLOW_SETTLE_PX) return null;
   const fraction = input.fraction ?? 0.25;
-  const minStep = input.minStep ?? 2;
+  const minStep = input.minStep ?? 1;
   const maxStep = input.maxStep ?? 24;
   const scaled = Math.abs(distance) * fraction;
   const magnitude = Math.min(Math.abs(distance), Math.max(minStep, Math.min(maxStep, scaled)));

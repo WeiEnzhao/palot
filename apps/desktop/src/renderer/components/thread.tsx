@@ -88,6 +88,7 @@ import { TurnReviewOffer } from "./turn-review-offer";
 import { projectToolExecution } from "../lib/tool-executions";
 import { recordStreamingCommit } from "../lib/streaming-latency";
 import {
+  anchorScrollCompensation,
   easedBottomFollow,
   pinnedTranscriptScrollTop,
   prependAnchorFrame,
@@ -209,6 +210,8 @@ const EMPTY_SUBAGENT_PROGRESS = { active: 0, total: 0 };
 const EMPTY_BACKGROUND_WORK: BackgroundWorkItem[] = [];
 const EMPTY_MODELS: PalotModel[] = [];
 const MAX_PINNED_VIRTUAL_TURNS = 16;
+/** 一轮底边缓动最多跑多少帧（≈2 秒），防止目标一直变时无限追。 */
+const MAX_BOTTOM_FOLLOW_FRAMES = 120;
 const INITIAL_TRANSCRIPT_STABLE_FRAMES = 3;
 const MAX_INITIAL_TRANSCRIPT_SETTLE_MS = 250;
 const PREPEND_ANCHOR_STABLE_FRAMES = 8;
@@ -348,6 +351,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const bottomFollowFrameRef = useRef<number | null>(null);
   const bottomFollowLoopRef = useRef<number | null>(null);
   const lastFollowedVirtualHeightRef = useRef<number | null>(null);
+  // 首个已挂载行的布局位置：用来检测「上方内容变高把可见文字顶下去」并同帧补齐。
+  const anchorRowRef = useRef<{ el: HTMLElement; top: number | null } | null>(null);
   const navigationGeometryRef = useRef<(() => void) | null>(null);
   const scrollIntentRef = useRef<TranscriptScrollIntent>(null);
   const previousScrollTopRef = useRef<number | null>(null);
@@ -378,6 +383,45 @@ const SessionThreadContents = memo(function SessionThreadContents({
     bottomLockedRef.current = locked;
     setBottomLocked((current) => (current === locked ? current : locked));
   }, []);
+  // 上方内容变高会把可见文字整体推下去（虚拟列表的行是绝对定位，浏览器自带的
+  // 滚动锚定在这里不生效）。这里按「包住视口顶边的那一行」做手动锚定：
+  //   · 该行自己长高 → offsetTop 不变 → 不动（那是可见区内的增长，交给缓动揭示）
+  //   · 该行上方长高 → offsetTop 变大 → 立即补同样的滚动量，文字原地不动
+  // 幂等：补完就把基线更新掉，重复调用不会补两次。
+  const compensateAnchorShift = useCallback(() => {
+    const viewport = scrollRef.current;
+    if (!viewport) return;
+    // 用 getBoundingClientRect 取分数坐标：offsetTop 是整数，而 dpr=2.4 下行
+    // 的真实位置是小数，整数会在相邻帧之间来回取整，照着补就是 0.2~1px 的高频抖。
+    const layoutTop = (el: HTMLElement) =>
+      el.getBoundingClientRect().top - viewport.getBoundingClientRect().top + viewport.scrollTop;
+    let anchorEl = anchorRowRef.current?.el.isConnected ? anchorRowRef.current.el : null;
+    if (anchorEl && layoutTop(anchorEl) > viewport.scrollTop + 1) anchorEl = null;
+    if (!anchorEl) {
+      let candidate: HTMLElement | null = null;
+      for (const row of viewport.querySelectorAll<HTMLElement>("[data-turn-row-id]")) {
+        if (row.offsetTop <= viewport.scrollTop + 1) candidate = row;
+        else break;
+      }
+      anchorRowRef.current = candidate ? { el: candidate, top: layoutTop(candidate) } : null;
+      return;
+    }
+    const top = layoutTop(anchorEl);
+    const baseline = anchorRowRef.current?.top ?? null;
+    if (baseline !== null) {
+      const corrected = anchorScrollCompensation({
+        scrollTop: viewport.scrollTop,
+        previousAnchorTop: baseline,
+        anchorTop: top,
+        devicePixelRatio: window.devicePixelRatio,
+      });
+      if (corrected !== null) {
+        viewport.scrollTop = corrected;
+        previousScrollTopRef.current = viewport.scrollTop;
+      }
+    }
+    anchorRowRef.current = { el: anchorEl, top };
+  }, []);
   const stopBottomFollow = useCallback(() => {
     const loop = bottomFollowLoopRef.current;
     bottomFollowLoopRef.current = null;
@@ -387,6 +431,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // easedBottomFollow 的注释：一步跳 = 屏幕上已有的文字「啪」地跳一下。
   const startBottomFollow = useCallback(() => {
     if (bottomFollowLoopRef.current !== null) return;
+    // 兜底：一轮缓动最多跑 2 秒。正常情况下几帧就结束，跑满意味着目标一直在
+    // 变（流式输出），交给下一次变更重启即可，不要无限追。
+    let frames = 0;
     const step = () => {
       const viewport = scrollRef.current;
       if (
@@ -399,14 +446,15 @@ const SessionThreadContents = memo(function SessionThreadContents({
         return;
       }
       const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+      compensateAnchorShift();
       const distance = target - viewport.scrollTop;
-      // 一次变化超过一屏半：那不是流式增长，而是整块替换（换任务、消息被替换）。
-      // 这种位移逐帧滑过去要好几秒，读起来更糟，直接落位。
+      // 一次变化超过一屏半：那不是流式增长，而是整块替换（新工具卡整体出现、
+      // 换任务、消息被替换）。锁定状态下直接落位；逐帧滑过去要好几秒，更糟。
+      // ⚠️ 这里必须双向落位：只处理「越界」会让视图在内容暴涨后永远停在半路，
+      // 而 locked 仍是 true —— 之后每次都因距离过大退出，再也不跟随。
       if (Math.abs(distance) > viewport.clientHeight * 1.5) {
-        if (distance < 0) {
-          viewport.scrollTop = snapToDevicePixel(target);
-          previousScrollTopRef.current = viewport.scrollTop;
-        }
+        viewport.scrollTop = snapToDevicePixel(target);
+        previousScrollTopRef.current = viewport.scrollTop;
         bottomFollowLoopRef.current = null;
         return;
       }
@@ -425,12 +473,26 @@ const SessionThreadContents = memo(function SessionThreadContents({
         bottomFollowLoopRef.current = null;
         return;
       }
+      const before = viewport.scrollTop;
       viewport.scrollTop = frame.scrollTop;
-      previousScrollTopRef.current = viewport.scrollTop;
-      bottomFollowLoopRef.current = frame.settled ? null : requestAnimationFrame(step);
+      const after = viewport.scrollTop;
+      previousScrollTopRef.current = after;
+      // 读回真实位置：浏览器会把超出上限的写入钳回去，被钳住时「还差一点」
+      // 永远补不上，若不在这里收工就会每帧重写滚动位置、把整屏文字在亚像素
+      // 位置反复重绘 —— 那正是「到底就开始抖」的根因。
+      if (frame.settled || Math.abs(after - before) < 0.5) {
+        bottomFollowLoopRef.current = null;
+        return;
+      }
+      if (++frames > MAX_BOTTOM_FOLLOW_FRAMES) {
+        bottomFollowLoopRef.current = null;
+        return;
+      }
+      bottomFollowLoopRef.current = requestAnimationFrame(step);
     };
+    frames = 0;
     bottomFollowLoopRef.current = requestAnimationFrame(step);
-  }, []);
+  }, [compensateAnchorShift]);
   useEffect(() => stopBottomFollow, [stopBottomFollow]);
   const scrollToBottomNow = useCallback((mode: "exact" | "grow" = "exact") => {
     const viewport = scrollRef.current;
@@ -682,6 +744,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
       const height = instance.getTotalSize();
       if (height === lastFollowedVirtualHeightRef.current) return;
       lastFollowedVirtualHeightRef.current = height;
+      // 先同帧补齐上方增长造成的位移，再决定要不要滚动 —— 顺序不能反，
+      // 否则会先画出「文字被顶下去」的那一帧。
+      compensateAnchorShift();
       scrollToBottomNow("grow");
     },
   });

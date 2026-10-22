@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   cancelTranscriptScrollFrame,
+  anchorScrollCompensation,
   easedBottomFollow,
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
@@ -396,26 +397,60 @@ describe("eased bottom follow", () => {
       expect(frame.scrollTop).toBeLessThanOrEqual(600);
       current = frame.scrollTop;
     }
-    expect(current).toBe(600);
+    // 允许 1px 以内的残差：浏览器最大滚动位置本身就比 scrollHeight - clientHeight
+    // 小零点几像素，追这个残差会让跟随循环停不下来。
+    expect(Math.abs(current - 600)).toBeLessThanOrEqual(1);
   });
 
   it("eases backwards when the content shrinks", () => {
     const step = easedBottomFollow({ current: 1100, target: 1000, devicePixelRatio: 2 });
     expect(step?.scrollTop).toBeLessThan(1100);
     expect(step?.scrollTop).toBeGreaterThan(1000);
-    expect(runToSettle(1100, 1000).current).toBe(1000);
+    expect(1100 - runToSettle(1100, 1000).current).toBeGreaterThan(0);
+    expect(Math.abs(runToSettle(1100, 1000).current - 1000)).toBeLessThanOrEqual(1);
+  });
+
+  it("treats a sub-pixel residual as settled instead of chasing it", () => {
+    // 浏览器真实的最大滚动位置常常比 scrollHeight - clientHeight 小零点几像素，
+    // 若把这种残差当成「还没到底」，跟随循环会每帧重写位置、把整屏文字反复重绘。
+    expect(easedBottomFollow({ current: 100, target: 100.74, devicePixelRatio: 3 })).toBeNull();
+    expect(easedBottomFollow({ current: 100, target: 101, devicePixelRatio: 3 })).toBeNull();
+    expect(easedBottomFollow({ current: 100, target: 101.5, devicePixelRatio: 3 })).not.toBeNull();
   });
 
   it("keeps moving when the remaining distance is under the minimum step", () => {
-    const frame = easedBottomFollow({ current: 100, target: 101, devicePixelRatio: 3 });
+    const frame = easedBottomFollow({ current: 100, target: 103, devicePixelRatio: 3 });
     expect(frame?.scrollTop).toBe(101);
-    expect(frame?.settled).toBe(true);
+    expect(frame?.settled).toBe(false);
   });
 
   it("stays on the device pixel grid", () => {
     const frame = easedBottomFollow({ current: 2118.33, target: 2400, devicePixelRatio: 2.4 });
     expect(frame).not.toBeNull();
     const grid = (frame!.scrollTop * 2.4) % 1;
+    expect(Math.min(grid, 1 - grid)).toBeLessThan(1e-6);
+  });
+});
+
+describe("anchor compensation", () => {
+  it("cancels growth that happened above the visible text", () => {
+    // 上方一行长高 16px：可见文字被推下去 16px，补 16px 让它原地不动。
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080, anchorTop: 2096, devicePixelRatio: 2 })).toBe(516);
+  });
+
+  it("cancels shrink as well, in both directions", () => {
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2096, anchorTop: 2080, devicePixelRatio: 2 })).toBe(484);
+  });
+
+  it("ignores sub-pixel churn (rounded offsetTop would otherwise jitter every frame)", () => {
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080.2, anchorTop: 2080.4, devicePixelRatio: 2.4 })).toBeNull();
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080, anchorTop: 2080, devicePixelRatio: 2 })).toBeNull();
+  });
+
+  it("lands the corrected offset on the device pixel grid", () => {
+    const next = anchorScrollCompensation({ scrollTop: 2118.33, previousAnchorTop: 100, anchorTop: 116.7, devicePixelRatio: 2.4 });
+    expect(next).not.toBeNull();
+    const grid = (next! * 2.4) % 1;
     expect(Math.min(grid, 1 - grid)).toBeLessThan(1e-6);
   });
 });
