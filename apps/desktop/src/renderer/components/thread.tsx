@@ -89,7 +89,8 @@ import { projectToolExecution } from "../lib/tool-executions";
 import { recordStreamingCommit } from "../lib/streaming-latency";
 import {
   anchorScrollCompensation,
-  easedBottomFollow,
+  noteGrowthRate,
+  smoothBottomFollow,
   pinnedTranscriptScrollTop,
   prependAnchorFrame,
   prefersReducedMotion,
@@ -356,6 +357,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const navigationGeometryRef = useRef<(() => void) | null>(null);
   const scrollIntentRef = useRef<TranscriptScrollIntent>(null);
   const previousScrollTopRef = useRef<number | null>(null);
+  // 底边跟随的「内容增长速率」：由虚拟列表每次测量时更新，跨批次延续，
+  // 让 16px 一行、每秒 5 行的增长被摊成匀速滑动，而不是每行一次猛冲。
+  const followRateRef = useRef(0);
+  const followGrowthRef = useRef<{ height: number; at: number } | null>(null);
   const touchYRef = useRef<number | null>(null);
   const coldTranscriptPendingRef = useRef(transcript.isPending && messages.length === 0);
   const initialTranscriptSettledRef = useRef(coldTranscriptPendingRef.current);
@@ -391,6 +396,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const compensateAnchorShift = useCallback(() => {
     const viewport = scrollRef.current;
     if (!viewport) return;
+    // 贴底时锚的是底边（scrollTop = scrollHeight - clientHeight），上方任何增长
+    // 都已被这个不变量吸收；此时再做顶行补偿就是同一批内容算两遍 —— 一次「下推
+    // 补齐」、一次「追到底部」，肉眼正是一上一下。两种锚定必须互斥。
+    if (bottomLockedRef.current) return;
     // 用 getBoundingClientRect 取分数坐标：offsetTop 是整数，而 dpr=2.4 下行
     // 的真实位置是小数，整数会在相邻帧之间来回取整，照着补就是 0.2~1px 的高频抖。
     const layoutTop = (el: HTMLElement) =>
@@ -413,7 +422,6 @@ const SessionThreadContents = memo(function SessionThreadContents({
         scrollTop: viewport.scrollTop,
         previousAnchorTop: baseline,
         anchorTop: top,
-        devicePixelRatio: window.devicePixelRatio,
       });
       if (corrected !== null) {
         viewport.scrollTop = corrected;
@@ -434,6 +442,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     // 兜底：一轮缓动最多跑 2 秒。正常情况下几帧就结束，跑满意味着目标一直在
     // 变（流式输出），交给下一次变更重启即可，不要无限追。
     let frames = 0;
+    let lastFrameAt = performance.now();
     const step = () => {
       const viewport = scrollRef.current;
       if (
@@ -446,7 +455,6 @@ const SessionThreadContents = memo(function SessionThreadContents({
         return;
       }
       const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-      compensateAnchorShift();
       const distance = target - viewport.scrollTop;
       // 一次变化超过一屏半：那不是流式增长，而是整块替换（新工具卡整体出现、
       // 换任务、消息被替换）。锁定状态下直接落位；逐帧滑过去要好几秒，更糟。
@@ -464,11 +472,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
         bottomFollowLoopRef.current = null;
         return;
       }
-      const frame = easedBottomFollow({
+      const now = performance.now();
+      const frame = smoothBottomFollow({
         current: viewport.scrollTop,
         target,
-        devicePixelRatio: window.devicePixelRatio,
+        ratePerSecond: followRateRef.current,
+        deltaMs: now - lastFrameAt,
       });
+      lastFrameAt = now;
       if (!frame) {
         bottomFollowLoopRef.current = null;
         return;
@@ -480,7 +491,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       // 读回真实位置：浏览器会把超出上限的写入钳回去，被钳住时「还差一点」
       // 永远补不上，若不在这里收工就会每帧重写滚动位置、把整屏文字在亚像素
       // 位置反复重绘 —— 那正是「到底就开始抖」的根因。
-      if (frame.settled || Math.abs(after - before) < 0.5) {
+      if (frame.settled || Math.abs(after - before) < 0.05) {
         bottomFollowLoopRef.current = null;
         return;
       }
@@ -508,10 +519,11 @@ const SessionThreadContents = memo(function SessionThreadContents({
       return;
     }
     stopBottomFollow();
+    // 贴底就是「底边贴住视口底边」：直接写 scrollHeight - clientHeight。
+    // ⚠️ 不要吸附设备像素网格 —— dpr=2.4 时内容坐标本身是小数，取整会留下
+    // 0.2~0.4px 残差，每次增长都重绘一次子像素位置，看起来就是闪。
     const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-    // Snap to whole device pixels so the text is painted on the pixel grid.
-    const snapped = snapToDevicePixel(target);
-    if (Math.abs(viewport.scrollTop - snapped) > 0.5) viewport.scrollTop = snapped;
+    if (Math.abs(viewport.scrollTop - target) > 0.05) viewport.scrollTop = target;
     previousScrollTopRef.current = viewport.scrollTop;
   }, [startBottomFollow, stopBottomFollow]);
   const scheduleScrollToBottom = useCallback(() => {
@@ -746,6 +758,24 @@ const SessionThreadContents = memo(function SessionThreadContents({
       lastFollowedVirtualHeightRef.current = height;
       // 先同帧补齐上方增长造成的位移，再决定要不要滚动 —— 顺序不能反，
       // 否则会先画出「文字被顶下去」的那一帧。
+      // 速度估计的窗口取 350ms（跨 2~3 批内容）：单批 16px / 单帧时间算出来的瞬时
+      // 速度会被尖峰带偏，估高了就会把滞后提前耗干，跟随器一停一走。
+      const scrollHeight =
+        (instance.scrollElement as HTMLElement | null)?.scrollHeight ??
+        followGrowthRef.current?.height ??
+        0;
+      const now = performance.now();
+      const windowStart = followGrowthRef.current;
+      if (!windowStart || now - windowStart.at >= 350) {
+        followRateRef.current = noteGrowthRate({
+          scrollHeight,
+          previousScrollHeight: windowStart?.height ?? null,
+          previousAt: windowStart?.at ?? null,
+          at: now,
+          ratePerSecond: followRateRef.current,
+        });
+        followGrowthRef.current = { height: scrollHeight, at: now };
+      }
       compensateAnchorShift();
       scrollToBottomNow("grow");
     },

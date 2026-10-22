@@ -52,14 +52,16 @@ export function anchorScrollCompensation(input: {
   scrollTop: number;
   previousAnchorTop: number;
   anchorTop: number;
-  devicePixelRatio?: number;
   thresholdPx?: number;
 }): number | null {
   const shift = input.anchorTop - input.previousAnchorTop;
   const threshold = input.thresholdPx ?? 0.5;
   if (Math.abs(shift) <= threshold) return null;
-  const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
-  return snapToDevicePixel(input.scrollTop + shift, ratio);
+  // 必须写「精确的小数」：内容坐标本身就是小数（dpr=2.4 时 16px 的布局增量
+  // 对应 15.83px 的滚动量），一旦按设备像素取整就会留下 0.17px 残差 —— 每次
+  // 增长留一点，累积成 1px 的来回，文字边缘的子像素抗锯齿跟着变，看起来就是
+  // 「闪」。不取整时可见位置严格不动。
+  return input.scrollTop + shift;
 }
 
 export const BOTTOM_FOLLOW_SETTLE_PX = 1;
@@ -84,32 +86,96 @@ export interface BottomFollowFrame {
  * 这里按剩余距离的比例逐帧靠近（首帧最多 maxStep），100px 的增长摊成十几帧、
  * 约 250ms 的连续上移，眼睛看到的是滑动而不是跳跃。目标每帧重取，边流边跟。
  */
-export function easedBottomFollow(
-  input: {
-    current: number;
-    target: number;
-    devicePixelRatio?: number;
-    fraction?: number;
-    minStep?: number;
-    maxStep?: number;
-  },
-): BottomFollowFrame | null {
-  const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
-  const current = snapToDevicePixel(input.current, ratio);
-  const target = snapToDevicePixel(input.target, ratio);
-  const distance = target - current;
-  if (Math.abs(distance) <= BOTTOM_FOLLOW_SETTLE_PX) return null;
-  const fraction = input.fraction ?? 0.25;
-  const minStep = input.minStep ?? 1;
-  const maxStep = input.maxStep ?? 24;
-  const scaled = Math.abs(distance) * fraction;
-  const magnitude = Math.min(Math.abs(distance), Math.max(minStep, Math.min(maxStep, scaled)));
-  const next = snapToDevicePixel(current + Math.sign(distance) * magnitude, ratio);
-  // 对齐像素后可能原地不动（差距不足半个设备像素）：直接落到目标，别空转。
-  if (Math.abs(next - current) < 1 / ratio) {
-    return { scrollTop: target, settled: true };
+/** 匀速跟随：把「内容长高的平均速率」低通成一个速度，每帧按这个速度推进，
+ * 残差只做很小的比例修正，并硬性限制单帧步长。
+ *
+ * 为什么不是「按剩余距离缓动」：内容是一批一批到的（终端输出一行 16px、正文
+ * 一块 10px），缓动每次都要从零速重新起步 —— 每批都是「猛冲 5px → 衰减到
+ * 0.8px → 停」，一秒三次，眼睛看到的就是闪。匀速跟随的速度跨批次延续，
+ * 视觉上是持续滑动；`maxStepPx` 让「一帧跳一大截」在物理上不可能发生。 */
+export function smoothBottomFollow(input: {
+  current: number;
+  target: number;
+  /** 平滑后的内容增长速率（px/秒），由 noteGrowthRate 维护 */
+  ratePerSecond: number;
+  /** 本帧时长（毫秒），用于把速率换算成位移 */
+  deltaMs: number;
+  /** 单帧最大推进量（CSS px）。给定上限 = 永远不会出现肉眼可见的跳变。 */
+  maxStepPx?: number;
+  /** 允许保留的滞后量（CSS px），用来吸收批次尖峰。 */
+  lagBudgetPx?: number;
+  /** 稳定状态下的目标滞后（CSS px）。 */
+  lagTargetPx?: number;
+  settlePx?: number;
+}): BottomFollowFrame | null {
+  const settle = input.settlePx ?? BOTTOM_FOLLOW_SETTLE_PX;
+  const distance = input.target - input.current;
+  if (Math.abs(distance) <= settle) return null;
+
+  const dt = Math.min(64, Math.max(4, input.deltaMs)) / 1000;
+  // 上限随「还差多少」放大：差一行时严格按 3px/帧滑（肉眼是滑动不是跳动），
+  // 差一大块时允许更快，否则大段内容要好几秒才追平。
+  const maxStep =
+    input.maxStepPx ?? Math.max(SMOOTH_FOLLOW_MAX_STEP_PX, Math.abs(distance) * 0.15);
+  const lagBudget = input.lagBudgetPx ?? SMOOTH_FOLLOW_LAG_BUDGET_PX;
+  const lagTarget = input.lagTargetPx ?? SMOOTH_FOLLOW_LAG_TARGET_PX;
+  const rate = Math.max(0, input.ratePerSecond);
+  // 主项：按「内容到来的平均速率」匀速前进 —— 这就是连续滑动的来源。
+  // 副项：把滞后缓慢拉回半个行高。这一项必须很小，大了就退化成「猛冲」，小了
+  // 则速度估计的误差会把滞后耗干（滞后归零 ⇒ 空转帧 ⇒ 滑一下停一下）。
+  let step = rate * dt + (distance - lagTarget) * SMOOTH_FOLLOW_LAG_GAIN;
+  // 滞后超过预算（默认一行）才额外去追，避免大段内容要好几秒才追平。
+  if (distance > lagBudget) step = Math.max(step, Math.min(distance - lagBudget, maxStep));
+  // 流停了（速率掉下来）就收尾，别把最后一行永远留在视口外。
+  if (rate < SMOOTH_FOLLOW_IDLE_RATE) step = Math.max(step, distance * SMOOTH_FOLLOW_IDLE_GAIN);
+  if (distance < 0) step = Math.min(-settle * 0.5, step);
+  step = Math.sign(step) * Math.min(Math.abs(step), maxStep);
+  // 永不越过目标：越过就等于往回拉，看起来正是抖动。
+  step = distance > 0 ? Math.min(step, distance) : Math.max(step, distance);
+  if (Math.abs(step) < 0.05) return null;
+  const next = input.current + step;
+  return { scrollTop: next, settled: Math.abs(input.target - next) <= settle };
+}
+
+/** 单帧最大推进量：16px 一行会在 ≥6 帧里滑完，肉眼看到的是滑动而不是跳跃。 */
+export const SMOOTH_FOLLOW_MAX_STEP_PX = 3;
+/** 允许保留的滞后（CSS px）：约一行。靠这点缓冲把「一批内容一次到达」摊成匀速滑动。 */
+export const SMOOTH_FOLLOW_LAG_BUDGET_PX = 20;
+/** 稳定状态下的目标滞后 = 半行。留一点缓冲，运动的节奏就由跟随器决定而不是被批次牵着走。 */
+export const SMOOTH_FOLLOW_LAG_TARGET_PX = 10;
+/** 把滞后拉回目标值的增益。必须小（≤0.1），否则又变回「按剩余距离猛冲」。 */
+export const SMOOTH_FOLLOW_LAG_GAIN = 0.08;
+/** 速率低于这个值就认为流停了，开始收尾追平。 */
+export const SMOOTH_FOLLOW_IDLE_RATE = 24;
+/** 收尾阶段每帧消掉的残差比例。 */
+export const SMOOTH_FOLLOW_IDLE_GAIN = 0.25;
+/** 速率估计的低通时间常数：越小越灵敏，越大越平滑。 */
+export const SMOOTH_FOLLOW_RATE_TAU_MS = 160;
+
+/** 用内容高度增量估计「每秒长高多少」，并做低通。
+ * 只在真实增长时更新；不增长时缓慢衰减，避免突然停流后还在往前冲。 */
+export function noteGrowthRate(input: {
+  scrollHeight: number;
+  previousScrollHeight: number | null;
+  previousAt: number | null;
+  at: number;
+  ratePerSecond: number;
+}): number {
+  const previous = input.previousScrollHeight;
+  const previousAt = input.previousAt;
+  if (previous === null || previousAt === null) return input.ratePerSecond;
+  const deltaMs = input.at - previousAt;
+  if (deltaMs < 6) return input.ratePerSecond;
+  const grown = input.scrollHeight - previous;
+  if (grown <= 0) {
+    // 没有新增内容：速率按时间常数衰减，不要保留旧的冲锋速度。
+    const decay = Math.exp(-deltaMs / (SMOOTH_FOLLOW_RATE_TAU_MS * 2));
+    return input.ratePerSecond * decay;
   }
-  return { scrollTop: next, settled: Math.abs(target - next) <= BOTTOM_FOLLOW_SETTLE_PX };
+  const instant = (grown / Math.max(deltaMs, 8)) * 1000;
+  const alpha = 1 - Math.exp(-deltaMs / SMOOTH_FOLLOW_RATE_TAU_MS);
+  const next = input.ratePerSecond + (instant - input.ratePerSecond) * alpha;
+  return Math.min(next, 6_000);
 }
 
 export type TranscriptScrollIntent = "up" | "scrollbar" | "anchor" | null;

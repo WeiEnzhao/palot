@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   cancelTranscriptScrollFrame,
   anchorScrollCompensation,
-  easedBottomFollow,
+  noteGrowthRate,
+  smoothBottomFollow,
+  SMOOTH_FOLLOW_MAX_STEP_PX,
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
   pinnedTranscriptScrollTop,
@@ -360,97 +362,130 @@ describe("prependAnchorFrame", () => {
   });
 });
 
-describe("eased bottom follow", () => {
-  const runToSettle = (start: number, target: number, ratio = 2, frames = 200) => {
+describe("smooth bottom follow", () => {
+  const run = (start: number, target: number, rate = 88, frames = 400) => {
     let current = start;
     const steps: number[] = [];
     for (let i = 0; i < frames; i++) {
-      const frame = easedBottomFollow({ current, target, devicePixelRatio: ratio });
+      const frame = smoothBottomFollow({ current, target, ratePerSecond: rate, deltaMs: 16.7 });
       if (!frame) return { current, steps, settled: true };
+      steps.push(+(frame.scrollTop - current).toFixed(3));
       current = frame.scrollTop;
-      steps.push(current);
       if (frame.settled) return { current, steps, settled: true };
     }
     return { current, steps, settled: false };
   };
 
   it("does nothing when already at the bottom", () => {
-    expect(easedBottomFollow({ current: 900, target: 900, devicePixelRatio: 2 })).toBeNull();
-    expect(easedBottomFollow({ current: 899.8, target: 900, devicePixelRatio: 2 })).toBeNull();
+    expect(smoothBottomFollow({ current: 900, target: 900, ratePerSecond: 88, deltaMs: 16.7 })).toBeNull();
+    expect(smoothBottomFollow({ current: 899.6, target: 900, ratePerSecond: 88, deltaMs: 16.7 })).toBeNull();
   });
 
-  it("spreads a block-sized growth over many frames instead of one jump", () => {
-    // 一次数据块把内容顶高 108px：一帧直接落位就是「文字啪地跳一下」。
-    const step = easedBottomFollow({ current: 1000, target: 1108, devicePixelRatio: 2 });
-    expect(step?.scrollTop).toBeGreaterThan(1000);
-    expect(step?.scrollTop).toBeLessThan(1030);
-    const { steps, settled } = runToSettle(1000, 1108);
-    expect(settled).toBe(true);
-    expect(steps.length).toBeGreaterThan(8);
+  it("spreads one 16px line of output over at least six frames", () => {
+    // 这是「不要跳」的硬约束：一行终端输出 16px，一帧滑完就是一次肉眼可见的跳。
+    const { steps } = run(1000, 1016);
+    expect(Math.max(...steps.map(Math.abs))).toBeLessThanOrEqual(SMOOTH_FOLLOW_MAX_STEP_PX + 1e-9);
+    expect(steps.length).toBeGreaterThanOrEqual(6);
   });
 
-  it("never overshoots the target while easing", () => {
-    let current = 0;
-    for (let i = 0; i < 100; i++) {
-      const frame = easedBottomFollow({ current, target: 600, devicePixelRatio: 2 });
-      if (!frame) break;
-      expect(frame.scrollTop).toBeLessThanOrEqual(600);
-      current = frame.scrollTop;
+  it("keeps the same direction and speed instead of bursting then decaying", () => {
+    // 按内容增长速率匀速推进：帧间步长差异应当很小（缓动实现这里是 5→3.75→2.9→…）。
+    const { steps } = run(1000, 1016, 960);
+    const middle = steps.slice(1, -1);
+    if (middle.length > 1) {
+      const spread = Math.max(...middle) - Math.min(...middle);
+      expect(spread).toBeLessThan(1);
     }
-    // 允许 1px 以内的残差：浏览器最大滚动位置本身就比 scrollHeight - clientHeight
-    // 小零点几像素，追这个残差会让跟随循环停不下来。
-    expect(Math.abs(current - 600)).toBeLessThanOrEqual(1);
+    expect(steps.every((step) => step > 0)).toBe(true);
   });
 
-  it("eases backwards when the content shrinks", () => {
-    const step = easedBottomFollow({ current: 1100, target: 1000, devicePixelRatio: 2 });
+  it("never overshoots and settles within a pixel", () => {
+    const { current, steps, settled } = run(0, 600, 900);
+    expect(settled).toBe(true);
+    expect(current).toBeLessThanOrEqual(600);
+    expect(600 - current).toBeLessThanOrEqual(1);
+    expect(steps.every((step) => step >= 0)).toBe(true);
+  });
+
+  it("moves backwards when the content shrinks, still capped", () => {
+    const step = smoothBottomFollow({ current: 1100, target: 1000, ratePerSecond: 88, deltaMs: 16.7 });
     expect(step?.scrollTop).toBeLessThan(1100);
     expect(step?.scrollTop).toBeGreaterThan(1000);
-    expect(1100 - runToSettle(1100, 1000).current).toBeGreaterThan(0);
-    expect(Math.abs(runToSettle(1100, 1000).current - 1000)).toBeLessThanOrEqual(1);
+    expect(1100 - (step?.scrollTop ?? 1100)).toBeLessThanOrEqual(
+      Math.max(SMOOTH_FOLLOW_MAX_STEP_PX, 100 * 0.15) + 1e-9,
+    );
+    expect(Math.abs(run(1100, 1000).current - 1000)).toBeLessThanOrEqual(1);
   });
 
   it("treats a sub-pixel residual as settled instead of chasing it", () => {
-    // 浏览器真实的最大滚动位置常常比 scrollHeight - clientHeight 小零点几像素，
-    // 若把这种残差当成「还没到底」，跟随循环会每帧重写位置、把整屏文字反复重绘。
-    expect(easedBottomFollow({ current: 100, target: 100.74, devicePixelRatio: 3 })).toBeNull();
-    expect(easedBottomFollow({ current: 100, target: 101, devicePixelRatio: 3 })).toBeNull();
-    expect(easedBottomFollow({ current: 100, target: 101.5, devicePixelRatio: 3 })).not.toBeNull();
+    expect(smoothBottomFollow({ current: 100, target: 100.7, ratePerSecond: 88, deltaMs: 16.7 })).toBeNull();
   });
 
-  it("keeps moving when the remaining distance is under the minimum step", () => {
-    const frame = easedBottomFollow({ current: 100, target: 103, devicePixelRatio: 3 });
-    expect(frame?.scrollTop).toBe(101);
-    expect(frame?.settled).toBe(false);
-  });
-
-  it("stays on the device pixel grid", () => {
-    const frame = easedBottomFollow({ current: 2118.33, target: 2400, devicePixelRatio: 2.4 });
+  it("writes fractional scroll offsets instead of snapping to the device grid", () => {
+    // dpr=2.4 下内容坐标是小数；吸附网格会留下 0.2~0.4px 残差，每批内容重绘一次
+    // 子像素位置，看起来就是闪。跟随必须写精确值。
+    const frame = smoothBottomFollow({ current: 2118.33, target: 2400, ratePerSecond: 200, deltaMs: 16.7 });
     expect(frame).not.toBeNull();
-    const grid = (frame!.scrollTop * 2.4) % 1;
-    expect(Math.min(grid, 1 - grid)).toBeLessThan(1e-6);
+    expect(frame!.scrollTop).toBeGreaterThan(2118.33);
+    expect(frame!.scrollTop).not.toBe(Math.round(frame!.scrollTop));
+  });
+});
+
+describe("growth rate estimate", () => {
+  it("learns the content growth speed and smooths batch spikes", () => {
+    const once = noteGrowthRate({
+      scrollHeight: 116,
+      previousScrollHeight: 100,
+      previousAt: 0,
+      at: 100,
+      ratePerSecond: 0,
+    });
+    // 100ms 长高 16px = 160px/s，低通后落在这个区间内，不会直接变成 160。
+    expect(once).toBeGreaterThan(40);
+    expect(once).toBeLessThan(160);
+  });
+
+  it("decays when the stream pauses so the view stops drifting", () => {
+    const decayed = noteGrowthRate({
+      scrollHeight: 100,
+      previousScrollHeight: 100,
+      previousAt: 0,
+      at: 400,
+      ratePerSecond: 200,
+    });
+    expect(decayed).toBeLessThan(120);
+    expect(decayed).toBeGreaterThanOrEqual(0);
+  });
+
+  it("ignores sub-frame bursts and caps runaway speed", () => {
+    expect(
+      noteGrowthRate({ scrollHeight: 900, previousScrollHeight: 100, previousAt: 0, at: 2, ratePerSecond: 50 }),
+    ).toBe(50);
+    expect(
+      noteGrowthRate({ scrollHeight: 9_000, previousScrollHeight: 100, previousAt: 0, at: 100, ratePerSecond: 0 }),
+    ).toBeLessThanOrEqual(6_000);
   });
 });
 
 describe("anchor compensation", () => {
   it("cancels growth that happened above the visible text", () => {
     // 上方一行长高 16px：可见文字被推下去 16px，补 16px 让它原地不动。
-    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080, anchorTop: 2096, devicePixelRatio: 2 })).toBe(516);
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080, anchorTop: 2096 })).toBe(516);
   });
 
   it("cancels shrink as well, in both directions", () => {
-    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2096, anchorTop: 2080, devicePixelRatio: 2 })).toBe(484);
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2096, anchorTop: 2080 })).toBe(484);
   });
 
-  it("ignores sub-pixel churn (rounded offsetTop would otherwise jitter every frame)", () => {
-    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080.2, anchorTop: 2080.4, devicePixelRatio: 2.4 })).toBeNull();
-    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080, anchorTop: 2080, devicePixelRatio: 2 })).toBeNull();
+  it("ignores sub-pixel churn (measurement noise must not move the view)", () => {
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080.2, anchorTop: 2080.4 })).toBeNull();
+    expect(anchorScrollCompensation({ scrollTop: 500, previousAnchorTop: 2080, anchorTop: 2080 })).toBeNull();
   });
 
-  it("lands the corrected offset on the device pixel grid", () => {
-    const next = anchorScrollCompensation({ scrollTop: 2118.33, previousAnchorTop: 100, anchorTop: 116.7, devicePixelRatio: 2.4 });
-    expect(next).not.toBeNull();
-    const grid = (next! * 2.4) % 1;
-    expect(Math.min(grid, 1 - grid)).toBeLessThan(1e-6);
+  it("writes the exact fractional offset instead of snapping to the device grid", () => {
+    // 这台机器 dpr=2.4：长高 16px 对应 15.83px 的滚动量。取整会留下 0.17px 残差，
+    // 每次增长都重绘一次子像素位置 —— 那正是「幅度很小但一直在闪」。
+    const next = anchorScrollCompensation({ scrollTop: 2118.33, previousAnchorTop: 100, anchorTop: 116.7 });
+    expect(next).toBeCloseTo(2135.03, 6);
   });
 });
