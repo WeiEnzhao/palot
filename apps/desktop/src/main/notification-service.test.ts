@@ -106,7 +106,7 @@ it("uses the event owner for delayed completion metadata and subsequent navigati
   mocks.listener?.(event, runtime("b"));
   resolve({ title: "Original server", parentID: null });
   await vi.waitFor(() => expect(mocks.shown).toHaveLength(2));
-  const notification = mocks.shown.find((item) => item.title === "Original server finished")!;
+  const notification = mocks.shown.find((item) => item.title === "Original server 已完成")!;
   notification.click!();
   expect(mocks.navigate).toHaveBeenCalledWith({
     type: "session",

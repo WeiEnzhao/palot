@@ -425,7 +425,7 @@ class TrayController {
       .map(({ root, request, count }) => ({
         sessionID: root.id,
         title: sessionTitle(root),
-        detail: `${connectionName(profileID)} · ${count > 1 ? `${count} requests waiting` : attentionLabel(request.type)}`,
+        detail: `${connectionName(profileID)} · ${count > 1 ? `${count} 个请求等待处理` : attentionLabel(request.type)}`,
         target: {
           type: "session",
           profileID,
@@ -595,14 +595,14 @@ function mapSession(session: SessionInfo): PalotSession {
 }
 
 function projectName(project: Project): string {
-  return project.name?.trim() || path.basename(project.canonical) || "Project";
+  return project.name?.trim() || path.basename(project.canonical) || "项目";
 }
 
 function attentionLabel(type: AttentionNotificationInput["type"]): string {
-  if (type === "permission") return "Permission required";
-  if (type === "form") return "Form response required";
-  if (type === "question") return "Question waiting";
-  return "Input required";
+  if (type === "permission") return "需要授权";
+  if (type === "form") return "需要填写表单";
+  if (type === "question") return "有提问等待";
+  return "需要输入";
 }
 
 function attentionKey(input: AttentionNotificationInput): string {

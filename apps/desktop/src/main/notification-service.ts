@@ -89,7 +89,7 @@ class DesktopNotificationService {
   }
 
   sendTest(): void {
-    this.show("Palot is ready", "Future task updates can reach you here.", {
+    this.show("Palot 已就绪", "以后的任务进度会在这里通知你。", {
       type: "notification-settings",
     });
   }
@@ -103,10 +103,10 @@ class DesktopNotificationService {
     if (!this.claim(key)) return;
     const permission = input.type === "permission";
     this.show(
-      permission ? "Permission required" : "Palot needs your input",
+      permission ? "需要授权" : "Palot 等待你的输入",
       permission
-        ? "A task is waiting for permission to continue."
-        : "A task is waiting for your answer to continue.",
+        ? "有任务正在等待授权才能继续。"
+        : "有任务正在等待你的回答才能继续。",
       {
         type: "session",
         profileID,
@@ -153,12 +153,12 @@ class DesktopNotificationService {
       return;
     }
     if (session?.parentID) return;
-    const name = session?.title?.trim() || "Task";
+    const name = session?.title?.trim() || "任务";
     this.show(
-      candidate.outcome === "succeeded" ? `${name} finished` : `${name} failed`,
+      candidate.outcome === "succeeded" ? `${name} 已完成` : `${name} 失败`,
       candidate.outcome === "succeeded"
-        ? "Open Palot to review the result."
-        : (candidate.error ?? "Open Palot to review what went wrong."),
+        ? "打开 Palot 查看结果。"
+        : (candidate.error ?? "打开 Palot 查看失败原因。"),
       { type: "session", profileID: runtime.profileID, sessionID: candidate.sessionID },
     );
   }

@@ -538,8 +538,8 @@ export class AutomationService {
     }
     this.showNotification(
       run,
-      run.state === "succeeded" ? `${definition.name} is ready` : `${definition.name} needs review`,
-      "Open the scheduled run in Palot.",
+      run.state === "succeeded" ? `${definition.name} 已就绪` : `${definition.name} 需要复查`,
+      "打开 Palot 查看这次定时运行。",
     );
   }
 
@@ -584,8 +584,8 @@ export class AutomationService {
     this.attentionNotificationKeys.add(key);
     this.showNotification(
       run,
-      `${definition.name} needs your attention`,
-      run.attention?.message ?? "Open the scheduled run in Palot.",
+      `${definition.name} 需要你处理`,
+      run.attention?.message ?? "打开 Palot 查看这次定时运行。",
     );
   }
 
