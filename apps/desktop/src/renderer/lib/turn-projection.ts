@@ -210,7 +210,7 @@ function interruptedError(error: { type: string | null; message: string | null }
 
 function interruptionDetail(message: string | null): string | undefined {
   if (!message || message.trim().toLowerCase() === "step interrupted") {
-    return "The active step stopped before a response was completed.";
+    return "活动步骤在响应完成前已停止。";
   }
   return message;
 }
@@ -272,7 +272,7 @@ function subagentResponsePart(message: PalotMessage): PalotMessageContent | null
   return {
     type: "subagent-response",
     id: message.id,
-    name: stringValue(data.description) ?? "Subagent response",
+    name: stringValue(data.description) ?? "子代理回复",
     text: response,
     status,
     data: {
@@ -416,7 +416,7 @@ function assistantBoundaryParts(
       {
         type: "timeline-boundary",
         id: `${message.id}:retry`,
-        name: attempt === null ? "Retrying response" : `Retrying response, attempt ${attempt}`,
+        name: attempt === null ? "正在重试响应" : `正在重试响应，第 ${attempt} 次`,
         text: stringValue(error.message) ?? undefined,
         status: "running",
         data: {
@@ -435,7 +435,7 @@ function assistantBoundaryParts(
     {
       type: "timeline-boundary",
       id: `${message.id}:${interrupted ? "interrupted" : "error"}`,
-      name: interrupted ? "Response interrupted" : "Response failed",
+      name: interrupted ? "响应已中断" : "响应失败",
       text: interrupted ? interruptionDetail(error.message) : (error.message ?? undefined),
       status: interrupted ? "interrupted" : "failed",
       data: {
@@ -530,7 +530,7 @@ function runtimeBoundaryPart(status: SessionRuntimeStatus | null): PalotMessageC
   return {
     type: "timeline-boundary",
     id: "runtime:retry",
-    name: `Retrying response, attempt ${status.attempt}`,
+    name: `正在重试响应，第 ${status.attempt} 次`,
     text: status.message,
     status: "running",
     data: { kind: "retry", tone: "progress", at: status.next },
@@ -557,7 +557,7 @@ function executionBoundaryPart(
   return {
     type: "timeline-boundary",
     id: interrupted ? "execution:interrupted" : "execution:error",
-    name: interrupted ? "Response interrupted" : "Response failed",
+    name: interrupted ? "响应已中断" : "响应失败",
     text: interrupted
       ? interruptionDetail(execution.error?.message ?? null)
       : execution.error?.message,
@@ -649,20 +649,20 @@ export function createReasoningTitle(value: string): string {
     latestCompleteSentence(text);
   if (title) return title;
   const fallback = text.replace(/\s+/g, " ");
-  if (!fallback) return "Reasoning";
+  if (!fallback) return "推理";
   return fallback.length > 96 ? `${fallback.slice(0, 95)}…` : fallback;
 }
 
 const TOOL_ACTIVITY_TITLES = {
-  read: "Reading files",
-  search: "Searching the project",
-  edit: "Editing files",
-  command: "Running commands",
-  web: "Researching",
-  delegate: "Delegating work",
-  skill: "Loading skills",
-  input: "Gathering input",
-  orchestrate: "Orchestrating tools",
+  read: "读取文件",
+  search: "检索项目",
+  edit: "编辑文件",
+  command: "执行命令",
+  web: "查资料",
+  delegate: "派发任务",
+  skill: "加载技能",
+  input: "收集输入",
+  orchestrate: "编排工具",
 } as const;
 
 type ToolActivity = keyof typeof TOOL_ACTIVITY_TITLES;
@@ -704,36 +704,36 @@ function targetedToolTitle(entry: TurnPart, activity: ToolActivity): string | nu
   const path = stringValue(input.path) ?? stringValue(input.file);
   const name = path ? quoted(fileName(path)) : null;
 
-  if (activity === "read" && name) return `Reading file ${name}`;
-  if (activity === "edit" && name) return `Editing ${name}`;
+  if (activity === "read" && name) return `正在读取文件 ${name}`;
+  if (activity === "edit" && name) return `正在编辑 ${name}`;
   if (activity === "edit") {
     const execution = projectToolExecution(entry.part, entry.index);
     const targets = execution.kind === "file-change" ? execution.targetFiles.map(fileName) : [];
-    if (targets.length === 1) return `Editing ${quoted(targets[0]!)}`;
-    if (targets.length === 2) return `Editing ${quoted(targets[0]!)} and ${quoted(targets[1]!)}`;
+    if (targets.length === 1) return `正在编辑 ${quoted(targets[0]!)}`;
+    if (targets.length === 2) return `正在编辑 ${quoted(targets[0]!)} 和 ${quoted(targets[1]!)}`;
     if (targets.length > 2) {
-      return `Editing ${quoted(targets[0]!)}, ${quoted(targets[1]!)} and ${targets.length - 2} more`;
+      return `正在编辑 ${quoted(targets[0]!)}、${quoted(targets[1]!)} 等 ${targets.length - 2} 个文件`;
     }
   }
   if (activity === "search") {
     const pattern = stringValue(input.pattern) ?? stringValue(input.query);
-    if (pattern) return `Searching for ${quoted(pattern)}`;
+    if (pattern) return `正在搜索 ${quoted(pattern)}`;
   }
   if (activity === "command") {
     const command = stringValue(input.command);
-    if (command) return `Running ${quoted(command)}`;
+    if (command) return `正在运行 ${quoted(command)}`;
   }
   if (activity === "web") {
     const query = stringValue(input.query) ?? stringValue(input.url);
-    if (query) return `Researching ${quoted(query)}`;
+    if (query) return `正在调研 ${quoted(query)}`;
   }
   if (activity === "delegate") {
     const description = stringValue(input.description);
-    if (description) return `Delegating ${quoted(description)}`;
+    if (description) return `正在委派 ${quoted(description)}`;
   }
   if (activity === "skill") {
     const skill = stringValue(input.name) ?? stringValue(input.id);
-    if (skill) return `Loading ${quoted(skill)}`;
+    if (skill) return `正在加载 ${quoted(skill)}`;
   }
   return null;
 }
@@ -741,7 +741,7 @@ function targetedToolTitle(entry: TurnPart, activity: ToolActivity): string | nu
 function inferredToolTitle(entries: TurnPart[]): string {
   const tools = entries.filter((entry) => isTool(entry.part));
   const latestTool = tools.at(-1);
-  if (!latestTool) return "Working";
+  if (!latestTool) return "处理中";
   const activities = [
     ...new Set(
       tools.map((entry) => {
@@ -753,15 +753,15 @@ function inferredToolTitle(entries: TurnPart[]): string {
   ];
   if (tools.length > 1 || activities.length > 1) {
     const labels: Record<ToolActivity, string> = {
-      read: "Read files",
-      search: "searched code",
-      edit: "edited files",
-      command: "ran commands",
-      web: "researched",
-      delegate: "delegated work",
-      skill: "loaded skills",
-      input: "gathered input",
-      orchestrate: "orchestrated tools",
+      read: "读取文件",
+      search: "搜索代码",
+      edit: "编辑文件",
+      command: "执行命令",
+      web: "查资料",
+      delegate: "派发任务",
+      skill: "加载技能",
+      input: "收集输入",
+      orchestrate: "编排工具",
     };
     const selected = activities.slice(0, 3).map((activity) => labels[activity]);
     const summary = selected.join(", ");
@@ -794,7 +794,7 @@ function runningToolTitle(entries: TurnPart[]): string | null {
   const first = running[0];
   if (!first) return null;
   const title = inferredToolTitle([first]);
-  return running.length === 1 ? title : `${title} and ${running.length - 1} more`;
+  return running.length === 1 ? title : `${title}，另有 ${running.length - 1} 个`;
 }
 
 function leadingReasoningTitle(entries: TurnPart[]): string | null {
@@ -813,24 +813,24 @@ function leadingReasoningTitle(entries: TurnPart[]): string | null {
 
 function firstToolPhaseTitle(entries: TurnPart[]): string {
   const first = entries.find((entry) => isTool(entry.part));
-  if (!first) return "Working";
+  if (!first) return "处理中";
   const execution = projectToolExecution(first.part, first.index);
-  if (execution.kind === "skill") return "Preparing the task";
+  if (execution.kind === "skill") return "准备任务";
   switch (activityCategory(first.part, first.index)) {
     case "read":
     case "code-search":
-      return "Exploring the project";
+      return "探索项目";
     case "edit":
-      return "Implementing changes";
+      return "实现改动";
     case "command":
-      return "Running commands";
+      return "执行命令";
     case "web":
-      return "Researching";
+      return "查资料";
     case "delegation":
-      return "Delegating work";
+      return "派发任务";
     case "reasoning":
     case "other":
-      return "Working";
+      return "处理中";
   }
 }
 
@@ -847,7 +847,7 @@ function currentActivityAction(entries: TurnPart[]): string | undefined {
       entry.part.time?.completed === undefined &&
       entry.message.completedAt === null,
   )
-    ? "Reasoning…"
+    ? "推理…"
     : undefined;
 }
 
@@ -856,12 +856,12 @@ function activityTitle(
   entries: TurnPart[],
   status: TurnActivityGroup["status"],
 ): string {
-  if (kind === "compaction") return "Compacting context";
-  if (kind === "boundary") return entries[0]?.part.name ?? "Session update";
-  if (kind === "subagent") return entries[0]?.part.name ?? "Subagent response";
+  if (kind === "compaction") return "正在压缩上下文";
+  if (kind === "boundary") return entries[0]?.part.name ?? "会话更新";
+  if (kind === "subagent") return entries[0]?.part.name ?? "子代理回复";
   if (kind === "subagent-tool") return inferredToolTitle(entries);
   if (kind === "reasoning") {
-    return latestReasoningTitle(entries) ?? "Thinking";
+    return latestReasoningTitle(entries) ?? "思考中";
   }
   if (kind === "input") return "";
   if (status === "running") {
@@ -911,13 +911,10 @@ function activityStatus(entries: TurnPart[]): TurnActivityGroup["status"] {
 type ActivityItem = TurnPart | { message: PalotMessage };
 
 function joinedSummary(labels: string[]): string {
-  if (labels.length === 0) return "Worked";
+  if (labels.length === 0) return "已完成";
   if (labels.length === 1) return labels[0]!;
-  const sentence = labels.map((label, index) =>
-    index === 0 ? label : `${label[0]?.toLowerCase()}${label.slice(1)}`,
-  );
-  if (sentence.length === 2) return sentence.join(" and ");
-  return `${sentence.slice(0, -1).join(", ")}, and ${sentence.at(-1)}`;
+  if (labels.length === 2) return labels.join("和");
+  return `${labels.slice(0, -1).join("、")}和${labels.at(-1)}`;
 }
 
 function semanticActivityTitle(entries: TurnPart[]): string {
@@ -982,19 +979,15 @@ function semanticActivityTitle(entries: TurnPart[]): string {
   const editCount = changedFiles.size + editsWithoutFiles;
   const readCount = readFiles.size + readsWithoutPaths;
   return joinedSummary([
-    ...(readCount ? [`Read ${readCount} ${readCount === 1 ? "file" : "files"}`] : []),
-    ...(listedDirectories.size
-      ? [
-          `Listed ${listedDirectories.size} ${listedDirectories.size === 1 ? "directory" : "directories"}`,
-        ]
-      : []),
-    ...(searches ? [`Searched code ${searches} ${searches === 1 ? "time" : "times"}`] : []),
-    ...(editCount ? [`Changed ${editCount} ${editCount === 1 ? "file" : "files"}`] : []),
-    ...(commands ? [`Ran ${commands} ${commands === 1 ? "command" : "commands"}`] : []),
-    ...(web ? [`Researched ${web} ${web === 1 ? "source" : "sources"}`] : []),
-    ...(delegation ? [`Delegated ${delegation} ${delegation === 1 ? "task" : "tasks"}`] : []),
-    ...(skills ? [`Loaded ${skills} ${skills === 1 ? "skill" : "skills"}`] : []),
-    ...(other ? [`Used ${other} other ${other === 1 ? "tool" : "tools"}`] : []),
+    ...(readCount ? [`读取 ${readCount} 个文件`] : []),
+    ...(listedDirectories.size ? [`列出 ${listedDirectories.size} 个目录`] : []),
+    ...(searches ? [`搜索代码 ${searches} 次`] : []),
+    ...(editCount ? [`更改 ${editCount} 个文件`] : []),
+    ...(commands ? [`执行 ${commands} 个命令`] : []),
+    ...(web ? [`查阅 ${web} 个来源`] : []),
+    ...(delegation ? [`派发 ${delegation} 个任务`] : []),
+    ...(skills ? [`加载 ${skills} 个技能`] : []),
+    ...(other ? [`使用 ${other} 个其他工具`] : []),
   ]);
 }
 
@@ -1028,10 +1021,10 @@ function groupActivity(
       current.presentation === "grouped" && current.status === "completed"
         ? policy.groupTitle === "latest-reasoning"
           ? (leadingReasoningTitle(current.entries) ?? semanticActivityTitle(current.entries))
-          : semanticActivityTitle(current.entries) === "Worked"
+          : semanticActivityTitle(current.entries) === "已完成"
             ? policy.showReasoningSummaries
-              ? (leadingReasoningTitle(current.entries) ?? "Worked")
-              : "Worked"
+              ? (leadingReasoningTitle(current.entries) ?? "已完成")
+              : "已完成"
             : semanticActivityTitle(current.entries)
         : current.presentation === "grouped" && current.status === "running"
           ? activeGroupTitle(current.entries, current.currentAction)
@@ -1091,8 +1084,8 @@ function groupActivity(
         title:
           entry.part.type === "reasoning" && !policy.showReasoningSummaries
             ? status === "running"
-              ? "Working"
-              : "Worked"
+              ? "处理中"
+              : "已完成"
             : activityTitle(isTool(entry.part) ? "tools" : "reasoning", [entry], status),
         status,
         entries: [entry],
@@ -1129,7 +1122,7 @@ function groupActivity(
     current = {
       id: entryID(entry),
       kind: isTool(entry.part) ? "tools" : "reasoning",
-      title: isTool(entry.part) ? "Working" : "Thinking",
+      title: isTool(entry.part) ? "处理中" : "思考中",
       status,
       entries: [entry],
       categories: [category],
@@ -1167,7 +1160,7 @@ function groupActivity(
       current = {
         id: entryID(entry),
         kind: "compaction",
-        title: "Compacting context",
+        title: "正在压缩上下文",
         status: activityStatus([entry]),
         entries: [entry],
       };
@@ -1179,7 +1172,7 @@ function groupActivity(
       current = {
         id: entryID(entry),
         kind: "boundary",
-        title: entry.part.name ?? "Session update",
+        title: entry.part.name ?? "会话更新",
         status: activityStatus([entry]),
         entries: [entry],
       };
@@ -1191,7 +1184,7 @@ function groupActivity(
       current = {
         id: entryID(entry),
         kind: "subagent",
-        title: entry.part.name ?? "Subagent response",
+        title: entry.part.name ?? "子代理回复",
         status: activityStatus([entry]),
         entries: [entry],
       };
@@ -1236,7 +1229,7 @@ export function isPlainReadEntry(entry: TurnPart): boolean {
   return (
     execution.kind === "read" &&
     execution.status === "complete" &&
-    execution.path !== "Unknown path" &&
+    execution.path !== "未知路径" &&
     execution.images.length === 0 &&
     execution.entries.length === 0 &&
     !execution.error &&
@@ -1360,7 +1353,7 @@ function postFinalItems(entries: TurnPart[]): TurnPostFinalItem[] {
       const uri = stringValue(file.uri);
       const mime = stringValue(file.mime);
       if (mime?.startsWith("image/")) continue;
-      const name = stringValue(file.name) ?? (uri ? fileName(uri) : "Generated file");
+      const name = stringValue(file.name) ?? (uri ? fileName(uri) : "已生成的文件");
       add({
         id: `${entryID(entry)}:${uri ?? name}`,
         kind: "file",

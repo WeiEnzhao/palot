@@ -222,7 +222,7 @@ export const ContextMeter = memo(function ContextMeter({
           {formatTokenCount(usage && !usage.compacted ? usage.total : 0)}
           {inlineCost ? (
             <>
-              <span className="px-1 text-muted-foreground/60">·</span>
+              <span className="px-1 text-foreground/64">·</span>
               {inlineCost}
             </>
           ) : null}

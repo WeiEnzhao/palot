@@ -495,7 +495,7 @@ export function Settings({
         <header className="palot-main-surface-header window-drag flex h-(--shell-header-height) shrink-0 items-center gap-2 border-b border-sidebar-border bg-background px-5 pr-(--window-controls-width)">
           <div className="flex min-w-0 items-center gap-2 pl-1">
             <span className="text-sm font-semibold">设置</span>
-            <span className="text-muted-foreground/45">/</span>
+            <span className="text-foreground/62">/</span>
             <span className="truncate text-xs text-muted-foreground">{activeCopy.title}</span>
           </div>
           <div className="ml-auto flex min-w-0 items-center gap-2">
@@ -1153,19 +1153,19 @@ function GeneralSettings() {
             }
           />
           <SettingsRow
-            title="Context meter"
-            description="Show how full the model's context window is next to Send."
+            title="上下文用量"
+            description="在发送按钮旁显示模型上下文窗口的占用情况。"
             control={
               <Switch
                 checked={contextMeterVisible}
-                aria-label="Show the context meter in the composer"
+                aria-label="在输入框显示上下文用量"
                 onCheckedChange={(checked) => setContextMeterVisible(Boolean(checked))}
               />
             }
           />
           <SettingsRow
-            title="Suggest compacting before sending"
-            description="When a large task has been idle for an hour, its prompt cache has likely expired. Offer to summarize the history first so the next message doesn't re-read all of it."
+            title="发送前建议压缩"
+            description="大型任务闲置一小时后，提示缓存多半已过期。发送前先摘要历史，避免下一条消息重读全部内容。"
             control={
               <Switch
                 checked={compactBeforeSend}

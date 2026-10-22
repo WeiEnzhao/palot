@@ -72,7 +72,7 @@ export function PullRequestControl({ session }: { session: PalotSession }) {
               size="icon-sm"
               aria-disabled="true"
               aria-label={`拉取请求不可用：${unsupportedReason}`}
-              className="window-no-drag shrink-0 text-muted-foreground/60 hover:bg-transparent hover:text-muted-foreground/60"
+              className="window-no-drag shrink-0 text-foreground/64 hover:bg-transparent hover:text-foreground/64"
             />
           }
         >

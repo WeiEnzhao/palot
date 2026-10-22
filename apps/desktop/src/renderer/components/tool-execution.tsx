@@ -139,7 +139,7 @@ function ToolOutput({
             size="xs"
             onClick={() => setExpanded((current) => !current)}
           >
-            {expanded ? `Collapse ${contentLabel}` : `Show full ${contentLabel}`}
+            {expanded ? `收起 ${contentLabel}` : `展开完整 ${contentLabel}`}
           </Button>
         </div>
       ) : null}
@@ -242,7 +242,7 @@ function WorkspaceFileTarget({
     }
   };
 
-  if (!opener || path === "Unknown path") {
+  if (!opener || path === "未知路径") {
     return (
       <span className={className} title={title}>
         {label}
@@ -258,7 +258,7 @@ function WorkspaceFileTarget({
     <a
       role="link"
       href={fileHref}
-      title={`Open ${title}`}
+      title={`打开 ${title}`}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -331,53 +331,53 @@ function elapsedLabel(durationMs: number) {
 }
 
 function executionTitle(view: ToolExecutionView) {
-  if (view.kind === "read") return `Read ${baseName(view.path)}`;
-  if (view.kind === "list") return `Listed ${view.path}`;
+  if (view.kind === "read") return `读取 ${baseName(view.path)}`;
+  if (view.kind === "list") return `列出 ${view.path}`;
   if (view.kind === "search") {
-    if (view.engine === "glob") return `Found files matching “${view.query}”`;
-    return `Searched for “${view.query}”`;
+    if (view.engine === "glob") return `找到匹配“${view.query}”的文件`;
+    return `已搜索“${view.query}”`;
   }
   if (view.kind === "web-search") {
-    return `${view.status === "running" || view.status === "pending" ? "Searching" : "Searched"} the web for “${view.query}”`;
+    return `${view.status === "running" || view.status === "pending" ? "正在检索" : "已检索"}网络：“${view.query}”`;
   }
   if (view.kind === "web-fetch") {
-    return `${view.status === "error" ? "Failed to fetch" : view.status === "running" || view.status === "pending" ? "Fetching" : "Fetched"} ${view.url}`;
+    return `${view.status === "error" ? "抓取失败" : view.status === "running" || view.status === "pending" ? "正在抓取" : "已抓取"} ${view.url}`;
   }
   if (view.kind === "shell") {
     const command = view.command.trim();
     const running = view.status === "running" || view.status === "pending";
     if (view.scriptPresentation) {
       const subject = view.scriptPresentation.mixed
-        ? "shell commands with Python"
-        : "Python script";
-      if (view.status === "error") return `Failed to run ${subject}`;
-      return `${running ? "Running" : "Ran"} ${subject}`;
+        ? "含 Python 的 shell 命令"
+        : "Python 脚本";
+      if (view.status === "error") return `执行 ${subject} 失败`;
+      return `${running ? "正在执行" : "已执行"} ${subject}`;
     }
-    if (running) return command ? `Running ${command}` : "Running command";
-    if (view.status === "error") return command ? `Command failed: ${command}` : "Command failed";
-    return command ? `Ran ${command}` : "Ran command";
+    if (running) return command ? `正在执行 ${command}` : "正在执行命令";
+    if (view.status === "error") return command ? `命令失败：${command}` : "命令失败";
+    return command ? `已执行 ${command}` : "已执行命令";
   }
   if (view.kind === "skill") {
-    return `${view.status === "running" || view.status === "pending" ? "Loading" : "Loaded"} ${view.skill}`;
+    return `${view.status === "running" || view.status === "pending" ? "正在加载" : "已加载"} ${view.skill}`;
   }
   if (view.kind === "subagent") {
     const running = view.status === "running" || view.status === "pending";
-    return `${running ? "Running" : "Ran"} ${view.agent} subagent`;
+    return `${running ? "正在运行" : "已运行"} ${view.agent} 子代理`;
   }
   if (view.kind === "execute") {
     const running = view.status === "running" || view.status === "pending";
     if (view.name.toLowerCase() !== "execute") {
       const title = readableToolName(view.name);
-      if (running) return `Running ${title}`;
+      if (running) return `正在执行 ${title}`;
       if (view.status === "error" || view.runtimeError) return `${title} failed`;
-      return `Ran ${title}`;
+      return `已执行 ${title}`;
     }
     const tools = executeToolLabel(view);
-    if (running) return tools ? `Orchestrating ${tools}` : "Orchestrating tools";
+    if (running) return tools ? `编排 ${tools}` : "编排工具";
     if (view.status === "error" || view.runtimeError) {
-      return tools ? `Failed to orchestrate ${tools}` : "Tool orchestration failed";
+      return tools ? `编排 ${tools} 失败` : "工具编排失败";
     }
-    return tools ? `Orchestrated ${tools}` : "Orchestrated tools";
+    return tools ? `已编排 ${tools}` : "已编排工具";
   }
   if (view.kind === "file-change") {
     const targets = view.targetFiles;
@@ -385,33 +385,33 @@ function executionTitle(view: ToolExecutionView) {
     if (view.operation === "patch") {
       if (view.inputStreaming) {
         return targets.length > 0
-          ? `Generating patch for ${targetLabel(targets)}`
-          : "Generating patch";
+          ? `正在生成补丁：${targetLabel(targets)}`
+          : "生成补丁";
       }
       if (targets.length > 0) {
-        return `${running ? "Patching" : "Updated"} ${targetLabel(targets)}`;
+        return `${running ? "修补" : "已更新"} ${targetLabel(targets)}`;
       }
-      return running ? "Applying patch" : "Applied patch";
+      return running ? "应用补丁" : "已应用补丁";
     }
     const path = targets[0] ?? view.path ?? "file";
-    if (view.operation === "write") return `${running ? "Writing" : "Wrote"} ${baseName(path)}`;
-    return `${running ? "Editing" : "Updated"} ${baseName(path)}`;
+    if (view.operation === "write") return `${running ? "写入" : "已写入"} ${baseName(path)}`;
+    return `${running ? "编辑" : "已更新"} ${baseName(path)}`;
   }
   if (view.kind === "image-generation") {
     const editing = view.operation === "edit";
-    if (view.status === "error") return editing ? "Image edit failed" : "Image generation failed";
+    if (view.status === "error") return editing ? "图片编辑失败" : "图片生成失败";
     const active = view.status === "running" || view.status === "pending";
-    if (editing) return active ? "Editing image" : "Edited image";
-    return active ? "Generating image" : "Generated image";
+    if (editing) return active ? "正在编辑图片" : "已编辑图片";
+    return active ? "正在生成图片" : "已生成图片";
   }
-  return `Called ${view.title}${view.label ? `: ${view.label}` : ""}`;
+  return `调用 ${view.title}${view.label ? `：${view.label}` : ""}`;
 }
 
 function executionTitleContent(view: ToolExecutionView, opener: WorkspaceFileOpener): ReactNode {
   if (view.kind === "read") {
     return (
       <>
-        <span>Read </span>
+        <span>读取 </span>
         <WorkspaceFileTarget path={view.path} line={view.range?.start} opener={opener} />
       </>
     );
@@ -423,7 +423,7 @@ function executionTitleContent(view: ToolExecutionView, opener: WorkspaceFileOpe
     return (
       <>
         <span>
-          {view.inputStreaming ? "Generating patch for " : running ? "Patching " : "Updated "}
+          {view.inputStreaming ? "正在生成补丁：" : running ? "修补中 " : "已更新 "}
         </span>
         <WorkspaceFileTargets files={view.targetFiles} opener={opener} />
       </>
@@ -437,11 +437,11 @@ function executionTitleContent(view: ToolExecutionView, opener: WorkspaceFileOpe
       <span>
         {view.operation === "write"
           ? running
-            ? "Writing "
-            : "Wrote "
+            ? "写入中 "
+            : "已写入 "
           : running
-            ? "Editing "
-            : "Updated "}
+            ? "编辑中 "
+            : "已更新 "}
       </span>
       <WorkspaceFileTarget path={path} opener={opener} />
     </>
@@ -449,7 +449,7 @@ function executionTitleContent(view: ToolExecutionView, opener: WorkspaceFileOpe
 }
 
 function executionMeta(view: ToolExecutionView) {
-  if (view.kind === "read" && view.range) return `lines ${view.range.start}–${view.range.end}`;
+  if (view.kind === "read" && view.range) return `第 ${view.range.start}–${view.range.end} 行`;
   if (view.kind === "read" && view.images.length > 0) {
     return view.images.length === 1 ? "image" : `${view.images.length} images`;
   }
@@ -458,14 +458,14 @@ function executionMeta(view: ToolExecutionView) {
   }
   if (view.kind === "web-search") {
     if (view.results.length > 0) {
-      return `${view.results.length} ${view.results.length === 1 ? "result" : "results"}`;
+      return `${view.results.length} 个结果`;
     }
     return view.provider;
   }
   if (view.kind === "web-fetch") return view.format;
   if (view.kind === "shell") {
-    if (view.timedOut) return "timed out";
-    if (view.exitCode !== null) return `exit ${view.exitCode}`;
+    if (view.timedOut) return "已超时";
+    if (view.exitCode !== null) return `退出码 ${view.exitCode}`;
   }
   if (view.kind === "file-change" && view.files.length > 0) {
     const totals = view.files.reduce(
@@ -577,7 +577,7 @@ export const ToolExecution = memo(function ToolExecution({
         view={view}
         defaultOpen={defaultOpen}
         title={
-          active ? "Updating plan" : view.status === "error" ? "Plan update failed" : "Updated plan"
+          active ? "正在更新计划" : view.status === "error" ? "计划更新失败" : "已更新计划"
         }
         meta={plan ? `${plan.done}/${plan.total} done` : null}
       />
@@ -597,10 +597,10 @@ export const StandaloneShellExecution = memo(function StandaloneShellExecution({
   if (view.kind !== "shell") return <ToolExecution part={part} index={index} />;
   const active = view.status === "running" || view.status === "pending";
   const label =
-    view.status === "error" ? "Command failed" : active ? "Running command" : "Command completed";
+    view.status === "error" ? "命令失败" : active ? "正在执行命令" : "命令已完成";
   const meta = [
-    view.timedOut ? "timed out" : view.exitCode === null ? null : `exit ${view.exitCode}`,
-    view.truncated ? "output truncated" : null,
+    view.timedOut ? "已超时" : view.exitCode === null ? null : `退出码 ${view.exitCode}`,
+    view.truncated ? "输出已截断" : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -654,7 +654,7 @@ export const ReadToolExecutionGroup = memo(
       ranges.length === segments.length && ranges.length <= 2
         ? ranges.map((range) => `${range.start}–${range.end}`).join(", ")
         : ranges.length === segments.length
-          ? `${ranges.length} ranges`
+          ? `${ranges.length} 段`
           : `${views.length} reads`;
     return (
       <ToolExecutionCard view={view} defaultOpen={defaultOpen} meta={meta}>
@@ -664,7 +664,7 @@ export const ReadToolExecutionGroup = memo(
               <section key={item.id} className="min-w-0">
                 {item.range ? (
                   <div className="mb-1 text-micro font-medium text-muted-foreground">
-                    Lines {item.range.start}–{item.range.end}
+                    第 {item.range.start}–{item.range.end} 行
                   </div>
                 ) : null}
                 <ReadContent view={item} />
@@ -819,7 +819,7 @@ const ToolExecutionCard = memo(function ToolExecutionCard({
         </span>
         {meta ? (
           <span
-            className="min-w-0 max-w-[45%] truncate tabular-nums text-muted-foreground/70 transition-colors group-hover/button:text-foreground/80"
+            className="min-w-0 max-w-[45%] truncate tabular-nums text-foreground/70 transition-colors group-hover/button:text-foreground/80"
             title={meta}
           >
             {meta}
@@ -827,19 +827,19 @@ const ToolExecutionCard = memo(function ToolExecutionCard({
         ) : null}
         {view.status === "error" ? (
           <ExecutionStatusTooltip label={timing}>
-            <Badge variant="destructive">Failed</Badge>
+            <Badge variant="destructive">失败</Badge>
           </ExecutionStatusTooltip>
         ) : view.status === "complete" ? (
           view.durationMs === null ? (
             <span className="inline-flex size-4 items-center justify-center">
               <Check
-                className="size-3.5 text-muted-foreground/50 transition-colors group-hover/button:text-foreground/70"
+                className="size-3.5 text-foreground/62 transition-colors group-hover/button:text-foreground/70"
                 aria-hidden="true"
               />
             </span>
           ) : (
             <span
-              className="shrink-0 tabular-nums text-muted-foreground/70 transition-colors group-hover/button:text-foreground/80"
+              className="shrink-0 tabular-nums text-foreground/70 transition-colors group-hover/button:text-foreground/80"
               aria-label={timing ?? undefined}
             >
               {durationLabel(view.durationMs)}
@@ -886,10 +886,10 @@ function ActiveExecutionTiming({
   return (
     <span className="inline-flex shrink-0 items-center gap-1 tabular-nums">
       <PulseDot className="size-2.5 [&>span]:size-1" aria-hidden="true" />
-      <span className="sr-only">{status === "pending" ? "Pending" : "Running"}</span>
+      <span className="sr-only">{status === "pending" ? "待处理" : "执行中"}</span>
       {elapsed !== null && elapsed >= 1_000 ? (
         <span
-          className="text-muted-foreground/70 transition-colors group-hover/button:text-foreground/80"
+          className="text-foreground/70 transition-colors group-hover/button:text-foreground/80"
           aria-hidden="true"
         >
           {elapsedLabel(elapsed)}
@@ -901,7 +901,7 @@ function ActiveExecutionTiming({
 
 function timingLabel(view: ToolExecutionView) {
   if (view.durationMs === null) return null;
-  return `${view.status === "error" ? "Failed after" : "Completed in"} ${durationLabel(view.durationMs)}`;
+  return `${view.status === "error" ? "失败耗时" : "耗时"} ${durationLabel(view.durationMs)}`;
 }
 
 function ExecutionStatusTooltip({
@@ -1040,7 +1040,7 @@ function ExecuteDetails({ view }: { view: ExecuteExecution }) {
               ) : call.status === "error" ? (
                 <CircleAlert className="size-3 shrink-0 text-destructive" aria-hidden="true" />
               ) : (
-                <Check className="size-3 shrink-0 text-muted-foreground/60" aria-hidden="true" />
+                <Check className="size-3 shrink-0 text-foreground/64" aria-hidden="true" />
               )}
               <span className="min-w-0 truncate font-medium text-foreground/80">{call.title}</span>
               {call.args.length > 0 ? (
@@ -1060,9 +1060,9 @@ function ExecuteDetails({ view }: { view: ExecuteExecution }) {
       {view.code ? (
         <section className={view.calls.length > 0 ? "border-t pt-2" : undefined}>
           <div className="mb-1 text-micro font-medium tracking-wide text-muted-foreground uppercase">
-            Script
+            脚本
           </div>
-          <ToolOutput mode="scroll" collapsedClassName="max-h-56" ariaLabel="Code Mode script">
+          <ToolOutput mode="scroll" collapsedClassName="max-h-56" ariaLabel="代码模式脚本">
             <HighlightedCode code={view.code} language="javascript" className="tool-highlight" />
           </ToolOutput>
         </section>
@@ -1070,7 +1070,7 @@ function ExecuteDetails({ view }: { view: ExecuteExecution }) {
       {result ? (
         <section className="border-t pt-2">
           <div className="mb-1 text-micro font-medium tracking-wide text-muted-foreground uppercase">
-            {view.error || view.runtimeError ? "Error" : "Result"}
+            {view.error || view.runtimeError ? "错误" : "结果"}
           </div>
           {jsonResult ? <JsonResult value={jsonResult} /> : <PlainExecuteResult value={result} />}
         </section>
@@ -1090,7 +1090,7 @@ function formatJson(value: string): string | null {
 
 function JsonResult({ value }: { value: string }) {
   return (
-    <ToolOutput mode="scroll" collapsedClassName="max-h-56" ariaLabel="JSON result">
+    <ToolOutput mode="scroll" collapsedClassName="max-h-56" ariaLabel="JSON 结果">
       <HighlightedCode code={value} language="json" className="tool-highlight" />
     </ToolOutput>
   );
@@ -1098,7 +1098,7 @@ function JsonResult({ value }: { value: string }) {
 
 function PlainExecuteResult({ value }: { value: string }) {
   return (
-    <ToolOutput mode="scroll" collapsedClassName="max-h-56" ariaLabel="Execution result">
+    <ToolOutput mode="scroll" collapsedClassName="max-h-56" ariaLabel="执行结果">
       <pre className="m-0 font-mono text-code-compact/relaxed whitespace-pre-wrap text-foreground/75">
         {value}
       </pre>
@@ -1243,7 +1243,7 @@ function SearchDetails({ view, opener }: { view: SearchExecution; opener: Worksp
   if (view.matches.length > 0) {
     const files = Map.groupBy(view.matches, (match) => match.file);
     return (
-      <ToolOutput mode="scroll" ariaLabel={`Search results for ${view.query}`}>
+      <ToolOutput mode="scroll" ariaLabel={`搜索结果：${view.query}`}>
         <div className="flex flex-col gap-2 rounded-lg bg-muted/35 p-2">
           {[...files].map(([file, matches]) => {
             const numbered = matches.flatMap((match) =>
@@ -1335,7 +1335,7 @@ function WebSearchDetails({ view }: { view: WebSearchExecution }) {
                     {result.title}
                   </span>
                   <ExternalLink
-                    className="size-3 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground"
+                    className="size-3 shrink-0 text-foreground/62 group-hover:text-muted-foreground"
                     aria-hidden="true"
                   />
                 </div>
@@ -1406,7 +1406,7 @@ function ShellDetails({ view }: { view: ShellExecution }) {
   return (
     <div className="relative overflow-hidden rounded-lg bg-muted/45">
       <IconButton
-        label={copied ? "Copied" : "Copy command and output"}
+        label={copied ? "已复制" : "复制命令与输出"}
         className="absolute top-2 right-2"
         onClick={() => {
           void writeClipboardText(value);
@@ -1416,7 +1416,7 @@ function ShellDetails({ view }: { view: ShellExecution }) {
       >
         <Copy aria-hidden="true" />
       </IconButton>
-      <ToolOutput mode="scroll" ariaLabel="Command output">
+      <ToolOutput mode="scroll" ariaLabel="命令输出">
         <pre className="m-0 p-3 pr-11 font-mono text-code-compact/relaxed whitespace-pre-wrap text-foreground/75">
           <span>{`$ ${view.command}`}</span>
           {view.output ? (
@@ -1447,7 +1447,7 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
   );
   const rawToggle = (
     <Button variant="ghost" size="xs" aria-pressed={raw} onClick={() => setRaw(!raw)}>
-      {raw ? "Show script" : "Raw command"}
+      {raw ? "查看脚本" : "原始命令"}
     </Button>
   );
 
@@ -1455,11 +1455,11 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
     <div className="min-w-0 overflow-hidden rounded-lg bg-muted/45">
       {raw ? (
         <div className="flex items-center justify-between gap-2 px-3 py-1">
-          <span className="text-micro font-medium text-muted-foreground">Raw command</span>
+          <span className="text-micro font-medium text-muted-foreground">原始命令</span>
           <div className="flex items-center gap-1">
             {rawToggle}
             <IconButton
-              label={copiedKey === "command" ? "Copied raw command" : "Copy raw command"}
+              label={copiedKey === "command" ? "已复制原始命令" : "复制原始命令"}
               onClick={() => void copy(view.command, "command")}
             >
               {copiedKey === "command" ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
@@ -1468,7 +1468,7 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
         </div>
       ) : null}
       {raw ? (
-        <ToolOutput mode="scroll" ariaLabel="Raw command">
+        <ToolOutput mode="scroll" ariaLabel="原始命令">
           <pre className="m-0 p-3 font-mono text-code-compact/relaxed whitespace-pre-wrap text-foreground/75">
             {view.command}
           </pre>
@@ -1487,8 +1487,8 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
                     <IconButton
                       label={
                         copiedKey === `script-${index}`
-                          ? "Copied Python script"
-                          : "Copy Python script"
+                          ? "已复制 Python 脚本"
+                          : "复制 Python 脚本"
                       }
                       onClick={() => void copy(segment.code, `script-${index}`)}
                     >
@@ -1504,7 +1504,7 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
               <HighlightedCode
                 code={segment.code}
                 language={segment.language === "python" ? "python" : "bash"}
-                ariaLabel={segment.language === "python" ? "Python script" : "Shell commands"}
+                ariaLabel={segment.language === "python" ? "Python 脚本" : "Shell 命令"}
                 className="tool-highlight tool-highlight-compact"
               />
             </section>
@@ -1515,10 +1515,10 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
         <section className="border-t">
           <div className="flex items-center justify-between gap-2 px-3 py-1">
             <span className="text-micro font-medium text-muted-foreground">
-              {presentation.mixed ? "Combined output" : "Output"}
+              {presentation.mixed ? "合并输出" : "输出"}
             </span>
             <IconButton
-              label={copiedKey === "output" ? "Copied output" : "Copy output"}
+              label={copiedKey === "output" ? "已复制输出" : "复制输出"}
               onClick={() =>
                 void copy([view.output, view.error].filter(Boolean).join("\n\n"), "output")
               }
@@ -1526,7 +1526,7 @@ function PythonShellDetails({ view }: { view: ShellExecution }) {
               {copiedKey === "output" ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
             </IconButton>
           </div>
-          <ToolOutput mode="scroll" ariaLabel="Command output">
+          <ToolOutput mode="scroll" ariaLabel="命令输出">
             <pre className="m-0 px-3 pt-1 pb-2 font-mono text-code-compact/relaxed whitespace-pre-wrap text-foreground/75">
               {view.output ? (
                 <TerminalOutput output={view.output} terminal={view.terminal} />
@@ -1570,7 +1570,7 @@ function FileChangeDetails({
   }
   if (view.targetFiles.length > 0) {
     return (
-      <ToolOutput mode="scroll" collapsedClassName="max-h-64" ariaLabel="Changed files">
+      <ToolOutput mode="scroll" collapsedClassName="max-h-64" ariaLabel="变更文件">
         <div className="flex flex-col gap-0.5 rounded-lg bg-muted/35 p-2">
           {view.targetFiles.map((file) => (
             <div key={file} className="flex min-w-0 items-center gap-2 text-xs text-foreground/75">
@@ -1593,7 +1593,7 @@ function FileChangeDetails({
   }
   if (view.content) {
     return (
-      <ToolOutput mode="scroll" ariaLabel="File contents">
+      <ToolOutput mode="scroll" ariaLabel="文件内容">
         <pre className="m-0 rounded-lg bg-muted/45 p-3 font-mono text-code-compact/relaxed whitespace-pre-wrap text-foreground/75">
           {view.content}
         </pre>
@@ -1663,7 +1663,7 @@ function RawDetails({
     return (
       <ToolOutput
         mode="scroll"
-        ariaLabel={`${selectedLanguage === "html" ? "HTML" : "JSON"} output`}
+        ariaLabel={`${selectedLanguage === "html" ? "HTML" : "JSON"} 输出`}
       >
         <HighlightedCode
           code={jsonValue ?? value}
@@ -1676,7 +1676,7 @@ function RawDetails({
   return (
     <div className="relative overflow-hidden rounded-lg bg-muted/45">
       <CircleAlert
-        className="absolute top-3 left-3 size-3 text-muted-foreground/60"
+        className="absolute top-3 left-3 size-3 text-foreground/64"
         aria-hidden="true"
       />
       <ToolOutput>

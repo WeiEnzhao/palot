@@ -223,7 +223,7 @@ function PullRequestSection({
         <span className="truncate">{title}</span>
         <ChevronRight
           className={cn(
-            "size-3 shrink-0 text-muted-foreground/60 transition-transform",
+            "size-3 shrink-0 text-foreground/64 transition-transform",
             open && "rotate-90",
           )}
           aria-hidden="true"

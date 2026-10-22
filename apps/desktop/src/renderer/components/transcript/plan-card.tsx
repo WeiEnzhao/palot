@@ -29,10 +29,10 @@ export function resetPlanDisclosuresForTest(): void {
 }
 
 const STATUS_LABEL: Record<PlanItemStatus, string> = {
-  pending: "Pending",
-  in_progress: "In progress",
-  completed: "Done",
-  cancelled: "Cancelled",
+  pending: "待处理",
+  in_progress: "进行中",
+  completed: "已完成",
+  cancelled: "已取消",
 };
 
 function PlanStatusIcon({ status }: { status: PlanItemStatus }) {
@@ -44,10 +44,10 @@ function PlanStatusIcon({ status }: { status: PlanItemStatus }) {
   }
   if (status === "cancelled") {
     return (
-      <CircleSlash className="size-3.5 shrink-0 text-muted-foreground/60" aria-hidden="true" />
+      <CircleSlash className="size-3.5 shrink-0 text-foreground/64" aria-hidden="true" />
     );
   }
-  return <Circle className="size-3.5 shrink-0 text-muted-foreground/60" aria-hidden="true" />;
+  return <Circle className="size-3.5 shrink-0 text-foreground/64" aria-hidden="true" />;
 }
 
 function PlanRow({ item }: { item: PlanItem }) {
@@ -65,7 +65,7 @@ function PlanRow({ item }: { item: PlanItem }) {
           item.status === "in_progress" && "font-medium text-foreground",
           item.status === "pending" && "text-foreground/80",
           item.status === "completed" && "text-muted-foreground",
-          item.status === "cancelled" && "text-muted-foreground/60 line-through",
+          item.status === "cancelled" && "text-foreground/64 line-through",
         )}
       >
         {item.content}
@@ -87,11 +87,11 @@ export function PlanCard({ sessionID, messages }: { sessionID: string; messages:
   const open =
     disclosure && disclosure.complete === plan.complete ? disclosure.open : !plan.complete;
   const progress = plan.total === 0 ? 100 : Math.round((plan.done / plan.total) * 100);
-  const summary = `${plan.done}/${plan.total} done`;
+  const summary = `${plan.done}/${plan.total} 已完成`;
 
   return (
     <section
-      aria-label="Plan"
+      aria-label="计划"
       data-palot-plan-card={plan.complete ? "complete" : "active"}
       className="mx-auto mb-2 w-[calc(100%-32px)] max-w-[860px] overflow-hidden rounded-xl border border-border/70 bg-card/96 shadow-lg backdrop-blur-sm max-[720px]:w-[calc(100%-20px)]"
     >
@@ -113,7 +113,7 @@ export function PlanCard({ sessionID, messages }: { sessionID: string; messages:
           }
         >
           <ListChecks className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="shrink-0 font-medium text-foreground/85">Plan</span>
+          <span className="shrink-0 font-medium text-foreground/85">计划</span>
           <span className="shrink-0 tabular-nums text-muted-foreground">· {summary}</span>
           {!open && plan.inProgress ? (
             <span className="min-w-0 flex-1 truncate text-muted-foreground">
@@ -130,7 +130,7 @@ export function PlanCard({ sessionID, messages }: { sessionID: string; messages:
         </CollapsibleTrigger>
         <Progress
           value={progress}
-          aria-label={`Plan progress, ${summary}`}
+          aria-label={`计划进度，${summary}`}
           className="px-3 pb-1.5 [&_[data-slot=progress-track]]:h-0.5"
         />
         <CollapsibleContent smooth animate={interacted}>

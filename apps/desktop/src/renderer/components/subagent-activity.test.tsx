@@ -164,7 +164,7 @@ describe("subagent activity", () => {
 
     await user.click(turnSummary);
     const groupSummary = screen.getByRole("button", {
-      name: "Read 1 file, changed 1 file, and delegated 1 task",
+      name: "读取 1 个文件、更改 1 个文件和派发 1 个任务",
     });
     expect(groupSummary.getAttribute("aria-expanded")).toBe("false");
     oneVisibleCard();

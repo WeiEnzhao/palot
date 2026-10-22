@@ -272,7 +272,7 @@ describe("projectTranscriptTurns", () => {
 
     expect(turn.activity).toMatchObject([
       {
-        title: "Read 1 file, searched code 1 time, changed 1 file, and ran 1 command",
+        title: "读取 1 个文件、搜索代码 1 次、更改 1 个文件和执行 1 个命令",
         presentation: "grouped",
         defaultOpen: false,
         showReasoningSummaries: false,
@@ -313,7 +313,7 @@ describe("projectTranscriptTurns", () => {
       SESSION_PROJECTION_PRESETS.compact,
     )[0]!;
 
-    expect(turn.activity).toMatchObject([{ title: "Changed 1 file", entries: [{}, {}] }]);
+    expect(turn.activity).toMatchObject([{ title: "更改 1 个文件", entries: [{}, {}] }]);
   });
 
   it("deduplicates read paths and describes directory listings separately", () => {
@@ -355,7 +355,7 @@ describe("projectTranscriptTurns", () => {
     )[0]!;
 
     expect(turn.activity).toMatchObject([
-      { title: "Read 1 file and listed 1 directory", entries: [{}, {}, {}] },
+      { title: "读取 1 个文件和列出 1 个目录", entries: [{}, {}, {}] },
     ]);
   });
 
@@ -393,7 +393,7 @@ describe("projectTranscriptTurns", () => {
 
     expect(turn.activity).toMatchObject([
       {
-        title: "Read 1 file and loaded 1 skill",
+        title: "读取 1 个文件和加载 1 个技能",
         categories: ["read"],
         presentation: "grouped",
         pinned: false,
@@ -503,7 +503,7 @@ describe("projectTranscriptTurns", () => {
 
     expect(turn.activity).toMatchObject([
       {
-        title: "Delegated 2 tasks",
+        title: "派发 2 个任务",
         categories: ["delegation"],
         presentation: "grouped",
         pinned: false,
@@ -703,8 +703,8 @@ describe("projectTranscriptTurns", () => {
     expect(
       projectTranscriptTurns([assistant], null, [], [], null, null, policy)[0]?.activity,
     ).toMatchObject([
-      { title: "Read 1 file", entries: [{ part: { id: "first-read" } }] },
-      { title: "Read 1 file", entries: [{ part: { id: "second-read" } }] },
+      { title: "读取 1 个文件", entries: [{ part: { id: "first-read" } }] },
+      { title: "读取 1 个文件", entries: [{ part: { id: "second-read" } }] },
     ]);
   });
 
@@ -749,8 +749,8 @@ describe("projectTranscriptTurns", () => {
       projectTranscriptTurns([assistant], null, [], [], null, null, policy)[0]?.activity,
     ).toMatchObject([
       { categories: ["read"] },
-      { title: "Delegating 'Inspect one'", categories: ["delegation"], entries: [{}] },
-      { title: "Delegating 'Inspect two'", categories: ["delegation"], entries: [{}] },
+      { title: "正在委派 'Inspect one'", categories: ["delegation"], entries: [{}] },
+      { title: "正在委派 'Inspect two'", categories: ["delegation"], entries: [{}] },
       { categories: ["code-search"] },
     ]);
   });
@@ -1061,7 +1061,7 @@ describe("projectTranscriptTurns", () => {
       {
         id: "reasoning",
         title: "Tracing authentication failures",
-        currentAction: "Reading file 'auth.ts' and 1 more",
+        currentAction: "正在读取文件 'auth.ts'，另有 1 个",
         status: "running",
         defaultOpen: true,
         detailsDefaultOpen: false,
@@ -1090,7 +1090,7 @@ describe("projectTranscriptTurns", () => {
 
     const group = row([assistant], assistant.id)?.activity[0];
     expect(group).toMatchObject({
-      title: "Running 'bun run install:nightly:mac'",
+      title: "正在运行 'bun run install:nightly:mac'",
       status: "running",
     });
     expect(group?.currentAction).toBeUndefined();
@@ -1487,7 +1487,7 @@ describe("projectTranscriptTurns", () => {
     expect(projectTranscriptTurns([compaction])[0]).toMatchObject({
       kind: "compaction",
       status: "completed",
-      activity: [{ kind: "compaction", title: "Compacting context" }],
+      activity: [{ kind: "compaction", title: "正在压缩上下文" }],
     });
   });
 
@@ -1634,7 +1634,7 @@ describe("projectTranscriptTurns", () => {
     expect(rows[0]?.activity).toEqual([]);
     expect(rows[1]?.activity.at(-1)).toMatchObject({
       kind: "boundary",
-      title: "Retrying response, attempt 2",
+      title: "正在重试响应，第 2 次",
       status: "running",
     });
   });
@@ -1659,7 +1659,7 @@ describe("projectTranscriptTurns", () => {
       activity: [
         {
           kind: "boundary",
-          title: "Retrying response, attempt 2",
+          title: "正在重试响应，第 2 次",
           status: "running",
         },
       ],
@@ -1688,7 +1688,7 @@ describe("projectTranscriptTurns", () => {
     expect(rows[0]).toMatchObject({
       id: "interrupted",
       status: "interrupted",
-      activity: [expect.objectContaining({ title: "Response interrupted" })],
+      activity: [expect.objectContaining({ title: "响应已中断" })],
     });
     expect(rows[1]).toMatchObject({ id: "recovered", status: "completed" });
   });
@@ -1707,12 +1707,12 @@ describe("projectTranscriptTurns", () => {
       activity: [
         {
           kind: "boundary",
-          title: "Response interrupted",
+          title: "响应已中断",
           status: "interrupted",
           entries: [
             {
               part: {
-                text: "The active step stopped before a response was completed.",
+                text: "活动步骤在响应完成前已停止。",
               },
             },
           ],
@@ -1757,7 +1757,7 @@ describe("projectTranscriptTurns", () => {
 
     expect(projected).toMatchObject({
       status: "failed",
-      activity: [{ kind: "boundary", title: "Response failed", status: "failed" }],
+      activity: [{ kind: "boundary", title: "响应失败", status: "failed" }],
     });
   });
 
@@ -2386,7 +2386,7 @@ describe("projectTranscriptTurns", () => {
     expect(failed.rows[0]).not.toBe(running.rows[0]);
     expect(failed.rows[0]?.turn).toMatchObject({
       status: "failed",
-      activity: [{ title: "Response failed", status: "failed" }],
+      activity: [{ title: "响应失败", status: "failed" }],
     });
   });
 
@@ -2410,7 +2410,7 @@ describe("projectTranscriptTurns", () => {
     expect(retrying.rows[0]).toBe(first.rows[0]);
     expect(retrying.rows[1]).not.toBe(first.rows[1]);
     expect(retrying.rows[1]?.turn.activity.at(-1)).toMatchObject({
-      title: "Retrying response, attempt 2",
+      title: "正在重试响应，第 2 次",
       status: "running",
     });
   });

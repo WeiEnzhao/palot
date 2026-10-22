@@ -74,8 +74,8 @@ export function StreamingPatchView({
       <header className="flex h-7 items-center gap-2 text-micro text-muted-foreground">
         <span className="min-w-0 flex-1 tabular-nums">
           {patchVisible
-            ? `${sections.length} ${sections.length === 1 ? "file" : "files"}`
-            : "Applied changes"}
+            ? `${sections.length} 个文件`
+            : "已应用的更改"}
         </span>
         {review && !streaming ? (
           <Button
@@ -84,11 +84,11 @@ export function StreamingPatchView({
             size="xs"
             onClick={() => setShowPatch(!patchVisible)}
           >
-            {patchVisible ? "Show applied diff" : "Show proposed changes"}
+            {patchVisible ? "显示已应用的 diff" : "显示建议的更改"}
           </Button>
         ) : null}
         <IconButton
-          label={copiedKey ? "Copied full patch" : "Copy full patch"}
+          label={copiedKey ? "已复制完整补丁" : "复制完整补丁"}
           size="icon-xs"
           onClick={() => void copy(document.text)}
         >
@@ -118,7 +118,7 @@ export function StreamingPatchView({
                     : section.file}
                 </span>
                 {section.operation !== "update" ? (
-                  <span>{section.operation === "add" ? "Added" : "Deleted"}</span>
+                  <span>{section.operation === "add" ? "已添加" : "已删除"}</span>
                 ) : null}
                 {section.additions > 0 || section.deletions > 0 ? (
                   <>
@@ -132,17 +132,17 @@ export function StreamingPatchView({
               ) : (
                 <div className="border-t px-3 py-2 text-micro text-muted-foreground">
                   {section.operation === "delete"
-                    ? "File deleted"
+                    ? "文件已删除"
                     : streaming
-                      ? "Waiting for changes…"
-                      : "No changed lines"}
+                      ? "等待更改中…"
+                      : "无更改行"}
                 </div>
               )}
             </section>
           ))
         ) : (
           <div className="text-micro text-muted-foreground">
-            {streaming ? "Preparing changes…" : "No file changes in this patch"}
+            {streaming ? "正在准备更改…" : "此补丁无文件更改"}
           </div>
         )
       ) : (
@@ -260,7 +260,7 @@ const PatchLines = memo(function PatchLines({ section }: { section: PatchSection
       <div
         ref={viewportRef}
         role="region"
-        aria-label={`Proposed changes for ${section.file}`}
+        aria-label={`${section.file} 的建议更改`}
         tabIndex={0}
         className="palot-native-scrollbar relative overflow-auto overscroll-contain border-t bg-(--code-background) font-mono text-diff outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring"
         style={{
@@ -346,9 +346,9 @@ const PatchLines = memo(function PatchLines({ section }: { section: PatchSection
                     }}
                     title={
                       line.kind === "addition"
-                        ? "Added line"
+                        ? "已添加行"
                         : line.kind === "deletion"
-                          ? "Removed line"
+                          ? "已删除行"
                           : undefined
                     }
                   >
@@ -381,7 +381,7 @@ const PatchLines = memo(function PatchLines({ section }: { section: PatchSection
             }}
           >
             <ArrowDown data-icon="inline-start" aria-hidden="true" />
-            Follow changes
+            跟随更改
           </Button>
         </div>
       ) : null}

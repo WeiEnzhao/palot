@@ -80,9 +80,9 @@ describe("process footer", () => {
     expect(retry).toHaveBeenCalledOnce();
   });
   it("labels command, terminal, and mixed counts", () => {
-    expect(processCountLabel(1, 0)).toBe("1 command");
-    expect(processCountLabel(0, 2)).toBe("2 terminals");
-    expect(processCountLabel(1, 1)).toBe("2 processes");
+    expect(processCountLabel(1, 0)).toBe("1 个命令");
+    expect(processCountLabel(0, 2)).toBe("2 个终端");
+    expect(processCountLabel(1, 1)).toBe("2 个进程");
   });
 
   it("does not infer terminal busyness or command success from missing process metadata", () => {
@@ -93,7 +93,7 @@ describe("process footer", () => {
         status: "running",
         foregroundProcess: null,
       } as SessionTerminal),
-    ).toBe("Terminal open");
+    ).toBe("终端已打开");
     expect(
       processStatus({
         kind: "terminal",
@@ -101,10 +101,10 @@ describe("process footer", () => {
         status: "running",
         foregroundProcess: "vim",
       } as SessionTerminal),
-    ).toBe("Foreground: vim");
+    ).toBe("前台：vim");
     expect(
       processStatus({ kind: "command", active: false, status: "running" } as SessionCommand),
-    ).toContain("final status unavailable");
+    ).toContain("最终状态不可用");
     expect(
       processStatus({
         kind: "command",
@@ -112,7 +112,7 @@ describe("process footer", () => {
         status: "exited",
         exit: 1,
       } as SessionCommand),
-    ).toBe("Exited · code 1");
+    ).toBe("已退出 · 退出码 1");
   });
 
   it("opens a command in the workbench with native identity and restores trigger focus", async () => {
@@ -143,7 +143,7 @@ describe("process footer", () => {
         sessionIDs={new Set(["root"])}
       />,
     );
-    const trigger = screen.getByRole("button", { name: "命令和终端：1 command" });
+    const trigger = screen.getByRole("button", { name: "命令和终端：1 个命令" });
     fireEvent.click(trigger);
     expect(await screen.findByRole("region", { name: "运行中的命令" })).toBeTruthy();
     expect(screen.getByText("1m 5s")).toBeTruthy();
@@ -182,7 +182,7 @@ describe("process footer", () => {
         sessionIDs={new Set(["parent", "child"])}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "命令和终端：1 terminal" }));
+    fireEvent.click(screen.getByRole("button", { name: "命令和终端：1 个终端" }));
     expect(await screen.findByRole("region", { name: "终端" })).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: /Dev server.*Build UI/ }));
     expect(mocks.openTab).toHaveBeenLastCalledWith(

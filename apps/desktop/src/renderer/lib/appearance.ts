@@ -31,6 +31,14 @@ export interface ResolvedAppearance {
 const THEME_STYLE_ID = "palot-theme";
 let appearanceRevision = 0;
 
+/**
+ * The macOS system blue (#007aff) only reaches 3.7:1 on white and drops to
+ * 2.6:1 once a wallpaper tint shows through the panel, so body links and info
+ * icons fall under the 4.5:1 text floor. This deeper blue keeps the same hue
+ * and clears 4.5:1 on both surfaces.
+ */
+const LIGHT_ACCESSIBLE_BLUE = "oklch(0.48 0.16 254)";
+
 function contrastColor(
   color: string,
   background: string,
@@ -212,7 +220,9 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--control-selected-inactive": treatment.interaction.selectedInactive,
     "--disabled-foreground": treatment.interaction.disabledForeground,
     "--placeholder-foreground": treatment.interaction.placeholderForeground,
-    "--link-foreground": treatment.interaction.linkForeground,
+    "--link-foreground": lightScheme
+      ? LIGHT_ACCESSIBLE_BLUE
+      : treatment.interaction.linkForeground,
     "--destructive": palette.destructive,
     "--border": lightScheme
       ? foregroundAlpha(9 + contrastRatio * 15)
@@ -223,7 +233,7 @@ export function applyAppearanceToRoot(resolved: ResolvedAppearance): void {
     "--ring": palette.ring,
     "--success": palette.success,
     "--warning": palette.warning,
-    "--info": palette.info,
+    "--info": lightScheme ? LIGHT_ACCESSIBLE_BLUE : palette.info,
     "--sidebar": treatment.sidebar.opaqueSurface,
     "--sidebar-foreground": treatment.text.sidebarPrimary,
     "--sidebar-secondary-foreground": treatment.text.sidebarSecondary,

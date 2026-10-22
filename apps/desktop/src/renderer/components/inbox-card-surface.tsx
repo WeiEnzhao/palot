@@ -49,14 +49,14 @@ export function InboxCardSurface({
   const visualState = inboxSessionState(item, unread);
   const status = item.attention
     ? item.attentionCount === 1
-      ? "Needs input"
-      : `Needs input · ${item.attentionCount}`
+      ? "需要输入"
+      : `需要输入 · ${item.attentionCount}`
     : item.running
-      ? "Working"
+      ? "工作中"
       : item.failed
-        ? "Failed"
+        ? "已失败"
         : visualState === "unread"
-          ? `New, ${formatRelativeTime(sessionActivityAt(item.session))}`
+          ? `新, ${formatRelativeTime(sessionActivityAt(item.session))}`
           : formatRelativeTime(sessionActivityAt(item.session));
   return (
     <div
@@ -73,7 +73,7 @@ export function InboxCardSurface({
       {hint}
       <button
         type="button"
-        aria-label={`Open ${item.session.title ?? "Untitled task"}, ${item.projectName}, ${status}${ownerLabel ? ` · ${ownerLabel}` : ""}`}
+        aria-label={`打开 ${item.session.title ?? "未命名任务"}, ${item.projectName}, ${status}${ownerLabel ? ` · ${ownerLabel}` : ""}`}
         {...buttonProps}
         className={cn(
           "absolute inset-0 z-0 rounded-md outline-none active:bg-(--palot-sidebar-selected) focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sidebar-ring",
@@ -90,7 +90,7 @@ export function InboxCardSurface({
           <div className="flex min-w-0 items-center gap-2 text-compact transition-[padding] group-hover/inbox-card:pr-14">
             {titleEditor ?? (
               <div className="min-w-0 flex-1 truncate font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
-                {item.session.title ?? "Untitled task"}
+                {item.session.title ?? "未命名任务"}
               </div>
             )}
             {item.attention || item.failed || item.running ? (
@@ -132,7 +132,7 @@ export function InboxCardSurface({
             <div className="mt-1 flex min-w-0 items-center gap-1.5" data-inbox-location>
           {titleEditor ?? (
             <div className="min-w-0 flex-1 truncate text-compact font-normal text-sidebar-foreground/90 transition-colors group-hover/inbox-card:text-sidebar-foreground/95">
-              {item.session.title ?? "Untitled task"}
+              {item.session.title ?? "未命名任务"}
             </div>
           )}
           {pullRequest ? (
@@ -161,10 +161,10 @@ function WorkingStatus({ startedAt }: { startedAt: number | null }) {
     <span
       data-inbox-status
       className="flex shrink-0 items-center gap-1 tabular-nums transition-opacity group-hover/inbox-card:opacity-0 group-has-[:focus-visible]/inbox-card:opacity-0"
-      title={duration ? `Working for ${duration}` : "Working"}
+      title={duration ? `已工作 ${duration}` : "工作中"}
     >
       <PulseDot className="size-3 [&>span]:size-1" aria-hidden="true" />
-      {duration ?? "Working"}
+      {duration ?? "工作中"}
     </span>
   );
 }
@@ -173,11 +173,11 @@ export function InboxStateGlyph({ state }: { state: InboxSessionState }) {
   if (!state) return null;
   const label =
     state === "attention"
-      ? "Task needs attention"
+      ? "任务需要关注"
       : state === "failed"
-        ? "Task failed"
+        ? "任务已失败"
         : state === "running"
-          ? "Task is running"
+          ? "任务正在运行"
           : "未读任务动态";
   return (
     <span

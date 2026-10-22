@@ -61,28 +61,28 @@ afterEach(() => {
 describe("PlanCard", () => {
   it("is hidden without a plan, or when the latest call cleared it", () => {
     const view = render(<PlanCard sessionID="session" messages={[]} />);
-    expect(screen.queryByRole("region", { name: "Plan" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "计划" })).toBeNull();
     view.rerender(<PlanCard sessionID="session" messages={[planCall(ACTIVE), planCall([])]} />);
-    expect(screen.queryByRole("region", { name: "Plan" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "计划" })).toBeNull();
   });
 
   it("counts done items, excludes cancelled ones, and lists every status", () => {
     render(<PlanCard sessionID="session" messages={[planCall(ACTIVE)]} />);
-    const card = within(screen.getByRole("region", { name: "Plan" }));
-    const trigger = card.getByRole("button", { name: /Plan · 3\/7 done/ });
+    const card = within(screen.getByRole("region", { name: "计划" }));
+    const trigger = card.getByRole("button", { name: /计划 · 3\/7 已完成/ });
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(card.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("43");
 
     const items = card.getAllByRole("listitem");
     expect(items.map((item) => item.textContent)).toEqual([
-      "Read the reducerDone",
-      "Map compaction eventsDone",
-      "Render the rowsDone",
-      "Write testsIn progress",
-      "Update E2EPending",
-      "Document the changePending",
-      "Drop the legacy pathCancelled",
-      "Run checksPending",
+      "Read the reducer已完成",
+      "Map compaction events已完成",
+      "Render the rows已完成",
+      "Write tests进行中",
+      "Update E2E待处理",
+      "Document the change待处理",
+      "Drop the legacy path已取消",
+      "Run checks待处理",
     ]);
   });
 
@@ -95,7 +95,7 @@ describe("PlanCard", () => {
         messages={[planCall([["Old step", "pending"]]), planCall(ACTIVE), streaming]}
       />,
     );
-    expect(screen.getByRole("button", { name: /Plan · 3\/7 done/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /计划 · 3\/7 已完成/ })).toBeTruthy();
     expect(screen.queryByText("Old step")).toBeNull();
   });
 
@@ -106,7 +106,7 @@ describe("PlanCard", () => {
       status === "cancelled" ? status : "completed",
     ]);
     const view = render(<PlanCard sessionID="session" messages={[planCall(ACTIVE)]} />);
-    const trigger = () => screen.getByRole("button", { name: /^Plan · / });
+    const trigger = () => screen.getByRole("button", { name: /^计划 · / });
 
     await user.click(trigger());
     expect(trigger().getAttribute("aria-expanded")).toBe("false");
@@ -121,7 +121,7 @@ describe("PlanCard", () => {
     expect(trigger().getAttribute("aria-expanded")).toBe("true");
     remounted.rerender(<PlanCard sessionID="session" messages={[planCall(done)]} />);
     expect(trigger().getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByRole("button", { name: /Plan · 7\/7 done/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /计划 · 7\/7 已完成/ })).toBeTruthy();
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
 
     remounted.unmount();

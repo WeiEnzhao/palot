@@ -31,7 +31,7 @@ function compaction(
   return {
     id: "compaction-1",
     kind: "compaction",
-    title: "Compacting context",
+    title: "正在压缩上下文",
     status,
     entries: [{ message, part: content, index: 0 }],
   };
@@ -49,14 +49,14 @@ describe("CompactionBoundary", () => {
         group={compaction({ status: "completed", reason: "auto" }, "completed")}
       />,
     );
-    expect(screen.getByText("Context automatically compacted")).toBeTruthy();
+    expect(screen.getByText("上下文已自动压缩")).toBeTruthy();
     view.rerender(
       <CompactionBoundary
         group={compaction({ status: "completed", reason: "manual" }, "completed")}
       />,
     );
-    expect(screen.getByText("Context compacted")).toBeTruthy();
-    expect(screen.queryByText("Context automatically compacted")).toBeNull();
+    expect(screen.getByText("上下文已压缩")).toBeTruthy();
+    expect(screen.queryByText("上下文已自动压缩")).toBeNull();
   });
 
   it("adds a duration hint after ten seconds of compacting", () => {
@@ -71,16 +71,16 @@ describe("CompactionBoundary", () => {
       />,
     );
 
-    expect(screen.getByText("Compacting context")).toBeTruthy();
-    expect(screen.queryByText(/This can take a few minutes/)).toBeNull();
+    expect(screen.getByText("正在压缩上下文")).toBeTruthy();
+    expect(screen.queryByText(/这可能需要几分钟/)).toBeNull();
     act(() => {
       vi.advanceTimersByTime(COMPACTION_SLOW_HINT_MS - 4_001);
     });
-    expect(screen.queryByText(/This can take a few minutes/)).toBeNull();
+    expect(screen.queryByText(/这可能需要几分钟/)).toBeNull();
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(screen.getByText("· This can take a few minutes")).toBeTruthy();
+    expect(screen.getByText("· 这可能需要几分钟")).toBeTruthy();
   });
 
   it("shows the hint immediately when an already long compaction hydrates", () => {
@@ -91,7 +91,7 @@ describe("CompactionBoundary", () => {
         group={compaction({ status: "running", time: { created: Date.now() - 60_000 } }, "running")}
       />,
     );
-    expect(screen.getByText("· This can take a few minutes")).toBeTruthy();
+    expect(screen.getByText("· 这可能需要几分钟")).toBeTruthy();
   });
 
   it("folds approximate before and after context tokens into the detail", async () => {
@@ -120,10 +120,10 @@ describe("CompactionBoundary", () => {
     expect(row?.getAttribute("data-palot-compaction-reason")).toBe("auto");
     expect(boundary.queryByText(/→/)).toBeNull();
 
-    await user.click(boundary.getByRole("button", { name: "Context automatically compacted" }));
+    await user.click(boundary.getByRole("button", { name: "上下文已自动压缩" }));
 
     // Without measured steps around it, the row estimates from the compaction request.
-    expect(boundary.getByText("Context: about 120k → 2.1k tokens")).toBeTruthy();
+    expect(boundary.getByText("上下文：约 120k → 2.1k 个 token")).toBeTruthy();
   });
 
   it("prefers the measured context windows around the compaction", async () => {
@@ -145,8 +145,8 @@ describe("CompactionBoundary", () => {
       </CompactionTranscriptContext.Provider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "Context compacted" }));
-    expect(screen.getByText("Context: 152k → 18k tokens")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "上下文已压缩" }));
+    expect(screen.getByText("上下文：152k → 18k 个 token")).toBeTruthy();
   });
 
   it("offers retry only for the transcript's retryable failure", async () => {
@@ -159,14 +159,14 @@ describe("CompactionBoundary", () => {
       </CompactionTranscriptContext.Provider>
     );
     const view = render(renderWith(null));
-    expect(screen.getByRole("button", { name: "Context compaction failed" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Retry compaction" })).toBeNull();
+    expect(screen.getByRole("button", { name: "上下文压缩失败" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "重试压缩" })).toBeNull();
 
     view.rerender(renderWith({ retryableCompactionID: "older", retry }));
-    expect(screen.queryByRole("button", { name: "Retry compaction" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "重试压缩" })).toBeNull();
 
     view.rerender(renderWith({ retryableCompactionID: "compaction-1", retry }));
-    await user.click(screen.getByRole("button", { name: "Retry compaction" }));
+    await user.click(screen.getByRole("button", { name: "重试压缩" }));
     expect(retry).toHaveBeenCalledTimes(1);
   });
 });

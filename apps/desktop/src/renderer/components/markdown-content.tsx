@@ -471,7 +471,7 @@ function MarkdownFileLink({
           onOpen(reference);
         }
       }}
-      className="inline-flex max-w-full cursor-pointer items-center gap-1 text-info underline-offset-4 outline-none hover:underline focus-visible:rounded-[2px] focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex max-w-full cursor-pointer items-center gap-1 text-[var(--link-foreground)] underline-offset-4 outline-none hover:underline focus-visible:rounded-[2px] focus-visible:ring-2 focus-visible:ring-ring"
     >
       {icon}
       <span className="min-w-0 truncate">{children}</span>
@@ -631,7 +631,7 @@ function WorkspaceMarkdownImage({
       title={image.path}
       aria-label={`Open image ${image.path}`}
       onClick={(event) => openFile({ path: image.path }, event)}
-      className="cursor-pointer text-info underline-offset-4 outline-none hover:underline focus-visible:rounded-[2px] focus-visible:ring-2 focus-visible:ring-ring"
+      className="cursor-pointer text-[var(--link-foreground)] underline-offset-4 outline-none hover:underline focus-visible:rounded-[2px] focus-visible:ring-2 focus-visible:ring-ring"
     >
       {label}
     </button>
@@ -718,7 +718,7 @@ function MarkdownSessionLink({
   return (
     <button
       type="button"
-      className="cursor-pointer text-info underline-offset-4 outline-none hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+      className="cursor-pointer text-[var(--link-foreground)] underline-offset-4 outline-none hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
       onClick={() => openSession(sessionID)}
     >
       {children}

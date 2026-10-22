@@ -3,6 +3,7 @@ import {
   cancelTranscriptScrollFrame,
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
+  pinnedTranscriptScrollTop,
   readTranscriptScrollUpdate,
   scheduleTranscriptScrollFrame,
   snapToDevicePixel,
@@ -225,5 +226,45 @@ describe("transcript bottom lock", () => {
     expect(callback).toHaveBeenCalledOnce();
     expect(frame.current).toBeNull();
     vi.unstubAllGlobals();
+  });
+});
+
+describe("streaming live edge pin", () => {
+  it("re-pins growth that the measured follow has not covered yet", () => {
+    // The reply grew by 32px after the commit: the browser is about to paint the
+    // transcript lifted by those lines, so the pin has to correct before paint.
+    expect(
+      pinnedTranscriptScrollTop({
+        scrollTop: 26529.5,
+        scrollHeight: 27172,
+        clientHeight: 578,
+      }),
+    ).toBe(26594);
+  });
+
+  it("leaves the viewport alone when it is already flush", () => {
+    expect(
+      pinnedTranscriptScrollTop({ scrollTop: 26594, scrollHeight: 27172, clientHeight: 578 }),
+    ).toBeNull();
+    expect(
+      pinnedTranscriptScrollTop({ scrollTop: 26593.7, scrollHeight: 27172, clientHeight: 578 }),
+    ).toBeNull();
+  });
+
+  it("does not drag the reader down a real layout jump", () => {
+    // A replaced message can move the bottom by more than a viewport; that is the
+    // measured follow's business, not the pin's.
+    expect(
+      pinnedTranscriptScrollTop(
+        { scrollTop: 1000, scrollHeight: 4000, clientHeight: 578 },
+        { maxDistance: 578 },
+      ),
+    ).toBeNull();
+    expect(
+      pinnedTranscriptScrollTop(
+        { scrollTop: 3000, scrollHeight: 4000, clientHeight: 578 },
+        { maxDistance: 578 },
+      ),
+    ).toBe(3422);
   });
 });

@@ -62,9 +62,9 @@ export function LoadingButton({
   );
 }
 
-export function LiveActivity({ label = "Working" }: { label?: string }) {
+export function LiveActivity({ label = "工作中" }: { label?: string }) {
   return (
-    <Badge variant="outline" role="status" aria-label={label || "Working"}>
+    <Badge variant="outline" role="status" aria-label={label || "工作中"}>
       <Spinner aria-hidden="true" />
       {label || null}
     </Badge>

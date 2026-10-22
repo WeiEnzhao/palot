@@ -205,7 +205,7 @@ export function SubagentLaunch({
               后台
             </span>
           ) : null}
-          <span className="flex shrink-0 items-center gap-1.5 tabular-nums text-muted-foreground/70">
+          <span className="flex shrink-0 items-center gap-1.5 tabular-nums text-foreground/70">
             {needsInput ? (
               <CircleHelp className="size-3.5 text-warning" aria-hidden="true" />
             ) : status.running ? (
@@ -304,7 +304,7 @@ export function SubagentResponse({ group }: { group: TurnActivityGroup }) {
           </span>
           <span className="text-muted-foreground"> · {description}</span>
         </span>
-        <span className="flex shrink-0 items-center gap-1.5 tabular-nums text-muted-foreground/70">
+        <span className="flex shrink-0 items-center gap-1.5 tabular-nums text-foreground/70">
           <ElapsedTime
             startedAt={state?.startedAt ?? null}
             completedAt={state?.completedAt ?? null}
@@ -630,7 +630,7 @@ function SubagentWorkRow({
           {needsInput ? "需要输入" : item.background ? "后台" : status.label}
         </span>
       </span>
-      <span className="flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground/70">
+      <span className="flex shrink-0 items-center gap-1 tabular-nums text-foreground/70">
         {needsInput ? (
           <CircleHelp className="size-3.5 text-warning" aria-hidden="true" />
         ) : (

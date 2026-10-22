@@ -624,8 +624,8 @@ function WorkbenchTabItem({
           {tab.kind === "changes" || tab.kind === "file-diff" ? (
             <span
               className="size-1.5 shrink-0 rounded-full bg-info"
-              title={tab.resource.mode === "branch" ? "Branch change" : "Working tree change"}
-              aria-label={tab.resource.mode === "branch" ? "Branch change" : "Working tree change"}
+              title={tab.resource.mode === "branch" ? "分支变更" : "工作树变更"}
+              aria-label={tab.resource.mode === "branch" ? "分支变更" : "工作树变更"}
             />
           ) : null}
         </TabsTrigger>

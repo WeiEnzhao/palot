@@ -21,9 +21,9 @@ describe("StreamingPatchView", () => {
     result.rerender(<StreamingPatchView document={document(full)} streaming />);
 
     expect(screen.getByText("+1")).toBeTruthy();
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Copy full patch" })));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "复制完整补丁" })));
     expect(writeClipboardText).toHaveBeenCalledWith(full);
-    expect(screen.getByRole("button", { name: "Copied full patch" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "已复制完整补丁" })).toBeTruthy();
 
     act(() => vi.advanceTimersByTime(120));
     expect(screen.getByText("+503")).toBeTruthy();
@@ -36,7 +36,7 @@ describe("StreamingPatchView", () => {
     const final = document("*** Begin Patch\n*** Add File: example.ts\n+last\n*** End Patch");
     const result = render(<StreamingPatchView document={first} streaming />);
     result.rerender(<StreamingPatchView document={final} streaming />);
-    expect(screen.getByText("Preparing changes…")).toBeTruthy();
+    expect(screen.getByText("正在准备更改…")).toBeTruthy();
 
     result.rerender(<StreamingPatchView document={final} streaming={false} />);
     expect(screen.getByText("example.ts")).toBeTruthy();
@@ -46,21 +46,21 @@ describe("StreamingPatchView", () => {
   it("keeps a live reader in the patch when completed review arrives", () => {
     const patch = document("*** Begin Patch\n*** Add File: example.ts\n+new\n*** End Patch");
     const result = render(<StreamingPatchView document={patch} streaming />);
-    fireEvent.wheel(screen.getByRole("region", { name: "Proposed changes for example.ts" }), {
+    fireEvent.wheel(screen.getByRole("region", { name: "example.ts 的建议更改" }), {
       deltaY: -100,
     });
-    expect(screen.getByRole("button", { name: "Follow changes" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "跟随更改" })).toBeTruthy();
 
     result.rerender(
       <StreamingPatchView document={patch} streaming={false} review={<div>Completed diff</div>} />,
     );
-    expect(screen.getByRole("region", { name: "Proposed changes for example.ts" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "example.ts 的建议更改" })).toBeTruthy();
     expect(screen.queryByText("Completed diff")).toBeNull();
-    expect(screen.getByRole("button", { name: "Follow changes" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Show applied diff" }));
+    expect(screen.getByRole("button", { name: "跟随更改" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "显示已应用的 diff" }));
     expect(screen.getByText("Completed diff")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Show proposed changes" }));
-    expect(screen.getByRole("region", { name: "Proposed changes for example.ts" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "显示建议的更改" }));
+    expect(screen.getByRole("region", { name: "example.ts 的建议更改" })).toBeTruthy();
   });
 
   it("opens historical patches on the completed diff with a structured deletion proposal available", () => {
@@ -72,10 +72,10 @@ describe("StreamingPatchView", () => {
       />,
     );
     expect(screen.getByText("Completed diff")).toBeTruthy();
-    expect(screen.queryByText("File deleted")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Show proposed changes" }));
+    expect(screen.queryByText("文件已删除")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "显示建议的更改" }));
     expect(screen.getByText("example.ts")).toBeTruthy();
-    expect(screen.getByText("File deleted")).toBeTruthy();
+    expect(screen.getByText("文件已删除")).toBeTruthy();
   });
 
   it("gives each file its own section and independent follow state", () => {
@@ -94,17 +94,17 @@ describe("StreamingPatchView", () => {
         streaming
       />,
     );
-    expect(screen.getByText("2 files")).toBeTruthy();
+    expect(screen.getByText("2 个文件")).toBeTruthy();
     expect(screen.getByText("alpha.ts")).toBeTruthy();
     expect(screen.getByText("beta.py")).toBeTruthy();
-    const alpha = screen.getByRole("region", { name: "Proposed changes for alpha.ts" });
-    const beta = screen.getByRole("region", { name: "Proposed changes for beta.py" });
+    const alpha = screen.getByRole("region", { name: "alpha.ts 的建议更改" });
+    const beta = screen.getByRole("region", { name: "beta.py 的建议更改" });
     fireEvent.wheel(alpha, { deltaY: -100 });
     expect(
-      within(alpha.parentElement!).getByRole("button", { name: "Follow changes" }),
+      within(alpha.parentElement!).getByRole("button", { name: "跟随更改" }),
     ).toBeTruthy();
     expect(
-      within(beta.parentElement!).queryByRole("button", { name: "Follow changes" }),
+      within(beta.parentElement!).queryByRole("button", { name: "跟随更改" }),
     ).toBeNull();
   });
 });

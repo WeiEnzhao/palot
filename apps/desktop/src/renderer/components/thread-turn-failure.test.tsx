@@ -56,7 +56,7 @@ function renderReloaded(execution: SessionExecutionState | null = null) {
 
 it("keeps a failed turn's error after a reload hydrates the transcript", () => {
   renderReloaded();
-  const card = screen.getByRole("alert", { name: "Response failed" });
+  const card = screen.getByRole("alert", { name: "响应失败" });
   expect(card.textContent).toContain("Rate limited by provider");
 });
 
@@ -67,5 +67,5 @@ it("shows one failure card when the live execution error is still known", () => 
     completedAt: 4_000,
     error: { type: "ProviderError", message: "Rate limited by provider" },
   });
-  expect(screen.getAllByRole("alert", { name: "Response failed" })).toHaveLength(1);
+  expect(screen.getAllByRole("alert", { name: "响应失败" })).toHaveLength(1);
 });

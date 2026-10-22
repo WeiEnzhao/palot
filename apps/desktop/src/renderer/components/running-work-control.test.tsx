@@ -157,7 +157,7 @@ describe("running work", () => {
       terminalsSupported: true,
     });
     setup([]);
-    fireEvent.click(screen.getByRole("button", { name: "运行中的工作：1 terminal" }));
+    fireEvent.click(screen.getByRole("button", { name: "运行中的工作：1 个终端" }));
     expect(await screen.findByRole("region", { name: "最近完成" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /停止 / })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Dev server/ }));

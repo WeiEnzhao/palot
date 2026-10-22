@@ -55,7 +55,7 @@ describe("ActivityGroup", () => {
       id: "adjacent",
       kind: "tools",
       status: "completed",
-      title: "Read files",
+      title: "读取文件",
       entries: parts.slice(0, 2).map((part, index) => ({ message: source, part, index })),
     };
     const store = createStore();
@@ -65,7 +65,7 @@ describe("ActivityGroup", () => {
       </Provider>
     );
     const view = render(renderGroup(group));
-    const trigger = screen.getByRole("button", { name: "Read 2 files" });
+    const trigger = screen.getByRole("button", { name: "读取 2 个文件" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(trigger);
     expect(screen.getByRole("button", { name: /one.ts/ })).toBeTruthy();
@@ -77,7 +77,7 @@ describe("ActivityGroup", () => {
         entries: parts.map((part, index) => ({ message: source, part, index })),
       }),
     );
-    expect(screen.getByRole("button", { name: "Read 3 files" }).getAttribute("aria-expanded")).toBe(
+    expect(screen.getByRole("button", { name: "读取 3 个文件" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
     view.unmount();
@@ -117,7 +117,7 @@ describe("ActivityGroup", () => {
     render(<ActivityGroup group={group} live={false} defaultOpen sessionID="background-fixture" />);
 
     expect(screen.queryByRole("status", { name: "python sample.py" })).toBeNull();
-    await user.click(screen.getByRole("button", { name: /Ran python sample\.py/ }));
+    await user.click(screen.getByRole("button", { name: /已执行 python sample\.py/ }));
     expect(screen.getByText("Finished sample")).toBeTruthy();
   });
 
@@ -125,7 +125,7 @@ describe("ActivityGroup", () => {
     const part: PalotMessageContent = {
       type: "timeline-boundary",
       id: "restart",
-      name: "Continuing after restart",
+      name: "重启后继续",
       data: { kind: "synthetic", tone: "neutral" },
     };
     const source = message([part]);
@@ -135,15 +135,15 @@ describe("ActivityGroup", () => {
         group={{
           id: "restart",
           kind: "boundary",
-          title: "Continuing after restart",
+          title: "重启后继续",
           status: "completed",
           entries: [{ message: source, part, index: 0 }],
         }}
       />,
     );
 
-    expect(screen.getByRole("status", { name: "Continuing after restart" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Continuing after restart" })).toBeNull();
+    expect(screen.getByRole("status", { name: "重启后继续" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "重启后继续" })).toBeNull();
     expect(screen.queryByText("The server restarted while you were working.")).toBeNull();
   });
 
@@ -153,7 +153,7 @@ describe("ActivityGroup", () => {
     const retry: PalotMessageContent = {
       type: "timeline-boundary",
       id: "retry",
-      name: "Retrying response, attempt 2",
+      name: "正在重试响应，第 2 次",
       text: "Rate limited",
       status: "running",
       data: { kind: "retry", tone: "progress", at: 4_000 },
@@ -171,7 +171,7 @@ describe("ActivityGroup", () => {
       />,
     );
 
-    expect(screen.getByRole("status", { name: "Retrying response, attempt 2 in 3s" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "正在重试响应，第 2 次，3 秒后重试" })).toBeTruthy();
     expect(screen.getByText("Rate limited")).toBeTruthy();
 
     result.rerender(
@@ -179,7 +179,7 @@ describe("ActivityGroup", () => {
         group={{
           id: "error",
           kind: "boundary",
-          title: "Response failed",
+          title: "响应失败",
           status: "failed",
           entries: [
             {
@@ -187,7 +187,7 @@ describe("ActivityGroup", () => {
               index: 0,
               part: {
                 type: "timeline-boundary",
-                name: "Response failed",
+                name: "响应失败",
                 text: "Provider unavailable",
                 status: "failed",
                 data: { kind: "error", tone: "error" },
@@ -198,7 +198,7 @@ describe("ActivityGroup", () => {
       />,
     );
 
-    expect(screen.getByRole("alert", { name: "Response failed" })).toBeTruthy();
+    expect(screen.getByRole("alert", { name: "响应失败" })).toBeTruthy();
     vi.useRealTimers();
   });
 
@@ -206,8 +206,8 @@ describe("ActivityGroup", () => {
     const interrupted: PalotMessageContent = {
       type: "timeline-boundary",
       id: "interrupted",
-      name: "Response interrupted",
-      text: "The active step stopped before a response was completed.",
+      name: "响应已中断",
+      text: "当前步骤在响应完成前被停止。",
       status: "interrupted",
       data: { kind: "interrupted", tone: "neutral" },
     };
@@ -225,10 +225,10 @@ describe("ActivityGroup", () => {
       />,
     );
 
-    const status = screen.getByRole("separator", { name: "Response interrupted" });
+    const status = screen.getByRole("separator", { name: "响应已中断" });
     expect(status.className).toContain("rounded-lg");
     expect(
-      screen.getByText("The active step stopped before a response was completed."),
+      screen.getByText("当前步骤在响应完成前被停止。"),
     ).toBeTruthy();
   });
 
@@ -346,7 +346,7 @@ describe("ActivityGroup", () => {
     expect(screen.getByText("Designing shared database services")).toBeTruthy();
     expect(screen.getAllByText("Planning middleware layering")).toHaveLength(2);
     // Every step reads as one train of thought in a single scroll region.
-    const steps = screen.getByLabelText("Reasoning steps");
+    const steps = screen.getByLabelText("推理步骤");
     expect(within(steps).getByText("Evaluating database options")).toBeTruthy();
     expect(within(steps).getByText("Designing shared database services")).toBeTruthy();
     expect(within(steps).getByText("Planning middleware layering")).toBeTruthy();
@@ -374,7 +374,7 @@ describe("ActivityGroup", () => {
         group={{
           id: "compaction-group",
           kind: "compaction",
-          title: "Compacting context",
+          title: "正在压缩上下文",
           status: "completed",
           entries: [{ message: source, part, index: 0 }],
         }}
@@ -382,7 +382,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    const trigger = boundary.getByRole("button", { name: "Context compacted" });
+    const trigger = boundary.getByRole("button", { name: "上下文已压缩" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(boundary.queryByText("Compacted summary")).toBeNull();
     expect(boundary.queryByText("Recent context preserved")).toBeNull();
@@ -391,7 +391,7 @@ describe("ActivityGroup", () => {
     expect(boundary.getByText(/^Summarizing used .*0\.001/)).toBeTruthy();
     expect(boundary.queryByText("Recent context preserved")).toBeNull();
     const recentTrigger = boundary.getByRole("button", {
-      name: "Approximately 6 tokens of recent context are kept verbatim",
+      name: "最近上下文中约 6 个 token 保留原文",
     });
     expect(recentTrigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(recentTrigger);
@@ -413,7 +413,7 @@ describe("ActivityGroup", () => {
         group={{
           id: "compaction-group",
           kind: "compaction",
-          title: "Compacting context",
+          title: "正在压缩上下文",
           status: "running",
           entries: [{ message: source, part, index: 0 }],
         }}
@@ -421,7 +421,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    const trigger = boundary.getByRole("button", { name: "Compacting context" });
+    const trigger = boundary.getByRole("button", { name: "正在压缩上下文" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(boundary.queryByText("Partial streamed summary")).toBeNull();
     await user.click(trigger);
@@ -445,7 +445,7 @@ describe("ActivityGroup", () => {
         group={{
           id: "compaction-group",
           kind: "compaction",
-          title: "Compacting context",
+          title: "正在压缩上下文",
           status: "failed",
           entries: [{ message: source, part, index: 0 }],
         }}
@@ -453,7 +453,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    const trigger = boundary.getByRole("button", { name: "Context compaction failed" });
+    const trigger = boundary.getByRole("button", { name: "上下文压缩失败" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(boundary.queryByText("Context is too large")).toBeNull();
     expect(boundary.queryByText("Partial summary")).toBeNull();
@@ -464,7 +464,7 @@ describe("ActivityGroup", () => {
     expect(boundary.queryByText("Recent context")).toBeNull();
     await user.click(
       boundary.getByRole("button", {
-        name: "Approximately 4 tokens of recent context are kept verbatim",
+        name: "最近上下文中约 4 个 token 保留原文",
       }),
     );
     expect(boundary.getByText("Recent context")).toBeTruthy();
@@ -489,7 +489,7 @@ describe("ActivityGroup", () => {
             {
               id: "compaction-group",
               kind: "compaction",
-              title: "Compacting context",
+              title: "正在压缩上下文",
               status: "completed",
               entries: [{ message: source, part, index: 0 }],
             },
@@ -511,7 +511,7 @@ describe("ActivityGroup", () => {
     );
 
     const boundary = within(result.container);
-    expect(boundary.getByRole("button", { name: "Context compacted" })).toBeTruthy();
+    expect(boundary.getByRole("button", { name: "上下文已压缩" })).toBeTruthy();
     expect(boundary.getAllByRole("button")).toHaveLength(1);
     expect(boundary.queryByText("Hydrated summary")).toBeNull();
   });
@@ -737,7 +737,7 @@ describe("TurnActivity", () => {
             {
               id: "tools",
               kind: "tools",
-              title: "Delegated work",
+              title: "派发任务",
               status: "completed",
               entries: [{ message: source, part, index: 0 }],
             },
@@ -851,7 +851,7 @@ describe("TurnActivity", () => {
             {
               id: "tools",
               kind: "tools",
-              title: "Read files",
+              title: "读取文件",
               status: "completed",
               entries: [{ message: source, part, index: 0 }],
             },
@@ -901,7 +901,7 @@ describe("TurnActivity", () => {
               {
                 id: "tools",
                 kind: "tools",
-                title: "Read files",
+                title: "读取文件",
                 status: "completed",
                 entries: [{ message: source, part, index: 0 }],
               },
@@ -931,7 +931,7 @@ describe("TurnActivity", () => {
     expect(turnTrigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(turnTrigger);
 
-    const groupTrigger = screen.getByRole("button", { name: "Read files" });
+    const groupTrigger = screen.getByRole("button", { name: "读取文件" });
     expect(groupTrigger.getAttribute("aria-expanded")).toBe("false");
     await user.click(groupTrigger);
     expect(groupTrigger.getAttribute("aria-expanded")).toBe("true");
@@ -960,7 +960,7 @@ describe("TurnActivity", () => {
           activity: parts.map((part, index) => ({
             id: part.id!,
             kind: "tools" as const,
-            title: index === 0 ? "Read files" : "Ran tests",
+            title: index === 0 ? "读取文件" : "执行了测试",
             status: "completed" as const,
             entries: [{ message: source, part, index }],
             presentation: "grouped" as const,
@@ -985,10 +985,10 @@ describe("TurnActivity", () => {
     const view = within(result.container);
     expect(view.queryByRole("button", { name: "展开所有活动" })).toBeNull();
     await user.click(view.getByRole("button", { name: "工作耗时 1s" }));
-    expect(view.getByRole("button", { name: "Read files" }).getAttribute("aria-expanded")).toBe(
+    expect(view.getByRole("button", { name: "读取文件" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
-    expect(view.getByRole("button", { name: "Ran tests" }).getAttribute("aria-expanded")).toBe(
+    expect(view.getByRole("button", { name: "执行了测试" }).getAttribute("aria-expanded")).toBe(
       "false",
     );
   });
@@ -1064,7 +1064,7 @@ describe("TurnActivity", () => {
         {
           id: "tools",
           kind: "tools" as const,
-          title: "Read files",
+          title: "读取文件",
           status: "completed" as const,
           entries: [{ message: source, part, index: 0 }],
         },

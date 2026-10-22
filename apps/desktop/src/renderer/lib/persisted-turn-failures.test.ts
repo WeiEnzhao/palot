@@ -70,7 +70,7 @@ describe("persisted turn failures", () => {
     expect(failureCards(projectTranscriptTurns(messages))).toEqual([]);
     const turns = projectTranscriptTurns(withPersistedTurnFailures(messages));
     expect(failureCards(turns)).toEqual([
-      { turn: "a1", name: "Response failed", text: "Rate limited" },
+      { turn: "a1", name: "响应失败", text: "Rate limited" },
     ]);
     expect(turns.find((turn) => turn.id === "a1")?.status).toBe("failed");
   });
@@ -94,7 +94,7 @@ describe("persisted turn failures", () => {
       execution,
     );
     expect(failureCards(reconciled)).toEqual([
-      { turn: "a1", name: "Response failed", text: "Rate limited" },
+      { turn: "a1", name: "响应失败", text: "Rate limited" },
     ]);
   });
 
@@ -109,7 +109,7 @@ describe("persisted turn failures", () => {
       ]),
     );
     expect(failureCards(turns)).toEqual([
-      { turn: "i1", name: "Response failed", text: "Invalid API key" },
+      { turn: "i1", name: "响应失败", text: "Invalid API key" },
     ]);
     expect(turns.map((turn) => turn.id)).toEqual(["u1", "a1", "u2", "i1"]);
   });

@@ -17,21 +17,21 @@ import {
 
 export function processCountLabel(commands: number, terminals: number): string {
   const count = commands + terminals;
-  const noun = commands && terminals ? "process" : terminals ? "terminal" : "command";
-  return `${count} ${noun}${count === 1 ? "" : noun === "process" ? "es" : "s"}`;
+  const noun = commands && terminals ? "个进程" : terminals ? "个终端" : "个命令";
+  return `${count} ${noun}`;
 }
 
 export function processStatus(row: SessionProcess): string {
   if (row.kind === "terminal") {
     if (!row.active)
-      return row.status === "exited" ? "Terminal exited" : "Terminal no longer listed";
-    return row.foregroundProcess ? `Foreground: ${row.foregroundProcess}` : "Terminal open";
+      return row.status === "exited" ? "终端已退出" : "终端不再列出";
+    return row.foregroundProcess ? `前台：${row.foregroundProcess}` : "终端已打开";
   }
-  if (row.active) return "Running";
-  if (row.status === "running") return "No longer listed · final status unavailable";
-  if (row.status === "timeout") return "Timed out";
-  if (row.status === "killed") return "Stopped";
-  return row.exit === undefined ? "Exited" : `Exited · code ${row.exit}`;
+  if (row.active) return "运行中";
+  if (row.status === "running") return "不再列出 · 最终状态不可用";
+  if (row.status === "timeout") return "已超时";
+  if (row.status === "killed") return "已停止";
+  return row.exit === undefined ? "已退出" : `已退出 · 退出码 ${row.exit}`;
 }
 
 function elapsed(startedAt: number, now: number): string {
@@ -149,8 +149,8 @@ function ScopedProcessFooter({
                 {group.rows.map((row) => {
                   const owner =
                     row.sessionID === session.id
-                      ? "This conversation"
-                      : processes.owners.get(row.sessionID ?? "")?.title || "Child task";
+                      ? "此对话"
+                      : processes.owners.get(row.sessionID ?? "")?.title || "子任务";
                   const title = row.kind === "command" ? row.command : row.title || row.command;
                   return (
                     <button
@@ -179,7 +179,7 @@ function ScopedProcessFooter({
                           { pane: "bottom" },
                         );
                         if (!result?.ok) {
-                          setOpenError("Close a workbench tab before opening another process.");
+                          setOpenError("关闭一个工作台标签页后再打开新进程。");
                           return;
                         }
                         setOpenError(null);
@@ -202,7 +202,7 @@ function ScopedProcessFooter({
                             className="block truncate text-micro text-muted-foreground"
                             title={row.cwd}
                           >
-                            {row.cwd} · Started {new Date(row.startedAt).toLocaleTimeString()}
+                            {row.cwd} · 开始于 {new Date(row.startedAt).toLocaleTimeString()}
                           </span>
                         ) : null}
                       </span>

@@ -87,6 +87,7 @@ import { TurnReviewOffer } from "./turn-review-offer";
 import { projectToolExecution } from "../lib/tool-executions";
 import { recordStreamingCommit } from "../lib/streaming-latency";
 import {
+  pinnedTranscriptScrollTop,
   readTranscriptScrollUpdate,
   normalizeTranscriptWheelDelta,
   scheduleTranscriptScrollFrame,
@@ -692,6 +693,47 @@ const SessionThreadContents = memo(function SessionThreadContents({
     if (!hasVirtualTurns) observer.observe(content);
     return () => observer.disconnect();
   }, [composerDockHeight, hasVirtualTurns, scrollToBottomNow, session.id]);
+  // A streaming reply grows after the commit that produced it, so the measured
+  // bottom follow lands a frame late: the transcript lifts by the new lines and
+  // then snaps back. That up-then-down bounce, once per burst, is what reads as
+  // 抖. Re-reading the geometry before paint while content is arriving keeps the
+  // live edge pinned without animating anything.
+  useEffect(() => {
+    if (!isWorking) return;
+    const content = transcriptContentRef.current;
+    let dirty = true;
+    const canObserve = content && typeof MutationObserver !== "undefined";
+    const observer = canObserve
+      ? new MutationObserver(() => {
+          dirty = true;
+        })
+      : null;
+    if (content && observer)
+      observer.observe(content, { childList: true, subtree: true, characterData: true });
+    let frame = 0;
+    const pin = () => {
+      frame = requestAnimationFrame(pin);
+      if (!dirty) return;
+      dirty = false;
+      const viewport = scrollRef.current;
+      if (
+        !viewport ||
+        !bottomLockedRef.current ||
+        prependAnchorRef.current ||
+        scrollIntentRef.current !== null
+      )
+        return;
+      const next = pinnedTranscriptScrollTop(viewport, { maxDistance: viewport.clientHeight });
+      if (next === null) return;
+      viewport.scrollTop = next;
+      previousScrollTopRef.current = viewport.scrollTop;
+    };
+    frame = requestAnimationFrame(pin);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+    };
+  }, [isWorking]);
   useLayoutEffect(() => {
     const viewport = scrollRef.current;
     const pendingAnchor = prependAnchorRef.current;
@@ -758,7 +800,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
   }, []);
   useEffect(() => {
     if (transcript.error && !transcript.isFetchNextPageError) {
-      showErrorToast(`Could not load task "${session.title || session.id}"`, transcript.error);
+      showErrorToast(`无法加载任务「${session.title || session.id}」`, transcript.error);
     }
   }, [session.id, session.title, transcript.error, transcript.isFetchNextPageError]);
 
@@ -1102,9 +1144,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
       if (destination === "external") {
         if (local && runtime?.topology !== "same-machine") {
           showErrorToast(
-            "Cannot open server-local link externally",
+            "无法在外部浏览器打开服务端本地链接",
             new Error(
-              "This task runs on a remote machine or its location is unknown. In an external browser, localhost refers to this computer, not the task server. Choose Palot Browser for local dev links to open them on the task's server.",
+              "此任务运行在远程机器上，或其位置未知。在外部浏览器里，localhost 指的是本机而不是任务服务器。请选择 Palot 浏览器，让本地开发链接在任务服务器上打开。",
             ),
           );
           return;
@@ -1114,15 +1156,15 @@ const SessionThreadContents = memo(function SessionThreadContents({
       }
       if (!browserEnabled) {
         showErrorToast(
-          "Browser unavailable",
-          new Error("Enable Palot Browser in settings to open this link"),
+          "浏览器不可用",
+          new Error("请先在设置中启用 Palot 浏览器，再打开此链接"),
         );
         return;
       }
       if (!runtime?.connected || !browser?.bindingID) {
         showErrorToast(
-          "Browser unavailable",
-          new Error(browser?.error ?? "Browser is still connecting to this task"),
+          "浏览器不可用",
+          new Error(browser?.error ?? "浏览器仍在连接此任务"),
         );
         return;
       }
@@ -2400,11 +2442,11 @@ export const FinalMessageMeta = memo(
     }).format(completedAt);
 
     return (
-      <div className="mt-1 flex h-6 items-center gap-1.5 text-xs leading-none tabular-nums text-muted-foreground/55 opacity-0 transition-opacity duration-150 ease-out group-focus-within/final-message:opacity-100 group-hover/final-message:opacity-100 motion-reduce:transition-none">
+      <div className="mt-1 flex h-6 items-center gap-1.5 text-xs leading-none tabular-nums text-foreground/62 opacity-0 transition-opacity duration-150 ease-out group-focus-within/final-message:opacity-100 group-hover/final-message:opacity-100 motion-reduce:transition-none">
         <IconButton
           label={copied ? "已复制回复" : "复制回复"}
           size="icon-sm"
-          className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
+          className="text-foreground/70 hover:bg-muted/50 hover:text-foreground"
           onClick={() => {
             void writeClipboardText(response);
             setCopied(true);
@@ -2417,7 +2459,7 @@ export const FinalMessageMeta = memo(
           label="从此回复分叉"
           size="icon-sm"
           disabled={forking}
-          className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
+          className="text-foreground/70 hover:bg-muted/50 hover:text-foreground"
           onClick={() => {
             setForking(true);
             void forkSession({ sessionID, beforeMessageID: forkBeforeMessageID })
@@ -2435,7 +2477,7 @@ export const FinalMessageMeta = memo(
           <IconButton
             label="回复详情"
             size="icon-sm"
-            className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
+            className="text-foreground/70 hover:bg-muted/50 hover:text-foreground"
             onClick={() => onOpenDetails(responseMessageID)}
           >
             <FileText aria-hidden="true" />
@@ -2525,7 +2567,7 @@ export function ActiveTurnMeta({
   return (
     <div
       data-palot-active-turn-status
-      className="mt-1 flex h-6 min-w-0 items-center gap-1.5 text-xs leading-none tabular-nums text-muted-foreground/55"
+      className="mt-1 flex h-6 min-w-0 items-center gap-1.5 text-xs leading-none tabular-nums text-foreground/62"
     >
       <span
         className="flex min-w-0 items-center gap-1.5"
@@ -2547,7 +2589,7 @@ export function ActiveTurnMeta({
         <>
           <span aria-hidden="true">·</span>
           <span
-            className="min-w-0 flex-1 basis-0 truncate text-muted-foreground/70"
+            className="min-w-0 flex-1 basis-0 truncate text-foreground/70"
             title={thought}
             data-palot-active-turn-thought
           >
@@ -2596,7 +2638,7 @@ function subagentAnchors(group: TurnActivityGroup): TurnActivityGroup[] {
       {
         id: entryID(entry),
         kind: "subagent-tool" as const,
-        title: "Delegated work",
+        title: "派发任务",
         status: group.status,
         entries: [entry],
       },
@@ -2651,7 +2693,7 @@ export function TurnActivity({
   if (!canDisclose) {
     return (
       <div className="my-2">
-        <div className="mb-1 flex h-7 items-center gap-1.5 text-meta text-muted-foreground/75">
+        <div className="mb-1 flex h-7 items-center gap-1.5 text-meta text-foreground/75">
           <TurnActivitySummary turn={turn} />
         </div>
         <ActivityGroups
@@ -3180,7 +3222,7 @@ function CompactReadGroup({
       >
         <FileText data-icon="inline-start" aria-hidden="true" />
         <span className="min-w-0 flex-1 text-left">
-          Read {count} {count === 1 ? "file" : "files"}
+          读取 {count} 个文件
         </span>
         {open ? (
           <ChevronDown data-icon="inline-end" aria-hidden="true" />
@@ -3229,7 +3271,7 @@ function ActivityPartDetail({
           group={{
             id: entryID(entry),
             kind: "subagent-tool",
-            title: execution.description || "Delegated work",
+            title: execution.description || "派发任务",
             status,
             entries: [entry],
           }}
@@ -3308,7 +3350,7 @@ function StandardTimelineBoundary({
   }, [retryAt, running]);
 
   const retryDelay = retryAt === null ? null : Math.max(0, Math.ceil((retryAt - now) / 1_000));
-  const visibleLabel = retryDelay && retryDelay > 0 ? `${label} in ${retryDelay}s` : label;
+  const visibleLabel = retryDelay && retryDelay > 0 ? `${label}，${retryDelay} 秒后重试` : label;
 
   if (failed || interrupted) {
     const Icon = failed ? CircleAlert : CircleStop;
@@ -3325,7 +3367,7 @@ function StandardTimelineBoundary({
         <Icon
           className={cn(
             "mt-0.5 size-3.5 shrink-0",
-            failed ? "text-destructive" : "text-muted-foreground/75",
+            failed ? "text-destructive" : "text-foreground/75",
           )}
           aria-hidden="true"
         />
@@ -3342,7 +3384,7 @@ function StandardTimelineBoundary({
             <p
               className={cn(
                 "mt-0.5 mb-0 text-xs/relaxed",
-                failed ? "text-destructive/80" : "text-muted-foreground/70",
+                failed ? "text-destructive" : "text-foreground/70",
               )}
             >
               {detail}
@@ -3380,13 +3422,13 @@ function StandardTimelineBoundary({
       aria-label={visibleLabel}
       data-palot-boundary={typeof data.kind === "string" ? data.kind : "session"}
     >
-      <div className={cn("flex items-center gap-3 text-xs", "text-muted-foreground/65")}>
+      <div className={cn("flex items-center gap-3 text-xs", "text-foreground/66")}>
         <span className="h-px min-w-6 flex-1 bg-border/70" aria-hidden="true" />
         {running ? <ThinkingShimmer>{visibleLabel}</ThinkingShimmer> : <span>{label}</span>}
         <span className="h-px min-w-6 flex-1 bg-border/70" aria-hidden="true" />
       </div>
       {detail ? (
-        <p className={cn("m-0 text-center text-xs/relaxed", "text-muted-foreground/55")}>
+        <p className={cn("m-0 text-center text-xs/relaxed", "text-foreground/62")}>
           {detail}
         </p>
       ) : null}
@@ -3531,7 +3573,7 @@ function ThoughtGroupDisclosure({
             {title}
           </ThinkingShimmer>
         )}
-        <span className="shrink-0 tabular-nums text-muted-foreground/65 transition-colors group-hover/button:text-foreground/80">
+        <span className="shrink-0 tabular-nums text-foreground/66 transition-colors group-hover/button:text-foreground/80">
           {summary}
         </span>
         {open ? (
@@ -3543,7 +3585,7 @@ function ThoughtGroupDisclosure({
       <CollapsibleContent smooth animate={animate} className="min-w-0 pt-1">
         {/* One train of thought: every step shares a single capped scroll region. */}
         <BoundedScroll
-          label="Reasoning steps"
+          label="推理步骤"
           follow={!done}
           className="my-1 border-l border-border/70"
           viewportClassName="max-h-96"
@@ -3656,7 +3698,7 @@ export function ThoughtDisclosure({
           </ThinkingShimmer>
         )}
         {duration ? (
-          <span className="shrink-0 tabular-nums text-muted-foreground/65 transition-colors group-hover/button:text-foreground/80">
+          <span className="shrink-0 tabular-nums text-foreground/66 transition-colors group-hover/button:text-foreground/80">
             {duration}
           </span>
         ) : null}
@@ -3674,7 +3716,7 @@ export function ThoughtDisclosure({
             </div>
           ) : null}
           {content.body ? (
-            <BoundedScroll label="Reasoning" follow={!done} viewportClassName="max-h-80">
+            <BoundedScroll label="推理" follow={!done} viewportClassName="max-h-80">
               <MarkdownContent
                 value={content.body}
                 className="pr-3 text-xs/relaxed text-muted-foreground"
@@ -3786,7 +3828,7 @@ export const MessageRow = memo(function MessageRow({
             <IconButton
               label="撤回重编"
               size="icon-sm"
-              className="text-muted-foreground/70 hover:bg-muted/50 hover:text-foreground"
+              className="text-foreground/70 hover:bg-muted/50 hover:text-foreground"
               onClick={() => {
                 requestComposerAction({
                   action: "reedit",
@@ -4079,7 +4121,7 @@ export const PendingRequests = memo(function PendingRequests({
           reply: value,
           ...(message ? { message } : {}),
         }),
-      "Could not answer this request",
+      "无法回复此请求",
     );
   }
 

@@ -502,7 +502,7 @@ export function ComposerPicker<T>({
                       ref={setFocusTarget}
                       aria-label={search.label}
                       placeholder={search.placeholder}
-                      className="min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground/70"
+                      className="min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-foreground/70"
                     />
                   </div>
                 </div>

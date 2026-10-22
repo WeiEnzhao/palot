@@ -33,7 +33,7 @@ describe("ToolExecution", () => {
         }}
       />,
     );
-    const row = screen.getByRole("button", { name: /Updated plan/ });
+    const row = screen.getByRole("button", { name: /已更新计划/ });
     expect(row.textContent).toContain("1/2 done");
     expect(screen.queryByText("Render the card")).toBeNull();
   });
@@ -60,22 +60,22 @@ describe("ToolExecution", () => {
         }}
       />,
     );
-    expect(screen.getByRole("button", { name: /Ran shell commands with Python/ })).toBeTruthy();
-    expect(screen.getByLabelText("Python script").textContent).toBe(code);
-    expect(screen.getByLabelText("Shell commands").textContent).toContain("printf");
-    expect(screen.getByText("Combined output")).toBeTruthy();
-    expect(screen.getByRole("region", { name: "Command output" }).textContent).toContain(
+    expect(screen.getByRole("button", { name: /已执行 含 Python 的 shell 命令/ })).toBeTruthy();
+    expect(screen.getByLabelText("Python 脚本").textContent).toBe(code);
+    expect(screen.getByLabelText("Shell 命令").textContent).toContain("printf");
+    expect(screen.getByText("合并输出")).toBeTruthy();
+    expect(screen.getByRole("region", { name: "命令输出" }).textContent).toContain(
       '"ok": true',
     );
-    fireEvent.click(screen.getByRole("button", { name: "Copy Python script" }));
+    fireEvent.click(screen.getByRole("button", { name: "复制 Python 脚本" }));
     await waitFor(() => expect(copy).toHaveBeenLastCalledWith(code));
-    fireEvent.click(screen.getByRole("button", { name: "Raw command" }));
-    expect(screen.getByRole("region", { name: "Raw command" }).textContent).toBe(command);
-    expect(screen.queryByLabelText("Python script")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Copy raw command" }));
+    fireEvent.click(screen.getByRole("button", { name: "原始命令" }));
+    expect(screen.getByRole("region", { name: "原始命令" }).textContent).toBe(command);
+    expect(screen.queryByLabelText("Python 脚本")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "复制原始命令" }));
     await waitFor(() => expect(copy).toHaveBeenLastCalledWith(command));
-    fireEvent.click(screen.getByRole("button", { name: "Show script" }));
-    expect(screen.getByLabelText("Python script").textContent).toBe(code);
+    fireEvent.click(screen.getByRole("button", { name: "查看脚本" }));
+    expect(screen.getByLabelText("Python 脚本").textContent).toBe(code);
     vi.unstubAllGlobals();
     result.unmount();
   });
@@ -89,11 +89,11 @@ describe("ToolExecution", () => {
     });
     const command = "python3 - <<'PY'\nprint(42)\n";
     const result = render(<ToolExecution index={0} defaultOpen part={part(command)} />);
-    expect(screen.queryByLabelText("Python script")).toBeNull();
-    expect(screen.getByRole("button", { name: "Copy command and output" })).toBeTruthy();
+    expect(screen.queryByLabelText("Python 脚本")).toBeNull();
+    expect(screen.getByRole("button", { name: "复制命令与输出" })).toBeTruthy();
     result.rerender(<ToolExecution index={0} defaultOpen part={part(`${command}PY`)} />);
-    expect(screen.getByRole("button", { name: /Running Python script/ })).toBeTruthy();
-    expect(screen.getByLabelText("Python script").textContent).toBe("print(42)\n");
+    expect(screen.getByRole("button", { name: /正在执行 Python 脚本/ })).toBeTruthy();
+    expect(screen.getByLabelText("Python 脚本").textContent).toBe("print(42)\n");
     result.unmount();
   });
 
@@ -110,20 +110,20 @@ describe("ToolExecution", () => {
     const result = render(<ToolExecution part={part("streaming")} index={0} />);
     expect(
       screen
-        .getByRole("button", { name: /Generating patch for example.ts/ })
+        .getByRole("button", { name: /正在生成补丁：\s*example\.ts/ })
         .getAttribute("aria-expanded"),
     ).toBe("true");
-    expect(screen.getByRole("region", { name: "Proposed changes for example.ts" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "example.ts 的建议更改" })).toBeTruthy();
 
     result.rerender(<ToolExecution part={part("running")} index={0} />);
     expect(
-      screen.getByRole("button", { name: /Patching example.ts/ }).getAttribute("aria-expanded"),
+      screen.getByRole("button", { name: /修补中 example\.ts/ }).getAttribute("aria-expanded"),
     ).toBe("true");
     result.rerender(<ToolExecution part={part("completed")} index={0} />);
     expect(
-      screen.getByRole("button", { name: /Updated example.ts/ }).getAttribute("aria-expanded"),
+      screen.getByRole("button", { name: /已更新 example.ts/ }).getAttribute("aria-expanded"),
     ).toBe("true");
-    expect(screen.getByRole("region", { name: "Proposed changes for example.ts" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "example.ts 的建议更改" })).toBeTruthy();
     result.unmount();
   });
 
@@ -136,11 +136,11 @@ describe("ToolExecution", () => {
     });
     const first = "*** Begin Patch\n*** Add File: example.ts\n+first\n";
     const result = render(<ToolExecution part={part(first)} index={0} />);
-    fireEvent.click(screen.getByRole("button", { name: /Generating patch for example.ts/ }));
+    fireEvent.click(screen.getByRole("button", { name: /正在生成补丁：\s*example\.ts/ }));
     result.rerender(<ToolExecution part={part(`${first}+second\n`)} index={0} />);
     expect(
       screen
-        .getByRole("button", { name: /Generating patch for example.ts/ })
+        .getByRole("button", { name: /正在生成补丁：\s*example\.ts/ })
         .getAttribute("aria-expanded"),
     ).toBe("false");
     result.unmount();
@@ -166,10 +166,10 @@ describe("ToolExecution", () => {
     );
 
     const trigger = screen.getByRole("button", {
-      name: /Command completed rg TODO apps\/desktop\/src\/renderer exit 0 · output truncated/i,
+      name: /命令已完成 rg TODO apps\/desktop\/src\/renderer 退出码 0 · 输出已截断/i,
     });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.queryByLabelText("Command output")).toBeNull();
+    expect(screen.queryByLabelText("命令输出")).toBeNull();
     result.unmount();
   });
 
@@ -194,10 +194,10 @@ describe("ToolExecution", () => {
 
     expect(
       screen
-        .getByRole("button", { name: /Command failed bun test exit 1 Failed/i })
+        .getByRole("button", { name: /命令失败 bun test 退出码 1/ })
         .getAttribute("aria-expanded"),
     ).toBe("true");
-    expect(screen.getByLabelText("Command output")).toBeTruthy();
+    expect(screen.getByLabelText("命令输出")).toBeTruthy();
     result.unmount();
   });
 
@@ -267,7 +267,7 @@ describe("ToolExecution", () => {
     fireEvent.click(readTarget);
     expect(openFile).toHaveBeenNthCalledWith(1, { path: "src/read-target.ts", line: 10 });
     expect(
-      screen.getByRole("button", { name: /Read read-target\.ts/ }).getAttribute("aria-expanded"),
+      screen.getByRole("button", { name: /读取 read-target\.ts/ }).getAttribute("aria-expanded"),
     ).toBe("false");
 
     fireEvent.keyDown(screen.getByRole("link", { name: "write-target.ts" }), { key: "Enter" });
@@ -310,7 +310,7 @@ describe("ToolExecution", () => {
     expect(screen.getByText("b.ts").getAttribute("title")).toBe("src/b.ts");
     expect(within(result.container).getByText("src/a.ts")).toBeTruthy();
     expect(within(result.container).getByText("src/b.ts")).toBeTruthy();
-    expect(within(result.container).getAllByText("No changed lines")).toHaveLength(2);
+    expect(within(result.container).getAllByText("无更改行")).toHaveLength(2);
   });
 
   it("renders repeated ranges from the same file as one tool card", () => {
@@ -344,11 +344,12 @@ describe("ToolExecution", () => {
       />,
     );
 
-    expect(screen.getAllByRole("button", { name: /Read a.ts/ })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: /读取 a\.ts/ })).toHaveLength(1);
     expect(screen.getByText("1–2, 20–21")).toBeTruthy();
-    expect(screen.getAllByText(/^Lines /).map((element) => element.textContent)).toEqual([
-      "Lines 1–2",
-      "Lines 20–21",
+    expect(screen.getAllByText(/^第 /).map((element) => element.textContent)).toEqual([
+      "第 10–11 行",
+      "第 1–2 行",
+      "第 20–21 行",
     ]);
   });
 
@@ -389,8 +390,8 @@ describe("ToolExecution", () => {
     const card = within(result.container);
 
     expect(card.getByText("1–5")).toBeTruthy();
-    expect(card.getAllByText(/^Lines /).map((element) => element.textContent)).toEqual([
-      "Lines 1–5",
+    expect(card.getAllByText(/^第 /).map((element) => element.textContent)).toEqual([
+      "第 1–5 行",
     ]);
     const normalized = normalizeReadExecutions(
       reads.map((part, index) => projectToolExecution(part, index) as ReadExecution),
@@ -426,7 +427,7 @@ describe("ToolExecution", () => {
     const card = within(result.container);
 
     const trigger = card.getByRole("button", {
-      name: "Read a.ts lines 1–2 Completed in 250 ms",
+      name: "读取 a.ts 第 1–2 行 耗时 250 ms",
     });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(trigger);
@@ -462,7 +463,7 @@ describe("ToolExecution", () => {
 
     render(<ReadToolExecutionGroup entries={reads.map((part, index) => ({ part, index }))} />);
 
-    expect(screen.getByLabelText("Completed in 300 ms").textContent).toBe("300 ms");
+    expect(screen.getByLabelText("耗时 300 ms").textContent).toBe("300 ms");
   });
 
   it("shows completed tool duration instead of a checkmark", () => {
@@ -483,7 +484,7 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    expect(screen.getByLabelText("Completed in 1.3 s").textContent).toBe("1.3 s");
+    expect(screen.getByLabelText("耗时 1.3 s").textContent).toBe("1.3 s");
     expect(container.querySelector(".lucide-check")).toBeNull();
   });
 
@@ -504,16 +505,16 @@ describe("ToolExecution", () => {
         <ToolExecution part={part} index={0} />
       </Provider>,
     );
-    const trigger = within(result.container).getByRole("button", { name: /Called Custom tool/i });
+    const trigger = within(result.container).getByRole("button", { name: /调用 Custom tool/i });
 
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(toJSON).not.toHaveBeenCalled();
-    expect(within(result.container).queryByLabelText("JSON output")).toBeNull();
+    expect(within(result.container).queryByLabelText("JSON 输出")).toBeNull();
 
     fireEvent.click(trigger);
 
     expect(toJSON).toHaveBeenCalledTimes(1);
-    expect(within(result.container).getByLabelText("JSON output").textContent).toContain(
+    expect(within(result.container).getByLabelText("JSON 输出").textContent).toContain(
       '"nested": "value"',
     );
   });
@@ -545,7 +546,7 @@ describe("ToolExecution", () => {
     expect(screen.getByRole("img", { name: "Image generation image" }).getAttribute("src")).toBe(
       "data:image/png;base64,AAAA",
     );
-    expect(screen.getByRole("button", { name: "Generated image" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "已生成图片" })).toBeTruthy();
   });
 
   it("renders pending image edits without parameter-heavy fallback titles", () => {
@@ -571,7 +572,7 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    const trigger = screen.getByRole("button", { name: /Editing image Pending 2 references/ });
+    const trigger = screen.getByRole("button", { name: /正在编辑图片/ });
     expect(trigger.textContent).not.toContain(prompt);
   });
 
@@ -613,7 +614,7 @@ describe("ToolExecution", () => {
           <ToolExecution part={part} index={0} defaultOpen />
         </Provider>,
       );
-      expect(first.getByLabelText("Command output")).toBeTruthy();
+      expect(first.getByLabelText("命令输出")).toBeTruthy();
       first.unmount();
 
       const second = render(
@@ -621,7 +622,7 @@ describe("ToolExecution", () => {
           <ToolExecution part={part} index={0} defaultOpen />
         </Provider>,
       );
-      expect(second.queryByLabelText("Command output")).toBeNull();
+      expect(second.queryByLabelText("命令输出")).toBeNull();
       expect(second.container.querySelector('[style="height: 123px;"]')).toBeTruthy();
       second.unmount();
     } finally {
@@ -651,7 +652,7 @@ describe("ToolExecution", () => {
         </Provider>,
       );
 
-      expect(within(result.container).getByText("Running")).toBeTruthy();
+      expect(within(result.container).getByText("执行中")).toBeTruthy();
       expect(within(result.container).queryByText("0s")).toBeNull();
 
       act(() => vi.advanceTimersByTime(1_000));
@@ -669,7 +670,7 @@ describe("ToolExecution", () => {
           />
         </Provider>,
       );
-      expect(within(result.container).getByText("Pending")).toBeTruthy();
+      expect(within(result.container).getByText("待处理")).toBeTruthy();
       expect(within(result.container).getByText("2s")).toBeTruthy();
     } finally {
       vi.useRealTimers();
@@ -690,7 +691,7 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    expect(within(result.container).getByText("Running command")).toBeTruthy();
+    expect(within(result.container).getByText("正在执行命令")).toBeTruthy();
 
     result.rerender(
       <Provider store={store}>
@@ -701,7 +702,7 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    expect(within(result.container).getByText("Running bun run test")).toBeTruthy();
+    expect(within(result.container).getByText("正在执行 bun run test")).toBeTruthy();
   });
 
   it("keeps expanded output aligned with the tool row at minimum widths", () => {
@@ -734,7 +735,7 @@ describe("ToolExecution", () => {
     expect(panel?.classList.contains("pt-1")).toBe(false);
     expect(panelContent?.classList.contains("pt-1")).toBe(true);
     expect(panelContent?.className).not.toMatch(/(?:^|\s)pl-/);
-    expect(screen.getByRole("button", { name: "Copy command and output" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "复制命令与输出" })).toBeTruthy();
   });
 
   it("updates untouched mounted tool disclosures when the projected default changes", async () => {
@@ -819,7 +820,7 @@ describe("ToolExecution", () => {
         <ToolExecution part={running("first")} index={0} defaultOpen />
       </Provider>,
     );
-    const frame = within(container).getByLabelText("Command output");
+    const frame = within(container).getByLabelText("命令输出");
     Object.defineProperties(frame, {
       scrollHeight: { configurable: true, value: 300 },
       clientHeight: { configurable: true, value: 100 },
@@ -882,7 +883,7 @@ describe("ToolExecution", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /Fetched https:\/\/opencode\.ai\/v2\/docs\// }),
+      screen.getByRole("button", { name: /已抓取 https:\/\/opencode\.ai\/v2\/docs\// }),
     ).toBeTruthy();
     expect(screen.getByRole("heading", { name: "OpenCode V2" })).toBeTruthy();
     expect(container.querySelector("strong")?.textContent).toBe("Current documentation.");
@@ -906,14 +907,14 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    expect(within(container).queryByLabelText("HTML output")).toBeNull();
+    expect(within(container).queryByLabelText("HTML 输出")).toBeNull();
     expect(container.querySelector(".tool-highlight")).toBeNull();
 
     fireEvent.click(
-      within(container).getByRole("button", { name: /Fetched https:\/\/example.com/ }),
+      within(container).getByRole("button", { name: /已抓取 https:\/\/example.com/ }),
     );
 
-    expect(within(container).getByLabelText("HTML output").textContent).toContain("Hello");
+    expect(within(container).getByLabelText("HTML 输出").textContent).toContain("Hello");
     expect(container.querySelector(".tool-highlight")).toBeTruthy();
   });
 
@@ -940,7 +941,7 @@ describe("ToolExecution", () => {
       </Provider>,
     );
 
-    const output = within(container).getByLabelText("Search results for value");
+    const output = within(container).getByLabelText("搜索结果：value");
     expect(output.classList.contains("overflow-y-auto")).toBe(true);
     expect(output.textContent).toContain("src/a.ts");
   });
@@ -1027,9 +1028,9 @@ describe("ToolExecution", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /Failed to fetch https:\/\/example\.com/ }),
+      screen.getByRole("button", { name: /抓取失败 https:\/\/example\.com/ }),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /Failed to fetch https:\/\/example\.com/ }));
+    fireEvent.click(screen.getByRole("button", { name: /抓取失败 https:\/\/example\.com/ }));
     expect(screen.getByText("Connection refused")).toBeTruthy();
   });
 
@@ -1053,7 +1054,7 @@ describe("ToolExecution", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /Called Linear search documentation: fallback tool projection page=2/i,
+        name: /调用 Linear search documentation：fallback tool projection page=2/i,
       }),
     ).toBeTruthy();
   });
@@ -1085,7 +1086,7 @@ describe("ToolExecution", () => {
     );
 
     const trigger = screen.getByRole("button", {
-      name: /Orchestrated Fixtures add and Bad tool 1 failed/i,
+      name: /已编排 Fixtures add and Bad tool 1 failed/i,
     });
     expect(trigger.textContent).not.toContain(code);
     expect(screen.getByText("Fixtures add")).toBeTruthy();
@@ -1093,7 +1094,7 @@ describe("ToolExecution", () => {
     expect(
       screen.getByText((_, element) => element?.tagName === "CODE" && element.textContent === code),
     ).toBeTruthy();
-    const result = screen.getByLabelText("JSON result");
+    const result = screen.getByLabelText("JSON 结果");
     expect(result.textContent).toBe('{\n  "sum": 3,\n  "ok": true,\n  "value": null\n}');
     expect(result.querySelector(".tool-highlight")).toBeTruthy();
   });
@@ -1118,9 +1119,9 @@ describe("ToolExecution", () => {
     );
     const card = within(result.container);
 
-    const trigger = card.getByRole("button", { name: /Ran Cloudflare search/i });
+    const trigger = card.getByRole("button", { name: /已执行 Cloudflare search/i });
     expect(trigger.textContent).not.toContain(code);
-    expect(card.getByText("Script")).toBeTruthy();
-    expect(card.getByLabelText("JSON result")).toBeTruthy();
+    expect(card.getByText("脚本")).toBeTruthy();
+    expect(card.getByLabelText("JSON 结果")).toBeTruthy();
   });
 });

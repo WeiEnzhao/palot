@@ -188,7 +188,7 @@ describe("InboxSidebarContent", () => {
       queryClient,
     );
 
-    const button = screen.getByRole("button", { name: /^Open Inbox task,/ });
+    const button = screen.getByRole("button", { name: /^打开 Inbox task,/ });
     fireEvent.click(button);
     await vi.waitFor(() => expect(navigation.openSession).toHaveBeenCalledWith("inbox"));
     expect(button.closest("[data-inbox-card]")?.getAttribute("data-selected")).toBe("true");
@@ -251,7 +251,7 @@ describe("InboxSidebarContent", () => {
       screen.getByRole("img", { name: "Pull request #9, merged, checks passing" }),
     ).toBeTruthy();
     const plain = screen
-      .getByRole("button", { name: /^Open Plain task,/ })
+      .getByRole("button", { name: /^打开 Plain task,/ })
       .closest("[data-inbox-card]");
     expect(plain?.querySelector("[data-pull-request-badge]")).toBeNull();
     expect(api.listPullRequestLinks).toHaveBeenCalledTimes(1);
@@ -294,9 +294,9 @@ describe("InboxSidebarContent", () => {
     );
     const order = () =>
       screen
-        .getAllByRole("button", { name: /^Open .* task,/ })
+        .getAllByRole("button", { name: /^打开 .* task,/ })
         .map((button) => button.getAttribute("aria-label")?.split(",")[0]);
-    expect(order()).toEqual(["Open Newer task", "Open Older task"]);
+    expect(order()).toEqual(["打开 Newer task", "打开 Older task"]);
 
     const list = container.querySelector<HTMLElement>('[data-sidebar="content"]')!;
     fireEvent.pointerEnter(list);
@@ -305,10 +305,10 @@ describe("InboxSidebarContent", () => {
       title: "Finished task",
       time: { ...current.time, updated: 50, idle: 50 },
     }));
-    await waitFor(() => expect(order()).toEqual(["Open Newer task", "Open Finished task"]));
+    await waitFor(() => expect(order()).toEqual(["打开 Newer task", "打开 Finished task"]));
 
     fireEvent.pointerLeave(list);
-    await waitFor(() => expect(order()).toEqual(["Open Finished task", "Open Newer task"]));
+    await waitFor(() => expect(order()).toEqual(["打开 Finished task", "打开 Newer task"]));
   });
 
   it("does not show unread activity for the selected session", async () => {
@@ -342,7 +342,7 @@ describe("InboxSidebarContent", () => {
       queryClient,
     );
 
-    const button = screen.getByRole("button", { name: /^Open Inbox task,/ });
+    const button = screen.getByRole("button", { name: /^打开 Inbox task,/ });
     const card = button.closest("[data-inbox-card]");
     expect(card).toBeTruthy();
     fireEvent.click(button);
@@ -443,15 +443,15 @@ describe("InboxSidebarContent", () => {
       queryClient,
     );
 
-    expect(screen.getByRole("button", { name: /^Open Pinned task,/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /^Open Inbox task,/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^打开 Pinned task,/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^打开 Inbox task,/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "取消置顶任务" })).toBeTruthy();
     expect(screen.getAllByRole("button", { name: "结算任务" })).toHaveLength(1);
     const pinnedCard = screen
-      .getByRole("button", { name: /^Open Pinned task,/ })
+      .getByRole("button", { name: /^打开 Pinned task,/ })
       .closest<HTMLElement>("[data-inbox-card]")!;
     const runningCard = screen
-      .getByRole("button", { name: /^Open Inbox task,/ })
+      .getByRole("button", { name: /^打开 Inbox task,/ })
       .closest<HTMLElement>("[data-inbox-card]")!;
     // Grouped rows mirror the multi-connection layout: title + state dot + PR only,
     // no per-card project label, branch label or relative time.
@@ -489,9 +489,9 @@ describe("InboxSidebarContent", () => {
     fireEvent.keyDown(document, { key: "Escape" });
     store.set(inboxFiltersAtom, { projectID: null, states: ["running"] });
     await waitFor(() =>
-      expect(screen.queryByRole("button", { name: /^Open Pinned task,/ })).toBeNull(),
+      expect(screen.queryByRole("button", { name: /^打开 Pinned task,/ })).toBeNull(),
     );
-    expect(screen.getByRole("button", { name: /^Open Inbox task,/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^打开 Inbox task,/ })).toBeTruthy();
     store.set(inboxFiltersAtom, { projectID: null, states: [] });
     fireEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     expect(
@@ -501,9 +501,9 @@ describe("InboxSidebarContent", () => {
     expect(screen.getByRole("menuitem", { name: "折叠所有分区" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     fireEvent.click(screen.getByRole("button", { name: /^置顶 1$/ }));
-    expect(screen.queryByRole("button", { name: /^Open Pinned task,/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^打开 Pinned task,/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /^收件箱 1$/ }));
-    expect(screen.queryByRole("button", { name: /^Open Inbox task,/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^打开 Inbox task,/ })).toBeNull();
     expect(screen.getByRole("button", { name: /已延后/ }).textContent).toContain("1");
     expect(screen.getByRole("button", { name: /已结算/ }).textContent).toContain("1");
     expect(screen.queryByText("Snoozed task")).toBeNull();

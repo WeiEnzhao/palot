@@ -43,7 +43,7 @@ export function ParentTaskBreadcrumb({
             {parentTitle}
           </button>
         </BreadcrumbItem>
-        <BreadcrumbSeparator className="shrink-0 text-muted-foreground/60" />
+        <BreadcrumbSeparator className="shrink-0 text-foreground/64" />
         <BreadcrumbItem className="min-w-0 shrink-[2]">
           <strong
             aria-current="page"

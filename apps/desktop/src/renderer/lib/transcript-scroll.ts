@@ -67,6 +67,27 @@ export function transcriptDistanceFromBottom(metrics: TranscriptScrollMetrics): 
   return Math.max(0, metrics.scrollHeight - metrics.scrollTop - metrics.clientHeight);
 }
 
+/**
+ * Offset that re-pins the live edge, or `null` when the viewport should stay put.
+ *
+ * A streaming reply grows after the commit that produced it, so the browser can
+ * paint one frame with the transcript lifted and only then run the bottom
+ * follow — the text slides up and snaps back, once per burst. Re-reading the
+ * geometry every frame and correcting before paint removes that lifted frame.
+ * Large distances are real layout changes (a replaced message), not streaming
+ * growth, and are left to the follow so the page does not drag the reader down.
+ */
+export function pinnedTranscriptScrollTop(
+  metrics: TranscriptScrollMetrics,
+  options: { maxDistance?: number } = {},
+): number | null {
+  const distance = transcriptDistanceFromBottom(metrics);
+  if (distance <= 0.5) return null;
+  const maxDistance = options.maxDistance ?? Number.POSITIVE_INFINITY;
+  if (distance > maxDistance) return null;
+  return snapToDevicePixel(Math.max(0, metrics.scrollHeight - metrics.clientHeight));
+}
+
 export function transcriptScrollTargetConsumesDelta(
   metrics: TranscriptScrollMetrics,
   delta: number,

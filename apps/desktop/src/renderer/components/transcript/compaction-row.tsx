@@ -39,9 +39,9 @@ export function compactionLabel(
   part: Pick<PalotMessageContent, "reason"> | undefined,
   status: TurnActivityGroup["status"],
 ): string {
-  if (status === "failed") return "Context compaction failed";
-  if (status === "running" || status === "pending") return "Compacting context";
-  return part?.reason === "auto" ? "Context automatically compacted" : "Context compacted";
+  if (status === "failed") return "上下文压缩失败";
+  if (status === "running" || status === "pending") return "正在压缩上下文";
+  return part?.reason === "auto" ? "上下文已自动压缩" : "上下文已压缩";
 }
 
 /**
@@ -98,7 +98,7 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
   const summary = part?.text?.trim();
   const recent = part?.recent?.trim();
   const recentTokens = recent ? Math.round(recent.length / 4) : 0;
-  const recentLabel = `Approximately ${recentTokens.toLocaleString()} tokens of recent context are kept verbatim`;
+  const recentLabel = `最近上下文中约 ${recentTokens.toLocaleString()} 个 token 保留原文`;
   const anchorID = entry?.message.id ?? part?.id ?? group.id;
   const change =
     failed || running ? null : compactionTokenChange(part, actions?.windows?.get(anchorID));
@@ -119,7 +119,7 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
       <div
         className={cn(
           "flex items-center gap-3 text-xs",
-          failed ? "text-destructive/80" : "text-muted-foreground/65",
+          failed ? "text-destructive" : "text-foreground/66",
         )}
       >
         <span className="h-px min-w-6 flex-1 bg-border/70" aria-hidden="true" />
@@ -133,16 +133,16 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
               className={cn(
                 "h-7 min-w-0 px-1.5 text-xs font-normal hover:bg-transparent aria-expanded:bg-transparent",
                 failed
-                  ? "text-destructive/80 hover:text-destructive"
-                  : "text-muted-foreground/65 hover:text-muted-foreground",
+                  ? "text-destructive hover:text-destructive"
+                  : "text-foreground/66 hover:text-muted-foreground",
               )}
             />
           }
         >
           {running ? <ThinkingShimmer>{label}</ThinkingShimmer> : <span>{label}</span>}
           {running && slow ? (
-            <span className="min-w-0 truncate text-muted-foreground/55">
-              · This can take a few minutes
+            <span className="min-w-0 truncate text-foreground/62">
+              · 这可能需要几分钟
             </span>
           ) : null}
           {hasDetails ? (
@@ -159,7 +159,7 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
             variant="ghost"
             size="xs"
             className="shrink-0 text-muted-foreground hover:text-foreground"
-            aria-label="Retry compaction"
+            aria-label="重试压缩"
             disabled={retrying}
             onClick={() => {
               setRetrying(true);
@@ -175,7 +175,7 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
             ) : (
               <RotateCcw data-icon="inline-start" aria-hidden="true" />
             )}
-            Retry
+            重试
           </Button>
         ) : null}
         <span className="h-px min-w-6 flex-1 bg-border/70" aria-hidden="true" />
@@ -188,7 +188,7 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
           >
             {change ? (
               <p className="m-0 mb-1 text-meta text-muted-foreground" data-palot-compaction-tokens>
-                {`Context: ${change.estimated ? "about " : ""}${formatTokenCount(change.before)} → ${formatTokenCount(change.after)} tokens`}
+                {`上下文：${change.estimated ? "约 " : ""}${formatTokenCount(change.before)} → ${formatTokenCount(change.after)} 个 token`}
               </p>
             ) : null}
             <CompactionUsage part={part} />

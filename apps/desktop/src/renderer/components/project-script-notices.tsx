@@ -15,7 +15,7 @@ import { toast } from "./ui/toast";
 const STATUS_LABELS: Record<ProjectScriptRun["status"], string> = {
   passed: "passed",
   failed: "failed",
-  "timed-out": "timed out",
+  "timed-out": "已超时",
   error: "could not run",
 };
 

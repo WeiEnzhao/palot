@@ -338,7 +338,7 @@ export function useWorkspaceController(selectedSessionID: string | null) {
             synchronization.current.isCurrentSessionResource(token, "messages")) ||
           (targets.diffs && synchronization.current.isCurrentSessionResource(token, "diffs"))
         ) {
-          showErrorToast(`Could not load task "${session.title || session.id}"`, error);
+          showErrorToast(`无法加载任务「${session.title || session.id}」`, error);
         }
       }
     },

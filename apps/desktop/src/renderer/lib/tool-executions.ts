@@ -728,7 +728,7 @@ function projectToolExecutionUncached(part: PalotMessageContent, index: number):
     return {
       ...value.value,
       kind: "read",
-      path: string(value.input.path) ?? string(value.input.filePath) ?? "Unknown path",
+      path: string(value.input.path) ?? string(value.input.filePath) ?? "未知路径",
       range: parsed.range,
       lines: parsed.lines,
       entries: parsed.entries,

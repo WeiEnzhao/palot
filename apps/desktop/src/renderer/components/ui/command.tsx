@@ -94,7 +94,7 @@ function CommandPaletteInput({
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-          "min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-50",
+          "min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-foreground/70 disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         {...props}

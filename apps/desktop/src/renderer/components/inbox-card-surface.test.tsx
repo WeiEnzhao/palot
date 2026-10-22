@@ -10,12 +10,12 @@ afterEach(() => {
 
 describe("InboxCardSurface", () => {
   it.each([
-    { attentionCount: 1, runningSince: null, workingLabel: "Working", status: "Needs input" },
+    { attentionCount: 1, runningSince: null, workingLabel: "工作中", status: "需要输入" },
     {
       attentionCount: 3,
       runningSince: 60_000,
-      workingLabel: "Working for 1m 00s",
-      status: "Needs input · 3",
+      workingLabel: "已工作 1m 00s",
+      status: "需要输入 · 3",
     },
   ])(
     "prioritizes $status over an active run",
@@ -64,10 +64,10 @@ describe("InboxCardSurface", () => {
         />,
       );
       expect(screen.getByText(status)).toBeTruthy();
-      expect(screen.getByLabelText("Task needs attention")).toBeTruthy();
+      expect(screen.getByLabelText("任务需要关注")).toBeTruthy();
       expect(screen.queryByTitle(workingLabel)).toBeNull();
       expect(
-        screen.getByRole("button", { name: `Open Review changes, Palot, ${status}` }),
+        screen.getByRole("button", { name: `打开 Review changes, Palot, ${status}` }),
       ).toBeTruthy();
 
       rerender(<InboxCardSurface item={item} selected={false} buttonProps={{}} />);

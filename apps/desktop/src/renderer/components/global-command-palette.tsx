@@ -384,7 +384,7 @@ export function GlobalCommandPalette() {
     );
     if (!result?.ok) {
       showErrorToast(
-        "Could not open file",
+        "无法打开文件",
         new Error("Too many workbench tabs. Close a tab and try again."),
       );
     }
@@ -397,7 +397,7 @@ export function GlobalCommandPalette() {
   const execute = (command: GlobalCommand) => {
     if (command.disabledReason) return;
     const run = () =>
-      void Promise.resolve(command.run()).catch((error) => showErrorToast("Command failed", error));
+      void Promise.resolve(command.run()).catch((error) => showErrorToast("命令执行失败", error));
     if (command.closeOnRun !== false) {
       close();
       if (command.runAfterClose) {
@@ -412,7 +412,7 @@ export function GlobalCommandPalette() {
   const runRequestedCommand = useEffectEvent((commandID: string) => {
     const command = commands.find((candidate) => candidate.id === commandID);
     if (command) execute(command);
-    else showErrorToast("Command unavailable", new Error("Open a task to use this command."));
+    else showErrorToast("命令不可用", new Error("请先打开一个任务再使用该命令。"));
   });
   useEffect(() => {
     if (!commandRequest) return;
@@ -546,8 +546,8 @@ export function GlobalCommandPalette() {
   const layoutKey = `${paletteGroups.map((group) => `${group.id}:${group.items.length}`).join(",")}|${resultOrder}|${searchingRemote}|${searchingFiles}`;
   const enterLabel = (itemID: string) => {
     if (fileItemPath(itemID) !== null) return PALETTE_FILE_ENTER_LABEL;
-    if (itemID === RETRY_SEARCH_ID) return "Retry search";
-    if (itemID === LOAD_MORE_ID) return "Load more";
+    if (itemID === RETRY_SEARCH_ID) return "重试搜索";
+    if (itemID === LOAD_MORE_ID) return "加载更多";
     const command = commandByID.get(itemID);
     if (!command || command.disabledReason) return null;
     return paletteEnterLabel(command);
@@ -568,7 +568,7 @@ export function GlobalCommandPalette() {
       : tab === "all"
         ? "No matching tasks or commands."
         : tab !== "files"
-          ? `No matching ${tab}.`
+          ? `没有匹配的${tab}。`
           : !fileTask
             ? "Open a task to search its files."
             : searchingFiles
@@ -607,9 +607,9 @@ export function GlobalCommandPalette() {
           commandByID.get(itemID)?.title ??
           fileItemPath(itemID) ??
           (itemID === RETRY_SEARCH_ID
-            ? "Retry older task search"
+            ? "检索更早的任务"
             : itemID === LOAD_MORE_ID
-              ? "Load more tasks"
+              ? "加载更多任务"
               : itemID)
         }
         autoHighlight="always"
@@ -650,7 +650,7 @@ export function GlobalCommandPalette() {
               <Autocomplete.Input
                 ref={inputRef}
                 data-slot="command-input"
-                className="min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-foreground/70 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder={
                   page === "projects"
                     ? "搜索项目..."
@@ -711,7 +711,7 @@ export function GlobalCommandPalette() {
                     {group.label}
                     {group.hint ? (
                       <span
-                        className="ml-auto text-micro font-normal text-muted-foreground/80"
+                        className="ml-auto text-micro font-normal text-foreground/80"
                         aria-hidden="true"
                       >
                         {group.hint}
