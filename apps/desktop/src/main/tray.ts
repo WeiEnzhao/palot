@@ -524,7 +524,7 @@ function taskItem(session: SessionInfo, detail: string, profileID: string): Tray
 }
 
 function sessionTitle(session: Pick<SessionInfo, "title"> | Pick<PalotSession, "title">): string {
-  const title = session.title?.trim() || "Untitled task";
+  const title = session.title?.trim() || "未命名任务";
   return title.length <= 64 ? title : `${title.slice(0, 61)}...`;
 }
 

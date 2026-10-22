@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   cancelTranscriptScrollFrame,
+  easedBottomFollow,
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
   pinnedTranscriptScrollTop,
@@ -355,5 +356,66 @@ describe("prependAnchorFrame", () => {
   it("stops settling after the settle window", () => {
     const result = prependAnchorFrame({ ...base, now: 3_500 });
     expect(result.done).toBe(true);
+  });
+});
+
+describe("eased bottom follow", () => {
+  const runToSettle = (start: number, target: number, ratio = 2, frames = 200) => {
+    let current = start;
+    const steps: number[] = [];
+    for (let i = 0; i < frames; i++) {
+      const frame = easedBottomFollow({ current, target, devicePixelRatio: ratio });
+      if (!frame) return { current, steps, settled: true };
+      current = frame.scrollTop;
+      steps.push(current);
+      if (frame.settled) return { current, steps, settled: true };
+    }
+    return { current, steps, settled: false };
+  };
+
+  it("does nothing when already at the bottom", () => {
+    expect(easedBottomFollow({ current: 900, target: 900, devicePixelRatio: 2 })).toBeNull();
+    expect(easedBottomFollow({ current: 899.8, target: 900, devicePixelRatio: 2 })).toBeNull();
+  });
+
+  it("spreads a block-sized growth over many frames instead of one jump", () => {
+    // 一次数据块把内容顶高 108px：一帧直接落位就是「文字啪地跳一下」。
+    const step = easedBottomFollow({ current: 1000, target: 1108, devicePixelRatio: 2 });
+    expect(step?.scrollTop).toBeGreaterThan(1000);
+    expect(step?.scrollTop).toBeLessThan(1030);
+    const { steps, settled } = runToSettle(1000, 1108);
+    expect(settled).toBe(true);
+    expect(steps.length).toBeGreaterThan(8);
+  });
+
+  it("never overshoots the target while easing", () => {
+    let current = 0;
+    for (let i = 0; i < 100; i++) {
+      const frame = easedBottomFollow({ current, target: 600, devicePixelRatio: 2 });
+      if (!frame) break;
+      expect(frame.scrollTop).toBeLessThanOrEqual(600);
+      current = frame.scrollTop;
+    }
+    expect(current).toBe(600);
+  });
+
+  it("eases backwards when the content shrinks", () => {
+    const step = easedBottomFollow({ current: 1100, target: 1000, devicePixelRatio: 2 });
+    expect(step?.scrollTop).toBeLessThan(1100);
+    expect(step?.scrollTop).toBeGreaterThan(1000);
+    expect(runToSettle(1100, 1000).current).toBe(1000);
+  });
+
+  it("keeps moving when the remaining distance is under the minimum step", () => {
+    const frame = easedBottomFollow({ current: 100, target: 101, devicePixelRatio: 3 });
+    expect(frame?.scrollTop).toBe(101);
+    expect(frame?.settled).toBe(true);
+  });
+
+  it("stays on the device pixel grid", () => {
+    const frame = easedBottomFollow({ current: 2118.33, target: 2400, devicePixelRatio: 2.4 });
+    expect(frame).not.toBeNull();
+    const grid = (frame!.scrollTop * 2.4) % 1;
+    expect(Math.min(grid, 1 - grid)).toBeLessThan(1e-6);
   });
 });

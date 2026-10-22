@@ -35,7 +35,7 @@ describe("parallelActivityLabel", () => {
           tool("done", "read", "completed", { path: "d.ts" }),
         ]),
       ),
-    ).toBe("Reading 3 files");
+    ).toBe("读取 3 个文件");
     expect(
       parallelActivityLabel(
         workingTurn([
@@ -45,7 +45,7 @@ describe("parallelActivityLabel", () => {
           tool("d", "shell", "running", { command: "bun run lint" }),
         ]),
       ),
-    ).toBe("Running 4 tools");
+    ).toBe("执行 4 个工具");
   });
 
   it("stays quiet for a single running tool", () => {

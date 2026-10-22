@@ -571,7 +571,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 data-active={selected || undefined}
               >
                 <span className="min-w-0 flex-1 truncate text-left">
-                  {session.title ?? "Untitled task"}
+                  {session.title ?? "未命名任务"}
                 </span>
                 {item.attention || item.failed || item.running ? (
                   <span

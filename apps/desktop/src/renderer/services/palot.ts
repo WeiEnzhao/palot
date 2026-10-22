@@ -145,7 +145,7 @@ async function getOwnedSession(client: ReturnType<typeof openCodeClient>, sessio
 }
 
 function taskResourceError(session: PalotSession, resource: string, cause: unknown): Error {
-  const task = `"${session.title || "Untitled task"}" (${session.id})`;
+  const task = `"${session.title || "未命名任务"}" (${session.id})`;
   let diagnostic: ReturnType<typeof errorDiagnostic> | undefined = errorDiagnostic(cause);
   while (diagnostic) {
     if (diagnostic.name === "TimeoutError" || diagnostic.code === "ETIMEDOUT") {
@@ -1211,7 +1211,7 @@ export const palot = {
       return {
         ...source,
         id: `${source.id}-fork`,
-        title: `${source.title ?? "Untitled task"} (fork)`,
+        title: `${source.title ?? "未命名任务"} (fork)`,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

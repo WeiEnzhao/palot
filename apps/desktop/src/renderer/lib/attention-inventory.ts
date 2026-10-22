@@ -81,7 +81,7 @@ export function attentionInventory(
           id: primary.id,
           sessionID: primary.sessionID,
           projectName: project ? projectName(project) : "Unknown project",
-          sessionTitle: root.title?.trim() || "Untitled task",
+          sessionTitle: root.title?.trim() || "未命名任务",
           type: primary.type,
           title:
             blockers.length === 1 ? primary.title : `${blockers.length} requests need attention`,

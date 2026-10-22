@@ -698,7 +698,7 @@ export function useGlobalCommands({
         ]);
       return {
         id,
-        title: session.title ?? "Untitled task",
+        title: session.title ?? "未命名任务",
         description: [location ?? session.location.directory, task.serverName]
           .filter(Boolean)
           .join(" · "),

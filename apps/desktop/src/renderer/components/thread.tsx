@@ -88,8 +88,10 @@ import { TurnReviewOffer } from "./turn-review-offer";
 import { projectToolExecution } from "../lib/tool-executions";
 import { recordStreamingCommit } from "../lib/streaming-latency";
 import {
+  easedBottomFollow,
   pinnedTranscriptScrollTop,
   prependAnchorFrame,
+  prefersReducedMotion,
   readTranscriptScrollUpdate,
   normalizeTranscriptWheelDelta,
   scheduleTranscriptScrollFrame,
@@ -344,6 +346,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
   } | null>(null);
   const bottomLockedRef = useRef(true);
   const bottomFollowFrameRef = useRef<number | null>(null);
+  const bottomFollowLoopRef = useRef<number | null>(null);
   const lastFollowedVirtualHeightRef = useRef<number | null>(null);
   const navigationGeometryRef = useRef<(() => void) | null>(null);
   const scrollIntentRef = useRef<TranscriptScrollIntent>(null);
@@ -375,6 +378,60 @@ const SessionThreadContents = memo(function SessionThreadContents({
     bottomLockedRef.current = locked;
     setBottomLocked((current) => (current === locked ? current : locked));
   }, []);
+  const stopBottomFollow = useCallback(() => {
+    const loop = bottomFollowLoopRef.current;
+    bottomFollowLoopRef.current = null;
+    if (loop !== null) cancelAnimationFrame(loop);
+  }, []);
+  // 流式内容整块到达时，底边不是「一步跳过去」而是逐帧滑过去。原因见
+  // easedBottomFollow 的注释：一步跳 = 屏幕上已有的文字「啪」地跳一下。
+  const startBottomFollow = useCallback(() => {
+    if (bottomFollowLoopRef.current !== null) return;
+    const step = () => {
+      const viewport = scrollRef.current;
+      if (
+        !viewport ||
+        !bottomLockedRef.current ||
+        prependAnchorRef.current ||
+        scrollIntentRef.current !== null
+      ) {
+        bottomFollowLoopRef.current = null;
+        return;
+      }
+      const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+      const distance = target - viewport.scrollTop;
+      // 一次变化超过一屏半：那不是流式增长，而是整块替换（换任务、消息被替换）。
+      // 这种位移逐帧滑过去要好几秒，读起来更糟，直接落位。
+      if (Math.abs(distance) > viewport.clientHeight * 1.5) {
+        if (distance < 0) {
+          viewport.scrollTop = snapToDevicePixel(target);
+          previousScrollTopRef.current = viewport.scrollTop;
+        }
+        bottomFollowLoopRef.current = null;
+        return;
+      }
+      // 微小的回缩（服务端回声替换乐观气泡、markdown 重新折行）不往回退，
+      // 否则每来一次就闪一下 —— 那正是「抖」。
+      if (distance > -TRANSCRIPT_BOTTOM_THRESHOLD && distance < 0) {
+        bottomFollowLoopRef.current = null;
+        return;
+      }
+      const frame = easedBottomFollow({
+        current: viewport.scrollTop,
+        target,
+        devicePixelRatio: window.devicePixelRatio,
+      });
+      if (!frame) {
+        bottomFollowLoopRef.current = null;
+        return;
+      }
+      viewport.scrollTop = frame.scrollTop;
+      previousScrollTopRef.current = viewport.scrollTop;
+      bottomFollowLoopRef.current = frame.settled ? null : requestAnimationFrame(step);
+    };
+    bottomFollowLoopRef.current = requestAnimationFrame(step);
+  }, []);
+  useEffect(() => stopBottomFollow, [stopBottomFollow]);
   const scrollToBottomNow = useCallback((mode: "exact" | "grow" = "exact") => {
     const viewport = scrollRef.current;
     if (
@@ -384,23 +441,17 @@ const SessionThreadContents = memo(function SessionThreadContents({
       scrollIntentRef.current !== null
     )
       return;
-    const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-    // Growing follow never moves the view back up for a small shrink (the
-    // server echo replacing the optimistic bubble, markdown re-wrapping):
-    // bouncing backwards there is the visible "抖". A large shift is a real
-    // layout change (a replaced message), so that one still follows exactly.
-    if (mode === "grow" && target <= viewport.scrollTop) {
-      if (viewport.scrollTop - target > TRANSCRIPT_BOTTOM_THRESHOLD) {
-        viewport.scrollTop = snapToDevicePixel(target);
-        previousScrollTopRef.current = viewport.scrollTop;
-      }
+    if (mode === "grow" && !prefersReducedMotion()) {
+      startBottomFollow();
       return;
     }
+    stopBottomFollow();
+    const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
     // Snap to whole device pixels so the text is painted on the pixel grid.
     const snapped = snapToDevicePixel(target);
     if (Math.abs(viewport.scrollTop - snapped) > 0.5) viewport.scrollTop = snapped;
     previousScrollTopRef.current = viewport.scrollTop;
-  }, []);
+  }, [startBottomFollow, stopBottomFollow]);
   const scheduleScrollToBottom = useCallback(() => {
     if (!bottomLockedRef.current) return;
     // One coalesced follow-up for explicit navigation, not a per-commit settle loop.
@@ -720,25 +771,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
       frame = requestAnimationFrame(pin);
       if (!dirty) return;
       dirty = false;
-      const viewport = scrollRef.current;
-      if (
-        !viewport ||
-        !bottomLockedRef.current ||
-        prependAnchorRef.current ||
-        scrollIntentRef.current !== null
-      )
-        return;
-      const next = pinnedTranscriptScrollTop(viewport, { maxDistance: viewport.clientHeight });
-      if (next === null) return;
-      viewport.scrollTop = next;
-      previousScrollTopRef.current = viewport.scrollTop;
+      scrollToBottomNow("grow");
     };
     frame = requestAnimationFrame(pin);
     return () => {
       cancelAnimationFrame(frame);
       observer?.disconnect();
     };
-  }, [isWorking]);
+  }, [isWorking, scrollToBottomNow]);
   useLayoutEffect(() => {
     const viewport = scrollRef.current;
     const pendingAnchor = prependAnchorRef.current;
@@ -1143,7 +1183,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
         if (!["http:", "https:"].includes(url.protocol) || url.username || url.password)
           throw new Error();
       } catch {
-        showErrorToast("Could not open link", new Error("Only safe HTTP(S) links can be opened"));
+        showErrorToast("无法打开链接", new Error("只支持安全的 HTTP(S) 链接"));
         return;
       }
 
@@ -1178,7 +1218,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       }
       void palot
         .browserCommand(browser.bindingID, { type: "tabs.open", url: url.href, focus: true })
-        .catch((error: unknown) => showErrorToast("Could not open link in Palot Browser", error));
+        .catch((error: unknown) => showErrorToast("无法在 Palot 浏览器中打开链接", error));
     },
     [
       browser?.bindingID,
@@ -1202,7 +1242,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       await palot.compactSession(session.id);
       handleMessageAdmitted();
     } catch (error) {
-      showErrorToast("Could not compact context", error);
+      showErrorToast("无法压缩上下文", error);
     }
   }, [handleMessageAdmitted, session.id]);
   // Keep the context value stable while text streams; windows change only per step.
@@ -1621,7 +1661,7 @@ export const SessionThreadHeader = memo(function SessionThreadHeader({
   const title = useSessionTitleEditor(session);
   useEffect(() => {
     const previous = document.title;
-    document.title = session.title ?? "Untitled task";
+    document.title = session.title ?? "未命名任务";
     return () => {
       document.title = previous;
     };
@@ -3040,7 +3080,7 @@ function activityDetailRows(
         groupSameFileReads && isPlainReadEntry(entry)
           ? projectToolExecution(entry.part, entry.index)
           : null;
-      if (execution?.kind === "read" && execution.path !== "Unknown path") {
+      if (execution?.kind === "read" && execution.path !== "未知路径") {
         const previous = rows.at(-1);
         const existing =
           previous?.kind === "read" && previous.path === execution.path ? previous : null;

@@ -40,6 +40,57 @@ export interface TranscriptScrollMetrics {
   clientHeight: number;
 }
 
+/** 缓动到底时允许的残差（CSS px）。 */
+export const BOTTOM_FOLLOW_SETTLE_PX = 0.5;
+
+/** 用户要求减少动效时，底边跟随直接落位，不再逐帧滑过去。 */
+export function prefersReducedMotion(): boolean {
+  return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
+export interface BottomFollowFrame {
+  /** 这一帧应写入的 scrollTop（已对齐设备像素）。 */
+  scrollTop: number;
+  /** 写入后是否已贴底，可以停表。 */
+  settled: boolean;
+}
+
+/**
+ * 流式回复的底边跟随为什么需要缓动：服务端一次数据块过来，markdown 是**整块**
+ * 挂上去的，滚动高度会一步长 50~200px。一帧就直接跳到新的底部，屏幕上已有的
+ * 文字就是「啪」地跳一下 —— 用户说的「文字还是会跳动」正是这个。
+ *
+ * 这里按剩余距离的比例逐帧靠近（首帧最多 maxStep），100px 的增长摊成十几帧、
+ * 约 250ms 的连续上移，眼睛看到的是滑动而不是跳跃。目标每帧重取，边流边跟。
+ */
+export function easedBottomFollow(
+  input: {
+    current: number;
+    target: number;
+    devicePixelRatio?: number;
+    fraction?: number;
+    minStep?: number;
+    maxStep?: number;
+  },
+): BottomFollowFrame | null {
+  const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
+  const current = snapToDevicePixel(input.current, ratio);
+  const target = snapToDevicePixel(input.target, ratio);
+  const distance = target - current;
+  if (Math.abs(distance) <= BOTTOM_FOLLOW_SETTLE_PX) return null;
+  const fraction = input.fraction ?? 0.25;
+  const minStep = input.minStep ?? 2;
+  const maxStep = input.maxStep ?? 24;
+  const scaled = Math.abs(distance) * fraction;
+  const magnitude = Math.min(Math.abs(distance), Math.max(minStep, Math.min(maxStep, scaled)));
+  const next = snapToDevicePixel(current + Math.sign(distance) * magnitude, ratio);
+  // 对齐像素后可能原地不动（差距不足半个设备像素）：直接落到目标，别空转。
+  if (Math.abs(next - current) < 1 / ratio) {
+    return { scrollTop: target, settled: true };
+  }
+  return { scrollTop: next, settled: Math.abs(target - next) <= BOTTOM_FOLLOW_SETTLE_PX };
+}
+
 export type TranscriptScrollIntent = "up" | "scrollbar" | "anchor" | null;
 
 export interface TranscriptScrollFrame {
