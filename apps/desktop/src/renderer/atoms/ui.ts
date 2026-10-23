@@ -139,10 +139,20 @@ export const inboxViewPreferencesAtom = persistedAtom({
 });
 export const AUTO_SETTLE_DAY_CHOICES = [1, 3, 7, 14] as const;
 export type AutoSettleAfterDays = (typeof AUTO_SETTLE_DAY_CHOICES)[number] | null;
+
+// 2026-10-23 用户拍板自动结算关掉：此前出厂默认 3 天已写进既有安装的持久层，
+// 改默认值对老安装无效——首次加载按守卫旗标**一次性**清掉这条持久值，之后不再动
+// （用户以后在设置里主动选档会被尊重）。
+try {
+  if (!window.localStorage.getItem("palot.desktop.state.inbox.auto-settle-cleared-once")) {
+    window.localStorage.removeItem("palot.desktop.state.inbox.auto-settle-after-days");
+    window.localStorage.setItem("palot.desktop.state.inbox.auto-settle-cleared-once", "1");
+  }
+} catch {}
 /** Settle idle Inbox tasks after this many days without activity; `null` turns it off. */
 export const autoSettleAfterDaysAtom = persistedAtom({
   key: "inbox.auto-settle-after-days",
-  initialValue: 3 as AutoSettleAfterDays,
+  initialValue: null as AutoSettleAfterDays,
   validate: (value): value is AutoSettleAfterDays =>
     value === null || AUTO_SETTLE_DAY_CHOICES.some((days) => days === value),
 });
