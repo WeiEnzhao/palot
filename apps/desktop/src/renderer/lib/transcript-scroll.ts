@@ -72,27 +72,27 @@ export function prefersReducedMotion(): boolean {
 }
 
 export interface BottomFollowFrame {
-  /** 这一帧应写入的 scrollTop（已对齐设备像素）。 */
-  scrollTop: number;
+  /** 这一帧应写入的 scrollTop（已对齐设备像素）；null = 本帧不动。 */
+  scrollTop: number | null;
+  /** 本帧结束后的跟随速度（px/秒），下一帧传回来做速度低通。 */
+  speedPxPerSecond: number;
   /** 写入后是否已贴底，可以停表。 */
   settled: boolean;
 }
 
 /**
- * 流式回复的底边跟随为什么需要缓动：服务端一次数据块过来，markdown 是**整块**
- * 挂上去的，滚动高度会一步长 50~200px。一帧就直接跳到新的底部，屏幕上已有的
- * 文字就是「啪」地跳一下 —— 用户说的「文字还是会跳动」正是这个。
+ * 流式跟随 = **速度状态机**，不是「按距离缓动」。
  *
- * 这里按剩余距离的比例逐帧靠近（首帧最多 maxStep），100px 的增长摊成十几帧、
- * 约 250ms 的连续上移，眼睛看到的是滑动而不是跳跃。目标每帧重取，边流边跟。
+ * 为什么：内容高度是「整行跳」的（一行 16~25px，一秒 3~8 次）。任何「按剩余
+ * 距离缓动」的实现都会在每批内容到达时从 0 速起步：一批 = 猛冲 3.5px/帧 →
+ * 减速 → 停，一秒重复四五次 —— 肉眼看到的就是「跳」。上一版在滞后超过预算时
+ * 还会额外切到追赶分支，速度在 1px/帧 与 3.5px/帧 之间硬切，等于每批都抖一下。
+ *
+ * 现在：速度本身是状态（`speedPxPerSecond`），每帧只做低通（110ms 时间常数），
+ * 一批内容只会让速度「平滑地加速一点」，绝不会 0↔3.5px 硬切；流式期间还保留
+ * 一行（16px）的滞后作为缓冲，跟随器任何时候都有余量往前走，不会追到底之后
+ * 停住等下一批。
  */
-/** 匀速跟随：把「内容长高的平均速率」低通成一个速度，每帧按这个速度推进，
- * 残差只做很小的比例修正，并硬性限制单帧步长。
- *
- * 为什么不是「按剩余距离缓动」：内容是一批一批到的（终端输出一行 16px、正文
- * 一块 10px），缓动每次都要从零速重新起步 —— 每批都是「猛冲 5px → 衰减到
- * 0.8px → 停」，一秒三次，眼睛看到的就是闪。匀速跟随的速度跨批次延续，
- * 视觉上是持续滑动；`maxStepPx` 让「一帧跳一大截」在物理上不可能发生。 */
 export function smoothBottomFollow(input: {
   current: number;
   target: number;
@@ -100,54 +100,101 @@ export function smoothBottomFollow(input: {
   ratePerSecond: number;
   /** 本帧时长（毫秒），用于把速率换算成位移 */
   deltaMs: number;
+  /** 上一帧的跟随速度（px/秒），由本函数返回、调用方逐帧传回。 */
+  speedPxPerSecond?: number;
+  /** 正在流式输出：保留一行滞后做缓冲，速度由内容增长速率驱动。 */
+  streaming?: boolean;
   /** 单帧最大推进量（CSS px）。给定上限 = 永远不会出现肉眼可见的跳变。 */
   maxStepPx?: number;
-  /** 允许保留的滞后量（CSS px），用来吸收批次尖峰。 */
-  lagBudgetPx?: number;
-  /** 稳定状态下的目标滞后（CSS px）。 */
-  lagTargetPx?: number;
+  /** 设备像素比，用于把落位对齐到设备像素网格。 */
+  devicePixelRatio?: number;
   settlePx?: number;
-}): BottomFollowFrame | null {
+}): BottomFollowFrame {
   const settle = input.settlePx ?? BOTTOM_FOLLOW_SETTLE_PX;
-  const distance = input.target - input.current;
-  if (Math.abs(distance) <= settle) return null;
-
-  const dt = Math.min(64, Math.max(4, input.deltaMs)) / 1000;
-  // 上限随「还差多少」放大：差一行时严格按 3px/帧滑（肉眼是滑动不是跳动），
-  // 差一大块时允许更快，否则大段内容要好几秒才追平。
-  const maxStep =
-    input.maxStepPx ?? Math.max(SMOOTH_FOLLOW_MAX_STEP_PX, Math.abs(distance) * 0.15);
-  const lagBudget = input.lagBudgetPx ?? SMOOTH_FOLLOW_LAG_BUDGET_PX;
-  const lagTarget = input.lagTargetPx ?? SMOOTH_FOLLOW_LAG_TARGET_PX;
+  const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
+  const grid = 1 / ratio;
+  const dt = Math.min(64, Math.max(4, input.deltaMs));
+  const dtSec = dt / 1000;
+  const streaming = input.streaming ?? false;
   const rate = Math.max(0, input.ratePerSecond);
-  // 主项：按「内容到来的平均速率」匀速前进 —— 这就是连续滑动的来源。
-  // 副项：把滞后缓慢拉回半个行高。这一项必须很小，大了就退化成「猛冲」，小了
-  // 则速度估计的误差会把滞后耗干（滞后归零 ⇒ 空转帧 ⇒ 滑一下停一下）。
-  let step = rate * dt + (distance - lagTarget) * SMOOTH_FOLLOW_LAG_GAIN;
-  // 滞后超过预算（默认一行）才额外去追，避免大段内容要好几秒才追平。
-  if (distance > lagBudget) step = Math.max(step, Math.min(distance - lagBudget, maxStep));
-  // 流停了（速率掉下来）就收尾，别把最后一行永远留在视口外。
-  if (rate < SMOOTH_FOLLOW_IDLE_RATE) step = Math.max(step, distance * SMOOTH_FOLLOW_IDLE_GAIN);
-  if (distance < 0) step = Math.min(-settle * 0.5, step);
-  step = Math.sign(step) * Math.min(Math.abs(step), maxStep);
-  // 永不越过目标：越过就等于往回拉，看起来正是抖动。
-  step = distance > 0 ? Math.min(step, distance) : Math.max(step, distance);
-  if (Math.abs(step) < 0.05) return null;
-  const next = input.current + step;
-  return { scrollTop: next, settled: Math.abs(input.target - next) <= settle };
+  const distance = input.target - input.current;
+  const previousSpeed = Math.max(0, input.speedPxPerSecond ?? 0);
+  const maxStep = input.maxStepPx ?? SMOOTH_FOLLOW_BIG_STEP_CAP_PX;
+
+  const write = (step: number): BottomFollowFrame => {
+    let snapped = snapToDevicePixel(input.current + step, ratio);
+    // 不足半个设备像素时**至少走一格**：绝不写亚像素，也绝不原地空转
+    // （空转一帧，下一批内容就得重新起步，节奏立刻变成一顿一挫）。
+    if (Math.abs(snapped - input.current) < 0.5 * grid) {
+      snapped = input.current + Math.sign(step) * grid;
+    }
+    if (step > 0) {
+      if (snapped > input.target) snapped = Math.floor(input.target * ratio) / ratio;
+      if (snapped < input.current) snapped = input.current;
+    } else {
+      if (snapped < input.target) snapped = Math.ceil(input.target * ratio) / ratio;
+      if (snapped > input.current) snapped = input.current;
+    }
+    return {
+      scrollTop: snapped,
+      speedPxPerSecond: Math.abs(step) / Math.max(dtSec, 0.001),
+      settled: Math.abs(input.target - snapped) <= settle,
+    };
+  };
+
+  // 内容整块缩回（替换消息、渲染回滚）：同样慢慢退，不瞬移。
+  if (distance < -settle) {
+    const want = Math.max(0, (-distance - settle) * FOLLOW_LAG_GAIN_PER_SEC);
+    const speed = lowPassSpeed(previousSpeed, want, dt);
+    const step = -Math.min(speed * dtSec, -distance, maxStep);
+    if (Math.abs(step) < 0.05) return { scrollTop: null, speedPxPerSecond: speed, settled: false };
+    return write(step);
+  }
+  if (distance <= settle) {
+    // 已贴底：速度归零，等下一批内容（流式期间调用方让循环常驻）。
+    return { scrollTop: null, speedPxPerSecond: lowPassSpeed(previousSpeed, 0, dt), settled: true };
+  }
+
+  // 流式期间滞后目标 = 一行（正好吃掉 paddingEnd 的空白，不会切到正文）；
+  // 不流时滞后归零，收尾必须真正贴底。
+  const lagTarget = streaming ? FOLLOW_LAG_TARGET_PX : 0;
+  // 目标速度 = 内容增长速率（主项）+ 超出滞后目标的那部分按比例加速（副项）。
+  // 副项增益取 10/s：多出 16px 才多 160px/s，仍属于「滑动」而不是「甩」。
+  const want = Math.max(rate, (distance - lagTarget) * FOLLOW_LAG_GAIN_PER_SEC);
+  const speed = lowPassSpeed(previousSpeed, want, dt);
+  if (speed * dtSec < 0.05 && rate <= 0) {
+    return { scrollTop: null, speedPxPerSecond: speed, settled: false };
+  }
+  const step = Math.min(Math.max(speed * dtSec, grid), distance, maxStep);
+  return write(step);
 }
 
-/** 单帧最大推进量：16px 一行会在 ≥6 帧里滑完，肉眼看到的是滑动而不是跳跃。 */
+/** 速度低通：绝不会一帧之内从 0 跳到 200px/s —— 那正是「猛冲一下」的来源。 */
+export function lowPassSpeed(previous: number, target: number, deltaMs: number): number {
+  if (!Number.isFinite(target)) return Math.max(0, previous);
+  const alpha = 1 - Math.exp(-Math.max(1, deltaMs) / SMOOTH_FOLLOW_SPEED_TAU_MS);
+  return Math.max(0, previous + (Math.max(0, target) - previous) * alpha);
+}
+
+/** 单帧最大推进量：16px 一行会在 ≥3 帧里滑完，肉眼看到的是滑动而不是跳跃。 */
 export const SMOOTH_FOLLOW_MAX_STEP_PX = 3;
-/** 允许保留的滞后（CSS px）：约一行。靠这点缓冲把「一批内容一次到达」摊成匀速滑动。 */
+/**
+ * 单帧步长上限（CSS px）。没有它时 step = 剩余距离 × 0.15 —— 差 1000px 就是
+ * 150px/帧（≈9000px/s），屏幕上的文字等于被甩过去，用户看到的就是「跳」。
+ * 12px/帧 ≈ 720px/s（120Hz 屏翻倍），是「快速滚动」而不是「瞬移」。
+ */
+export const SMOOTH_FOLLOW_BIG_STEP_CAP_PX = 12;
+/** 流式期间的滞后目标 = 一行：跟随器永远有余量往前走，不会追到底再等下一批。 */
+export const FOLLOW_LAG_TARGET_PX = 16;
+/** 超出滞后目标的部分换算成额外速度的增益（1/秒）。 */
+export const FOLLOW_LAG_GAIN_PER_SEC = 10;
+/** 速度低通时间常数（毫秒）：决定「加速」有多柔。 */
+export const SMOOTH_FOLLOW_SPEED_TAU_MS = 110;
+/** 滞后预算 / 空闲阈值 / 空闲增益（保留给旧调用方与测试引用）。 */
 export const SMOOTH_FOLLOW_LAG_BUDGET_PX = 20;
-/** 稳定状态下的目标滞后 = 半行。留一点缓冲，运动的节奏就由跟随器决定而不是被批次牵着走。 */
-export const SMOOTH_FOLLOW_LAG_TARGET_PX = 10;
-/** 把滞后拉回目标值的增益。必须小（≤0.1），否则又变回「按剩余距离猛冲」。 */
+export const SMOOTH_FOLLOW_LAG_TARGET_PX = 16;
 export const SMOOTH_FOLLOW_LAG_GAIN = 0.08;
-/** 速率低于这个值就认为流停了，开始收尾追平。 */
 export const SMOOTH_FOLLOW_IDLE_RATE = 24;
-/** 收尾阶段每帧消掉的残差比例。 */
 export const SMOOTH_FOLLOW_IDLE_GAIN = 0.25;
 /** 速率估计的低通时间常数：越小越灵敏，越大越平滑。 */
 export const SMOOTH_FOLLOW_RATE_TAU_MS = 160;

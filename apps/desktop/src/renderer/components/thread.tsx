@@ -97,7 +97,6 @@ import {
   readTranscriptScrollUpdate,
   normalizeTranscriptWheelDelta,
   scheduleTranscriptScrollFrame,
-  snapToDevicePixel,
   transcriptKeyboardScrollDelta,
   transcriptScrollTargetConsumesDelta,
   TRANSCRIPT_BOTTOM_THRESHOLD,
@@ -360,6 +359,11 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // 底边跟随的「内容增长速率」：由虚拟列表每次测量时更新，跨批次延续，
   // 让 16px 一行、每秒 5 行的增长被摊成匀速滑动，而不是每行一次猛冲。
   const followRateRef = useRef(0);
+  // 跟随速度本身是状态：逐帧低通，绝不从 0 一帧跳到 200px/s（那一下就是「猛冲」）。
+  const followSpeedRef = useRef(0);
+  const followFrameAtRef = useRef(0);
+  // 是否正在流式输出：流式期间跟随循环常驻，不靠 onChange 每批重启。
+  const streamingRef = useRef(false);
   const followGrowthRef = useRef<{ height: number; at: number } | null>(null);
   const touchYRef = useRef<number | null>(null);
   const coldTranscriptPendingRef = useRef(transcript.isPending && messages.length === 0);
@@ -435,15 +439,12 @@ const SessionThreadContents = memo(function SessionThreadContents({
     bottomFollowLoopRef.current = null;
     if (loop !== null) cancelAnimationFrame(loop);
   }, []);
-  // 流式内容整块到达时，底边不是「一步跳过去」而是逐帧滑过去。原因见
-  // easedBottomFollow 的注释：一步跳 = 屏幕上已有的文字「啪」地跳一下。
+  // 底边跟随：一个常驻的逐帧循环，速度是状态、逐帧低通。流式期间一直跑，
+  // 不流时才在贴底后自停 —— 批次之间不再重启循环（重启那一帧就是「顿一下」）。
   const startBottomFollow = useCallback(() => {
     if (bottomFollowLoopRef.current !== null) return;
-    // 兜底：一轮缓动最多跑 2 秒。正常情况下几帧就结束，跑满意味着目标一直在
-    // 变（流式输出），交给下一次变更重启即可，不要无限追。
-    let frames = 0;
-    let lastFrameAt = performance.now();
     const step = () => {
+      bottomFollowLoopRef.current = null;
       const viewport = scrollRef.current;
       if (
         !viewport ||
@@ -451,61 +452,49 @@ const SessionThreadContents = memo(function SessionThreadContents({
         prependAnchorRef.current ||
         scrollIntentRef.current !== null
       ) {
-        bottomFollowLoopRef.current = null;
+        followSpeedRef.current = 0;
         return;
       }
       const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
       const distance = target - viewport.scrollTop;
-      // 一次变化超过一屏半：那不是流式增长，而是整块替换（新工具卡整体出现、
-      // 换任务、消息被替换）。锁定状态下直接落位；逐帧滑过去要好几秒，更糟。
-      // ⚠️ 这里必须双向落位：只处理「越界」会让视图在内容暴涨后永远停在半路，
-      // 而 locked 仍是 true —— 之后每次都因距离过大退出，再也不跟随。
-      if (Math.abs(distance) > viewport.clientHeight * 1.5) {
-        viewport.scrollTop = snapToDevicePixel(target);
-        previousScrollTopRef.current = viewport.scrollTop;
-        bottomFollowLoopRef.current = null;
-        return;
-      }
-      // 微小的回缩（服务端回声替换乐观气泡、markdown 重新折行）不往回退，
-      // 否则每来一次就闪一下 —— 那正是「抖」。
-      if (distance > -TRANSCRIPT_BOTTOM_THRESHOLD && distance < 0) {
-        bottomFollowLoopRef.current = null;
+      // 整屏级别的变化（换会话、整块替换）不拖：解除锁定，让「回到底部」出现。
+      if (distance > viewport.clientHeight * 1.5) {
+        followSpeedRef.current = 0;
+        setBottomLock(false);
         return;
       }
       const now = performance.now();
+      const dt = now - (followFrameAtRef.current || now - 16.7);
+      followFrameAtRef.current = now;
+      const streaming = streamingRef.current;
       const frame = smoothBottomFollow({
         current: viewport.scrollTop,
         target,
         ratePerSecond: followRateRef.current,
-        deltaMs: now - lastFrameAt,
+        deltaMs: dt,
+        speedPxPerSecond: followSpeedRef.current,
+        streaming,
+        devicePixelRatio: window.devicePixelRatio,
       });
-      lastFrameAt = now;
-      if (!frame) {
-        bottomFollowLoopRef.current = null;
-        return;
+      followSpeedRef.current = frame.speedPxPerSecond;
+      let moved = false;
+      if (frame.scrollTop !== null) {
+        const before = viewport.scrollTop;
+        viewport.scrollTop = frame.scrollTop;
+        previousScrollTopRef.current = viewport.scrollTop;
+        moved = Math.abs(viewport.scrollTop - before) > 0.05;
       }
-      const before = viewport.scrollTop;
-      viewport.scrollTop = frame.scrollTop;
-      const after = viewport.scrollTop;
-      previousScrollTopRef.current = after;
-      // 读回真实位置：浏览器会把超出上限的写入钳回去，被钳住时「还差一点」
-      // 永远补不上，若不在这里收工就会每帧重写滚动位置、把整屏文字在亚像素
-      // 位置反复重绘 —— 那正是「到底就开始抖」的根因。
-      if (frame.settled || Math.abs(after - before) < 0.05) {
-        bottomFollowLoopRef.current = null;
-        return;
-      }
-      if (++frames > MAX_BOTTOM_FOLLOW_FRAMES) {
-        bottomFollowLoopRef.current = null;
+      // 流式期间常驻；流停了才允许在贴底/被钳住时收工。
+      if (!streaming && (frame.settled || !moved)) {
+        followSpeedRef.current = 0;
         return;
       }
       bottomFollowLoopRef.current = requestAnimationFrame(step);
     };
-    frames = 0;
     bottomFollowLoopRef.current = requestAnimationFrame(step);
-  }, [compensateAnchorShift]);
+  }, [setBottomLock]);
   useEffect(() => stopBottomFollow, [stopBottomFollow]);
-  const scrollToBottomNow = useCallback((mode: "exact" | "grow" = "exact") => {
+  const scrollToBottomNow = useCallback((mode: "instant" | "exact" | "grow" = "exact") => {
     const viewport = scrollRef.current;
     if (
       !viewport ||
@@ -514,9 +503,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
       scrollIntentRef.current !== null
     )
       return;
-    if (mode === "grow" && !prefersReducedMotion()) {
+    // "instant" 只给用户主动的跳转用（点「回到底部」/发消息/切会话）。
+    // 其余路径一律交给跟随器：流式期间哪怕一帧瞬移，就是一次肉眼可见的跳。
+    if (mode !== "instant" && !prefersReducedMotion()) {
       startBottomFollow();
-      return;
+      if (mode === "grow") return;
+      const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+      // 收尾时残余很小（≤8px）才允许直接写平，肉眼无感。
+      if (Math.abs(viewport.scrollTop - target) > 8) return;
     }
     stopBottomFollow();
     // 贴底就是「底边贴住视口底边」：直接写 scrollHeight - clientHeight。
@@ -534,7 +528,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const scrollToBottom = useCallback(() => {
     scrollIntentRef.current = null;
     setBottomLock(true);
-    scrollToBottomNow();
+    scrollToBottomNow("instant");
     scheduleScrollToBottom();
   }, [scheduleScrollToBottom, scrollToBottomNow, setBottomLock]);
   const [models, setModels] = useState<PalotModel[]>([]);
@@ -631,6 +625,11 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const latestUserTurnIndex = turnRows.findLastIndex((row) => row.turn.user !== null);
   const activeTurnIndex = turnRows.at(-1)?.turn.status === "working" ? turnRows.length - 1 : -1;
   const isWorking = activeTurnIndex >= 0;
+  // 流式期间跟随循环常驻：内容随时会到，循环不能每批重启（重启那一帧 = 顿）。
+  useEffect(() => {
+    streamingRef.current = isWorking;
+    if (isWorking) startBottomFollow();
+  }, [isWorking, startBottomFollow]);
   const [pinnedVirtualTurnIDs, setPinnedVirtualTurnIDs] = useState<string[]>([]);
   const [prependPinnedTurnID, setPrependPinnedTurnID] = useState<string | null>(null);
   const [navigationPinnedTurnID, setNavigationPinnedTurnID] = useState<string | null>(null);

@@ -4,6 +4,7 @@ import {
   anchorScrollCompensation,
   noteGrowthRate,
   smoothBottomFollow,
+  SMOOTH_FOLLOW_BIG_STEP_CAP_PX,
   SMOOTH_FOLLOW_MAX_STEP_PX,
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
@@ -363,71 +364,124 @@ describe("prependAnchorFrame", () => {
 });
 
 describe("smooth bottom follow", () => {
-  const run = (start: number, target: number, rate = 88, frames = 400) => {
-    let current = start;
+  // 模拟真实的 60fps 循环：速度状态逐帧回传，和 thread.tsx 的用法一致。
+  const simulate = (opts: {
+    growth?: number[];      // 每帧的内容增长（px）
+    start?: number;
+    frames?: number;
+    streaming?: boolean;
+    rate?: number;
+  }) => {
+    const growth = opts.growth ?? [];
+    let current = opts.start ?? 0;
+    let target = current;
+    let speed = 0;
+    let time = 0;
     const steps: number[] = [];
-    for (let i = 0; i < frames; i++) {
-      const frame = smoothBottomFollow({ current, target, ratePerSecond: rate, deltaMs: 16.7 });
-      if (!frame) return { current, steps, settled: true };
-      steps.push(+(frame.scrollTop - current).toFixed(3));
-      current = frame.scrollTop;
-      if (frame.settled) return { current, steps, settled: true };
+    const speeds: number[] = [];
+    for (let i = 0; i < (opts.frames ?? growth.length); i++) {
+      target += growth[i] ?? 0;
+      time += 16.7;
+      const frame = smoothBottomFollow({
+        current,
+        target,
+        ratePerSecond: opts.rate ?? 60,
+        deltaMs: 16.7,
+        speedPxPerSecond: speed,
+        streaming: opts.streaming ?? true,
+        devicePixelRatio: 2.4,
+      });
+      speed = frame.speedPxPerSecond;
+      speeds.push(speed);
+      if (frame.scrollTop !== null) {
+        steps.push(+(frame.scrollTop - current).toFixed(3));
+        current = frame.scrollTop;
+      } else {
+        steps.push(0);
+      }
     }
-    return { current, steps, settled: false };
+    return { current, target, steps, speeds, speed };
   };
 
   it("does nothing when already at the bottom", () => {
-    expect(smoothBottomFollow({ current: 900, target: 900, ratePerSecond: 88, deltaMs: 16.7 })).toBeNull();
-    expect(smoothBottomFollow({ current: 899.6, target: 900, ratePerSecond: 88, deltaMs: 16.7 })).toBeNull();
+    const frame = smoothBottomFollow({ current: 900, target: 900, ratePerSecond: 88, deltaMs: 16.7 });
+    expect(frame.scrollTop).toBeNull();
+    expect(frame.settled).toBe(true);
   });
 
-  it("spreads one 16px line of output over at least six frames", () => {
-    // 这是「不要跳」的硬约束：一行终端输出 16px，一帧滑完就是一次肉眼可见的跳。
-    const { steps } = run(1000, 1016);
-    expect(Math.max(...steps.map(Math.abs))).toBeLessThanOrEqual(SMOOTH_FOLLOW_MAX_STEP_PX + 1e-9);
-    expect(steps.length).toBeGreaterThanOrEqual(6);
+  it("spreads one 16px line over several frames instead of jumping", () => {
+    const { steps } = simulate({ growth: [16], frames: 20 });
+    const moved = steps.filter((step) => step > 0);
+    expect(Math.max(...moved)).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1e-9);
+    expect(moved.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("keeps the same direction and speed instead of bursting then decaying", () => {
-    // 按内容增长速率匀速推进：帧间步长差异应当很小（缓动实现这里是 5→3.75→2.9→…）。
-    const { steps } = run(1000, 1016, 960);
-    const middle = steps.slice(1, -1);
-    if (middle.length > 1) {
-      const spread = Math.max(...middle) - Math.min(...middle);
-      expect(spread).toBeLessThan(1);
+  it("never teleports a big block of content", () => {
+    const { steps, current, target } = simulate({ growth: [1000], frames: 120, rate: 0 });
+    // 吸附到设备像素网格时最多再走半格（dpr=2.4 ⇒ 0.42px）
+    expect(Math.max(...steps.map(Math.abs))).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
+    expect(Math.abs(target - current)).toBeLessThanOrEqual(1);
+  });
+
+  it("keeps velocity continuous across bursts (no restart-from-zero jitter)", () => {
+    // 真实流式：一行 16px 每 ~6 帧到一次。旧实现的节奏是「0 → 3.5px/帧 → 0」，
+    // 速度在帧与帧之间硬切，肉眼就是「跳一下、停一下」。
+    const growth = Array.from({ length: 180 }, (_, i) => (i % 6 === 0 ? 16 : 0));
+    const { steps, speeds } = simulate({ growth, frames: 180 });
+    const moving = steps.filter((step) => step > 0);
+    // 1) 有内容可跟时，绝不出现空转帧（空转 = 下一批重新起步）
+    expect(steps.filter((step) => step === 0).length).toBe(0);
+    // 2) 帧间速度变化有界：低通 110ms / 16.7ms 一帧 ⇒ 每帧最多变化 ~14%
+    for (let i = 1; i < speeds.length; i++) {
+      const previous = speeds[i - 1] ?? 0;
+      const delta = Math.abs((speeds[i] ?? 0) - previous);
+      expect(delta).toBeLessThanOrEqual(Math.max(12, previous * 0.2) + 1e-9);
     }
-    expect(steps.every((step) => step > 0)).toBe(true);
+    // 3) 单帧步长依旧封顶，不会出现一帧一大截
+    expect(Math.max(...moving)).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
   });
 
-  it("never overshoots and settles within a pixel", () => {
-    const { current, steps, settled } = run(0, 600, 900);
-    expect(settled).toBe(true);
-    expect(current).toBeLessThanOrEqual(600);
-    expect(600 - current).toBeLessThanOrEqual(1);
+  it("never overshoots and settles flush once the stream stops", () => {
+    const { current, target, steps } = simulate({ growth: [16, 0, 16, 0], frames: 200, streaming: false, rate: 0 });
+    expect(current).toBeLessThanOrEqual(target);
+    expect(target - current).toBeLessThanOrEqual(1);
     expect(steps.every((step) => step >= 0)).toBe(true);
   });
 
-  it("moves backwards when the content shrinks, still capped", () => {
-    const step = smoothBottomFollow({ current: 1100, target: 1000, ratePerSecond: 88, deltaMs: 16.7 });
-    expect(step?.scrollTop).toBeLessThan(1100);
-    expect(step?.scrollTop).toBeGreaterThan(1000);
-    expect(1100 - (step?.scrollTop ?? 1100)).toBeLessThanOrEqual(
-      Math.max(SMOOTH_FOLLOW_MAX_STEP_PX, 100 * 0.15) + 1e-9,
-    );
-    expect(Math.abs(run(1100, 1000).current - 1000)).toBeLessThanOrEqual(1);
+  it("moves backwards slowly when the content shrinks", () => {
+    const frame = smoothBottomFollow({
+      current: 1100,
+      target: 1000,
+      ratePerSecond: 0,
+      deltaMs: 16.7,
+      speedPxPerSecond: 120,
+    });
+    expect(frame.scrollTop).not.toBeNull();
+    expect(frame.scrollTop!).toBeLessThan(1100);
+    expect(frame.scrollTop!).toBeGreaterThan(1000);
+    expect(1100 - frame.scrollTop!).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1e-9);
   });
 
   it("treats a sub-pixel residual as settled instead of chasing it", () => {
-    expect(smoothBottomFollow({ current: 100, target: 100.7, ratePerSecond: 88, deltaMs: 16.7 })).toBeNull();
+    const frame = smoothBottomFollow({ current: 100, target: 100.7, ratePerSecond: 88, deltaMs: 16.7 });
+    expect(frame.scrollTop).toBeNull();
+    expect(frame.settled).toBe(true);
   });
 
-  it("writes fractional scroll offsets instead of snapping to the device grid", () => {
-    // dpr=2.4 下内容坐标是小数；吸附网格会留下 0.2~0.4px 残差，每批内容重绘一次
-    // 子像素位置，看起来就是闪。跟随必须写精确值。
-    const frame = smoothBottomFollow({ current: 2118.33, target: 2400, ratePerSecond: 200, deltaMs: 16.7 });
-    expect(frame).not.toBeNull();
-    expect(frame!.scrollTop).toBeGreaterThan(2118.33);
-    expect(frame!.scrollTop).not.toBe(Math.round(frame!.scrollTop));
+  it("lands on the device pixel grid so the compositor never resamples the text", () => {
+    // 亚像素落位会让合成器每帧重新采样文字层（边缘忽清忽糊 = 闪）；
+    // 对齐设备像素（dpr=2.4 时一格 0.4167px）后是整像素平移，文字始终锐利。
+    const frame = smoothBottomFollow({
+      current: 2118.33,
+      target: 2400,
+      ratePerSecond: 200,
+      deltaMs: 16.7,
+      devicePixelRatio: 2.4,
+    });
+    expect(frame.scrollTop).not.toBeNull();
+    expect(frame.scrollTop!).toBeGreaterThan(2118.33);
+    const grid = (frame.scrollTop! * 2.4) % 1;
+    expect(Math.min(grid, 1 - grid)).toBeLessThan(1e-6);
   });
 });
 
