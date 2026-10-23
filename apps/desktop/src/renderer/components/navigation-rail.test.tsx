@@ -18,6 +18,24 @@ afterEach(() => {
 });
 
 describe("NavigationRail", () => {
+  it("opens the tools section of Settings from the rail", async () => {
+    const store = createStore();
+    const { router } = renderWithRouter(<NavigationRail />, store, "/usage");
+    const tools = document.querySelector<HTMLElement>(
+      '[data-navigation-rail] button[aria-label="工具"]',
+    );
+    if (!tools) throw new Error("图标轨里没有「工具」按钮");
+
+    await userEvent.click(tools);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe("/settings/tools"));
+    // 「工具」亮着时，底部通用「设置」不该跟着亮成第二个选中项。
+    const gear = document.querySelector<HTMLElement>(
+      '[data-navigation-rail] button[aria-label="设置"]',
+    );
+    expect(gear?.getAttribute("aria-current")).not.toBe("page");
+  });
+
   it("returns from a full-page destination to the workspace when a column view is chosen", async () => {
     const store = createStore();
     store.set(sidebarModeAtom, "inbox");

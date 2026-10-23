@@ -65,6 +65,8 @@ export function NavigationRail({
   const worktreesActive = pathname === "/worktrees";
   const pullRequestsActive = pathname === "/pull-requests";
   const settingsActive = pathname.startsWith("/settings");
+  // 「工具」是设置里的一个具体分区：它亮着的时候，底部那个通用「设置」不该跟着亮成第二个选中项。
+  const toolsActive = pathname.startsWith("/settings/tools");
   // Route destinations own the strong selected state; the column view stays pressed.
   const routeDestinationActive = isFullPageRoute(pathname);
   const showMode = (next: typeof mode) => {
@@ -183,11 +185,21 @@ export function NavigationRail({
         </RailButton>
         <RailButton
           tooltipDisabled={peeking}
+          label="工具"
+          tooltip="工具（插件与 MCP）"
+          current={toolsActive}
+          selected={toolsActive}
+          onClick={() => void openSettings("tools")}
+        >
+          <AppIcon name="tools" aria-hidden="true" />
+        </RailButton>
+        <RailButton
+          tooltipDisabled={peeking}
           label="设置"
           tooltip={`设置（${settingsShortcut}）`}
           className="mt-auto"
-          current={settingsActive}
-          selected={settingsActive}
+          current={settingsActive && !toolsActive}
+          selected={settingsActive && !toolsActive}
           onClick={() => void openSettings()}
         >
           <AppIcon name="settings" aria-hidden="true" />
