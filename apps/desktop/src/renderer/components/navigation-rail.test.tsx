@@ -18,6 +18,19 @@ afterEach(() => {
 });
 
 describe("NavigationRail", () => {
+  it("returns from a full-page destination to the workspace when a column view is chosen", async () => {
+    const store = createStore();
+    store.set(sidebarModeAtom, "inbox");
+    const { router } = renderWithRouter(<NavigationRail />, store, "/usage");
+
+    // 全屏页面上点侧栏视图：光拨开关不够，必须真的把人带回工作区。
+    await userEvent.click(screen.getByRole("button", { name: "显示项目" }));
+
+    expect(store.get(sidebarModeAtom)).toBe("project");
+    expect(store.get(navigationOpenAtom)).toBe(true);
+    await waitFor(() => expect(router.state.location.pathname).toBe("/new"));
+  });
+
   it("returns from Settings to the workspace when a column view is chosen", async () => {
     const store = createStore();
     store.set(sidebarModeAtom, "inbox");

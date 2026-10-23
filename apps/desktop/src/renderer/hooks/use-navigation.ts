@@ -137,7 +137,9 @@ export function usePalotNavigation() {
     [navigate, store],
   );
   const openWelcome = useCallback(() => navigate({ to: "/welcome" }), [navigate]);
-  const closeSettings = useCallback(() => {
+  // 回工作区：选中了会话就回那个会话，没选就去新建页（带上当前项目）。
+  // 原来这份逻辑只有 closeSettings 一个入口 ⇒ 只有从「设置」能出来，全屏页面出不来。
+  const backToWorkspace = useCallback(() => {
     const sessionID = store.get(selectedSessionIDAtom);
     if (sessionID)
       return navigate({
@@ -150,7 +152,9 @@ export function usePalotNavigation() {
       search: { projectID: projectID ?? undefined, profileID: store.get(runtimeAtom)?.profileID },
     });
   }, [navigate, sessionDestination, store]);
+  const closeSettings = backToWorkspace;
   return {
+    backToWorkspace,
     closeSettings,
     openNewTask,
     openPullRequests,

@@ -48,8 +48,14 @@ export function NavigationRail({
   const [mode, setMode] = useAtom(sidebarModeAtom);
   const [storedNavigationOpen, setStoredNavigationOpen] = useAtom(navigationOpenAtom);
   const columnVisible = navigationOpen ?? storedNavigationOpen;
-  const { closeSettings, openPullRequests, openScheduled, openSettings, openUsage, openWorktrees } =
-    usePalotNavigation();
+  const {
+    backToWorkspace,
+    openPullRequests,
+    openScheduled,
+    openSettings,
+    openUsage,
+    openWorktrees,
+  } = usePalotNavigation();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const scheduledUnreadCount = useAtomValue(automationUnreadCountAtom);
   const attentionCount = useInboxAttentionCount();
@@ -62,10 +68,12 @@ export function NavigationRail({
   // Route destinations own the strong selected state; the column view stays pressed.
   const routeDestinationActive = isFullPageRoute(pathname);
   const showMode = (next: typeof mode) => {
-    if (!workspaceRoute) {
+    // 全屏页面（用量/工作树/拉取请求/已安排）占着整块内容区：只把侧栏开关拨开，人还站在那个
+    // 页面上，点了看着就像没反应 —— 以前只有「设置」有 closeSettings 这条出路。这里一律先回工作区。
+    if (routeDestinationActive || !workspaceRoute) {
       setMode(next);
       setStoredNavigationOpen(true);
-      void closeSettings();
+      void backToWorkspace();
       return;
     }
     // Like ChatGPT's rail: the active view toggles its column; another view opens it.
