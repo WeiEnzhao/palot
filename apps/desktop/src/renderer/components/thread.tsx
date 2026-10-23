@@ -795,13 +795,16 @@ const SessionThreadContents = memo(function SessionThreadContents({
       scrollToBottomNow("grow");
     },
   });
-  // 补偿只能有一个主人。锚点循环在跑（或底部锁着）时关掉 virtual-core 自己的滚动
-  // 调整：它对「新页落地 / 估值→真实高」这类变化是无视滚动方向一律补的（源码注释：
-  // the estimate→actual delta must be corrected regardless of scroll direction），
-  // 我们的锚点循环补的是同一个量 —— 两边都补，视口就被多推一截，看起来就是
-  // 「加载完历史消息窗口自己往上走」。收成一个主人后，位置只由锚点循环决定。
-  virtualizer.shouldAdjustScrollPositionOnItemSizeChange =
-    bottomLocked || prependAnchorRef.current !== null ? () => false : undefined;
+  // 对话滚动区里 virtual-core 永远不许自己动 scrollTop（用户口径：加载历史时窗口不该
+  // 自己往上走，要留在原位，往上滑是用户自己的事）。它自己那套补偿对「新页落地 /
+  // 估值→真实高」是无视滚动方向一律补的（源码注释原话：the estimate→actual delta must
+  // be corrected regardless of scroll direction）。装机版实测（2026-10-23，一次真实上滑
+  // 的逐帧 + 写入日志）：18 次 scrollTop 写入全部来自 ni.applyScrollAdjustment →
+  // scrollToFn → Element.scrollTo，一帧最多 -533px，一路把视口拉到 0 —— 就是「加载完
+  // 自己跑到最上边」。翻页时的补偿本来由我们的锚点循环负责（见 loadOlder 里的
+  // prependAnchorRef），两边各补一次就把视口多推一截。现在位置只有一个主人：
+  // 流式跟随 + 翻页锚点 + 用户手势。
+  virtualizer.shouldAdjustScrollPositionOnItemSizeChange = () => false;
   const virtualItems = virtualizer.getVirtualItems();
   const virtualTranscriptHeight = virtualizer.getTotalSize();
   const hasVirtualTurns = turnRows.length > 0;
