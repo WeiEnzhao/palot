@@ -1154,7 +1154,10 @@ export function SectionTrigger({
           aria-label={label}
           className={cn(
             sidebarSectionTriggerVariants(),
-            action && "col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid",
+            // 覆盖层（±等 action）落在外层 wrapper 的 col-start-2，触发行整行跨 3 列即可；
+            // 不用 subgrid：它会覆盖基础变体的 flex，28px 行里 16px 文本行高 + py-1
+            // 把 chevron 列往下顶 4.2px，和盖层居中的按钮错位（2026-10-23 CDP 实测）。
+            action && "col-span-3 col-start-1 row-start-1 flex",
             className,
           )}
         />
