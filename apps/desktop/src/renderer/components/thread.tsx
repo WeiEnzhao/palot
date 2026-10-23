@@ -224,7 +224,7 @@ function logTranscriptAnchorEvent(entry: Record<string, unknown>) {
   const store = globalThis as { __palotAnchorLog?: Record<string, unknown>[] };
   const log = (store.__palotAnchorLog ??= []);
   log.push({ t: Math.round(performance.now()), ...entry });
-  if (log.length > 90) log.shift();
+  if (log.length > 200) log.shift();
 }
 
 const PREPEND_ANCHOR_STABLE_FRAMES = 8;
@@ -580,6 +580,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     // 用户主动要回底部：翻页锚点当场让位（守卫窗再长也不该跟这次点击抢位置）
     if (prependAnchorRef.current) logTranscriptAnchorEvent({ 事件: "用户回底部让位" });
     prependAnchorRef.current = null;
+    prependBaselineRef.current = null;
     setPrependPinnedTurnID(null);
     setBottomLock(true);
     scrollToBottomNow("instant");
@@ -689,6 +690,17 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // 记锚点时必须立刻有人逐帧盯着校正：以前校正循环只在「行数/高度变了」之后才启动，
   // 页一落地就已被后面的重新记锚点改写，等于从来没修过。
   const [prependAnchorEpoch, setPrependAnchorEpoch] = useState(0);
+  // 基准另存一份，而且 clearPrependAnchor 不碰它：实测有地方在毫秒级静默撒手，锚点一没，
+  // 新页落地就会拿「此刻已经在顶上」当基准（补偿恒等于 0）——「跳到加载出来那批的最上边」。
+  const prependBaselineRef = useRef<{
+    session: string;
+    turnID: string | null;
+    turnCount: number;
+    firstRowID: string | null;
+    viewportTop: number;
+    fallbackHeight: number;
+    fallbackScrollTop: number;
+  } | null>(null);
   const [navigationPinnedTurnID, setNavigationPinnedTurnID] = useState<string | null>(null);
   const [findPinnedTurnID, setFindPinnedTurnID] = useState<string | null>(null);
   const pinVirtualTurn = useCallback((turnID: string) => {
@@ -696,7 +708,17 @@ const SessionThreadContents = memo(function SessionThreadContents({
       current.includes(turnID) ? current : [...current, turnID].slice(-MAX_PINNED_VIRTUAL_TURNS),
     );
   }, []);
-  const clearPrependAnchor = useCallback(() => {
+  const clearPrependAnchor = useCallback((reason?: string) => {
+    if (prependAnchorRef.current) {
+      logTranscriptAnchorEvent({
+        事件: "撒手",
+        原因: reason ?? "未标注",
+        栈: (new Error().stack ?? "")
+          .split(String.fromCharCode(10))
+          .slice(2, 7)
+          .map((line) => line.trim().replace(/\s+\(.*$/, "").slice(0, 56)),
+      });
+    }
     prependAnchorRef.current = null;
     setPrependPinnedTurnID(null);
   }, []);
@@ -911,7 +933,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
   useLayoutEffect(() => {
     if (submissionScrollRequest === 0) return;
     // An explicit new submission supersedes an in-flight history prepend.
-    clearPrependAnchor();
+    prependBaselineRef.current = null;
+    clearPrependAnchor("发出了新消息");
     scrollToBottom();
   }, [clearPrependAnchor, scrollToBottom, submissionScrollRequest]);
   useLayoutEffect(() => {
@@ -969,6 +992,29 @@ const SessionThreadContents = memo(function SessionThreadContents({
   }, [isWorking, scrollToBottomNow]);
   useLayoutEffect(() => {
     const viewport = scrollRef.current;
+    const backup = prependBaselineRef.current;
+    if (
+      !prependAnchorRef.current &&
+      viewport &&
+      backup &&
+      backup.session === session.id &&
+      turnRows.length > backup.turnCount &&
+      (turnRows[0]?.id ?? null) !== backup.firstRowID // 只有「上面真的多了一页」才算
+    ) {
+      prependAnchorRef.current = {
+        turnID: backup.turnID,
+        turnCount: backup.turnCount,
+        viewportTop: backup.viewportTop,
+        fallbackHeight: backup.fallbackHeight,
+        fallbackScrollTop: backup.fallbackScrollTop,
+      };
+      logTranscriptAnchorEvent({
+        事件: "锚点丢了用备份基准重新起锚",
+        行数: turnRows.length,
+        内容高: Math.round(viewport.scrollHeight),
+        scrollTop: Math.round(viewport.scrollTop),
+      });
+    }
     const pendingAnchor = prependAnchorRef.current;
     if (!pendingAnchor || !viewport) return;
     // 这段窗口把「新页插进来时视口别动」交给浏览器自己做（overflow-anchor）：
@@ -1047,6 +1093,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
           距底: Math.round(viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop),
         });
         viewport.style.overflowAnchor = "";
+        prependBaselineRef.current = null;
         clearPrependAnchor();
         return;
       }
@@ -1209,18 +1256,39 @@ const SessionThreadContents = memo(function SessionThreadContents({
             prependAnchorRef.current.viewportTop = anchorElement.rect.top - viewportRect.top;
           }
         }
+        // 已有基准就不覆盖：更早那次记录的 viewportTop 才是「加载前的真实阅读位置」，
+        // 后面这些「已经在顶上」的时刻越新越错。
+        if (!prependBaselineRef.current || prependBaselineRef.current.session !== session.id) {
+          prependBaselineRef.current = {
+            session: session.id,
+            turnID: stableTurnID,
+            turnCount: turnRows.length,
+            firstRowID: turnRows[0]?.id ?? null,
+            viewportTop: prependAnchorRef.current?.viewportTop ?? 0,
+            fallbackHeight,
+            fallbackScrollTop,
+          };
+          logTranscriptAnchorEvent({
+            事件: "存基准",
+            行数: turnRows.length,
+            首行: turnRows[0] ? String(turnRows[0].id).slice(-6) : "无",
+            锚点行视口偏移: Math.round(prependBaselineRef.current.viewportTop),
+          });
+        }
       }
       const result = await transcript.fetchNextPage();
       if (result.isError) {
         if (isCancelledError(result.error)) {
-          clearPrependAnchor();
+          prependBaselineRef.current = null;
+          clearPrependAnchor("这一页请求被取消");
           return false;
         }
         throw result.error;
       }
       return true;
     } catch (error) {
-      clearPrependAnchor();
+      prependBaselineRef.current = null;
+      clearPrependAnchor("加载更早失败");
       showErrorToast("无法加载更早的消息", error);
       return false;
     } finally {
