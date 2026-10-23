@@ -3,6 +3,7 @@
 import type { FileDiffInfo, LocationRef, ModelRef } from "@opencode/client";
 import type { JsonValue, PalotMessage, PalotMessageContent } from "../../shared";
 import type { SessionExecutionState, SessionRuntimeStatus } from "../atoms/workspace";
+import { localizeErrorText } from "./error-text";
 import { compareMessages } from "./message-reconcile";
 import { projectToolExecution } from "./tool-executions";
 import { transcriptPromptLabel, type TranscriptPromptAnchor } from "./transcript-outline";
@@ -417,7 +418,7 @@ function assistantBoundaryParts(
         type: "timeline-boundary",
         id: `${message.id}:retry`,
         name: attempt === null ? "正在重试响应" : `正在重试响应，第 ${attempt} 次`,
-        text: stringValue(error.message) ?? undefined,
+        text: localizeErrorText(stringValue(error.message)) ?? undefined,
         status: "running",
         data: {
           kind: "retry",
@@ -436,7 +437,9 @@ function assistantBoundaryParts(
       type: "timeline-boundary",
       id: `${message.id}:${interrupted ? "interrupted" : "error"}`,
       name: interrupted ? "响应已中断" : "响应失败",
-      text: interrupted ? interruptionDetail(error.message) : (error.message ?? undefined),
+      text: interrupted
+        ? interruptionDetail(error.message)
+        : localizeErrorText(stringValue(error.message)),
       status: interrupted ? "interrupted" : "failed",
       data: {
         kind: interrupted ? "interrupted" : "error",
@@ -560,7 +563,7 @@ function executionBoundaryPart(
     name: interrupted ? "响应已中断" : "响应失败",
     text: interrupted
       ? interruptionDetail(execution.error?.message ?? null)
-      : execution.error?.message,
+      : localizeErrorText(execution.error?.message),
     status: interrupted ? "interrupted" : "failed",
     data: {
       kind: interrupted ? "interrupted" : "error",

@@ -109,6 +109,10 @@ export function smoothBottomFollow(input: {
   /** 设备像素比，用于把落位对齐到设备像素网格。 */
   devicePixelRatio?: number;
   settlePx?: number;
+  /** 超过这个距离就直接落位、不再逐帧跟随。 */
+  snapBeyondPx?: number;
+  /** 上一帧的目标值（scrollHeight - clientHeight），用来识别「一整块布局跳变」。 */
+  previousTarget?: number;
 }): BottomFollowFrame {
   const settle = input.settlePx ?? BOTTOM_FOLLOW_SETTLE_PX;
   const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
@@ -121,7 +125,30 @@ export function smoothBottomFollow(input: {
   const previousSpeed = Math.max(0, input.speedPxPerSecond ?? 0);
   const maxStep = input.maxStepPx ?? SMOOTH_FOLLOW_BIG_STEP_CAP_PX;
 
-  const write = (step: number): BottomFollowFrame => {
+  // 距离过大 = 布局刚整体变过（首屏落位、异步补页、窗口从后台恢复）。
+  // 这时逐帧滑过去会变成「从对话开头一路滚到结尾」的长镜头 —— 用户看到的是
+  // 「打开任务时从最早的消息开始」，而不是直接看结尾。这种距离不是「跟随」，
+  // 是「落位」，必须一次写完。
+  const snapBeyond = input.snapBeyondPx ?? SMOOTH_FOLLOW_SNAP_BEYOND_PX;
+  // 目标在一帧里跳了一大截（>120px）= 布局重新测量（虚拟列表补行、首屏落位、
+  // 折叠块展开），不是流式文字。这种跳变逐帧追会变成一段莫名其妙的滑行，
+  // 而且它通常发生在「内容已经在屏幕上」之后，滑行是纯干扰 —— 直接落位。
+  const targetJump =
+    input.previousTarget === undefined ? 0 : input.target - input.previousTarget;
+  // 没在流式输出时没有「跟随」可言：内容是一次性出现的，逐帧滑过去 = 「没人说话
+  // 画面自己在动」。这时任何没贴底的差距都直接落位（只有残差级别才忽略）。
+  const layoutGap = streaming ? snapBeyond : Math.max(0.5, settle);
+  if (distance > layoutGap || targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX) {
+    return {
+      // 直接写精确目标：落位只求「停在底部」，不要再对齐设备像素网格 ——
+      // 向上取整会多滚 0.4px，下一帧就得往回退，那一下正是「抖」。
+      scrollTop: Math.max(0, input.target),
+      speedPxPerSecond: 0,
+      settled: true,
+    };
+  }
+
+  const write = (step: number, speedForState: number): BottomFollowFrame => {
     let snapped = snapToDevicePixel(input.current + step, ratio);
     // 不足半个设备像素时**至少走一格**：绝不写亚像素，也绝不原地空转
     // （空转一帧，下一批内容就得重新起步，节奏立刻变成一顿一挫）。
@@ -137,7 +164,10 @@ export function smoothBottomFollow(input: {
     }
     return {
       scrollTop: snapped,
-      speedPxPerSecond: Math.abs(step) / Math.max(dtSec, 0.001),
+      // ⚠️ 存「控制器速度」，不要用「这一帧实际位移 / 帧长」反推：位移会被设备像素
+      // 网格放大或压到 0（0.42px/16.7ms = 25px/s），状态里就会凭空出现 0↔25 的
+      // 跳变，下一帧的低通起点跟着抖。
+      speedPxPerSecond: speedForState,
       settled: Math.abs(input.target - snapped) <= settle,
     };
   };
@@ -148,7 +178,7 @@ export function smoothBottomFollow(input: {
     const speed = lowPassSpeed(previousSpeed, want, dt);
     const step = -Math.min(speed * dtSec, -distance, maxStep);
     if (Math.abs(step) < 0.05) return { scrollTop: null, speedPxPerSecond: speed, settled: false };
-    return write(step);
+    return write(step, speed);
   }
   if (distance <= settle) {
     // 已贴底：速度归零，等下一批内容（流式期间调用方让循环常驻）。
@@ -161,12 +191,15 @@ export function smoothBottomFollow(input: {
   // 目标速度 = 内容增长速率（主项）+ 超出滞后目标的那部分按比例加速（副项）。
   // 副项增益取 10/s：多出 16px 才多 160px/s，仍属于「滑动」而不是「甩」。
   const want = Math.max(rate, (distance - lagTarget) * FOLLOW_LAG_GAIN_PER_SEC);
-  const speed = lowPassSpeed(previousSpeed, want, dt);
+  // 低通之外再限一次「每帧最多涨 20%」（下限 8px/s）：滞后突然变大时 P 项会要求
+  // 2~3 倍于当前速度，那一帧的位移照样是「猛冲」。限加速后是几帧内平滑追上去。
+  const smoothed = lowPassSpeed(previousSpeed, want, dt);
+  const speed = Math.min(smoothed, previousSpeed + Math.max(8, previousSpeed * 0.2));
   if (speed * dtSec < 0.05 && rate <= 0) {
     return { scrollTop: null, speedPxPerSecond: speed, settled: false };
   }
   const step = Math.min(Math.max(speed * dtSec, grid), distance, maxStep);
-  return write(step);
+  return write(step, speed);
 }
 
 /** 速度低通：绝不会一帧之内从 0 跳到 200px/s —— 那正是「猛冲一下」的来源。 */
@@ -186,6 +219,12 @@ export const SMOOTH_FOLLOW_MAX_STEP_PX = 3;
 export const SMOOTH_FOLLOW_BIG_STEP_CAP_PX = 12;
 /** 流式期间的滞后目标 = 一行：跟随器永远有余量往前走，不会追到底再等下一批。 */
 export const FOLLOW_LAG_TARGET_PX = 16;
+/** 距离超过这个值就整块落位：跟随只负责「一小段」，不负责「从开头滚到结尾」。
+ *  取 1500px（≈2.5 屏）：正常的整块内容（大代码块、表格、图片）仍走平滑跟随，
+ *  只有「首屏落位 / 恢复整段布局」这种量级才瞬移。 */
+export const SMOOTH_FOLLOW_SNAP_BEYOND_PX = 1500;
+/** 单帧目标跳变超过这个值 = 布局重排（不是流式文字），直接落位。 */
+export const SMOOTH_FOLLOW_SNAP_GROWTH_PX = 120;
 /** 超出滞后目标的部分换算成额外速度的增益（1/秒）。 */
 export const FOLLOW_LAG_GAIN_PER_SEC = 10;
 /** 速度低通时间常数（毫秒）：决定「加速」有多柔。 */

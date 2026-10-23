@@ -6,6 +6,7 @@ import {
   smoothBottomFollow,
   SMOOTH_FOLLOW_BIG_STEP_CAP_PX,
   SMOOTH_FOLLOW_MAX_STEP_PX,
+  SMOOTH_FOLLOW_SNAP_BEYOND_PX,
   nextTranscriptBottomLock,
   normalizeTranscriptWheelDelta,
   pinnedTranscriptScrollTop,
@@ -377,6 +378,7 @@ describe("smooth bottom follow", () => {
     let target = current;
     let speed = 0;
     let time = 0;
+    let previousTarget: number | undefined = undefined;
     const steps: number[] = [];
     const speeds: number[] = [];
     for (let i = 0; i < (opts.frames ?? growth.length); i++) {
@@ -385,12 +387,14 @@ describe("smooth bottom follow", () => {
       const frame = smoothBottomFollow({
         current,
         target,
+        previousTarget,
         ratePerSecond: opts.rate ?? 60,
         deltaMs: 16.7,
         speedPxPerSecond: speed,
         streaming: opts.streaming ?? true,
         devicePixelRatio: 2.4,
       });
+      previousTarget = target;
       speed = frame.speedPxPerSecond;
       speeds.push(speed);
       if (frame.scrollTop !== null) {
@@ -416,11 +420,72 @@ describe("smooth bottom follow", () => {
     expect(moved.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("never teleports a big block of content", () => {
-    const { steps, current, target } = simulate({ growth: [1000], frames: 120, rate: 0 });
-    // 吸附到设备像素网格时最多再走半格（dpr=2.4 ⇒ 0.42px）
-    expect(Math.max(...steps.map(Math.abs))).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
-    expect(Math.abs(target - current)).toBeLessThanOrEqual(1);
+  it("lands the whole transcript in one frame when the gap is layout-sized", () => {
+    // 打开一个 18000px 的任务：跟随器一帧最多 12px ⇒ 要爬 25 秒，用户看到的
+    // 是「从最早的消息开始一路往下滚」。这种量级不是跟随，是落位。
+    const frame = smoothBottomFollow({
+      current: 0,
+      target: 18_000,
+      ratePerSecond: 0,
+      deltaMs: 16.7,
+      streaming: false,
+    });
+    expect(frame.scrollTop).not.toBeNull();
+    expect(Math.abs(frame.scrollTop! - 18_000)).toBeLessThanOrEqual(1);
+    expect(frame.settled).toBe(true);
+  });
+
+  it("still glides for ordinary block growth below the snap threshold", () => {
+    const frame = smoothBottomFollow({
+      current: 0,
+      target: SMOOTH_FOLLOW_SNAP_BEYOND_PX - 200,
+      ratePerSecond: 0,
+      deltaMs: 16.7,
+      streaming: true,
+    });
+    expect(frame.scrollTop).not.toBeNull();
+    expect(frame.scrollTop! - 0).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
+  });
+
+  it("snaps when the layout jumps by more than a text block in one frame", () => {
+    // 虚拟列表补测量 / 首屏落位：目标一帧里跳 250px。这种跳变逐帧追会变成
+    // 「没人说话画面自己在滑」，直接落位。
+    const frame = smoothBottomFollow({
+      current: 4000,
+      target: 4250,
+      previousTarget: 4000,
+      ratePerSecond: 0,
+      deltaMs: 16.7,
+      streaming: true,
+    });
+    expect(Math.abs(frame.scrollTop! - 4250)).toBeLessThanOrEqual(0.05);
+    expect(frame.settled).toBe(true);
+  });
+
+  it("keeps gliding for one-line growth (the normal streaming case)", () => {
+    const frame = smoothBottomFollow({
+      current: 4000,
+      target: 4016,
+      previousTarget: 4000,
+      ratePerSecond: 150,
+      deltaMs: 16.7,
+      speedPxPerSecond: 150,
+      streaming: true,
+    });
+    expect(frame.scrollTop! - 4000).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
+    expect(frame.scrollTop! - 4000).toBeGreaterThan(0);
+  });
+
+  it("lands a 1000px block in one frame, glides a 100px one", () => {
+    // 1000px 一块（大段代码/表格落地）= 布局级变化：瞬移比 1.4 秒滑行更干净。
+    const big = simulate({ growth: [1000], frames: 120, rate: 0 });
+    expect(Math.abs(big.target - big.current)).toBeLessThanOrEqual(1);
+    // 100px 一块仍按平滑跟随：仍在「滑动」的范畴内。
+    const small = simulate({ growth: [100], frames: 120, rate: 0 });
+    expect(Math.max(...small.steps.map(Math.abs))).toBeLessThanOrEqual(
+      SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4,
+    );
+    expect(Math.abs(small.target - small.current)).toBeLessThanOrEqual(1);
   });
 
   it("keeps velocity continuous across bursts (no restart-from-zero jitter)", () => {

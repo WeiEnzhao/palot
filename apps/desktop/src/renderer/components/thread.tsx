@@ -99,6 +99,7 @@ import {
   scheduleTranscriptScrollFrame,
   transcriptKeyboardScrollDelta,
   transcriptScrollTargetConsumesDelta,
+  SMOOTH_FOLLOW_SNAP_GROWTH_PX,
   TRANSCRIPT_BOTTOM_THRESHOLD,
   type TranscriptScrollIntent,
 } from "../lib/transcript-scroll";
@@ -361,21 +362,27 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const followRateRef = useRef(0);
   // 跟随速度本身是状态：逐帧低通，绝不从 0 一帧跳到 200px/s（那一下就是「猛冲」）。
   const followSpeedRef = useRef(0);
+  // 上一帧的跟随目标（scrollHeight - clientHeight）：用来识别「一整块布局跳变」。
+  // null = 还没有基线（换会话/循环刚启动），这一帧不按跳变判定。
+  const followTargetRef = useRef<number | null>(null);
   const followFrameAtRef = useRef(0);
   // 是否正在流式输出：流式期间跟随循环常驻，不靠 onChange 每批重启。
   const streamingRef = useRef(false);
   const followGrowthRef = useRef<{ height: number; at: number } | null>(null);
   const touchYRef = useRef<number | null>(null);
   const coldTranscriptPendingRef = useRef(transcript.isPending && messages.length === 0);
-  const initialTranscriptSettledRef = useRef(coldTranscriptPendingRef.current);
+  // 🔴 不要因为「冷启动还在加载」就把首次落底标记成已完成：那样消息到达后没人
+  // 负责落到底部，只能靠跟随器一帧 12px 往下爬 —— 打开长任务时看到的就是
+  // 「从最早的消息开始慢慢往下滚」。这里保持 false，等行真正到齐再落底。
+  const initialTranscriptSettledRef = useRef(false);
   const [composerDockHeight, setComposerDockHeight] = useState<number | null>(null);
   const [layoutWidth, setLayoutWidth] = useState<number | null>(null);
   const [layoutHeight, setLayoutHeight] = useState<number | null>(null);
   const appearance = useAtomValue(resolvedAppearanceAtom);
   const appearanceLayoutKey = useMemo(() => JSON.stringify(appearance), [appearance]);
-  const [initialTranscriptVisible, setInitialTranscriptVisible] = useState(
-    coldTranscriptPendingRef.current,
-  );
+  // 落底完成前不显示正文：否则打开任务的头 200ms 会先露出对话开头，然后才跳到
+  // 结尾 —— 用户看到的就是「打开任务显示的是最前面的消息」。加载骨架负责占位。
+  const [initialTranscriptVisible, setInitialTranscriptVisible] = useState(false);
   const [submissionScrollRequest, setSubmissionScrollRequest] = useState(0);
   const [bottomLocked, setBottomLocked] = useState(true);
   const [historyMode, setHistoryMode] = useState<"timeline" | "fork" | null>(null);
@@ -437,6 +444,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const stopBottomFollow = useCallback(() => {
     const loop = bottomFollowLoopRef.current;
     bottomFollowLoopRef.current = null;
+    // 清掉目标基线：下一次启动的第一帧不该拿旧会话的 scrollHeight 做「跳变」比较。
+    followTargetRef.current = null;
     if (loop !== null) cancelAnimationFrame(loop);
   }, []);
   // 底边跟随：一个常驻的逐帧循环，速度是状态、逐帧低通。流式期间一直跑，
@@ -457,8 +466,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
       }
       const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
       const distance = target - viewport.scrollTop;
+      const previousTarget = followTargetRef.current ?? undefined;
+      followTargetRef.current = target;
+      const targetJump = previousTarget === undefined ? 0 : target - previousTarget;
+      // 一整块布局跳变（虚拟列表补测量/首屏落位）不是「内容跑到很远」，
+      // 这时解除锁定会把用户丢在对话中间（打开任务看到的就是开头）。
+      const layoutJump = targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX;
       // 整屏级别的变化（换会话、整块替换）不拖：解除锁定，让「回到底部」出现。
-      if (distance > viewport.clientHeight * 1.5) {
+      if (!layoutJump && distance > viewport.clientHeight * 1.5) {
         followSpeedRef.current = 0;
         setBottomLock(false);
         return;
@@ -475,6 +490,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
         speedPxPerSecond: followSpeedRef.current,
         streaming,
         devicePixelRatio: window.devicePixelRatio,
+        previousTarget,
       });
       followSpeedRef.current = frame.speedPxPerSecond;
       let moved = false;
