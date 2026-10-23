@@ -948,9 +948,9 @@ export const palot = {
         diffs: session.id === "first-shell" ? previewDiffs : [],
       };
     }
-    // 首屏只给 20 条时，打开会话只有十几行可滚 —— 往上读第一下就撞顶，实测连翻 8 页
-    // 才回到看得见的历史（每页 100 条）。首屏放大到和翻页同量级，打开就能连着滚。
-    const messageLimit = 80;
+    // 首屏只拿最近 20 条（用户口径）：首屏放大 = 打开时就要投影 + 渲染更多条，
+    // 卡的正是打开那一下。「往上读不用反复划」交给触发阈值与自动续页去解决，不靠加大首屏。
+    const messageLimit = 20;
     const [messages, requests, diffs] = await Promise.all([
       targets.messages
         ? loadTaskResource(session, "Transcript", () =>
@@ -999,7 +999,7 @@ export const palot = {
       };
     }
     return loadOpenCodeMessages(
-      { sessionID: session.id, limit: 80 },
+      { sessionID: session.id, limit: 20 },
       messageMode === "rooted",
       requestSignal,
       connectionID,

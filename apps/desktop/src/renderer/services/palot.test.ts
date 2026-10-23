@@ -385,13 +385,13 @@ describe("palot over the official OpenCode client", () => {
     });
     expect(result.data[0]).not.toHaveProperty("createdAt");
     expect(list).toHaveBeenCalledWith(
-      { sessionID: session.id, limit: 80, order: "desc" },
+      { sessionID: session.id, limit: 20, order: "desc" },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
 
   it("does not expose a speculative message cursor for a full terminal page", async () => {
-    const data = Array.from({ length: 80 }, (_, index) => ({
+    const data = Array.from({ length: 20 }, (_, index) => ({
       id: `message-${index}`,
       type: "user" as const,
       text: `Message ${index}`,
@@ -428,7 +428,7 @@ describe("palot over the official OpenCode client", () => {
   });
 
   it("keeps a full-page cursor when the probe finds an older message", async () => {
-    const data = Array.from({ length: 80 }, (_, index) => ({
+    const data = Array.from({ length: 20 }, (_, index) => ({
       id: `message-${index}`,
       type: "user" as const,
       text: `Message ${index}`,

@@ -1349,7 +1349,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
           });
         }
       }
+      const fetchStartedAt = performance.now();
       const result = await transcript.fetchNextPage();
+      // 卡顿到底花在哪一段：这一段 = 取数 + 投影（渲染行的成本另由「补偿/收工」的时间戳看）
+      logTranscriptAnchorEvent({
+        事件: "取数完成",
+        耗时ms: Math.round(performance.now() - fetchStartedAt),
+        行数: turnRows.length,
+      });
       if (result.isError) {
         if (isCancelledError(result.error)) {
           prependBaselineRef.current = null;
