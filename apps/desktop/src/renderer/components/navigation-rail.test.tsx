@@ -18,6 +18,23 @@ afterEach(() => {
 });
 
 describe("NavigationRail", () => {
+  it("opens the appearance section of Settings from the rail", async () => {
+    const store = createStore();
+    const { router } = renderWithRouter(<NavigationRail />, store, "/usage");
+    const appearance = document.querySelector<HTMLElement>(
+      '[data-navigation-rail] button[aria-label="外观"]',
+    );
+    if (!appearance) throw new Error("图标轨里没有「外观」按钮");
+
+    await userEvent.click(appearance);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe("/settings/appearance"));
+    const gear = document.querySelector<HTMLElement>(
+      '[data-navigation-rail] button[aria-label="设置"]',
+    );
+    expect(gear?.getAttribute("aria-current")).not.toBe("page");
+  });
+
   it("opens the tools section of Settings from the rail", async () => {
     const store = createStore();
     const { router } = renderWithRouter(<NavigationRail />, store, "/usage");
