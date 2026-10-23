@@ -462,6 +462,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
         scrollIntentRef.current !== null
       ) {
         followSpeedRef.current = 0;
+        // 诊断（探针读）：循环为什么收工
+        (globalThis as { __palotFollowDiag?: unknown }).__palotFollowDiag = {
+          收工: true,
+          锁定: bottomLockedRef.current,
+          锚点: !!prependAnchorRef.current,
+          手势: scrollIntentRef.current ? "有" : "无",
+          时刻: performance.now(),
+        };
         return;
       }
       const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
@@ -496,6 +504,20 @@ const SessionThreadContents = memo(function SessionThreadContents({
       let moved = false;
       if (frame.scrollTop !== null) {
         const before = viewport.scrollTop;
+        // 诊断（探针读）：这一帧为什么要写到这个位置
+        (globalThis as { __palotFollowDiag?: unknown }).__palotFollowDiag = {
+          收工: false,
+          锁定: bottomLockedRef.current,
+          锚点: !!prependAnchorRef.current,
+          手势: scrollIntentRef.current ? "有" : "无",
+          流式: streaming,
+          目标: Math.round(target),
+          当时: Math.round(before),
+          写到: Math.round(frame.scrollTop),
+          目标跳变: Math.round(targetJump),
+          速率: Math.round(followRateRef.current),
+          时刻: performance.now(),
+        };
         viewport.scrollTop = frame.scrollTop;
         previousScrollTopRef.current = viewport.scrollTop;
         moved = Math.abs(viewport.scrollTop - before) > 0.05;
@@ -543,6 +565,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
   }, [scrollToBottomNow]);
   const scrollToBottom = useCallback(() => {
     scrollIntentRef.current = null;
+    // 用户主动要回底部：翻页锚点当场让位（守卫窗再长也不该跟这次点击抢位置）
+    prependAnchorRef.current = null;
+    setPrependPinnedTurnID(null);
     setBottomLock(true);
     scrollToBottomNow("instant");
     scheduleScrollToBottom();
@@ -938,6 +963,11 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const restoreAnchor = () => {
       const anchor = prependAnchorRef.current;
       if (!anchor) return;
+      // 用户此刻正在往上滑：这一帧别跟他抢方向盘（锚点留着，手势一停接着修）
+      if (scrollIntentRef.current === "up") {
+        frame = requestAnimationFrame(restoreAnchor);
+        return;
+      }
       const now = performance.now();
       const anchorIndex = anchor.turnID
         ? turnRows.findIndex((row) => row.id === anchor.turnID)

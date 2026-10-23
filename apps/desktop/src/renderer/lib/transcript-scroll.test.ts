@@ -390,6 +390,48 @@ describe("prependAnchorFrame", () => {
     expect(result.done).toBe(true);
   });
 
+  it("keeps correcting after the settle timeout while the error is still visible", () => {
+    // 新页的行高是分批落地的：上面每缩一次，锚点在模型里就往顶挪一次。
+    // 只按「落地后 N 秒」收工会把还差几千像素的位置撒手，用户看到的
+    // 就是「一上滑加载消息，直接跳到最上边」。
+    const result = prependAnchorFrame({
+      ...base,
+      anchorTop: null,
+      anchorRowStart: 1_000,
+      scrollTop: 5_000,
+      landedAt: 1_000,
+      now: 1_000 + 2_500 + 16,
+    });
+    expect(result.scrollTop).toBe(1_000);
+    expect(result.done).toBe(false);
+  });
+
+  it("finishes at the settle timeout once the remaining error is imperceptible", () => {
+    const result = prependAnchorFrame({
+      ...base,
+      anchorTop: null,
+      anchorRowStart: 5_010,
+      anchorViewportTop: 10,
+      scrollTop: 5_000,
+      landedAt: 1_000,
+      now: 1_000 + 2_500 + 16,
+    });
+    expect(result.scrollTop).toBeNull();
+    expect(result.done).toBe(true);
+  });
+
+  it("gives up the guard window even with a large residual so the anchor cannot hang forever", () => {
+    const result = prependAnchorFrame({
+      ...base,
+      anchorTop: null,
+      anchorRowStart: 1_000,
+      scrollTop: 5_000,
+      landedAt: 1_000,
+      now: 1_000 + 2_500 * 4 + 16,
+    });
+    expect(result.done).toBe(true);
+  });
+
   it("shifts by the inserted height when the anchor row is virtualized away", () => {
     const result = prependAnchorFrame({
       ...base,

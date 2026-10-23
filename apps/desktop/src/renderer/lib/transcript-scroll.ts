@@ -372,6 +372,11 @@ export function normalizeTranscriptWheelDelta(input: {
   return input.deltaY;
 }
 
+/** 误差小于这个值才允许在超时时收工（约两行文字的高度，肉眼不再觉得"位置不对"）。 */
+const PREPEND_ANCHOR_MAX_RESIDUAL_PX = 120;
+/** 落地后再守这么多个 settle 窗口：迟到的测量（图片、代码高亮、字体）最狠的前几秒必须还在修。 */
+const PREPEND_ANCHOR_GUARD_MULTIPLIER = 4;
+
 /** 加载更早的消息时，重建阅读位置所需的逐帧输入。 */
 export interface PrependAnchorFrameInput {
   /** 记锚点时，锚点行顶部相对视口顶部的位置。 */
@@ -432,6 +437,8 @@ export function prependAnchorFrame(input: PrependAnchorFrameInput): PrependAncho
   let scrollTop: number | null = null;
   let stableFrames = input.stableFrames;
   let corrected = false;
+  // 这一帧想把 scrollTop 放到哪儿（收工判定要用它算残差）
+  let desired: number | null = null;
 
   if (input.anchorRowStart !== null) {
     // 位置按虚拟器模型对齐，而不是按「累计新增高度」推算：
@@ -440,6 +447,7 @@ export function prependAnchorFrame(input: PrependAnchorFrameInput): PrependAncho
     // 「一上滑加载消息就直接跳到最上边」）。模型给的 start 与行实际的 top 同源，
     // 行在不在挂载窗口里都能算，行高修正时读数跟着模型一起挪，屏幕位置不会漂。
     const target = snapToDevicePixel(input.anchorRowStart - input.anchorViewportTop);
+    desired = target;
     if (Math.abs(target - input.scrollTop) > 0.5) {
       scrollTop = target;
       corrected = true;
@@ -447,16 +455,18 @@ export function prependAnchorFrame(input: PrependAnchorFrameInput): PrependAncho
     stableFrames = Math.abs(target - input.scrollTop) <= 0.5 ? stableFrames + 1 : 0;
   } else if (input.anchorTop !== null) {
     const correction = input.anchorTop - input.viewportTop - input.anchorViewportTop;
+    desired = snapToDevicePixel(input.scrollTop + correction);
     if (Math.abs(correction) > 0.5) {
-      scrollTop = snapToDevicePixel(input.scrollTop + correction);
+      scrollTop = desired;
       corrected = true;
     }
     stableFrames = Math.abs(correction) <= 0.5 ? stableFrames + 1 : 0;
   } else {
     // 锚点行不在虚拟窗口里，只能按新增高度整体平移。
     const target = input.fallbackScrollTop + Math.max(0, input.scrollHeight - input.fallbackHeight);
+    desired = snapToDevicePixel(target);
     if (Math.abs(target - input.scrollTop) > 0.5) {
-      scrollTop = snapToDevicePixel(target);
+      scrollTop = desired;
       corrected = true;
     }
     stableFrames = 0;
@@ -465,12 +475,23 @@ export function prependAnchorFrame(input: PrependAnchorFrameInput): PrependAncho
   const heightChanged = input.scrollHeight !== input.previousScrollHeight;
   if (heightChanged || corrected) stableFrames = 0;
 
-  const timedOut = input.now - landedAt >= input.settleTimeoutMs;
+  // 收工前先看还剩多少误差没修掉：新页的行高是「先估值占位、后真实测量」分批落地的，
+  // 上面那些行每缩一次，锚点在模型里就往顶挪一次，补偿得跟着重算。以前只按「落地后
+  // 4 秒」一刀切收工，误差还差几千像素就撒手 —— 后面几批测量继续缩，没人再修，
+  // 视图就被一路顶到顶上：用户看到的是「一上滑加载消息，直接跳到最上边」。
+  // 现在误差还在肉眼可见的范围里就不许收工（另设硬上限防止无限挂着）。
+  const residualPx = desired === null ? 0 : Math.abs(desired - input.scrollTop);
+  const sinceLanding = input.now - landedAt;
+  const guardMs = input.settleTimeoutMs * PREPEND_ANCHOR_GUARD_MULTIPLIER;
+  const done =
+    sinceLanding >= guardMs ||
+    stableFrames >= input.stableFrameTarget ||
+    (sinceLanding >= input.settleTimeoutMs && residualPx <= PREPEND_ANCHOR_MAX_RESIDUAL_PX);
   return {
     scrollTop,
     previousScrollHeight: input.scrollHeight,
     landedAt,
     stableFrames,
-    done: stableFrames >= input.stableFrameTarget || timedOut,
+    done,
   };
 }
