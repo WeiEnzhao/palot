@@ -144,10 +144,12 @@ export function useTranscriptNavigation(input: {
     : -1;
   const targetTurnID = input.rows[targetIndex]?.id;
   function cancel() {
+    // 只作废「跳到某条消息」这件事。以前这里顺手清了翻页锚点，而 cancel() 每个滚轮都会
+    // 被调 —— 于是加载更早的锚点活不过一次滚轮：锚点一没，校正要么不跑（新页插进来时
+    // 没人补偿 → 站到那批最上边），要么事后重新起锚把他拽回旧位置（继续往上滑又回来了）。
     serial.current += 1;
     setTarget(null);
     setEarlierThan(null);
-    input.clearAnchor();
   }
   useLayoutEffect(() => {
     serial.current += 1;

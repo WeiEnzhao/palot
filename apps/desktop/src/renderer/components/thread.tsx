@@ -701,6 +701,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
     fallbackHeight: number;
     fallbackScrollTop: number;
   } | null>(null);
+  // 锚点校正「自己写到」的位置：scrollTop 跟它不一致 = 别人（用户 / 浏览器原生锚定）挪过。
+  const anchorWrittenRef = useRef<number | null>(null);
   const [navigationPinnedTurnID, setNavigationPinnedTurnID] = useState<string | null>(null);
   const [findPinnedTurnID, setFindPinnedTurnID] = useState<string | null>(null);
   const pinVirtualTurn = useCallback((turnID: string) => {
@@ -1008,6 +1010,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
         fallbackHeight: backup.fallbackHeight,
         fallbackScrollTop: backup.fallbackScrollTop,
       };
+      anchorWrittenRef.current = null;
       logTranscriptAnchorEvent({
         事件: "锚点丢了用备份基准重新起锚",
         行数: turnRows.length,
@@ -1024,13 +1027,53 @@ const SessionThreadContents = memo(function SessionThreadContents({
     let frame = 0;
     let stableFrames = 0;
     let lastHeight = viewport.scrollHeight;
+    let rebaselineLoggedAt = 0;
     const waitStartedAt = performance.now();
     let landedAt: number | null = null;
     const restoreAnchor = () => {
       const anchor = prependAnchorRef.current;
       if (!anchor) return;
-      // 用户此刻正在往上滑：这一帧别跟他抢方向盘（锚点留着，手势一停接着修）
-      if (scrollIntentRef.current === "up") {
+      // 校正只对「我们认可的位置之后发生的高度变化」负责。scrollTop 变了却不是我们写的
+      // = 用户自己挪的（或浏览器原生锚定挪的）：基准当场挪到此刻，这一帧不写。
+      // 以前把他拽回旧基准，就是「继续往上滑动，又回来了」。
+      if (
+        anchorWrittenRef.current !== null &&
+        Math.abs(viewport.scrollTop - anchorWrittenRef.current) > 0.5
+      ) {
+        const movedIndex = anchor.turnID
+          ? turnRows.findIndex((row) => row.id === anchor.turnID)
+          : -1;
+        const movedElement =
+          movedIndex >= 0
+            ? viewport.querySelector<HTMLElement>(`[data-index="${movedIndex}"]`)
+            : null;
+        if (movedElement) {
+          anchor.viewportTop =
+            movedElement.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+          anchor.fallbackHeight = viewport.scrollHeight;
+          anchor.fallbackScrollTop = viewport.scrollTop;
+          anchor.turnCount = turnRows.length;
+          const backup = prependBaselineRef.current;
+          if (backup) {
+            backup.viewportTop = anchor.viewportTop;
+            backup.fallbackHeight = anchor.fallbackHeight;
+            backup.fallbackScrollTop = anchor.fallbackScrollTop;
+            backup.turnCount = turnRows.length;
+          }
+          anchorWrittenRef.current = viewport.scrollTop;
+          landedAt = null;
+          stableFrames = 0;
+          lastHeight = viewport.scrollHeight;
+          if (performance.now() - rebaselineLoggedAt > 500) {
+            rebaselineLoggedAt = performance.now();
+            logTranscriptAnchorEvent({
+              事件: "用户自己挪了基准挪到此刻",
+              scrollTop: Math.round(viewport.scrollTop),
+              锚点行视口偏移: Math.round(anchor.viewportTop),
+              行数: turnRows.length,
+            });
+          }
+        }
         frame = requestAnimationFrame(restoreAnchor);
         return;
       }
@@ -1072,6 +1115,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
         scrollIntentRef.current = "anchor";
         viewport.scrollTop = result.scrollTop;
         const landed = viewport.scrollTop;
+        anchorWrittenRef.current = landed;
         previousScrollTopRef.current = landed;
         logTranscriptAnchorEvent({
           事件: "补偿",
@@ -1268,6 +1312,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
             fallbackHeight,
             fallbackScrollTop,
           };
+          anchorWrittenRef.current = fallbackScrollTop;
           logTranscriptAnchorEvent({
             事件: "存基准",
             行数: turnRows.length,
