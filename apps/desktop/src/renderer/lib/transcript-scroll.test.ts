@@ -447,19 +447,35 @@ describe("smooth bottom follow", () => {
     expect(frame.scrollTop! - 0).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
   });
 
-  it("snaps when the layout jumps by more than a text block in one frame", () => {
-    // 虚拟列表补测量 / 首屏落位：目标一帧里跳 250px。这种跳变逐帧追会变成
-    // 「没人说话画面自己在滑」，直接落位。
+  it("snaps when the layout jumps by more than a text block while idle", () => {
+    // 虚拟列表补测量 / 首屏落位：目标一帧里跳 250px。这时没有内容在到达，
+    // 逐帧追 = 屏幕自己在滑，直接落位。
     const frame = smoothBottomFollow({
       current: 4000,
       target: 4250,
       previousTarget: 4000,
       ratePerSecond: 0,
       deltaMs: 16.7,
-      streaming: true,
+      streaming: false,
     });
     expect(Math.abs(frame.scrollTop! - 4250)).toBeLessThanOrEqual(0.05);
     expect(frame.settled).toBe(true);
+  });
+
+  it("glides instead of teleporting when a block lands mid-stream", () => {
+    // 代码块/表格在流式中途落地（一帧 +520px）：用户正在读屏幕上的字，
+    // 瞬移会把他甩开，这里必须保持滑动。
+    const frame = smoothBottomFollow({
+      current: 4000,
+      target: 4520,
+      previousTarget: 4000,
+      ratePerSecond: 150,
+      deltaMs: 16.7,
+      speedPxPerSecond: 150,
+      streaming: true,
+    });
+    expect(frame.scrollTop! - 4000).toBeLessThanOrEqual(SMOOTH_FOLLOW_BIG_STEP_CAP_PX + 1 / 2.4);
+    expect(frame.scrollTop! - 4000).toBeGreaterThan(0);
   });
 
   it("keeps gliding for one-line growth (the normal streaming case)", () => {

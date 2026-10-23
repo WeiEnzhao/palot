@@ -137,8 +137,13 @@ export function smoothBottomFollow(input: {
     input.previousTarget === undefined ? 0 : input.target - input.previousTarget;
   // 没在流式输出时没有「跟随」可言：内容是一次性出现的，逐帧滑过去 = 「没人说话
   // 画面自己在动」。这时任何没贴底的差距都直接落位（只有残差级别才忽略）。
+  //
+  // 流式期间只认「距离超 1500px」这一种落位：代码块/表格在一帧里落地也会跳
+  // 100~500px，但那时用户正在读屏幕上的字，瞬移会把他甩离阅读位置，平滑滑动
+  // （12px/帧）反而更接近「滚动」而不是「跳」。
   const layoutGap = streaming ? snapBeyond : Math.max(0.5, settle);
-  if (distance > layoutGap || targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX) {
+  const layoutJump = !streaming && targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX;
+  if (distance > layoutGap || layoutJump) {
     return {
       // 直接写精确目标：落位只求「停在底部」，不要再对齐设备像素网格 ——
       // 向上取整会多滚 0.4px，下一帧就得往回退，那一下正是「抖」。
