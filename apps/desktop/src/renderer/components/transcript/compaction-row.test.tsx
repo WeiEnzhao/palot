@@ -34,6 +34,8 @@ function compaction(
     title: "正在压缩上下文",
     status,
     entries: [{ message, part: content, index: 0 }],
+    startedAt: message.createdAt,
+    ...(message.completedAt !== null ? { completedAt: message.completedAt } : {}),
   };
 }
 
@@ -49,14 +51,14 @@ describe("CompactionBoundary", () => {
         group={compaction({ status: "completed", reason: "auto" }, "completed")}
       />,
     );
-    expect(screen.getByText("上下文已自动压缩")).toBeTruthy();
+    expect(screen.getByText("上下文已自动压缩 · 耗时 0 秒")).toBeTruthy();
     view.rerender(
       <CompactionBoundary
         group={compaction({ status: "completed", reason: "manual" }, "completed")}
       />,
     );
-    expect(screen.getByText("上下文已压缩")).toBeTruthy();
-    expect(screen.queryByText("上下文已自动压缩")).toBeNull();
+    expect(screen.getByText("上下文已压缩 · 耗时 0 秒")).toBeTruthy();
+    expect(screen.queryByText("上下文已自动压缩 · 耗时 0 秒")).toBeNull();
   });
 
   it("adds a duration hint after ten seconds of compacting", () => {
@@ -120,7 +122,7 @@ describe("CompactionBoundary", () => {
     expect(row?.getAttribute("data-palot-compaction-reason")).toBe("auto");
     expect(boundary.queryByText(/→/)).toBeNull();
 
-    await user.click(boundary.getByRole("button", { name: "上下文已自动压缩" }));
+    await user.click(boundary.getByRole("button", { name: "上下文已自动压缩 · 耗时 0 秒" }));
 
     // Without measured steps around it, the row estimates from the compaction request.
     expect(boundary.getByText("上下文：约 120k → 2.1k 个 token")).toBeTruthy();
@@ -145,7 +147,7 @@ describe("CompactionBoundary", () => {
       </CompactionTranscriptContext.Provider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "上下文已压缩" }));
+    await user.click(screen.getByRole("button", { name: "上下文已压缩 · 耗时 0 秒" }));
     expect(screen.getByText("上下文：152k → 18k 个 token")).toBeTruthy();
   });
 
@@ -168,5 +170,40 @@ describe("CompactionBoundary", () => {
     view.rerender(renderWith({ retryableCompactionID: "compaction-1", retry }));
     await user.click(screen.getByRole("button", { name: "重试压缩" }));
     expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows duration when compaction completes", () => {
+    const startedAt = Date.now() - 15_000;
+    const completedAt = Date.now();
+    const content: PalotMessageContent = {
+      type: "compaction",
+      id: "compaction-1",
+      status: "completed",
+      reason: "auto",
+    };
+    const message: PalotMessage = {
+      id: "compaction-1",
+      type: "compaction",
+      createdAt: startedAt,
+      completedAt,
+      text: null,
+      agent: null,
+      model: null,
+      tokens: null,
+      finish: null,
+      content: [content],
+      data: null,
+    };
+    const group: TurnActivityGroup = {
+      id: "compaction-1",
+      kind: "compaction",
+      title: "正在压缩上下文",
+      status: "completed",
+      entries: [{ message, part: content, index: 0 }],
+      startedAt,
+      completedAt,
+    };
+    render(<CompactionBoundary group={group} />);
+    expect(screen.getByText("上下文已自动压缩 · 耗时 15 秒")).toBeTruthy();
   });
 });

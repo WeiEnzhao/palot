@@ -46,6 +46,8 @@ export interface TurnActivityGroup {
   currentAction?: string;
   pinned?: boolean;
   groupSameFileReads?: boolean;
+  startedAt?: number;
+  completedAt?: number;
 }
 
 export interface TurnPostFinalItem {
@@ -1166,6 +1168,8 @@ function groupActivity(
         title: "正在压缩上下文",
         status: activityStatus([entry]),
         entries: [entry],
+        startedAt: entry.message.createdAt,
+        ...(entry.message.completedAt !== null ? { completedAt: entry.message.completedAt } : {}),
       };
       flush();
       continue;

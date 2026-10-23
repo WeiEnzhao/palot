@@ -20,6 +20,7 @@ import {
   navigationOpenAtom,
   sidebarModeAtom,
 } from "../atoms/ui";
+import { myMessagesPanelOpenAtom } from "../atoms/my-messages";
 import {
   errorAtom,
   paneGeometryAtom,
@@ -1091,6 +1092,7 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
           </div>
         </div>
         <div className="window-trailing-controls pointer-events-none fixed top-0 right-3 z-40 flex h-(--shell-header-height) items-center gap-1">
+          <MyMessagesButton />
           <IconButton
             label={bottomRequestedOpen ? "隐藏底部工作台" : "显示终端"}
             appIcon="panelBottom"
@@ -1118,5 +1120,20 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
         </div>
       </SidebarProvider>
     </div>
+  );
+}
+
+/** 「我的消息」面板开关按钮。 */
+function MyMessagesButton() {
+  const [open, setOpen] = useAtom(myMessagesPanelOpenAtom);
+  return (
+    <IconButton
+      label={open ? "隐藏我的消息" : "显示我的消息"}
+      appIcon="inbox"
+      size="icon-sm"
+      aria-pressed={open}
+      className="pointer-events-auto [-webkit-app-region:no-drag]"
+      onClick={() => setOpen(!open)}
+    />
   );
 }

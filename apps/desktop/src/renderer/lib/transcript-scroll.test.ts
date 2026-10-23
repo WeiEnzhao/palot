@@ -17,6 +17,9 @@ import {
   transcriptDistanceFromBottom,
   transcriptKeyboardScrollDelta,
   transcriptScrollTargetConsumesDelta,
+  checkGrowthGate,
+  recordCompensated,
+  resetGrowthGate,
 } from "./transcript-scroll";
 
 describe("device pixel snapping", () => {
@@ -707,5 +710,39 @@ describe("anchor compensation", () => {
     // 每次增长都重绘一次子像素位置 —— 那正是「幅度很小但一直在闪」。
     const next = anchorScrollCompensation({ scrollTop: 2118.33, previousAnchorTop: 100, anchorTop: 116.7 });
     expect(next).toBeCloseTo(2135.03, 6);
+  });
+});
+
+describe("growth gate (idempotency)", () => {
+  it("allows the first write for a new scrollHeight", () => {
+    const state = { lastCompensatedHeight: null };
+    expect(checkGrowthGate(1000, state)).toBe(true);
+  });
+
+  it("blocks the second write for the same scrollHeight", () => {
+    const state = { lastCompensatedHeight: null };
+    expect(checkGrowthGate(1000, state)).toBe(true);
+    recordCompensated(state, 1000);
+    expect(checkGrowthGate(1000, state)).toBe(false);
+  });
+
+  it("allows a new growth (scrollHeight increased)", () => {
+    const state = { lastCompensatedHeight: null };
+    recordCompensated(state, 1000);
+    expect(checkGrowthGate(1048, state)).toBe(true);
+  });
+
+  it("allows shrink (layout reflow, not streaming growth)", () => {
+    const state = { lastCompensatedHeight: null };
+    recordCompensated(state, 1000);
+    expect(checkGrowthGate(950, state)).toBe(true);
+  });
+
+  it("resets cleanly", () => {
+    const state = { lastCompensatedHeight: null };
+    recordCompensated(state, 1000);
+    expect(checkGrowthGate(1000, state)).toBe(false);
+    resetGrowthGate(state);
+    expect(checkGrowthGate(1000, state)).toBe(true);
   });
 });

@@ -269,6 +269,36 @@ export function noteGrowthRate(input: {
   return Math.min(next, 6_000);
 }
 
+/** 幂等闸：同一次增长只允许一个写者补一次。
+ * 返回 true = 这次增长还没补过，调用方可以写 scrollTop；
+ * 返回 false = 已经补过了，调用方让位。
+ * - `scrollHeight` 是当前内容总高；`lastCompensatedHeight` 是上次补完时记录的值；
+ * - 补完必须立刻用 `recordCompensated` 更新记录，否则下一次同高度还会再补；
+ * - 内容缩回（替换消息、折叠块）时 `scrollHeight < lastCompensatedHeight`，放行让新主人重排。 */
+export interface GrowthGateState {
+  lastCompensatedHeight: number | null;
+}
+
+export function checkGrowthGate(
+  scrollHeight: number,
+  state: GrowthGateState,
+): boolean {
+  const last = state.lastCompensatedHeight;
+  if (last === null) return true;
+  // 内容缩回 = 布局重排（不是流式增长），放行让新主人补偿
+  if (scrollHeight < last) return true;
+  // 同一次增长（高度没变）：已经补过，不让第二个写者再写
+  return scrollHeight > last;
+}
+
+export function recordCompensated(state: GrowthGateState, scrollHeight: number): void {
+  state.lastCompensatedHeight = scrollHeight;
+}
+
+export function resetGrowthGate(state: GrowthGateState): void {
+  state.lastCompensatedHeight = null;
+}
+
 export type TranscriptScrollIntent = "up" | "scrollbar" | "anchor" | null;
 
 export interface TranscriptScrollFrame {

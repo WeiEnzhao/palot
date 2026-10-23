@@ -2,6 +2,7 @@ import { ChevronDown, ChevronRight, LoaderCircle, RotateCcw } from "lucide-react
 import { createContext, useContext, useEffect, useState } from "react";
 import type { PalotMessageContent } from "../../../shared";
 import { cn } from "../../lib/cn";
+import { formatDurationCn } from "../../lib/format-duration";
 import { BoundedScroll } from "./bounded-scroll";
 import { estimateTokens, formatTokenCount } from "../../lib/context-usage";
 import type { TurnActivityGroup } from "../../lib/turn-projection";
@@ -38,10 +39,17 @@ export const CompactionTranscriptContext = createContext<CompactionTranscriptAct
 export function compactionLabel(
   part: Pick<PalotMessageContent, "reason"> | undefined,
   status: TurnActivityGroup["status"],
+  startedAt: number | undefined,
+  completedAt: number | undefined,
 ): string {
   if (status === "failed") return "上下文压缩失败";
   if (status === "running" || status === "pending") return "正在压缩上下文";
-  return part?.reason === "auto" ? "上下文已自动压缩" : "上下文已压缩";
+  const base = part?.reason === "auto" ? "上下文已自动压缩" : "上下文已压缩";
+  if (startedAt !== undefined && completedAt !== undefined && completedAt > startedAt) {
+    const durationSeconds = (completedAt - startedAt) / 1000;
+    return `${base} · 耗时 ${formatDurationCn(durationSeconds, { hideZeroSeconds: true })}`;
+  }
+  return base;
 }
 
 /**
@@ -93,7 +101,7 @@ export function CompactionBoundary({ group }: { group: TurnActivityGroup }) {
   const failed = group.status === "failed";
   const running = group.status === "running" || group.status === "pending";
   const slow = useSlowHint(running, part?.time?.created);
-  const label = compactionLabel(part, group.status);
+  const label = compactionLabel(part, group.status, group.startedAt, group.completedAt);
   const error = part?.error?.trim();
   const summary = part?.text?.trim();
   const recent = part?.recent?.trim();

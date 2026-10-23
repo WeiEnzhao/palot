@@ -2541,7 +2541,7 @@ function AppearanceSlider({
           else onChange(defaultValue);
         }}
       >
-        Reset
+        重置
       </Button>
     </div>
   );

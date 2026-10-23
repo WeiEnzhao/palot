@@ -80,6 +80,7 @@ import { writeClipboardText } from "../lib/clipboard";
 import { likelyCacheBusts, type LikelyCacheBust } from "../lib/cache-bust";
 import { resolveSessionProjectionPreference } from "../lib/session-projection-policy";
 import { withPersistedTurnFailures } from "../lib/persisted-turn-failures";
+import { filterQueuedMessages } from "../lib/queued-message-filter";
 import { parallelActivityLabel } from "../lib/parallel-activity";
 import { formatDurationCn } from "../lib/format-duration";
 import { canFetchOpenCode } from "../lib/opencode-runtime-query";
@@ -99,9 +100,13 @@ import {
   scheduleTranscriptScrollFrame,
   transcriptKeyboardScrollDelta,
   transcriptScrollTargetConsumesDelta,
+  checkGrowthGate,
+  recordCompensated,
+  resetGrowthGate,
   SMOOTH_FOLLOW_SNAP_GROWTH_PX,
   TRANSCRIPT_BOTTOM_THRESHOLD,
   type TranscriptScrollIntent,
+  type GrowthGateState,
 } from "../lib/transcript-scroll";
 import { showErrorToast } from "../lib/toast-error";
 import {
@@ -146,6 +151,7 @@ import {
 import { compactionAnchorSelector, turnIndexForMessage } from "./transcript/compaction-anchor";
 import { compactionHistory } from "../lib/context-usage";
 import { latestTurnThought } from "./transcript/live-thought";
+import { WorkingTimer } from "./working-timer";
 import { ParentTaskBreadcrumb } from "./transcript/parent-breadcrumb";
 import { PlanCard } from "./transcript/plan-card";
 import { SessionHistoryDialog } from "./session-history-dialog";
@@ -386,6 +392,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // 是否正在流式输出：流式期间跟随循环常驻，不靠 onChange 每批重启。
   const streamingRef = useRef(false);
   const followGrowthRef = useRef<{ height: number; at: number } | null>(null);
+  // 幂等闸：同一次增长只允许一个写者补一次。ResizeObserver 与 rAF 循环都写 scrollTop，
+  // 两边都看到 +48px 增长 ⇒ 一次补两次 ⇒ 距底在 0/48 之间横跳。闸门拦住第二个。
+  const growthGateRef = useRef<GrowthGateState>({ lastCompensatedHeight: null });
   const touchYRef = useRef<number | null>(null);
   const coldTranscriptPendingRef = useRef(transcript.isPending && messages.length === 0);
   // 🔴 不要因为「冷启动还在加载」就把首次落底标记成已完成：那样消息到达后没人
@@ -415,6 +424,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const setBottomLock = useCallback((locked: boolean) => {
     bottomLockedRef.current = locked;
     setBottomLocked((current) => (current === locked ? current : locked));
+    // 用户滑走 = 离开贴底区，闸门清零；回来时允许第一次写入。
+    if (!locked) resetGrowthGate(growthGateRef.current);
   }, []);
   // 上方内容变高会把可见文字整体推下去（虚拟列表的行是绝对定位，浏览器自带的
   // 滚动锚定在这里不生效）。这里按「包住视口顶边的那一行」做手动锚定：
@@ -563,17 +574,24 @@ const SessionThreadContents = memo(function SessionThreadContents({
     if (mode !== "instant" && !prefersReducedMotion()) {
       startBottomFollow();
       if (mode === "grow") return;
+      // 幂等闸：同一次增长只允许一个写者补一次。ResizeObserver 与 rAF 循环都走这条路径，
+      // 闸门拦住第二个，避免同一次 +48px 被写两次（距底在 0/48 之间横跳）。
+      if (!checkGrowthGate(viewport.scrollHeight, growthGateRef.current)) return;
       const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
       // 收尾时残余很小（≤8px）才允许直接写平，肉眼无感。
       if (Math.abs(viewport.scrollTop - target) > 8) return;
+      recordCompensated(growthGateRef.current, viewport.scrollHeight);
     }
     stopBottomFollow();
     // 贴底就是「底边贴住视口底边」：直接写 scrollHeight - clientHeight。
     // ⚠️ 不要吸附设备像素网格 —— dpr=2.4 时内容坐标本身是小数，取整会留下
     // 0.2~0.4px 残差，每次增长都重绘一次子像素位置，看起来就是闪。
+    // 幂等闸：同一次增长只允许一个写者补一次。
+    if (!checkGrowthGate(viewport.scrollHeight, growthGateRef.current)) return;
     const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
     if (Math.abs(viewport.scrollTop - target) > 0.05) viewport.scrollTop = target;
     previousScrollTopRef.current = viewport.scrollTop;
+    recordCompensated(growthGateRef.current, viewport.scrollHeight);
   }, [startBottomFollow, stopBottomFollow]);
   const scheduleScrollToBottom = useCallback(() => {
     if (!bottomLockedRef.current) return;
@@ -588,6 +606,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
     prependBaselineRef.current = null;
     setPrependPinnedTurnID(null);
     setBottomLock(true);
+    // 用户主动回底 = 全新开始，闸门清零，允许第一次写入。
+    resetGrowthGate(growthGateRef.current);
     scrollToBottomNow("instant");
     scheduleScrollToBottom();
   }, [scheduleScrollToBottom, scrollToBottomNow, setBottomLock]);
@@ -635,7 +655,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
     () => requestViews.filter((request) => request.type === "question" || request.type === "form"),
     [requestViews],
   );
-  const projectedMessages = useMemo(() => withPersistedTurnFailures(messages), [messages]);
+  const projectedMessages = useMemo(
+    () => withPersistedTurnFailures(filterQueuedMessages(messages)),
+    [messages],
+  );
   const projection = useSessionTranscriptProjection({
     connectionID: transcript.connectionID,
     sessionID: session.id,
@@ -975,7 +998,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const viewport = scrollRef.current;
     const content = transcriptContentRef.current;
     if (!viewport || !content) return;
-    const observer = new ResizeObserver(() => scrollToBottomNow());
+    // 换会话 = 全新开始，闸门清零。
+    resetGrowthGate(growthGateRef.current);
+    const observer = new ResizeObserver(() => {
+      // 流式期间 rAF 循环独享 scrollTop 写入权；ResizeObserver 让位，
+      // 否则两边同补一次 +48px 增长 ⇒ 距底在 0/48 之间横跳（装机版 CDP 探针实测）。
+      if (streamingRef.current && bottomLockedRef.current) return;
+      scrollToBottomNow();
+    });
     observer.observe(viewport);
     // Virtual content is already handled after the adapter's measured writes.
     // Observing that ancestor as well can create skipped RO notifications when
@@ -1001,16 +1031,34 @@ const SessionThreadContents = memo(function SessionThreadContents({
     if (content && observer)
       observer.observe(content, { childList: true, subtree: true, characterData: true });
     let frame = 0;
+    let paused = false;
     const pin = () => {
+      // hidden 期 rAF 冻结，积压的 dirty 在切回后会一次性爆发 ⇒ 同一次增长写多次。
+      // 暂停循环，等 visible 时一次性落位。
+      if (document.hidden) {
+        paused = true;
+        return;
+      }
+      paused = false;
       frame = requestAnimationFrame(pin);
       if (!dirty) return;
       dirty = false;
       scrollToBottomNow("grow");
     };
     frame = requestAnimationFrame(pin);
+    // 切回标签页时：一次性落位（不逐帧追赶积压），然后重启循环。
+    const onVisibility = () => {
+      if (!document.hidden && paused) {
+        paused = false;
+        scrollToBottomNow("grow");
+        frame = requestAnimationFrame(pin);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelAnimationFrame(frame);
       observer?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [isWorking, scrollToBottomNow]);
   useLayoutEffect(() => {
@@ -2032,6 +2080,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
             composerRequests={composerRequests}
             pendingInputs={pendingInputs}
             isWorking={isWorking}
+            activeTurn={activeTurnIndex >= 0 ? turnRows[activeTurnIndex]?.turn ?? null : null}
             onMessageAdmitted={handleMessageAdmitted}
             onModelsChange={setModels}
           />
@@ -2172,6 +2221,7 @@ const SessionDockContents = memo(function SessionDockContents({
   composerRequests,
   pendingInputs,
   isWorking,
+  activeTurn,
   onMessageAdmitted,
   onModelsChange,
 }: {
@@ -2185,6 +2235,7 @@ const SessionDockContents = memo(function SessionDockContents({
   composerRequests: PendingRequestView[];
   pendingInputs: PendingRequestView[];
   isWorking: boolean;
+  activeTurn: TranscriptTurn | null;
   onMessageAdmitted(): void;
   onModelsChange(models: PalotModel[]): void;
 }) {
@@ -2198,6 +2249,7 @@ const SessionDockContents = memo(function SessionDockContents({
   );
   return (
     <>
+      <WorkingTimer turn={activeTurn} visible={isWorking} />
       <PendingRequests sessionID={session.id} requests={floatingRequests} />
       <SessionRevertDock session={session} messages={revertMessages} />
       <PlanCard key={session.id} sessionID={session.id} messages={revertMessages} />
@@ -2978,7 +3030,7 @@ function formatWorkingFor(startedAt: number, now: number): string {
   return formatDurationCn(seconds, { padSeconds: true });
 }
 
-function useCurrentTime(active = true): number {
+export function useCurrentTime(active = true): number {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
