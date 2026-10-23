@@ -149,6 +149,8 @@ import {
   type CompactionTranscriptActions,
 } from "./transcript/compaction-row";
 import { compactionAnchorSelector, turnIndexForMessage } from "./transcript/compaction-anchor";
+import { MyMessagesPanel } from "./my-messages-panel";
+import { highlightedMessageIDAtom, myMessagesPanelOpenAtom } from "../atoms/my-messages";
 import { compactionHistory } from "../lib/context-usage";
 import { latestTurnThought } from "./transcript/live-thought";
 import { WorkingTimer } from "./working-timer";
@@ -1461,6 +1463,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     loadOlder,
   });
   const [transcriptJumpTarget, setTranscriptJumpTarget] = useAtom(transcriptJumpTargetAtom);
+  const myMessagesOpen = useAtomValue(myMessagesPanelOpenAtom);
   const compactionJumpFrameRef = useRef(0);
   useEffect(() => () => cancelAnimationFrame(compactionJumpFrameRef.current), []);
   // Compaction rows live inside a turn's activity, not at a prompt, so prompt
@@ -2058,6 +2061,18 @@ const SessionThreadContents = memo(function SessionThreadContents({
               </motion.div>
             ) : null}
           </ScrollAreaRoot>
+          <div
+            className={cn(
+              "absolute inset-y-0 right-0 z-30",
+              myMessagesOpen ? "w-80" : "w-0",
+            )}
+            aria-hidden={myMessagesOpen ? undefined : true}
+          >
+            <MyMessagesPanel
+              messages={messages}
+              onJumpToMessage={(messageID) => jumpToRequestedTurn(messageID)}
+            />
+          </div>
         </div>
       )}
       {/* Measure the dock during loading without permitting submissions against incomplete history. */}
@@ -2561,6 +2576,14 @@ const TranscriptPresentationTurnItem = memo(function TranscriptPresentationTurnI
   onInteract: (turnID: string) => void;
 }) {
   const { turn } = source;
+  const highlightedMessageID = useAtomValue(highlightedMessageIDAtom);
+  const rowHighlighted =
+    highlightedMessageID !== null &&
+    (turn.id === highlightedMessageID ||
+      turn.rootBoundary?.entries.some((entry) => entry.message.id === highlightedMessageID) ||
+      turn.activity.some((group) =>
+        group.entries.some((entry) => entry.message.id === highlightedMessageID),
+      ));
   // The status is the last presentation row. Its live-edge clearance must not
   // inherit different historical spacing from text/tool/subagent turn kinds.
   const activeTail = isLastTurn && rows.at(-1)?.kind === "turn-status";
@@ -2607,6 +2630,7 @@ const TranscriptPresentationTurnItem = memo(function TranscriptPresentationTurnI
               : turn.user
                 ? "pb-4"
                 : "pb-0",
+        rowHighlighted ? "ring-2 ring-inset ring-primary/60" : null,
       )}
       style={virtualStyle}
     >
