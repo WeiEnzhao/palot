@@ -2302,7 +2302,7 @@ export function normalizeAppearancePreferences(value: unknown): AppearancePrefer
     ),
     darkContrast: number(input.darkContrast, 0, 100, DEFAULT_APPEARANCE_PREFERENCES.darkContrast),
     glassOpacity: themeNumber(input.glassOpacity, 30, 100, 82),
-    sidebarOpacity: themeNumber(input.sidebarOpacity, 30, 100, 67),
+    sidebarOpacity: themeNumber(input.sidebarOpacity, 10, 100, 67),
     contentOpacity: number(
       input.contentOpacity,
       10,

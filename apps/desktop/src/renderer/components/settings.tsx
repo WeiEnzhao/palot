@@ -2162,7 +2162,7 @@ function AppearanceSettings() {
                     ? themeTreatment.sidebar.opacity
                     : preferences.sidebarOpacity
                 }
-                min={30}
+                min={10}
                 max={100}
                 defaultValue={themeTreatment.sidebar.opacity}
                 isDefault={preferences.sidebarOpacity === "theme"}
