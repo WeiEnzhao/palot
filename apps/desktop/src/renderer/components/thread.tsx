@@ -892,7 +892,20 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // 自己跑到最上边」。翻页时的补偿本来由我们的锚点循环负责（见 loadOlder 里的
   // prependAnchorRef），两边各补一次就把视口多推一截。现在位置只有一个主人：
   // 流式跟随 + 翻页锚点 + 用户手势。
-  virtualizer.shouldAdjustScrollPositionOnItemSizeChange = () => false;
+  // 但「一刀切全关」把上滑读历史时的估值修正也关掉了：上方行从占位估值换成实测高度
+  // 时没人补差 ⇒ 内容整体下坠几十到几百像素（装机版探针 2026-10-23 实测 Δ总高=-52/-76/-520），
+  // 手感就是「往上滑到某个位置猛地往下跳」。现在按归属分段：锚点期归锚点，贴底归底部
+  // 跟随，只有人在历史中段读（离底足够远）时把差交还给库 —— 那时没有任何别的主人补它。
+  const ESTIMATE_CORRECTION_MIN_LIFT_PX = 120;
+  virtualizer.shouldAdjustScrollPositionOnItemSizeChange = () => {
+    if (prependAnchorRef.current) return false;
+    const viewport = scrollRef.current;
+    if (!viewport) return false;
+    return (
+      viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight >
+      ESTIMATE_CORRECTION_MIN_LIFT_PX
+    );
+  };
   const virtualItems = virtualizer.getVirtualItems();
   const virtualTranscriptHeight = virtualizer.getTotalSize();
   // 挂上/卸下每一行时，把它的真实高度记进我们自己的表（TanStack 卸掉行就把测量丢了）
