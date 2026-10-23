@@ -109,7 +109,7 @@ export function GuideExcerpt({
       : `lines ${excerpt.start}–${excerpt.end}`;
   return (
     <figure
-      aria-label={`Excerpt ${excerpt.path} ${lines}`}
+      aria-label={`摘录 ${excerpt.path} ${lines}`}
       data-guide-excerpt=""
       className="flex min-w-0 flex-col overflow-hidden rounded-md border border-border bg-card"
     >

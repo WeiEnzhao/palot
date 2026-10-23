@@ -385,7 +385,7 @@ describe("provider connection methods", () => {
       url,
     );
     expect(screen.getByRole("group", { name: "设备码" }).textContent).toContain("WXYZ-1234");
-    await user.click(screen.getByRole("button", { name: "Copy 授权 URL" }));
+    await user.click(screen.getByRole("button", { name: "复制 授权 URL" }));
     expect(clipboard).toHaveBeenCalledWith(url);
     expect(screen.queryByRole("radiogroup")).toBeNull();
   });

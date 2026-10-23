@@ -194,7 +194,7 @@ export function OpenCodeLoginAutostartSettings({
           </p>
           {status?.binaryPath ? (
             <div className="min-w-0">
-              <p className="text-meta text-muted-foreground">Configured executable</p>
+              <p className="text-meta text-muted-foreground">已配置的可执行文件</p>
               <code className="block text-code-compact wrap-anywhere">{status.binaryPath}</code>
             </div>
           ) : null}
@@ -247,7 +247,7 @@ export function OpenCodeLoginAutostartSettings({
                 } else void requestEnable();
               }}
             >
-              {status?.enabled ? "Disable login startup" : "Enable login startup"}
+              {status?.enabled ? "禁用登录自启动" : "启用登录自启动"}
             </Button>
             <Button
               type="button"
@@ -256,14 +256,13 @@ export function OpenCodeLoginAutostartSettings({
               disabled={blocked}
               onClick={() => void refresh()}
             >
-              Refresh status
+              刷新状态
             </Button>
           </div>
           <p className="text-compact leading-relaxed text-muted-foreground">
-            Changes apply to future logins and do not start, restart, or stop the running service.
-            Use the separate shared-service Start or Restart action when needed. If another daemon
-            is already running, you may need to stop it manually before the user service manager can
-            take over.
+            变更仅影响未来的登录，不会启动、重启或停止正在运行的服务。
+            需要时请使用独立的共享服务启动或重启操作。如果已有其他守护进程在运行，
+            可能需要先手动停止，用户服务管理器才能接管。
           </p>
         </div>
       </SettingsGroup>
@@ -342,7 +341,7 @@ export function OpenCodeLoginAutostartSettings({
             </Alert>
           ) : null}
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy !== null}>取消</AlertDialogCancel>
             <AlertDialogAction
               disabled={
                 disabled || busy !== null || !canChange || (consent === "enable" && !selected)
@@ -350,10 +349,10 @@ export function OpenCodeLoginAutostartSettings({
               onClick={() => void save()}
             >
               {busy === "save"
-                ? "Saving…"
+                ? "保存中…"
                 : consent === "disable"
-                  ? "Confirm disable"
-                  : "Confirm enable"}
+                  ? "确认禁用"
+                  : "确认启用"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

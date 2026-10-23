@@ -75,7 +75,7 @@ export function NewTabPage({
   const navigate = (url: string) => {
     setError(null);
     void new Promise<void>((resolve) => resolve(browser.navigate(url))).catch((cause: unknown) =>
-      setError(cause instanceof Error ? cause.message : "Could not open the page"),
+      setError(cause instanceof Error ? cause.message : "无法打开页面"),
     );
   };
   const visibleTools = tools.map((tool) =>
@@ -90,7 +90,7 @@ export function NewTabPage({
           the address field stays centred whenever the pane has room. */}
       <div className="grid h-9 shrink-0 grid-cols-[minmax(max-content,1fr)_minmax(0,32rem)_minmax(max-content,1fr)] items-center gap-1 border-b border-border bg-background px-2">
         <div className="flex items-center gap-1">
-          <Button type="button" size="icon-xs" variant="ghost" disabled aria-label="Browser back">
+          <Button type="button" size="icon-xs" variant="ghost" disabled aria-label="浏览器后退">
             <ArrowLeft aria-hidden="true" />
           </Button>
           <Button
@@ -98,11 +98,11 @@ export function NewTabPage({
             size="icon-xs"
             variant="ghost"
             disabled
-            aria-label="Browser forward"
+            aria-label="浏览器前进"
           >
             <ArrowRight aria-hidden="true" />
           </Button>
-          <Button type="button" size="icon-xs" variant="ghost" disabled aria-label="Reload page">
+          <Button type="button" size="icon-xs" variant="ghost" disabled aria-label="重新加载页面">
             <RotateCw aria-hidden="true" />
           </Button>
         </div>
@@ -111,7 +111,7 @@ export function NewTabPage({
           searchEngine={searchEngine}
           showFullURL
           disabled={!browser.enabled}
-          placeholder={browser.enabled ? "Search or enter a URL" : "Turn on the browser to browse"}
+          placeholder={browser.enabled ? "搜索或输入网址" : "开启浏览器以浏览"}
           autoFocus={autoFocus && browser.enabled}
           className="w-full"
           onNavigate={navigate}
@@ -121,7 +121,7 @@ export function NewTabPage({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button type="button" size="icon-xs" variant="ghost" aria-label="Browser options" />
+                <Button type="button" size="icon-xs" variant="ghost" aria-label="浏览器选项" />
               }
             >
               <Ellipsis aria-hidden="true" />
@@ -132,7 +132,7 @@ export function NewTabPage({
                   window.location.hash = "#/settings/browser";
                 }}
               >
-                Browser settings
+                浏览器设置
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -148,8 +148,8 @@ export function NewTabPage({
       ) : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-8">
-          <NewTabSection title="Tools">
-            <NewTabGrid label="Tools">
+          <NewTabSection title="工具">
+            <NewTabGrid label="工具">
               {visibleTools.map((tool) => (
                 <NewTabToolTile
                   key={tool.id}
@@ -170,7 +170,7 @@ export function NewTabPage({
                     className={cn("size-4 shrink-0 transition-transform", moreOpen && "rotate-180")}
                     aria-hidden="true"
                   />
-                  <span className="min-w-0 flex-1 truncate">More tools…</span>
+                  <span className="min-w-0 flex-1 truncate">更多工具…</span>
                 </button>
               ) : null}
             </NewTabGrid>
@@ -179,7 +179,7 @@ export function NewTabPage({
             ) : null}
             {moreOpen && moreTools.length ? (
               <div id={moreID}>
-                <NewTabGrid label="More tools">
+                <NewTabGrid label="更多工具">
                   {moreTools.map((tool) => (
                     <NewTabToolTile key={tool.id} tool={tool} />
                   ))}
@@ -189,16 +189,16 @@ export function NewTabPage({
           </NewTabSection>
           {suggestions.length ? (
             <NewTabSection
-              title="Suggested"
+              title="推荐"
               action={
                 onClearSuggestions ? (
                   <Button type="button" size="xs" variant="ghost" onClick={onClearSuggestions}>
-                    Clear
+                    清除
                   </Button>
                 ) : null
               }
             >
-              <NewTabGrid label="Suggested sites">
+              <NewTabGrid label="推荐站点">
                 {suggestions.map((site) => (
                   <SuggestedSiteTile
                     key={site.url}
@@ -371,7 +371,7 @@ function SideQuestionForm({
   const [pending, setPending] = useState(false);
   return (
     <form
-      aria-label="Side question"
+      aria-label="侧边提问"
       className="flex flex-col gap-1.5"
       onSubmit={(event) => {
         event.preventDefault();
@@ -380,7 +380,7 @@ function SideQuestionForm({
         setError(null);
         void new Promise<void>((resolve) => resolve(onAsk(question.trim())))
           .catch((cause: unknown) =>
-            setError(cause instanceof Error ? cause.message : "Could not ask the question"),
+            setError(cause instanceof Error ? cause.message : "无法发起提问"),
           )
           .finally(() => setPending(false));
       }}
@@ -388,8 +388,8 @@ function SideQuestionForm({
       <div className="flex items-center gap-1.5">
         <Input
           autoFocus
-          aria-label="Ask a side question"
-          placeholder="Ask a side question…"
+          aria-label="发起侧边提问"
+          placeholder="发起侧边提问…"
           value={question}
           className="min-w-0 flex-1"
           onChange={(event) => setQuestion(event.target.value)}

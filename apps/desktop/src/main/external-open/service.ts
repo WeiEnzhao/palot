@@ -295,7 +295,7 @@ export class ExternalOpenService {
       await execFileAsync("/usr/bin/open", ["-a", target.appPath, directory], { timeout: 10_000 });
       return;
     }
-    throw new Error(`${target.definition.label} is no longer installed`);
+    throw new Error(`找不到 ${target.definition.label}，可能已被卸载或移动。`);
   }
 
   private async launchFile(

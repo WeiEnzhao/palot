@@ -13,14 +13,14 @@ import { CopyField } from "./ui/copy-field";
 import { toast } from "./ui/toast";
 
 const STATUS_LABELS: Record<ProjectScriptRun["status"], string> = {
-  passed: "passed",
-  failed: "failed",
+  passed: "已通过",
+  failed: "已失败",
   "timed-out": "已超时",
-  error: "could not run",
+  error: "无法运行",
 };
 
 /**
- * A quiet toast per finished project script ("Ran “test” after settling: passed"), with
+ * A quiet toast per finished project script (“已运行「test」，状态：passed”), with
  * View output opening the captured output. Palot never prompts the agent with it.
  */
 export function ProjectScriptNotices() {
@@ -37,9 +37,9 @@ export function ProjectScriptNotices() {
         : undefined;
     toast.add({
       type: run.status === "passed" ? "success" : "warning",
-      title: `Ran “${run.scriptName}” after settling: ${STATUS_LABELS[run.status]}`,
+      title: `已运行「${run.scriptName}」，状态：${STATUS_LABELS[run.status]}`,
       description: run.error ?? (title || undefined),
-      actionProps: { children: "View output", onClick: () => setOpen(run) },
+      actionProps: { children: "查看输出", onClick: () => setOpen(run) },
     });
   });
   return <ProjectScriptOutputDialog run={open} onClose={() => setOpen(null)} />;
@@ -64,18 +64,18 @@ export function ProjectScriptOutputDialog({
               <DialogDescription>{runSummary(run)}</DialogDescription>
             </DialogHeader>
             <div className="grid min-w-0 gap-2">
-              <CopyField label="Command" value={run.command} />
-              {run.directory ? <CopyField label="Directory" value={run.directory} /> : null}
+              <CopyField label="命令" value={run.command} />
+              {run.directory ? <CopyField label="目录" value={run.directory} /> : null}
             </div>
             <pre
-              aria-label="Script output"
+              aria-label="脚本输出"
               tabIndex={0}
               className="palot-native-scrollbar min-h-24 overflow-auto rounded-md border border-border bg-muted/30 p-3 font-mono text-code-compact whitespace-pre-wrap text-foreground"
             >
               {run.outputTruncated
                 ? `… earlier output omitted (last ${PROJECT_SCRIPT_LIMITS.outputCharacters.toLocaleString()} characters)\n`
                 : null}
-              {run.output || (run.error ?? "No output.")}
+              {run.output || (run.error ?? "无输出。")}
             </pre>
           </>
         ) : null}

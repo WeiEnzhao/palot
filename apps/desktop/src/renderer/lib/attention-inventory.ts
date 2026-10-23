@@ -84,7 +84,7 @@ export function attentionInventory(
           sessionTitle: root.title?.trim() || "未命名任务",
           type: primary.type,
           title:
-            blockers.length === 1 ? primary.title : `${blockers.length} requests need attention`,
+            blockers.length === 1 ? primary.title : `${blockers.length} 个请求需要关注`,
           createdAt: primary.createdAt,
           count: blockers.length,
           types,

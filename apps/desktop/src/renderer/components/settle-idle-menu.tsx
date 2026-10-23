@@ -15,9 +15,9 @@ import { toast } from "./ui/toast";
 
 const DAY_MS = 24 * 60 * 60 * 1_000;
 const IDLE_CHOICES = [
-  { label: "Idle for 1 day", idleForMs: DAY_MS },
-  { label: "Idle for 3 days", idleForMs: 3 * DAY_MS },
-  { label: "Idle for 1 week", idleForMs: 7 * DAY_MS },
+  { label: "空闲 1 天", idleForMs: DAY_MS },
+  { label: "空闲 3 天", idleForMs: 3 * DAY_MS },
+  { label: "空闲 1 周", idleForMs: 7 * DAY_MS },
 ] as const;
 
 /**
@@ -39,7 +39,7 @@ export function SettleIdleMenu<T extends InboxSessionView>({
       label: choice.label,
       items: idleInboxTasks(items, now, choice.idleForMs),
     })),
-    { label: "All idle tasks", items: idleInboxTasks(items, now, 0) },
+    { label: "所有空闲任务", items: idleInboxTasks(items, now, 0) },
   ];
   return (
     <DropdownMenu onOpenChange={(open) => open && setNow(Date.now())}>
@@ -49,8 +49,8 @@ export function SettleIdleMenu<T extends InboxSessionView>({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Settle idle tasks"
-            title="Settle idle tasks"
+            aria-label="结束空闲任务"
+            title="结束空闲任务"
             disabled={disabled}
           />
         }
@@ -59,7 +59,7 @@ export function SettleIdleMenu<T extends InboxSessionView>({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Settle idle tasks</DropdownMenuLabel>
+          <DropdownMenuLabel>结束空闲任务</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {choices.map((choice) => (
             <DropdownMenuItem

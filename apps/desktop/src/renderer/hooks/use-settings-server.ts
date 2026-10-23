@@ -31,7 +31,7 @@ export function useSettingsServer(enabled: boolean) {
     runtime,
     available,
     status:
-      profileID && disabled.includes(profileID) ? "Disabled" : available ? "Connected" : "Offline",
+      profileID && disabled.includes(profileID) ? "已禁用" : available ? "已连接" : "离线",
     profiles: connections.map(({ profile }) => ({ id: profile.id, name: profile.name })),
     projects: (runtime ? projects.data?.map(mapProject) : undefined) ?? entry?.projects ?? [],
     projectError: projects.error,

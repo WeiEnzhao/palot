@@ -147,9 +147,9 @@ describe("KeyboardShortcutsSettings", () => {
     setShortcutBinding("settings.open", ["Mod", "Shift", "P"]);
     const user = renderSettings();
 
-    await user.click(screen.getByRole("button", { name: "Reset 新建任务 to Ctrl+N" }));
+    await user.click(screen.getByRole("button", { name: "重置 新建任务 为 Ctrl+N" }));
     expect(shortcutKeys("task.new")).toEqual(["Mod", "N"]);
-    expect(screen.queryByRole("button", { name: "Reset 新建任务 to Ctrl+N" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "重置 新建任务 为 Ctrl+N" })).toBeNull();
     expect(shortcutKeys("settings.open")).toEqual(["Mod", "Shift", "P"]);
 
     await user.click(screen.getByRole("button", { name: "Restore defaults" }));

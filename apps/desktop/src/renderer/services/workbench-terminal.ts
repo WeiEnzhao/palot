@@ -121,12 +121,12 @@ export function recoverWorkbenchTerminal(
           options.onData(event.data);
         } else if (event.type === "error" || event.type === "close") {
           failed(
-            new Error(event.type === "error" ? event.message : "Terminal connection interrupted"),
+            new Error(event.type === "error" ? event.message : "终端连接中断"),
           );
         }
       });
       openTimer = setTimeout(() => {
-        if (current(attempt)) failed(new Error("Terminal connection timed out"));
+        if (current(attempt)) failed(new Error("终端连接超时"));
       }, 10_000);
       if (current(attempt)) await palot.startPty(attached);
     } catch (error) {

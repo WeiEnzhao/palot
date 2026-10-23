@@ -45,14 +45,14 @@ export function ProjectScriptsSettings({ target }: { target: ProjectScriptsTarge
 
   return (
     <SettingsSection
-      title="Scripts"
+      title="脚本"
       icon={SquareTerminal}
-      description="Commands Palot runs on this computer through your shell, in the task's own directory. Nothing runs until you add a script here, and the agent is never prompted with the result."
+      description="Palot 通过本机 Shell 在任务自身目录下运行的命令。添加脚本前不会执行任何命令，智能体也不会收到执行结果。"
       action={
         supported && editing === null ? (
           <Button type="button" variant="outline" size="sm" onClick={() => setEditing("new")}>
             <Plus data-icon="inline-start" aria-hidden="true" />
-            Add script
+            添加脚本
           </Button>
         ) : null
       }
@@ -60,10 +60,10 @@ export function ProjectScriptsSettings({ target }: { target: ProjectScriptsTarge
       {query.error ? (
         <SettingsNotice
           status="error"
-          title="Could not load scripts"
+          title="无法加载脚本"
           actions={
             <Button type="button" variant="ghost" size="sm" onClick={() => void query.refetch()}>
-              Retry
+              重试
             </Button>
           }
         >
@@ -71,7 +71,7 @@ export function ProjectScriptsSettings({ target }: { target: ProjectScriptsTarge
         </SettingsNotice>
       ) : null}
       {state && state.availability.supported !== true ? (
-        <SettingsNotice status="neutral" title="Scripts are unavailable for this connection">
+        <SettingsNotice status="neutral" title="此连接不支持脚本">
           {state.availability.reason}
         </SettingsNotice>
       ) : null}
@@ -106,7 +106,7 @@ export function ProjectScriptsSettings({ target }: { target: ProjectScriptsTarge
           ) : null}
         </SettingsGroup>
       ) : null}
-      {!state && !query.error ? <p role="status">Loading scripts…</p> : null}
+      {!state && !query.error ? <p role="status">正在加载脚本…</p> : null}
     </SettingsSection>
   );
 }
@@ -142,17 +142,17 @@ function ScriptRow({
             variant="ghost"
             size="sm"
             disabled={!editable}
-            aria-label={`Edit ${script.name}`}
+            aria-label={`编辑 ${script.name}`}
             onClick={onEdit}
           >
-            Edit
+            编辑
           </Button>
           <Button
             type="button"
             variant={armed ? "destructive" : "ghost"}
             size="sm"
             disabled={remove.isPending}
-            aria-label={armed ? `Confirm removing ${script.name}` : `Remove ${script.name}`}
+            aria-label={armed ? `确认删除 ${script.name}` : `删除 ${script.name}`}
             onBlur={() => setArmed(false)}
             onKeyDown={(event) => {
               if (event.key === "Escape" && armed) {
@@ -169,12 +169,12 @@ function ScriptRow({
               remove.mutate(script.id);
             }}
           >
-            {armed ? "Confirm remove" : "Remove"}
+            {armed ? "确认删除" : "删除"}
           </Button>
         </>
       }
     >
-      <CopyField label="Command" valueName={`${script.name} command`} value={script.command} />
+      <CopyField label="命令" valueName={`${script.name} command`} value={script.command} />
     </SettingsRow>
   );
 }
@@ -211,7 +211,7 @@ function ScriptEditor({
 
   return (
     <form
-      aria-label={script ? `Edit ${script.name}` : "New script"}
+      aria-label={script ? `编辑 ${script.name}` : "新建脚本"}
       className="p-4"
       onSubmit={(event) => {
         event.preventDefault();
@@ -227,19 +227,19 @@ function ScriptEditor({
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor={`${id}-name`}>Script name</FieldLabel>
+          <FieldLabel htmlFor={`${id}-name`}>脚本名称</FieldLabel>
           <Input
             id={`${id}-name`}
             autoFocus
             value={draft.name}
             maxLength={PROJECT_SCRIPT_LIMITS.name}
             disabled={save.isPending}
-            placeholder="Clean build output"
+            placeholder="清理构建输出"
             onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${id}-command`}>Command</FieldLabel>
+          <FieldLabel htmlFor={`${id}-command`}>命令</FieldLabel>
           <Textarea
             id={`${id}-command`}
             value={draft.command}
@@ -255,11 +255,11 @@ function ScriptEditor({
             }
           />
           <FieldDescription>
-            Runs through your shell with the task's directory as the working directory.
+            通过您的 Shell 执行，工作目录为任务所在目录。
           </FieldDescription>
         </Field>
         <label className="flex min-h-7 cursor-pointer items-center justify-between gap-4 text-sm">
-          <span>When a task settles</span>
+          <span>当任务结束时</span>
           <Switch
             checked={draft.runOnSettle}
             disabled={save.isPending}
@@ -267,7 +267,7 @@ function ScriptEditor({
           />
         </label>
         <Field>
-          <FieldLabel htmlFor={`${id}-timeout`}>Timeout in seconds</FieldLabel>
+          <FieldLabel htmlFor={`${id}-timeout`}>超时时间（秒）</FieldLabel>
           <Input
             id={`${id}-timeout`}
             type="number"
@@ -281,8 +281,8 @@ function ScriptEditor({
             onChange={(event) => setTimeoutText(event.target.value)}
           />
           <FieldDescription>
-            Palot stops the script after {PROJECT_SCRIPT_LIMITS.minTimeoutSeconds}–
-            {PROJECT_SCRIPT_LIMITS.maxTimeoutSeconds} seconds and reports it as timed out.
+            Palot 会在 {PROJECT_SCRIPT_LIMITS.minTimeoutSeconds}–
+            {PROJECT_SCRIPT_LIMITS.maxTimeoutSeconds} 秒后强制停止脚本并标记为超时。
           </FieldDescription>
         </Field>
       </FieldGroup>
@@ -293,10 +293,10 @@ function ScriptEditor({
       ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Button type="submit" size="sm" disabled={!valid || save.isPending}>
-          {save.isPending ? "Saving…" : "Save script"}
+          {save.isPending ? "保存中…" : "保存脚本"}
         </Button>
         <Button type="button" variant="ghost" size="sm" disabled={save.isPending} onClick={onDone}>
-          Cancel
+          取消
         </Button>
       </div>
     </form>

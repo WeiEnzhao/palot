@@ -293,7 +293,7 @@ export function InboxSidebarContent() {
       } else if (action === "inbox" && item.section === "settled") {
         toast.add({
           type: "success",
-          title: "Task moved to Inbox",
+          title: "任务已移至收件箱",
           actionProps: {
             children: "撤销",
             onClick: () =>
@@ -309,7 +309,7 @@ export function InboxSidebarContent() {
         const until = item.snoozedUntil;
         toast.add({
           type: "success",
-          title: "Task woken",
+          title: "任务已唤醒",
           ...(until !== null && until > Date.now()
             ? {
                 actionProps: {
@@ -377,7 +377,7 @@ export function InboxSidebarContent() {
       } catch (error) {
         toast.add({
           type: "error",
-          title: "Could not settle tasks",
+          title: "无法结算任务",
           description: error instanceof Error ? error.message : undefined,
         });
         return;

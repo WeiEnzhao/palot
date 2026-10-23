@@ -140,7 +140,7 @@ it("keeps the strip a fluid tab list with focus-following hover and middle-click
 it("keeps browser rows on a failed close and reports the failure", async () => {
   vi.mocked(palot.browserCommand).mockRejectedValue(new Error("Connection lost"));
   const store = mount();
-  fireEvent.click(screen.getByRole("button", { name: "Close Example" }));
+  fireEvent.click(screen.getByRole("button", { name: "关闭 Example" }));
   await waitFor(() =>
     expect(showErrorToast).toHaveBeenCalledWith("无法控制浏览器", expect.any(Error)),
   );
@@ -211,7 +211,7 @@ it("closes browser victims through browser commands and ordinary victims through
   };
   const store = mount([...pages, contextTab]);
   fireEvent.contextMenu(screen.getByRole("tab", { name: "Example" }));
-  fireEvent.click(await screen.findByRole("menuitem", { name: "Close others" }));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "关闭其他" }));
   expect(palot.browserCommand).toHaveBeenCalledWith("binding", {
     type: "tabs.close",
     tabID: "page-2",
@@ -265,12 +265,12 @@ it("reopens the most recently closed tab using the workbench-focused shortcut", 
     resource: { profileID: scope.profileID, location, path: `${id}.ts` },
   }));
   const store = mount(tabs);
-  fireEvent.click(screen.getByRole("button", { name: "Close first.ts" }));
-  fireEvent.click(screen.getByRole("button", { name: "Close last.ts" }));
+  fireEvent.click(screen.getByRole("button", { name: "关闭 first.ts" }));
+  fireEvent.click(screen.getByRole("button", { name: "关闭 last.ts" }));
   expect(fireEvent.keyDown(window, { key: "t", ctrlKey: true, shiftKey: true })).toBe(true);
   expect(store.get(workbenchStateAtom).scopes[workbenchScopeKey(scope)]?.right.tabs).toEqual([]);
   expect(
-    fireEvent.keyDown(screen.getByRole("region", { name: "Right workbench" }), {
+    fireEvent.keyDown(screen.getByRole("region", { name: "右侧工作台" }), {
       key: "T",
       ctrlKey: true,
       shiftKey: true,
@@ -290,22 +290,22 @@ it("reopens the most recently closed tab using the workbench-focused shortcut", 
 
 it("opens a New tab page from + and turns it into the chosen surface in place", async () => {
   const store = mount();
-  fireEvent.click(screen.getByRole("button", { name: "New tab" }));
-  const tab = await screen.findByRole("tab", { name: "New tab" });
+  fireEvent.click(screen.getByRole("button", { name: "新标签页" }));
+  const tab = await screen.findByRole("tab", { name: "新标签页" });
   expect(tab.getAttribute("aria-selected")).toBe("true");
-  const tools = await screen.findByRole("group", { name: "Tools" });
+  const tools = await screen.findByRole("group", { name: "工具" });
   fireEvent.click(within(tools).getByRole("button", { name: /Changes/ }));
   await screen.findByRole("tab", { name: /^Changes/ });
   const right = store.get(workbenchStateAtom).scopes[workbenchScopeKey(scope)]!.right;
   expect(right.tabs.map((candidate) => candidate.kind)).toEqual(["browser", "browser", "changes"]);
   expect(right.activeTabID).toBe(right.tabs[2]!.id);
-  expect(screen.queryByRole("tab", { name: "New tab" })).toBeNull();
+  expect(screen.queryByRole("tab", { name: "新标签页" })).toBeNull();
 });
 
 it("navigates a New tab by opening the address as a page in its place", async () => {
   vi.mocked(palot.browserCommand).mockResolvedValue("page-3");
   const store = mount();
-  fireEvent.click(screen.getByRole("button", { name: "New tab" }));
+  fireEvent.click(screen.getByRole("button", { name: "新标签页" }));
   const address = await screen.findByRole("textbox", { name: "浏览器地址" });
   await userEvent.type(address, "https://example.org{Enter}");
   await waitFor(() =>
@@ -329,7 +329,7 @@ it("navigates a New tab by opening the address as a page in its place", async ()
 
 it("shows the New tab page in an empty pane", async () => {
   mount([]);
-  expect(await screen.findByRole("group", { name: "Tools" })).toBeTruthy();
+  expect(await screen.findByRole("group", { name: "工具" })).toBeTruthy();
   expect(screen.getByRole("textbox", { name: "浏览器地址" })).toBeTruthy();
 });
 

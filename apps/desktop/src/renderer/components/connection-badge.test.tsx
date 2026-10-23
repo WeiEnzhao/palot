@@ -21,10 +21,10 @@ it("keeps the server name out of icon-only rows and exposes safe details on hove
       iconOnly
     />,
   );
-  const icon = screen.getByRole("img", { name: "Build server · host.example:3000 · Disconnected" });
+  const icon = screen.getByRole("img", { name: "Build server · host.example:3000 · 未连接" });
   expect(screen.queryByText("Build server")).toBeNull();
   await userEvent.hover(icon);
-  const label = "Build server · host.example:3000 · Disconnected";
+  const label = "Build server · host.example:3000 · 未连接";
   expect(await screen.findByText(label)).toBeTruthy();
   expect(document.body.innerHTML).not.toContain("secret");
   await userEvent.unhover(icon);
@@ -46,7 +46,7 @@ it("exposes the full SSH identity and connection state without relying on color"
     />,
   );
   expect(
-    screen.getByRole("img", { name: "Build server · builder@host.example:2222 · Disconnected" }),
+    screen.getByRole("img", { name: "Build server · builder@host.example:2222 · 未连接" }),
   ).toBeTruthy();
   expect(screen.getByText("Build server")).toBeTruthy();
 });
@@ -66,6 +66,6 @@ it("does not expose URL credentials in a remote badge", () => {
       connected
     />,
   );
-  expect(screen.getByRole("img", { name: "Remote · host.example:3000 · Connected" })).toBeTruthy();
+  expect(screen.getByRole("img", { name: "Remote · host.example:3000 · 已连接" })).toBeTruthy();
   expect(document.body.textContent).not.toContain("secret");
 });

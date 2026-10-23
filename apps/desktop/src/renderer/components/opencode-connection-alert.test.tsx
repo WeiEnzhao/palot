@@ -38,26 +38,26 @@ describe("OpenCodeConnectionAlert", () => {
       </Provider>,
     );
     act(() => vi.advanceTimersByTime(1200));
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Retry" })));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "重试" })));
     expect(connect).toHaveBeenLastCalledWith(undefined);
     connect.mockClear();
     act(() => store.set(runtimeAtom, { ...runtime, phase: "reconnecting" }));
-    expect(screen.getByRole("button", { name: "Start OpenCode" }).hasAttribute("disabled")).toBe(
+    expect(screen.getByRole("button", { name: "启动 OpenCode" }).hasAttribute("disabled")).toBe(
       false,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Start OpenCode" }));
-    expect(screen.getByText(/may restart an unresponsive shared service/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "启动 OpenCode" }));
+    expect(screen.getByText(/这可能会重启无响应的共享服务/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
     expect(connect).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Start OpenCode" }));
+    fireEvent.click(screen.getByRole("button", { name: "启动 OpenCode" }));
     await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: "Start or recover" })),
+      fireEvent.click(screen.getByRole("button", { name: "启动或恢复" })),
     );
     expect(connect).toHaveBeenCalledExactlyOnceWith({ startLocalService: true });
     act(() =>
       store.set(runtimeAtom, { ...runtime, profileID: "remote", canStartLocalService: false }),
     );
-    expect(screen.queryByRole("button", { name: "Start OpenCode" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "启动 OpenCode" })).toBeNull();
   });
   it("shows persistent connection state beside the composer after a short grace period", () => {
     vi.useFakeTimers();
@@ -83,15 +83,15 @@ describe("OpenCodeConnectionAlert", () => {
       </Provider>,
     );
 
-    expect(screen.queryByText("Reconnecting to OpenCode")).toBeNull();
+    expect(screen.queryByText("正在重新连接 OpenCode")).toBeNull();
     act(() => vi.advanceTimersByTime(1_200));
-    expect(screen.getByText("Reconnecting to OpenCode")).toBeTruthy();
+    expect(screen.getByText("正在重新连接 OpenCode")).toBeTruthy();
     expect(
-      screen.getByText("Sending is temporarily unavailable. Your conversation is safe."),
+      screen.getByText("发送暂时不可用。您的对话是安全的。"),
     ).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Details" }));
-    expect(screen.getByRole("dialog", { name: "OpenCode connection details" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "重试" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "详情" }));
+    expect(screen.getByRole("dialog", { name: "OpenCode 连接详情" })).toBeTruthy();
     expect(screen.getByText("Connection refused")).toBeTruthy();
   });
 

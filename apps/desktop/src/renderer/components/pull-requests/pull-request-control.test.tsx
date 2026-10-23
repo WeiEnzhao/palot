@@ -94,7 +94,7 @@ describe("PullRequestControl", () => {
     await userEvent.click(await screen.findByRole("button", { name: "拉取请求" }));
     await userEvent.click(await screen.findByRole("button", { name: "从分支检测" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
-      "No pull request was found for this task's branch.",
+      "未找到此任务分支对应的拉取请求。",
     );
   });
 

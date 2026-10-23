@@ -35,7 +35,7 @@ const location = (input: { directory: string; workspaceID?: string }) => ({
   ...(input.workspaceID ? { workspace: input.workspaceID } : {}),
 });
 const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Unknown OpenCode error";
+  error instanceof Error ? error.message : "未知的 OpenCode 错误";
 
 export async function listProjects(requestSignal?: AbortSignal) {
   return (
@@ -352,7 +352,7 @@ export async function listModels(
         ? [
             {
               capability: "models",
-              label: "Available models",
+              label: "可用模型",
               message: errorMessage(models.reason),
             },
           ]
@@ -361,13 +361,13 @@ export async function listModels(
         ? [
             {
               capability: "defaultModel",
-              label: "Default model",
+              label: "默认模型",
               message: errorMessage(defaultModel.reason),
             },
           ]
         : []),
       ...(providers.status === "rejected"
-        ? [{ capability: "providers", label: "Providers", message: errorMessage(providers.reason) }]
+        ? [{ capability: "providers", label: "提供商", message: errorMessage(providers.reason) }]
         : []),
     ],
   };
@@ -392,10 +392,10 @@ export async function loadComposerCatalog(
     skills: skills.status === "fulfilled" ? skills.value.data.map(mapSkill) : [],
     errors: [
       ...(commands.status === "rejected"
-        ? [{ capability: "commands", label: "Commands", message: errorMessage(commands.reason) }]
+        ? [{ capability: "commands", label: "命令", message: errorMessage(commands.reason) }]
         : []),
       ...(skills.status === "rejected"
-        ? [{ capability: "skills", label: "Skills", message: errorMessage(skills.reason) }]
+        ? [{ capability: "skills", label: "技能", message: errorMessage(skills.reason) }]
         : []),
     ],
   };

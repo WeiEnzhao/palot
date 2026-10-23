@@ -144,58 +144,58 @@ export function sourceControlErrorMessage(error: unknown): string {
   if (error instanceof SourceControlError) {
     switch (error.code) {
       case "github-unauthenticated":
-        return `GitHub is not signed in. ${GITHUB_SIGN_IN_HINT}`;
+        return `GitHub 尚未登录。${GITHUB_SIGN_IN_HINT}`;
       case "github-auth-failed":
-        return `GitHub rejected the token. ${GITHUB_SIGN_IN_HINT}`;
+        return `GitHub 拒绝了该令牌。${GITHUB_SIGN_IN_HINT}`;
       case "github-rate-limited": {
         const retry = formatRetryTime(error.retryAt);
         return retry
-          ? `GitHub rate limit reached. Try again after ${retry}.`
-          : "GitHub rate limit reached. Try again shortly.";
+          ? `GitHub 已达到速率限制。请在 ${retry} 后重试。`
+          : "GitHub 已达到速率限制。请稍后重试。";
       }
       case "no-pull-request":
-        return "No pull request was found for this task's branch.";
+        return "未找到此任务分支对应的拉取请求。";
       case "pull-request-not-open":
-        return "Only open or draft pull requests can be watched.";
+        return "只能关注处于开放或草稿状态的拉取请求。";
       case "unsupported-connection":
-        return "Pull requests are only available for tasks on this computer.";
+        return "拉取请求仅可用于本机上的任务。";
       case "github-not-found":
-        return "GitHub could not find this pull request, or this account cannot see it.";
+        return "GitHub 未找到此拉取请求，或当前账号无权查看。";
       case "github-forbidden":
-        return "This GitHub account doesn't have permission to do that.";
+        return "此 GitHub 账号没有执行此操作的权限。";
       case "merge-head-moved":
-        return "New commits were pushed since you loaded this pull request. Refresh and review them before merging.";
+        return "加载此拉取请求后有新的提交。请先刷新并审查，然后再合入。";
       case "merge-not-mergeable":
-        return "This pull request can't be merged right now. Resolve conflicts or update the branch first.";
+        return "此拉取请求当前无法合入。请先解决冲突或更新分支。";
       case "merge-checks-required":
-        return "Required checks haven't passed yet.";
+        return "必要的检查尚未通过。";
       case "merge-blocked":
-        return error.message || "GitHub blocked this merge.";
+        return error.message || "GitHub 阻止了此次合入。";
       default:
         return error.message;
     }
   }
-  return error instanceof Error ? error.message : "Something went wrong.";
+  return error instanceof Error ? error.message : "出了点问题。";
 }
 
 export const REVIEWER_STATE_LABEL: Record<PullRequestReviewerState, string> = {
-  requested: "Awaiting review",
-  approved: "Approved",
-  "changes-requested": "Changes requested",
-  commented: "Commented",
-  dismissed: "Dismissed",
+  requested: "等待评审",
+  approved: "已通过",
+  "changes-requested": "需要修改",
+  commented: "已评论",
+  dismissed: "已忽略",
 };
 
 export const MERGE_METHOD_LABEL: Record<PullRequestMergeMethod, string> = {
-  merge: "Create a merge commit",
-  squash: "Squash and merge",
-  rebase: "Rebase and merge",
+  merge: "创建合并提交",
+  squash: "压缩并合入",
+  rebase: "变基并合入",
 };
 
 export const MERGE_METHOD_SHORT: Record<PullRequestMergeMethod, string> = {
-  merge: "Merge",
-  squash: "Squash",
-  rebase: "Rebase",
+  merge: "合并",
+  squash: "压缩",
+  rebase: "变基",
 };
 
 export type CheckGroup = "failing" | "pending" | "passing";
@@ -214,20 +214,20 @@ export function checkGroup(check: PullRequestCheck): CheckGroup {
 }
 
 const CONCLUSION_LABEL: Record<NonNullable<PullRequestCheck["conclusion"]>, string> = {
-  success: "Passed",
-  failure: "Failed",
-  neutral: "Neutral",
-  cancelled: "Cancelled",
-  skipped: "Skipped",
-  "timed-out": "Timed out",
-  "action-required": "Action required",
-  stale: "Stale",
+  success: "通过",
+  failure: "失败",
+  neutral: "中性",
+  cancelled: "已取消",
+  skipped: "已跳过",
+  "timed-out": "超时",
+  "action-required": "需要操作",
+  stale: "已过期",
 };
 
 export function checkStatusLabel(check: PullRequestCheck): string {
-  if (check.status === "queued") return "Queued";
-  if (check.status === "waiting") return "Waiting";
-  if (check.status === "in-progress" || check.conclusion === null) return "Running";
+  if (check.status === "queued") return "排队中";
+  if (check.status === "waiting") return "等待中";
+  if (check.status === "in-progress" || check.conclusion === null) return "运行中";
   return CONCLUSION_LABEL[check.conclusion];
 }
 
@@ -263,40 +263,40 @@ export function mergeAvailability(detail: PullRequestDetail): MergeAvailability 
   if (detail.state === "merged" || detail.state === "closed") return none;
   if (detail.state === "draft" || detail.mergeState === "draft")
     return {
-      blocked: "This pull request is still a draft. Mark it ready for review before merging.",
+      blocked: "此拉取请求仍是草稿。请先标记为可评审再合入。",
       warning: null,
     };
   if (!detail.viewer.canMerge)
     return {
-      blocked: "You don't have permission to merge into this repository.",
+      blocked: "你没有合入此仓库的权限。",
       warning: null,
     };
   if (detail.mergeable === "conflicting" || detail.mergeState === "dirty")
     return {
-      blocked: `This branch has conflicts with ${detail.baseBranch} that must be resolved first.`,
+      blocked: `此分支与 ${detail.baseBranch} 存在冲突，需先解决。`,
       warning: null,
     };
   if (detail.mergeState === "behind")
     return {
-      blocked: `This branch is out of date with ${detail.baseBranch}. Update it before merging.`,
+      blocked: `此分支落后于 ${detail.baseBranch}。请先更新再合入。`,
       warning: null,
     };
   if (detail.mergeState === "blocked")
     return {
-      blocked: "Merging is blocked until required reviews and checks pass.",
+      blocked: "合入被阻止，需通过必要的评审和检查。",
       warning: null,
     };
   if (detail.mergeState === "unknown")
     return {
-      blocked: "GitHub is still checking whether this can merge. Refresh in a moment.",
+      blocked: "GitHub 仍在检查是否可合入。请稍后刷新。",
       warning: null,
     };
   if (detail.mergeMethods.length === 0)
-    return { blocked: "This repository allows no merge method.", warning: null };
+    return { blocked: "此仓库不允许任何合入方式。", warning: null };
   if (detail.mergeState === "unstable")
     return {
       blocked: null,
-      warning: "Some checks are failing or still running. They are not required to merge.",
+      warning: "部分检查失败或仍在运行中，但它们不是合入所必需的。",
     };
   return none;
 }

@@ -126,7 +126,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     id: "task.recent",
     group: "tasks",
-    label: "Open recent task 1–9",
+    label: "打开最近任务 1–9",
     keys: ["Alt", "1–9"],
     note: "Same order as Recent tasks in the command palette",
     locked: "Uses the number keys as a range",

@@ -193,7 +193,7 @@ describe("GlobalCommandPalette", () => {
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "welcome guide",
     );
-    await userEvent.click(await screen.findByRole("option", { name: /Open welcome guide/ }));
+    await userEvent.click(await screen.findByRole("option", { name: /打开欢迎指南/ }));
 
     await waitFor(() => expect(router.state.location.pathname).toBe("/welcome"));
   });
@@ -204,7 +204,7 @@ describe("GlobalCommandPalette", () => {
 
     const options = await screen.findAllByRole("option");
     expect(options[0]?.hasAttribute("data-highlighted")).toBe(true);
-    const target = screen.getByRole("option", { name: /^Hide navigation/ });
+    const target = screen.getByRole("option", { name: /^隐藏导航栏/ });
     const steps = options.indexOf(target);
     expect(steps).toBeGreaterThan(0);
     for (let index = 0; index < steps; index += 1) await userEvent.keyboard("{ArrowDown}");
@@ -422,7 +422,7 @@ describe("GlobalCommandPalette", () => {
     fireEvent.keyDown(window, { key: "k", metaKey: true });
     const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     await userEvent.type(input, "focus composer");
-    await userEvent.click(screen.getByRole("option", { name: /Focus composer/ }));
+    await userEvent.click(screen.getByRole("option", { name: /聚焦输入框/ }));
 
     await waitFor(() => expect(document.activeElement).toBe(composer));
     composer.remove();
@@ -622,7 +622,7 @@ describe("GlobalCommandPalette", () => {
     first.store.set(commandPaletteOpenAtom, true);
     const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
     await userEvent.type(input, "compact");
-    expect(screen.queryByRole("option", { name: /^Compact task/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /^压缩任务/ })).toBeNull();
     first.unmount();
 
     mocks.compactSession.mockResolvedValue(undefined);
@@ -633,7 +633,7 @@ describe("GlobalCommandPalette", () => {
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "compact task",
     );
-    await userEvent.click(await screen.findByRole("option", { name: /^Compact task/ }));
+    await userEvent.click(await screen.findByRole("option", { name: /^压缩任务/ }));
     await waitFor(() => expect(mocks.compactSession).toHaveBeenCalledWith("session-1"));
     // Closing animates; reopen only once the previous dialog has left, or typing can land in it.
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -643,7 +643,7 @@ describe("GlobalCommandPalette", () => {
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
       "undo last",
     );
-    await userEvent.click(await screen.findByRole("option", { name: /^Undo last step/ }));
+    await userEvent.click(await screen.findByRole("option", { name: /^撤销上一步/ }));
     await waitFor(() =>
       expect(store.get(composerActionRequestAtom)).toMatchObject({
         action: "undo",

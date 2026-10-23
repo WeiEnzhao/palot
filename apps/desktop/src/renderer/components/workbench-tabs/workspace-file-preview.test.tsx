@@ -273,7 +273,7 @@ describe("FileTab previews", () => {
     expect(wheel({ deltaY: 40 })).toBe(false);
     // Chromium reports a trackpad pinch as Ctrl-wheel; the window must not zoom.
     expect(wheel({ ctrlKey: true, deltaY: -40 })).toBe(true);
-    const fit = screen.getByRole("button", { name: "Fit image to pane" });
+    const fit = screen.getByRole("button", { name: "图像适应窗格" });
     expect(fit.hasAttribute("disabled")).toBe(false);
     expect(wheel({ deltaY: 40 })).toBe(true);
 

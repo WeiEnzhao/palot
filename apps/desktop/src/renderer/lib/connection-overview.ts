@@ -304,7 +304,7 @@ export class ConnectionOverviewController {
         if (this.valid(profileID, generation, epoch))
           this.update(profileID, {
             phase: "error",
-            error: error instanceof Error ? error.message : "Connection unavailable",
+            error: error instanceof Error ? error.message : "连接不可用",
           });
         throw error;
       }

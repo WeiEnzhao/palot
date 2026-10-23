@@ -217,7 +217,7 @@ const previewSessions: PalotSession[] = [
     id: "first-shell",
     projectID: previewProject.id,
     parentID: null,
-    title: "Build the first Palot 2 shell",
+    title: "构建首个 Palot 2 外壳",
     agent: "build",
     model: { id: "gpt-5.6", providerID: "openai" },
     location: { directory: previewProject.canonical },
@@ -231,7 +231,7 @@ const previewSessions: PalotSession[] = [
     id: "transport",
     projectID: previewProject.id,
     parentID: null,
-    title: "OpenCode transport and recovery",
+    title: "OpenCode 传输与恢复",
     agent: "build",
     model: null,
     location: { directory: previewProject.canonical },
@@ -248,7 +248,7 @@ const previewMessages: SessionMessagesResponse["data"] = [
     id: "user-1",
     type: "user",
     time: { created: now - 480_000 },
-    text: "Build the first working Palot 2 shell. Keep it fast, calm, and focused on OpenCode 2.",
+    text: "构建首个可用的 Palot 2 外壳。保持简洁、从容，聚焦 OpenCode 2。",
   },
   {
     id: "assistant-1",
@@ -261,7 +261,7 @@ const previewMessages: SessionMessagesResponse["data"] = [
     content: [
       {
         type: "text",
-        text: "I’ll start with the product spine: projects and tasks on the left, one readable thread in the middle, and the current diff on the right. OpenCode remains the source of truth.",
+        text: "先从产品骨架入手：左侧放项目和任务，中间是可读的对话线程，右侧显示当前 diff。OpenCode 仍然是唯一数据源。",
       },
       {
         type: "tool",
@@ -271,13 +271,13 @@ const previewMessages: SessionMessagesResponse["data"] = [
         state: {
           status: "completed",
           input: {},
-          content: [{ type: "text", text: "Found 1 project, 2 tasks, and 4 changed files." }],
-          metadata: { title: "Inspect workspace and OpenCode contracts" },
+          content: [{ type: "text", text: "发现 1 个项目、2 个任务、4 个变更文件。" }],
+          metadata: { title: "检查工作区与 OpenCode 契约" },
         },
       },
       {
         type: "text",
-        text: "The transcript uses measured virtual rows. Stream updates only replace the touched message, and every disconnect starts a full rehydrate.",
+        text: "对话记录使用精确计算的虚拟行。流式更新只替换变动的消息，每次断连都会触发一次完整重建。",
       },
     ],
   },
@@ -293,7 +293,7 @@ const previewMessages: SessionMessagesResponse["data"] = [
         id: "tool-live",
         name: "write",
         time: { created: now - 20_000, ran: now - 20_000 },
-        state: { status: "running", input: {}, metadata: { title: "Create renderer shell" } },
+        state: { status: "running", input: {}, metadata: { title: "创建渲染层外壳" } },
       },
     ],
   },
@@ -339,24 +339,24 @@ const previewRequests: SessionRequestSnapshot = {
     {
       id: "question-preview",
       sessionID: "first-shell",
-      title: "Approach",
+      title: "方案",
       metadata: { kind: "question" },
       fields: [
         {
           key: "approach",
           type: "string",
-          title: "Approach",
-          description: "How should the pending request controls behave?",
+          title: "方案",
+          description: "待处理请求的控件应如何表现？",
           options: [
             {
               value: "inline",
-              label: "Inline",
-              description: "Answer directly in the request card",
+              label: "内联",
+              description: "直接在请求卡片中回答",
             },
             {
               value: "composer",
-              label: "Composer",
-              description: "Move the answer into the main composer",
+              label: "编辑器",
+              description: "将回答移入主编辑器",
             },
           ],
           custom: true,
@@ -370,7 +370,7 @@ const previewRequests: SessionRequestSnapshot = {
       sessionID: "first-shell",
       time: { created: now },
       type: "user",
-      payload: { text: "Run the full test suite after the current turn." },
+      payload: { text: "在当前轮次结束后运行完整测试套件。" },
       delivery: "queue",
     },
   ],
@@ -436,7 +436,7 @@ const previewSettings: PalotSettingsSnapshot = {
     {
       id: "build",
       name: "Build",
-      description: "Default coding agent",
+      description: "默认编码智能体",
       mode: "primary",
       hidden: false,
       color: null,
@@ -449,7 +449,7 @@ const previewSettings: PalotSettingsSnapshot = {
     {
       id: "openai",
       name: "OpenAI",
-      methods: [{ id: null, type: "key", label: "API key", form: [] }],
+      methods: [{ id: null, type: "key", label: "API 密钥", form: [] }],
       connections: [{ type: "env", id: null, label: "OPENAI_API_KEY", active: true }],
     },
   ],
@@ -477,7 +477,7 @@ const previewSettings: PalotSettingsSnapshot = {
     {
       id: "explore",
       name: "Explore",
-      description: "Read-only workspace exploration",
+      description: "只读工作区探索",
       location: "~/.config/opencode/skills/explore",
       slash: true,
       autoinvoke: true,
@@ -486,7 +486,7 @@ const previewSettings: PalotSettingsSnapshot = {
   commands: [
     {
       name: "review",
-      description: "Review current changes",
+      description: "审查当前变更",
       agent: "build",
       model: null,
       subtask: false,
@@ -1814,7 +1814,7 @@ export const palot = {
       : Promise.resolve([
           {
             id: "finder",
-            label: "Reveal in Finder",
+            label: "在访达中显示",
             kind: "file-manager",
             iconDataUrl: null,
             preferred: true,

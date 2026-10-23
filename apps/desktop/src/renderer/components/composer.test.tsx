@@ -1642,7 +1642,7 @@ describe("Composer discovery", () => {
       });
       expect(input().value).toBe("Other task draft");
       expect(screen.queryByText("Old task wait failed")).toBeNull();
-      expect(screen.queryByRole("button", { name: "Remove undo.txt" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "移除 undo.txt" })).toBeNull();
       act(() => store.set(runtimeAtom, origin));
       mounted.rerender(view(session));
       expect(input().value).toBe(outcome === "success" ? "Original prompt" : "/undo ");
@@ -1654,7 +1654,7 @@ describe("Composer discovery", () => {
           },
           "test",
         );
-        expect(screen.getByRole("button", { name: "Remove undo.txt" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "移除 undo.txt" })).toBeTruthy();
       } else {
         expect(stage).not.toHaveBeenCalled();
       }
@@ -2186,7 +2186,7 @@ describe("Composer pending inputs", () => {
   async function writeOriginalDraft() {
     fireEvent.change(input(), { target: { value: "Original unsent draft" } });
     await userEvent.click(screen.getByRole("button", { name: "附加文件" }));
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
   }
 
   async function editQueuedDraft() {
@@ -2219,7 +2219,7 @@ describe("Composer pending inputs", () => {
         action: "cancel",
       });
       expect(input().value).toBe("/undo ");
-      expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "移除 queued.txt" })).toBeNull();
       expect(screen.queryByText(/Resubmitting adds it to the end/)).toBeNull();
       fireEvent.keyDown(input(), { key: "Enter" });
       expect(cancel).toHaveBeenCalledTimes(1);
@@ -2237,17 +2237,17 @@ describe("Composer pending inputs", () => {
       fireEvent.change(input(), { target: { value: "Other task draft" } });
       await act(async () => result.resolve());
       expect(input().value).toBe("Other task draft");
-      expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "移除 queued.txt" })).toBeNull();
       other.unmount();
       renderComposer(<Composer session={session} messages={[queuedMessage]} isWorking />, store);
       expect(input().value).toBe("Queued draft");
-      expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
       expect(
         screen.getByText(delivery === "queue" ? "排队" : "引导", { exact: true }),
       ).toBeTruthy();
       await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
       expect(input().value).toBe("Original unsent draft");
-      expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
       expect(interrupt).not.toHaveBeenCalled();
       expect(stage).not.toHaveBeenCalled();
     },
@@ -2266,8 +2266,8 @@ describe("Composer pending inputs", () => {
     await writeOriginalDraft();
     await act(async () => result.reject(new Error("Already admitted")));
     expect(input().value).toBe("Original unsent draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "移除 queued.txt" })).toBeNull();
     expect(screen.getByText("Already admitted")).toBeTruthy();
     expect(interrupt).not.toHaveBeenCalled();
     expect(stage).not.toHaveBeenCalled();
@@ -2280,12 +2280,12 @@ describe("Composer pending inputs", () => {
     first.unmount();
     const other = mount({ ...session, id: "other-draft-task" });
     expect(input().value).toBe("");
-    expect(screen.queryByRole("button", { name: "Remove original.txt" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "移除 original.txt" })).toBeNull();
     fireEvent.change(input(), { target: { value: "Other task draft" } });
     other.unmount();
     const returned = mount();
     expect(input().value).toBe("Original unsent draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
     returned.unmount();
     mount({ ...session, id: "other-draft-task" });
     expect(input().value).toBe("Other task draft");
@@ -2300,16 +2300,16 @@ describe("Composer pending inputs", () => {
     first.unmount();
     const other = mount(session, "other-profile");
     expect(input().value).toBe("");
-    expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Remove original.txt" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "移除 queued.txt" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "移除 original.txt" })).toBeNull();
     fireEvent.change(input(), { target: { value: "Other profile draft" } });
     other.unmount();
     const returned = mount();
     expect(input().value).toBe("First profile edit");
-    expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input().value).toBe("Original unsent draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
     returned.unmount();
     mount(session, "other-profile");
     expect(input().value).toBe("Other profile draft");
@@ -2334,10 +2334,10 @@ describe("Composer pending inputs", () => {
       fireEvent.change(input(), { target: { value: "Other profile edit" } });
       await act(async () => result.resolve(receipt));
       expect(input().value).toBe("Other profile edit");
-      expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
       await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
       expect(input().value).toBe("Original unsent draft");
-      expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
       other.unmount();
       mount();
       expect(input().value).toBe(editing ? "Original unsent draft" : "");
@@ -2356,11 +2356,11 @@ describe("Composer pending inputs", () => {
     other.unmount();
     mount();
     expect(input().value).toBe("Revised queued draft");
-    expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input().value).toBe("Original unsent draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "移除 queued.txt" })).toBeNull();
     expect(cancel).toHaveBeenCalledTimes(1);
   });
 
@@ -2390,7 +2390,7 @@ describe("Composer pending inputs", () => {
     await act(async () => result.resolve(receipt));
     mount();
     expect(input().value).toBe("Original unsent draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
     expect(screen.queryByText(/Resubmitting adds it to the end/)).toBeNull();
   });
 
@@ -2408,11 +2408,11 @@ describe("Composer pending inputs", () => {
     await act(async () => result.reject(new Error("Send failed")));
     mount();
     expect(input().value).toBe("Edited before sending");
-    expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
     fireEvent.keyDown(input(), { key: "Enter" });
     await waitFor(() => expect(input().value).toBe("Original unsent draft"));
     expect(send).toHaveBeenCalledTimes(2);
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
   });
 
   it.each([
@@ -2440,13 +2440,13 @@ describe("Composer pending inputs", () => {
       });
       expect(input().value).toBe("Newer draft while sending");
       if (editing) {
-        expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
         await userEvent.click(
           screen.getByRole("button", { name: "放弃编辑并恢复原稿" }),
         );
         expect(input().value).toBe("Original unsent draft");
       }
-      expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
     },
   );
 
@@ -2468,7 +2468,7 @@ describe("Composer pending inputs", () => {
       });
       mount();
       expect(input().value).toBe(outcome === "success" ? "" : "Original unsent draft");
-      expect(Boolean(screen.queryByRole("button", { name: "Remove original.txt" }))).toBe(
+      expect(Boolean(screen.queryByRole("button", { name: "移除 original.txt" }))).toBe(
         outcome === "failure",
       );
     },
@@ -2487,8 +2487,8 @@ describe("Composer pending inputs", () => {
     fireEvent.change(input(), { target: { value: "Updated original draft" } });
     await act(async () => result.reject(new Error("Send failed")));
     expect(input().value).toBe("Updated original draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Remove queued.txt" })).toBeNull();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "移除 queued.txt" })).toBeNull();
   });
 
   it("keeps typing done during cancellation and finishes opening the edit after remount", async () => {
@@ -2505,7 +2505,7 @@ describe("Composer pending inputs", () => {
     expect(input().value).toBe("Queued draft");
     await userEvent.click(screen.getByRole("button", { name: "放弃编辑并恢复原稿" }));
     expect(input().value).toBe("Typed while canceling");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
     expect(cancel).toHaveBeenCalledTimes(1);
   });
 
@@ -2516,7 +2516,7 @@ describe("Composer pending inputs", () => {
     await writeOriginalDraft();
     await editQueuedDraft();
     expect(input().value).toBe("Original unsent draft");
-    expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
     expect(screen.queryByText(/Resubmitting adds it to the end/)).toBeNull();
   });
 
@@ -2608,7 +2608,7 @@ describe("Composer pending inputs", () => {
       expect(button.disabled).toBe(false);
       expect(screen.queryByText("失败") === null).toBe(outcome === "success");
       expect(input().value).toBe("Original unsent draft");
-      expect(screen.getByRole("button", { name: "Remove original.txt" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "移除 original.txt" })).toBeTruthy();
       expect(screen.queryByText(/Resubmitting adds it to the end/)).toBeNull();
     },
   );
@@ -2660,7 +2660,7 @@ describe("Composer pending inputs", () => {
     });
     expect(input().value).toBe("");
     for (const file of files)
-      expect(screen.getByRole("button", { name: `Remove ${file.name}` })).toBeTruthy();
+      expect(screen.getByRole("button", { name: `移除 ${file.name}` })).toBeTruthy();
   });
 
   it("undoes a deleted pending message by returning it to the composer", async () => {
@@ -2687,7 +2687,7 @@ describe("Composer pending inputs", () => {
     const undo = add.mock.calls.at(-1)![0].actionProps!.onClick as () => void;
     act(() => undo());
     expect(input().value).toBe("Queued draft");
-    expect(screen.getByRole("button", { name: "Remove queued.txt" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "移除 queued.txt" })).toBeTruthy();
     expect(screen.getByText(/重新提交将添加到末尾/)).toBeTruthy();
     // Undo never re-admits on its own; a paused queue stays paused.
     expect(send).not.toHaveBeenCalled();

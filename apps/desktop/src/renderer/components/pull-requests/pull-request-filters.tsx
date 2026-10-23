@@ -128,13 +128,13 @@ export function PullRequestFilterMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="min-h-9">
             <FolderGit2 aria-hidden="true" />
-            <span>Repository</span>
+            <span>仓库</span>
             <FilterCount count={filters.repositories.length} />
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-80 p-1">
             <ScopePicker
               label="repositories"
-              placeholder="Search or add owner/name…"
+              placeholder="搜索或添加所有者/名称…"
               options={repositories}
               selected={filters.repositories}
               normalize={normalizeRepository}
@@ -145,13 +145,13 @@ export function PullRequestFilterMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="min-h-9">
             <Building2 aria-hidden="true" />
-            <span>Organization</span>
+            <span>组织</span>
             <FilterCount count={filters.organizations.length} />
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-64 p-1">
             <ScopePicker
               label="organizations"
-              placeholder="Search or add an owner…"
+              placeholder="搜索或添加所有者…"
               options={owners}
               selected={filters.organizations}
               normalize={normalizeOwner}
@@ -162,7 +162,7 @@ export function PullRequestFilterMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="min-h-9">
             <CircleDot aria-hidden="true" />
-            <span>Review</span>
+            <span>审查</span>
             {filters.review ? <FilterValue>{REVIEW_LABELS[filters.review]}</FilterValue> : null}
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-48 p-1">
@@ -186,7 +186,7 @@ export function PullRequestFilterMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger className="min-h-9">
             <CircleCheck aria-hidden="true" />
-            <span>Checks</span>
+            <span>检查</span>
             {filters.checks ? <FilterValue>{CHECKS_LABELS[filters.checks]}</FilterValue> : null}
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-44 p-1">
@@ -271,7 +271,7 @@ function ScopePicker({
     <Command className="bg-transparent p-0">
       <CommandInput
         placeholder={placeholder}
-        aria-label={`Search ${label}`}
+        aria-label={`搜索 ${label}`}
         value={search}
         onValueChange={setSearch}
         autoFocus
@@ -344,7 +344,7 @@ export function PullRequestFilterChips({ className }: { className?: string }) {
       ? [
           {
             key: "checks",
-            label: `Checks ${CHECKS_LABELS[filters.checks].toLowerCase()}`,
+            label: `检查 ${CHECKS_LABELS[filters.checks].toLowerCase()}`,
             remove: () => setFilters((current) => ({ ...current, checks: null })),
           },
         ]
@@ -353,7 +353,7 @@ export function PullRequestFilterChips({ className }: { className?: string }) {
       ? [
           {
             key: "drafts",
-            label: "No drafts",
+            label: "无草稿",
             remove: () => setFilters((current) => ({ ...current, hideDrafts: false })),
           },
         ]
@@ -362,7 +362,7 @@ export function PullRequestFilterChips({ className }: { className?: string }) {
   if (chips.length === 0) return null;
   return (
     <ul
-      aria-label="Active filters"
+      aria-label="当前筛选条件"
       className={cn("flex shrink-0 flex-wrap items-center gap-1 px-3 pb-2", className)}
     >
       {chips.map((chip) => (
@@ -373,7 +373,7 @@ export function PullRequestFilterChips({ className }: { className?: string }) {
           <span className="min-w-0 truncate">{chip.label}</span>
           <button
             type="button"
-            aria-label={`Remove filter ${chip.label}`}
+            aria-label={`移除筛选器 ${chip.label}`}
             className="flex size-4.5 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             onClick={chip.remove}
           >

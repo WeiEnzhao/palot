@@ -236,7 +236,7 @@ function LoadedDetail({
                 Beta
               </Badge>
               {guide.running ? (
-                <LoaderCircle className="size-3 animate-spin" aria-label="Writing guide" />
+                <LoaderCircle className="size-3 animate-spin" aria-label="正在编写导览" />
               ) : null}
             </TabsTrigger>
           </TabsList>
@@ -634,7 +634,7 @@ function DetailMenu({
               onClick={onWriteGuide}
             >
               <Sparkles aria-hidden="true" />
-              {guide.running ? "Writing guide…" : guide.guide ? "Rewrite guide" : "Write guide"}
+              {guide.running ? "正在编写指南…" : guide.guide ? "重写指南" : "编写指南"}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

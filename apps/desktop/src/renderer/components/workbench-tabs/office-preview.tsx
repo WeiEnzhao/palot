@@ -139,7 +139,7 @@ export default function OfficePreview({
           <SheetContent sheet={doc.sheets[selected]} />
         ) : (
           <article
-            aria-label={`Office preview: ${path}`}
+            aria-label={`Office 预览：${path}`}
             className="mx-auto max-w-4xl space-y-3 text-sm"
           >
             {doc.sections[selected]?.blocks.map((block, i) => (

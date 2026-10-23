@@ -107,7 +107,7 @@ describe("automation run navigation", () => {
     });
     expect(automationRunOpenTarget(setupRun)).toEqual({ type: "details" });
     expect(automationRunStateLabel(setupRun)).toBe("Setup required");
-    expect(automationRunActionLabel(setupRun)).toBe("View setup issue");
+    expect(automationRunActionLabel(setupRun)).toBe("查看配置问题");
   });
 
   it("selects the newest run independently of input order", () => {

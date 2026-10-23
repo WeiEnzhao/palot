@@ -113,7 +113,7 @@ describe("LocalServiceSettings", () => {
     await user.click(
       await screen.findByRole("button", { name: "Update installed OpenCode to 2.0.3" }),
     );
-    await user.click(screen.getByRole("button", { name: "Confirm installed update" }));
+    await user.click(screen.getByRole("button", { name: "确认更新已安装的版本" }));
     expect(upgrade).toHaveBeenCalledExactlyOnceWith({
       id: "installed",
       currentVersion: "2.0.2",
@@ -121,23 +121,23 @@ describe("LocalServiceSettings", () => {
       method: "auto",
     });
     expect(
-      (screen.getByRole("button", { name: "Start OpenCode" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "启动 OpenCode" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(
-      (screen.getByRole("button", { name: "Restart service" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "重启服务" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(
-      (screen.getByRole("combobox", { name: "Preferred channel" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("combobox", { name: "首选通道" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(screen.getByText(/bounded timeout/)).toBeTruthy();
     expect(
-      (screen.getByRole("button", { name: "Enable login startup" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "启用登录自启动" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     await act(async () => pending.resolve(status));
     expect(onRestart).not.toHaveBeenCalled();
     expect(connect).not.toHaveBeenCalled();
     expect(
-      (screen.getByRole("button", { name: "Restart service" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "重启服务" }) as HTMLButtonElement).disabled,
     ).toBe(false);
   });
   it("keeps preparation separate from restart and disables lifecycle actions during preparation", async () => {
@@ -171,16 +171,16 @@ describe("LocalServiceSettings", () => {
         onRestart={onRestart}
       />,
     );
-    await user.click(await screen.findByRole("button", { name: "Download Palot fallback 2.0.3" }));
+    await user.click(await screen.findByRole("button", { name: "下载 Palot 回退 2.0.3" }));
     expect(prepare).toHaveBeenCalledExactlyOnceWith({ version: "2.0.3" });
     expect(
-      (screen.getByRole("button", { name: "Restart service" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "重启服务" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     await act(async () => pending.resolve(status));
     expect(onRestart).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Restart service" }));
+    await user.click(screen.getByRole("button", { name: "重启服务" }));
     expect(onRestart).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Restart" }));
+    await user.click(screen.getByRole("button", { name: "重启" }));
     expect(onRestart).toHaveBeenCalledOnce();
   });
 
@@ -207,14 +207,14 @@ describe("LocalServiceSettings", () => {
       />,
     );
     await screen.findByText("Disabled");
-    const restart = screen.getByRole("button", { name: "Restart service" }) as HTMLButtonElement;
+    const restart = screen.getByRole("button", { name: "重启服务" }) as HTMLButtonElement;
     const channel = (await screen.findByRole("combobox", {
-      name: "Runtime source",
+      name: "运行时来源",
     })) as HTMLButtonElement;
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
     expect(restart.disabled).toBe(true);
     expect(channel.disabled).toBe(true);
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
     expect(restart.disabled).toBe(true);
     await act(async () =>
       pending.resolve({
@@ -249,18 +249,18 @@ describe("LocalServiceSettings", () => {
         onRestart={onRestart}
       />,
     );
-    expect(screen.queryByRole("button", { name: "Start OpenCode" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "启动 OpenCode" })).toBeNull();
     // Lifecycle actions stay disabled until the installation and login checks settle; under a
     // loaded test run, clicking earlier would hit a disabled trigger and never open the dialog.
-    const restart = screen.getByRole("button", { name: "Restart service" }) as HTMLButtonElement;
+    const restart = screen.getByRole("button", { name: "重启服务" }) as HTMLButtonElement;
     await waitFor(() => expect(restart.disabled).toBe(false));
     await user.click(restart);
-    expect(await screen.findByText(/may interrupt other OpenCode clients/)).toBeTruthy();
+    expect(await screen.findByText(/可能中断其他 OpenCode 客户端/)).toBeTruthy();
     expect(onRestart).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "取消" }));
     expect(onRestart).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Restart service" }));
-    await user.click(await screen.findByRole("button", { name: "Restart" }));
+    await user.click(screen.getByRole("button", { name: "重启服务" }));
+    await user.click(await screen.findByRole("button", { name: "重启" }));
     expect(onRestart).toHaveBeenCalledOnce();
   });
 
@@ -297,21 +297,21 @@ describe("LocalServiceSettings", () => {
       </Provider>,
     );
     // Same as restart: wait for the installation and login checks to release the action.
-    const start = screen.getByRole("button", { name: "Start OpenCode" }) as HTMLButtonElement;
+    const start = screen.getByRole("button", { name: "启动 OpenCode" }) as HTMLButtonElement;
     await waitFor(() => expect(start.disabled).toBe(false));
     await user.click(start);
     expect(connect).not.toHaveBeenCalled();
-    await user.click(await screen.findByRole("button", { name: "Start or recover" }));
+    await user.click(await screen.findByRole("button", { name: "启动或恢复" }));
     expect(connect).toHaveBeenCalledExactlyOnceWith({ startLocalService: true });
     expect(store.get(runtimeAtom)).toEqual(connected);
     expect(onRefresh).toHaveBeenCalledOnce();
-    expect(screen.queryByRole("button", { name: "Start OpenCode" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "启动 OpenCode" })).toBeNull();
     act(() =>
       store.set(runtimeAtom, { ...runtime, profileID: "remote", canStartLocalService: false }),
     );
-    expect(screen.queryByRole("button", { name: "Start OpenCode" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "启动 OpenCode" })).toBeNull();
     expect(
-      (screen.getByRole("button", { name: "Restart service" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "重启服务" }) as HTMLButtonElement).disabled,
     ).toBe(true);
   });
 });
@@ -584,7 +584,7 @@ describe("ImportPairDialog", () => {
     const onOpenChange = vi.fn();
     render(<ImportPairDialog open onOpenChange={onOpenChange} onSaved={() => {}} />);
     const textbox = screen.getByRole("textbox", {
-      name: "Pairing link or legacy JSON",
+      name: "配对链接或旧的 JSON",
     }) as HTMLTextAreaElement;
     fireEvent.change(textbox, {
       target: { value: "https://proxy.example/auth/connect/abcdefghijklmnop?extra=1" },
@@ -605,7 +605,7 @@ describe("ImportPairDialog", () => {
     expect(
       (screen.getByRole("button", { name: "探测并导入" }) as HTMLButtonElement).disabled,
     ).toBe(true);
-    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "关闭" })).toBeNull();
     expect(onOpenChange).not.toHaveBeenCalled();
     await act(async () =>
       pending.resolve({} as Awaited<ReturnType<typeof palot.importOpenCodePairing>>),

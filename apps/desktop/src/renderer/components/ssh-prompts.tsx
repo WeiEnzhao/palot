@@ -94,8 +94,8 @@ function SshOperation({ state }: { state: SshConnectionState }) {
         <DialogHeader>
           <DialogTitle>
             {action
-              ? `${action === "install" ? "Install" : action === "start" ? "Start" : "Replace"} remote OpenCode?`
-              : "SSH connection"}
+              ? `${action === "install" ? "安装" : action === "start" ? "启动" : "替换"}远程 OpenCode？`
+              : "SSH 连接"}
           </DialogTitle>
           <DialogDescription className="wrap-anywhere">{state.target}</DialogDescription>
         </DialogHeader>
@@ -108,18 +108,17 @@ function SshOperation({ state }: { state: SshConnectionState }) {
         >
           {request?.kind === "setup" ? (
             <div className="space-y-2 text-sm">
-              <p>Palot requires OpenCode {request.version} on this computer.</p>
-              {request.currentVersion ? <p>Current version: {request.currentVersion}.</p> : null}
+              <p>本机需要 OpenCode {request.version} 才能使用 Palot。</p>
+              {request.currentVersion ? <p>当前版本：{request.currentVersion}。</p> : null}
               <p>
                 {action === "replace"
-                  ? "Replacing the remote runtime can interrupt other clients and running tasks."
+                  ? "替换远程运行环境可能会中断其他客户端和正在运行的任务。"
                   : action === "install"
-                    ? "This will download and install the required runtime on the remote computer."
-                    : "This will start the remote OpenCode background service."}
+                    ? "将在远程计算机上下载并安装所需的运行环境。"
+                    : "将启动远程 OpenCode 后台服务。"}
               </p>
               <p className="text-compact text-muted-foreground">
-                The service stays running after the tunnel closes. Continue only if you control this
-                computer.
+                隧道关闭后服务仍会继续运行。请仅在您控制该计算机时继续。
               </p>
             </div>
           ) : request?.kind === "authentication" ? (
@@ -127,7 +126,7 @@ function SshOperation({ state }: { state: SshConnectionState }) {
               <p className="whitespace-pre-wrap text-sm wrap-anywhere">{request.text}</p>
               {secret ? (
                 <label className="grid gap-2 text-sm">
-                  SSH answer
+                  SSH 应答
                   <Input
                     type="password"
                     value={answer}
@@ -145,11 +144,11 @@ function SshOperation({ state }: { state: SshConnectionState }) {
           )}
           <DialogFooter>
             <Button type="button" variant="outline" disabled={busy} onClick={() => void cancel()}>
-              Cancel connection
+              取消连接
             </Button>
             {request ? (
               <Button type="submit" disabled={busy || (secret && !answer)}>
-                {action ? `Allow ${action}` : secret ? "Continue" : "Confirm"}
+                {action ? `允许${action}` : secret ? "继续" : "确认"}
               </Button>
             ) : null}
           </DialogFooter>
@@ -160,5 +159,5 @@ function SshOperation({ state }: { state: SshConnectionState }) {
 }
 
 function showError(error: unknown) {
-  toast.add({ type: "error", title: error instanceof Error ? error.message : "SSH action failed" });
+  toast.add({ type: "error", title: error instanceof Error ? error.message : "SSH 操作失败" });
 }

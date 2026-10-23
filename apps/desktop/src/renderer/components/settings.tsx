@@ -980,14 +980,14 @@ function BrowserSettings() {
       <AlertDialog open={confirmClear} onOpenChange={setConfirmClear}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Clear browser data for this task?</AlertDialogTitle>
+            <AlertDialogTitle>清除此任务的浏览器数据？</AlertDialogTitle>
             <AlertDialogDescription>
               This closes its browser pages and deletes their saved URLs, private site data, cache,
               and temporary files. It does not delete files already exported to the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={() => {
@@ -1169,7 +1169,7 @@ function GeneralSettings() {
             control={
               <Switch
                 checked={compactBeforeSend}
-                aria-label="Suggest compacting before sending"
+                aria-label="发送前建议压缩"
                 onCheckedChange={(checked) => setCompactBeforeSend(Boolean(checked))}
               />
             }
@@ -1405,7 +1405,7 @@ function GeneralSettings() {
                   >
                     <SelectTrigger
                       className="w-full @3xl/settings:w-36"
-                      aria-label={`${ACTIVITY_CATEGORY_LABELS[category]} display`}
+                      aria-label={`${ACTIVITY_CATEGORY_LABELS[category]} 显示`}
                     >
                       <SelectValue>
                         {ACTIVITY_PRESENTATION_LABELS[preference.presentation]}
@@ -1427,7 +1427,7 @@ function GeneralSettings() {
                   >
                     <SelectTrigger
                       className="w-full @3xl/settings:w-32"
-                      aria-label={`${ACTIVITY_CATEGORY_LABELS[category]} details`}
+                      aria-label={`${ACTIVITY_CATEGORY_LABELS[category]} 详情`}
                     >
                       <SelectValue>{DETAIL_DEFAULT_LABELS[preference.details]}</SelectValue>
                     </SelectTrigger>
@@ -1446,7 +1446,7 @@ function GeneralSettings() {
                   >
                     <SelectTrigger
                       className="w-full @3xl/settings:w-32"
-                      aria-label={`${ACTIVITY_CATEGORY_LABELS[category]} folded turns`}
+                      aria-label={`${ACTIVITY_CATEGORY_LABELS[category]} 折叠的轮次`}
                     >
                       <SelectValue>{FOLDED_TURN_LABELS[preference.foldedTurn]}</SelectValue>
                     </SelectTrigger>
@@ -2588,7 +2588,7 @@ function CodeThemePreview({
           className="flex items-center gap-2 border-t border-border/60 px-3 py-2.5"
           style={{ background: terminal.background, color: terminal.foreground }}
         >
-          <span className="mr-auto text-micro">ANSI palette</span>
+          <span className="mr-auto text-micro">ANSI 调色板</span>
           {ansi.map((color, index) => (
             <span
               key={`${color}:${index}`}
@@ -2783,7 +2783,7 @@ export function ToolSettings({
             </SettingsGroup>
           </SettingsSection>
           <InventorySection
-            title="MCP resources"
+            title="MCP 资源"
             icon={Boxes}
             count={resources.length + templates.length}
             total={
@@ -2988,8 +2988,8 @@ export function PluginSettings({
           )
         : cause;
     }
-    if (failure) showError(`Could not update ${plugin.id ?? source.target}`, failure);
-    else toast.add({ type: "success", title: `${plugin.id ?? source.target} updated` });
+    if (failure) showError(`无法更新 ${plugin.id ?? source.target}`, failure);
+    else toast.add({ type: "success", title: `${plugin.id ?? source.target} 已更新` });
     setBusy(null);
   }
 
@@ -3152,7 +3152,7 @@ function McpServerRow({
       if (action === "remove") await palot.removeMcpServer(input);
       await refresh();
     } catch (cause) {
-      showError(`Could not ${action} ${server.name}`, cause);
+      showError(`无法${action === "connect" ? "连接" : action === "disconnect" ? "断开" : "移除"} ${server.name}`, cause);
     } finally {
       setBusy(false);
     }
@@ -3179,13 +3179,13 @@ function McpServerRow({
           disabled={busy}
           onClick={() => void run(server.status === "connected" ? "disconnect" : "connect")}
         >
-          {server.status === "connected" ? "Disconnect" : "Connect"}
+          {server.status === "connected" ? "断开连接" : "连接"}
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label={`Remove ${server.name}`}
+          aria-label={`移除 ${server.name}`}
           disabled={busy}
           onClick={() => void run("remove")}
         >
@@ -3292,7 +3292,7 @@ function AddMcpDialog({
       setExecutionTimeout("");
       setDisabled(false);
       onOpenChange(false);
-      toast.add({ type: "success", title: `${name.trim()} added` });
+      toast.add({ type: "success", title: `${name.trim()} 已添加` });
     } catch (cause) {
       showError("无法添加 MCP 服务器", cause);
     } finally {
@@ -3304,7 +3304,7 @@ function AddMcpDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add MCP server</DialogTitle>
+          <DialogTitle>添加 MCP 服务器</DialogTitle>
           <DialogDescription>
             The server is registered for the current OpenCode location and connected immediately.
           </DialogDescription>
@@ -3325,13 +3325,13 @@ function AddMcpDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="remote">Remote HTTP</SelectItem>
-                <SelectItem value="local">Local command</SelectItem>
+                <SelectItem value="remote">远程 HTTP</SelectItem>
+                <SelectItem value="local">本地命令</SelectItem>
               </SelectContent>
             </Select>
           </label>
           <label className="grid gap-1.5 text-xs font-medium">
-            {type === "remote" ? "Server URL" : "Command"}
+            {type === "remote" ? "服务器 URL" : "命令"}
             <Input
               value={target}
               placeholder={type === "remote" ? "https://mcp.example.com/mcp" : "bunx @example/mcp"}
@@ -3340,7 +3340,7 @@ function AddMcpDialog({
           </label>
           {type === "local" ? (
             <label className="grid gap-1.5 text-xs font-medium">
-              Working directory <span className="font-normal text-muted-foreground">Optional</span>
+              工作目录 <span className="font-normal text-muted-foreground">可选</span>
               <Input
                 value={cwd}
                 placeholder="/path/to/project"
@@ -3349,7 +3349,7 @@ function AddMcpDialog({
             </label>
           ) : null}
           <label className="grid gap-1.5 text-xs font-medium">
-            {type === "remote" ? "Headers" : "Environment variables"}
+            {type === "remote" ? "请求头" : "环境变量"}
             <Textarea
               value={extra}
               placeholder={
@@ -3359,14 +3359,14 @@ function AddMcpDialog({
               onChange={(event) => setExtra(event.target.value)}
             />
             <span className="text-micro font-normal text-muted-foreground">
-              One NAME=value pair per line.
+              每行一个 名称=值 对。
             </span>
           </label>
           {type === "remote" ? (
             <div className="grid gap-3 rounded-lg border p-3">
               <label className="flex items-center justify-between text-xs">
                 <span>
-                  <span className="block font-medium">OAuth client</span>
+                  <span className="block font-medium">OAuth 客户端</span>
                   <span className="block text-micro text-muted-foreground">
                     Submit client details to OpenCode. The client secret is write-only.
                   </span>
@@ -3376,26 +3376,26 @@ function AddMcpDialog({
               {oauth ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                   <Input
-                    aria-label="OAuth client ID"
+                    aria-label="OAuth 客户端 ID"
                     value={oauthClientID}
                     placeholder="客户端 ID"
                     onChange={(event) => setOauthClientID(event.target.value)}
                   />
                   <Input
-                    aria-label="OAuth client secret"
+                    aria-label="OAuth 客户端密钥"
                     type="password"
                     value={oauthClientSecret}
                     placeholder="客户端密钥"
                     onChange={(event) => setOauthClientSecret(event.target.value)}
                   />
                   <Input
-                    aria-label="OAuth scope"
+                    aria-label="OAuth 作用域"
                     value={oauthScope}
                     placeholder="作用域"
                     onChange={(event) => setOauthScope(event.target.value)}
                   />
                   <Input
-                    aria-label="OAuth callback port"
+                    aria-label="OAuth 回调端口"
                     type="number"
                     min={1}
                     max={65_535}
@@ -3404,7 +3404,7 @@ function AddMcpDialog({
                     onChange={(event) => setOauthCallbackPort(event.target.value)}
                   />
                   <Input
-                    aria-label="OAuth redirect URI"
+                    aria-label="OAuth 重定向 URI"
                     value={oauthRedirectUri}
                     placeholder="重定向 URI"
                     className="sm:col-span-2"
@@ -3445,7 +3445,7 @@ function AddMcpDialog({
           </p>
           <label className="flex items-center justify-between rounded-lg border px-3 py-2 text-xs">
             <span>
-              <span className="block font-medium">Start disabled</span>
+              <span className="block font-medium">启动时禁用</span>
               <span className="block text-micro text-muted-foreground">
                 Register the server without connecting it.
               </span>
@@ -3457,7 +3457,7 @@ function AddMcpDialog({
           </label>
           <label className="flex items-center justify-between rounded-lg border px-3 py-2 text-xs">
             <span>
-              <span className="block font-medium">Code Mode</span>
+              <span className="block font-medium">代码模式</span>
               <span className="block text-micro text-muted-foreground">
                 Group MCP tools behind the dispatcher.
               </span>
@@ -3594,7 +3594,7 @@ function PermissionSettings({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Remove saved approval for ${permission.resource}`}
+                aria-label={`移除 ${permission.resource} 的已保存授权`}
                 onClick={() =>
                   void palot
                     .removeSavedPermission({
@@ -3645,7 +3645,7 @@ function PermissionSettings({
             <SettingsRow
               title="权限规则"
               description="没有返回明确的权限规则。编辑来源 JSON 或代理文件以更改已配置的策略。"
-              control={<Badge variant="outline">Read-only API</Badge>}
+              control={<Badge variant="outline">只读 API</Badge>}
             />
           ) : null}
         </SettingsGroup>
@@ -3883,7 +3883,7 @@ function AboutSettings({ snapshot }: { snapshot: PalotSettingsSnapshot | null })
         <SettingsGroup>
           <SettingsRow
             title="桌面客户端"
-            description="A native workspace for OpenCode V2 sessions, worktrees, approvals, and diffs."
+            description="OpenCode V2 会话、工作树、授权和差异的原生工作区。"
             control={<BuildBadge />}
           />
           <SettingsRow
@@ -4034,7 +4034,7 @@ const PALOT_INSTALLATION_URL = `${PALOT_REPOSITORY_URL}/blob/main/docs/installat
 const ABOUT_LINKS = [
   {
     title: "文档",
-    description: "Setup, development, testing, and project documentation.",
+    description: "设置、开发、测试和项目文档。",
     href: `${PALOT_REPOSITORY_URL}/tree/main/docs`,
   },
   {
@@ -4054,7 +4054,7 @@ const ABOUT_LINKS = [
   },
   {
     title: "许可证",
-    description: "Review Palot and third-party license notices.",
+    description: "查看 Palot 和第三方许可证声明。",
     href: `${PALOT_REPOSITORY_URL}/blob/main/apps/desktop/resources/licenses/THIRD_PARTY_NOTICES.md`,
   },
   {
@@ -4301,6 +4301,6 @@ function showError(title: string, cause: unknown) {
   toast.add({
     type: "error",
     title,
-    description: cause instanceof Error ? cause.message : "OpenCode rejected the request.",
+    description: cause instanceof Error ? cause.message : "OpenCode 拒绝了请求。",
   });
 }

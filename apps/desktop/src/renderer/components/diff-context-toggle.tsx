@@ -9,7 +9,7 @@ export function DiffContextToggle({
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
 }) {
-  const label = expanded ? "Use compact diff" : "Show unchanged lines";
+  const label = expanded ? "使用紧凑差异" : "显示未更改的行";
 
   return (
     <Tooltip>

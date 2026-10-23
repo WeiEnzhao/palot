@@ -110,7 +110,7 @@ export class AutomationRunner {
       if (controller.signal.aborted) {
         this.finish(run, definition, "cancelled", {
           code: "cancelled",
-          message: "The scheduled run was cancelled.",
+          message: "定时任务已取消。",
         });
       } else if (error instanceof UnknownAdmissionError) {
         this.finish(run, definition, "unknown", {
@@ -135,7 +135,7 @@ export class AutomationRunner {
       } else {
         this.finish(run, definition, "failed", {
           code: "execution_failed",
-          message: error instanceof Error ? error.message : "The scheduled run failed.",
+          message: error instanceof Error ? error.message : "定时任务失败。",
         });
       }
     } finally {
@@ -248,7 +248,7 @@ export class AutomationRunner {
         type: "permission",
         sessionID,
         requestID: event.data.id,
-        message: "OpenCode is waiting for permission.",
+        message: "OpenCode 正在等待授权。",
       });
       return;
     }
@@ -262,7 +262,7 @@ export class AutomationRunner {
         type: question ? "question" : "form",
         sessionID,
         requestID: form.id,
-        message: question ? "OpenCode is waiting for an answer." : "OpenCode is waiting for input.",
+        message: question ? "OpenCode 正在等待回答。" : "OpenCode 正在等待输入。",
       });
       return;
     }
@@ -302,7 +302,7 @@ export class AutomationRunner {
         const id = automationSessionID(run.id);
         const input = {
           id,
-          title: `${definition.name} · Scheduled`,
+          title: `${definition.name} · 定时任务`,
           ...(definition.action.agent ? { agent: definition.action.agent } : {}),
           ...(definition.action.model ? { model: definition.action.model } : {}),
           location: { directory: location },
@@ -400,8 +400,8 @@ export class AutomationRunner {
         admission = await this.findAdmission(client, sessionID, run.id, signal);
         if (!admission) {
           throw new UnknownAdmissionError(
-            `Palot could not prove whether OpenCode accepted this run: ${
-              error instanceof Error ? error.message : "the prompt request failed"
+            `Palot 无法确认 OpenCode 是否接受了此任务：${
+              error instanceof Error ? error.message : "提示请求失败"
             }`,
           );
         }
@@ -436,20 +436,20 @@ export class AutomationRunner {
     if (outcome === "interrupted") {
       this.finish(run, definition, "interrupted", {
         code: "interrupted",
-        message: "OpenCode interrupted the scheduled run.",
+        message: "OpenCode 中断了定时任务。",
       });
       return;
     }
     if (outcome === "failed") {
       this.finish(run, definition, "failed", {
         code: "agent_failed",
-        message: "OpenCode reported a failed execution.",
+        message: "OpenCode 报告执行失败。",
       });
       return;
     }
     this.finish(run, definition, "unknown", {
       code: "outcome_unknown",
-      message: "Palot could not establish a terminal outcome from OpenCode's persisted state.",
+      message: "Palot 无法从 OpenCode 的持久化状态确定最终结果。",
     });
   }
 
@@ -540,7 +540,7 @@ export class AutomationRunner {
         type: "permission",
         sessionID: request.sessionID,
         requestID: request.id,
-        message: "OpenCode is waiting for automation memory access.",
+        message: "OpenCode 正在等待自动化内存访问授权。",
       });
     }
   }

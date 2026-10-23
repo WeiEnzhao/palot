@@ -36,7 +36,7 @@ import {
 const STATUS_BADGES: Partial<Record<PalotModel["status"], ComposerPickerBadge>> = {
   alpha: { label: "Alpha", tone: "warning" },
   beta: { label: "Beta", tone: "neutral" },
-  deprecated: { label: "Deprecated", tone: "danger" },
+  deprecated: { label: "已弃用", tone: "danger" },
 };
 
 interface PickerMenuProps {
@@ -428,16 +428,16 @@ export const AgentPicker = memo(function AgentPicker({
       open={open}
       onOpenChange={onOpenChange}
       popupClassName="w-[min(360px,calc(100vw-24px))]"
-      title="Agent"
-      description="Choose the primary agent used by this task."
-      listLabel="Agents"
-      search={{ label: "Choose agent", placeholder: "Search agents…" }}
+      title="智能体"
+      description="选择此任务使用的主智能体。"
+      listLabel="智能体"
+      search={{ label: "选择智能体", placeholder: "搜索智能体…" }}
       sections={sections}
       selectedKey={session.agent}
       loading={loading}
-      loadingLabel="Loading agents…"
-      emptyLabel="No primary agents found."
-      errorTitle="Could not switch agents"
+      loadingLabel="正在加载智能体…"
+      emptyLabel="未找到主智能体。"
+      errorTitle="无法切换智能体"
       onSelect={(option) => onSelectAgent(option.value)}
       onSelectionComplete={onSelectionComplete}
     />

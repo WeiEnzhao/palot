@@ -12,7 +12,7 @@ import { askAboutStopPrompt } from "./guide-model";
 import { GuideTour } from "./guide-tour";
 import type { ReviewGuideController } from "./use-review-guide";
 
-const WRITING = "Writing guide… this can take a minute.";
+const WRITING = "正在编写指南……这可能需要一分钟。";
 
 /**
  * The Guide tab: a maintainer's tour of the pull request, written on request and kept on this
@@ -39,7 +39,7 @@ export function PullRequestGuideTab({
     <Banner
       open={failure !== null}
       status="error"
-      title="Could not write the guide"
+      title="无法编写导览"
       dismissible
       onDismiss={dismissFailure}
     >
@@ -56,22 +56,22 @@ export function PullRequestGuideTab({
             <EmptyMedia variant="icon">
               {running ? <Spinner /> : <MapIcon aria-hidden="true" />}
             </EmptyMedia>
-            <EmptyTitle>{running ? "Writing a review guide" : "No review guide yet"}</EmptyTitle>
+            <EmptyTitle>{running ? "正在编写评审指南" : "暂无评审指南"}</EmptyTitle>
             <EmptyDescription>
               {running
                 ? WRITING
-                : "A guide is a short tour of the change for deciding whether it should land: stops in reading order, the code that carries each idea, and the few calls only you can make. Mechanical changes are grouped at the end."}
+                : "指南是对变更的简短导览，帮助你判断是否应该合入：按阅读顺序排列的站点、承载每个想法的代码，以及只有你能做出的少数判断。机械性的更改会归到末尾。"}
             </EmptyDescription>
           </EmptyHeader>
           {running ? (
             <Button type="button" variant="outline" size="sm" onClick={cancel}>
-              Cancel
+              取消
             </Button>
           ) : (
             <div className="flex flex-col items-center gap-1.5">
               <Button type="button" size="sm" disabled={disabledReason !== null} onClick={write}>
                 <Sparkles data-icon="inline-start" aria-hidden="true" />
-                {failure ? "Try again" : "Write guide"}
+                {failure ? "重试" : "编写指南"}
               </Button>
               {disabledReason ? (
                 <p className="text-meta text-muted-foreground">{disabledReason}</p>
@@ -99,7 +99,7 @@ export function PullRequestGuideTab({
   ) : stale ? (
     <Banner
       status="warning"
-      title="Written before the latest push"
+      title="写于最近一次推送之前"
       actions={
         <Button
           type="button"

@@ -198,7 +198,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
 
     void run().catch((error: unknown) => {
       if (disposed) return;
-      setErrorMessage(error instanceof Error ? error.message : "Terminal view failed to load");
+      setErrorMessage(error instanceof Error ? error.message : "终端视图加载失败");
       setStatus("error");
     });
     return () => {
@@ -343,7 +343,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
     <div className="relative flex min-h-0 flex-1 flex-col bg-code-background font-mono text-code-foreground">
       <div className="flex items-center justify-between gap-2 border-b px-3 py-1 font-sans">
         <span className="text-micro text-muted-foreground">
-          {readOnly ? "Read-only terminal" : "Terminal"}
+          {readOnly ? "只读终端" : "终端"}
         </span>
         <div className="flex items-center gap-2">
           {status === "error" ? (
@@ -356,7 +356,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
                 else setViewAttempt((attempt) => attempt + 1);
               }}
             >
-              Reconnect terminal
+              重新连接终端
             </Button>
           ) : null}
           {readOnly ? (
@@ -366,7 +366,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
               disabled={!canManage || status !== "connected"}
               onClick={() => setControlledConnection(controlKey)}
             >
-              Take control
+              接管控制
             </Button>
           ) : null}
           <Button
@@ -377,7 +377,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
               if (
                 !canManage ||
                 !window.confirm(
-                  "End this terminal? Its running process will stop. Closing the tab instead leaves it running.",
+                  "结束此终端？其运行中的进程将停止。关闭标签页则保持运行。",
                 )
               )
                 return;
@@ -402,7 +402,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
                 .catch((error: unknown) => {
                   if (!current()) return;
                   setErrorMessage(
-                    error instanceof Error ? error.message : "Could not end terminal",
+                    error instanceof Error ? error.message : "无法结束终端",
                   );
                   setStatus("error");
                 })
@@ -411,7 +411,7 @@ export function TerminalTab({ tab }: { tab: TerminalTabDescriptor }) {
                 });
             }}
           >
-            End terminal
+            结束终端
           </Button>
         </div>
       </div>

@@ -35,7 +35,7 @@ export function useSessionTitleEditor(session: PalotSession) {
     const previousTitle = session.title;
     setEditing(false);
     if (!title) {
-      toast.add({ type: "warning", title: "Task title cannot be empty" });
+      toast.add({ type: "warning", title: "任务标题不能为空" });
       return;
     }
     if (title === previousTitle) return;
@@ -55,8 +55,8 @@ export function useSessionTitleEditor(session: PalotSession) {
       }
       toast.add({
         type: "error",
-        title: "Could not rename task",
-        description: error instanceof Error ? error.message : "OpenCode rejected the new title.",
+        title: "无法重命名任务",
+        description: error instanceof Error ? error.message : "OpenCode 拒绝了新标题。",
       });
     }
   }

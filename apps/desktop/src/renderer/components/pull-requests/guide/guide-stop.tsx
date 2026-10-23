@@ -61,7 +61,7 @@ export function GuideStop({
           status="warning"
           icon={Eye}
           role="note"
-          title={`Look closely · ${ATTENTION_LABELS[stop.attention.kind]}`}
+          title={`仔细查看 · ${ATTENTION_LABELS[stop.attention.kind]}`}
         >
           <MarkdownContent value={stop.attention.note} />
         </Banner>
@@ -83,8 +83,8 @@ export function GuideStop({
       ) : null}
 
       {lettered.length > 0 ? (
-        <section aria-label="Notes" className="flex flex-col gap-2">
-          <h4 className="text-meta font-medium text-muted-foreground">Notes</h4>
+        <section aria-label="备注" className="flex flex-col gap-2">
+          <h4 className="text-meta font-medium text-muted-foreground">备注</h4>
           <ol className="flex flex-col gap-2.5">
             {lettered.map(({ marker, note }) => (
               <li key={marker} className="flex min-w-0 gap-2">
@@ -107,9 +107,9 @@ export function GuideStop({
       ) : null}
 
       {stop.files.length > 0 ? (
-        <section aria-label="Files in this stop" className="flex flex-col gap-1.5">
+        <section aria-label="此站点的文件" className="flex flex-col gap-1.5">
           <h4 className="text-meta font-medium text-muted-foreground">
-            {stop.excerpts.length > 0 ? "Also in this stop" : "Files in this stop"}
+            {stop.excerpts.length > 0 ? "此站点的其他内容" : "此站点的文件"}
           </h4>
           <ul className="flex flex-col divide-y divide-border/60 overflow-hidden rounded-md border border-border">
             {stop.files.map((entry) => {
@@ -141,9 +141,9 @@ export function GuideStop({
         </section>
       ) : null}
 
-      <section aria-label="Questions" className="flex flex-col gap-1.5">
+      <section aria-label="问题" className="flex flex-col gap-1.5">
         {stop.questions.length > 0 ? (
-          <h4 className="text-meta font-medium text-muted-foreground">Questions to ask</h4>
+          <h4 className="text-meta font-medium text-muted-foreground">待提问的问题</h4>
         ) : null}
         <div className="flex flex-wrap items-center gap-1.5">
           {stop.questions.map((question) => (
@@ -153,7 +153,7 @@ export function GuideStop({
               variant="outline"
               size="sm"
               className="h-auto max-w-full py-1 text-left whitespace-normal"
-              aria-label={`Ask: ${question}`}
+              aria-label={`提问：${question}`}
               onClick={() => onAsk(question)}
             >
               <MessageCircleQuestion data-icon="inline-start" aria-hidden="true" />
@@ -185,7 +185,7 @@ export function GuideStop({
           </Button>
         ) : (
           <Button type="button" size="sm" className="min-w-0" onClick={() => onStep(1)}>
-            <span className="min-w-0 truncate">Next</span>
+            <span className="min-w-0 truncate">下一步</span>
             <ArrowRight data-icon="inline-end" aria-hidden="true" />
           </Button>
         )}

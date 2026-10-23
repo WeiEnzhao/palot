@@ -296,7 +296,7 @@ async function createWindow(
     if (mainWindow === window) mainWindow = null;
     reportStartupFailure(
       new Error(
-        `Palot renderer stopped ${rendererLoaded ? "after launch" : "during startup"}: ${details.reason}`,
+        `Palot 渲染器${rendererLoaded ? "启动后" : "启动期间"}停止：${details.reason}`,
       ),
     );
   });

@@ -85,17 +85,17 @@ describe("OpenCodeReleaseSettings", () => {
     });
     vi.mocked(palot.resetOpenCodeRelease).mockResolvedValue(external);
     render(<OpenCodeReleaseSettings />);
-    expect(await screen.findByText("Not downloaded")).toBeTruthy();
+    expect(await screen.findByText("未下载")).toBeTruthy();
     expect(screen.queryByText(/\(bundled\)/)).toBeNull();
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
     expect(palot.prepareOpenCodeRelease).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Check for release" }));
-    await user.click(await screen.findByRole("button", { name: "Download Palot fallback 2.0.24" }));
-    expect(await screen.findByText("2.0.24 (downloaded)")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "检查发布版本" }));
+    await user.click(await screen.findByRole("button", { name: "下载 Palot 回退 2.0.24" }));
+    expect(await screen.findByText("2.0.24（已下载）")).toBeTruthy();
     expect(palot.prepareOpenCodeRelease).toHaveBeenCalledExactlyOnceWith({ version: "2.0.24" });
-    await user.click(screen.getByRole("button", { name: "Reset prepared runtime" }));
-    expect(await screen.findByText("Not downloaded")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Reset to bundled/ })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "重置已准备的运行时" }));
+    expect(await screen.findByText("未下载")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /重置为内置/ })).toBeNull();
   });
 
   it("shows a checked but unavailable Beta without a download action or generic error", async () => {
@@ -113,11 +113,11 @@ describe("OpenCodeReleaseSettings", () => {
       offer: null,
     });
     render(<OpenCodeReleaseSettings />);
-    await user.click(await screen.findByRole("button", { name: "Check for release" }));
-    expect(await screen.findByText(/No compatible Beta available/)).toBeTruthy();
-    expect(screen.getByText("2.0.24 (downloaded)")).toBeTruthy();
-    expect(screen.getByText(/Last checked:/)).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Download Palot fallback/ })).toBeNull();
+    await user.click(await screen.findByRole("button", { name: "检查发布版本" }));
+    expect(await screen.findByText(/没有兼容的 Beta 可用/)).toBeTruthy();
+    expect(screen.getByText("2.0.24（已下载）")).toBeTruthy();
+    expect(screen.getByText(/上次检查：/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /下载 Palot 回退/ })).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
     expect(palot.prepareOpenCodeRelease).not.toHaveBeenCalled();
   });
@@ -128,7 +128,7 @@ describe("OpenCodeReleaseSettings", () => {
   ] as const)("shows the saved %s label before the picker has opened", async (channel, label) => {
     vi.mocked(palot.openCodeReleaseStatus).mockResolvedValue({ ...initial, channel });
     render(<OpenCodeReleaseSettings />);
-    const picker = await screen.findByRole("combobox", { name: "Preferred channel" });
+    const picker = await screen.findByRole("combobox", { name: "首选通道" });
     expect(picker.getAttribute("aria-expanded")).toBe("false");
     expect(picker.textContent).toContain(label);
     expect(palot.setOpenCodeReleaseChannel).not.toHaveBeenCalled();
@@ -157,9 +157,9 @@ describe("OpenCodeReleaseSettings", () => {
         <OpenCodeReleaseSettings />
       </Provider>,
     );
-    expect(await screen.findByRole("combobox", { name: "Preferred channel" })).toBeTruthy();
+    expect(await screen.findByRole("combobox", { name: "首选通道" })).toBeTruthy();
     expect(screen.getByText("2.0.0-beta.19507")).toBeTruthy();
-    expect(screen.getByText("2.0.24 (bundled)")).toBeTruthy();
+    expect(screen.getByText("2.0.24（内置）")).toBeTruthy();
     expect(palot.openCodeReleaseStatus).toHaveBeenCalledOnce();
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
     expect(palot.prepareOpenCodeRelease).not.toHaveBeenCalled();
@@ -178,16 +178,16 @@ describe("OpenCodeReleaseSettings", () => {
       preparedVersion: "2.0.0-beta.19507",
     });
     render(<OpenCodeReleaseSettings />);
-    const channel = await screen.findByRole("combobox", { name: "Preferred channel" });
+    const channel = await screen.findByRole("combobox", { name: "首选通道" });
     expect(channel.textContent).toContain("Stable");
     channel.focus();
     await user.keyboard("{Enter}{End}{Enter}");
     await waitFor(() => expect(palot.setOpenCodeReleaseChannel).toHaveBeenCalledWith("beta"));
     expect(channel.textContent).toContain("Beta");
-    expect(screen.getByText("2.0.0-beta.19507 (downloaded)")).toBeTruthy();
+    expect(screen.getByText("2.0.0-beta.19507（已下载）")).toBeTruthy();
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
     expect(palot.prepareOpenCodeRelease).not.toHaveBeenCalled();
-    expect(screen.getByText(/may lag behind/)).toBeTruthy();
+    expect(screen.getByText(/可能滞后于/)).toBeTruthy();
   });
 
   it.each(["success", "failure", "tab-away"] as const)(
@@ -208,7 +208,7 @@ describe("OpenCodeReleaseSettings", () => {
           <button type="button">Other settings</button>
         </>,
       );
-      const channel = await screen.findByRole("combobox", { name: "Preferred channel" });
+      const channel = await screen.findByRole("combobox", { name: "首选通道" });
       channel.focus();
       await user.keyboard("{Enter}{End}{Enter}");
       await waitFor(() => expect(palot.setOpenCodeReleaseChannel).toHaveBeenCalledOnce());
@@ -216,7 +216,7 @@ describe("OpenCodeReleaseSettings", () => {
       expect(channel.getAttribute("aria-readonly")).toBe("true");
       await waitFor(() => expect(document.activeElement).toBe(channel));
       expect(
-        (screen.getByRole("button", { name: "Check for release" }) as HTMLButtonElement).disabled,
+        (screen.getByRole("button", { name: "检查发布版本" }) as HTMLButtonElement).disabled,
       ).toBe(true);
 
       // Browsing the read-only popup cannot admit another save while IPC is pending.
@@ -255,26 +255,26 @@ describe("OpenCodeReleaseSettings", () => {
         preparedVersion: version,
       });
       render(<OpenCodeReleaseSettings />);
-      await user.click(await screen.findByRole("button", { name: "Check for release" }));
-      await user.click(screen.getByRole("button", { name: `Download Palot fallback ${version}` }));
+      await user.click(await screen.findByRole("button", { name: "检查发布版本" }));
+      await user.click(screen.getByRole("button", { name: `下载 Palot 回退 ${version}` }));
       expect(screen.getByRole("alertdialog").textContent).toContain(
-        "compatibility is not guaranteed",
+        "不保证兼容性",
       );
       expect(palot.prepareOpenCodeRelease).not.toHaveBeenCalled();
-      await user.click(screen.getByRole("button", { name: "Cancel" }));
+      await user.click(screen.getByRole("button", { name: "取消" }));
       expect(palot.prepareOpenCodeRelease).not.toHaveBeenCalled();
-      await user.click(screen.getByRole("button", { name: `Download Palot fallback ${version}` }));
-      await user.click(screen.getByRole("button", { name: "Continue and prepare" }));
+      await user.click(screen.getByRole("button", { name: `下载 Palot 回退 ${version}` }));
+      await user.click(screen.getByRole("button", { name: "继续并准备" }));
       expect(palot.prepareOpenCodeRelease).toHaveBeenCalledExactlyOnceWith({
         version,
         allowUntested: true,
       });
       expect(
         await screen.findByText(
-          `Palot runtime ${version} is prepared as a fallback or for the Palot runtime source. The existing service is unchanged.`,
+          `Palot 运行时 ${version} 已作为回退或 Palot 运行时源准备好。现有服务不变。`,
         ),
       ).toBeTruthy();
-      expect(screen.getByText(`${version} (downloaded)`)).toBeTruthy();
+      expect(screen.getByText(`${version}（已下载）`)).toBeTruthy();
     },
   );
 
@@ -293,9 +293,9 @@ describe("OpenCodeReleaseSettings", () => {
         },
       });
       render(<OpenCodeReleaseSettings />);
-      await user.click(await screen.findByRole("button", { name: "Check for release" }));
-      expect(screen.getByText(/Compatible · not yet tested with this Palot build/)).toBeTruthy();
-      await user.click(screen.getByRole("button", { name: "Download Palot fallback 2.0.8" }));
+      await user.click(await screen.findByRole("button", { name: "检查发布版本" }));
+      expect(screen.getByText(/兼容 · 尚未在此 Palot 版本测试/)).toBeTruthy();
+      await user.click(screen.getByRole("button", { name: "下载 Palot 回退 2.0.8" }));
       expect(palot.prepareOpenCodeRelease).toHaveBeenCalledExactlyOnceWith({ version: "2.0.8" });
       expect(screen.queryByRole("alertdialog")).toBeNull();
     },
@@ -308,14 +308,14 @@ describe("OpenCodeReleaseSettings", () => {
       offer: { ...offered.offer!, version: "2.0.24", tested: true, requiresConfirmation: false },
     });
     render(<OpenCodeReleaseSettings />);
-    await user.click(await screen.findByRole("button", { name: "Check for release" }));
-    await user.click(screen.getByRole("button", { name: "Download Palot fallback 2.0.24" }));
+    await user.click(await screen.findByRole("button", { name: "检查发布版本" }));
+    await user.click(screen.getByRole("button", { name: "下载 Palot 回退 2.0.24" }));
     expect(palot.prepareOpenCodeRelease).toHaveBeenCalledExactlyOnceWith({ version: "2.0.24" });
     expect(screen.queryByRole("alertdialog")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Reset to bundled 2.0.24" }));
+    await user.click(screen.getByRole("button", { name: "重置为内置 2.0.24" }));
     expect(palot.resetOpenCodeRelease).toHaveBeenCalledOnce();
-    expect(screen.getByText("2.0.24 (bundled)")).toBeTruthy();
-    expect(screen.getByText(/Bundled OpenCode 2.0.24 is the Palot fallback again/)).toBeTruthy();
+    expect(screen.getByText("2.0.24（内置）")).toBeTruthy();
+    expect(screen.getByText(/内置 OpenCode 2.0.24 重新成为 Palot 回退/)).toBeTruthy();
   });
 
   it("preserves the selected runtime on offline errors and retries only when asked", async () => {
@@ -328,11 +328,11 @@ describe("OpenCodeReleaseSettings", () => {
       new Error("Offline: release feed unavailable"),
     );
     render(<OpenCodeReleaseSettings />);
-    await user.click(await screen.findByRole("button", { name: "Check for release" }));
+    await user.click(await screen.findByRole("button", { name: "检查发布版本" }));
     expect(screen.getByRole("alert").textContent).toContain("Offline");
-    expect(screen.getByText("2.1.0-beta.1 (downloaded)")).toBeTruthy();
+    expect(screen.getByText("2.1.0-beta.1（已下载）")).toBeTruthy();
     expect(palot.checkOpenCodeRelease).toHaveBeenCalledOnce();
-    await user.click(screen.getByRole("button", { name: "Retry release action" }));
+    await user.click(screen.getByRole("button", { name: "重试发布操作" }));
     expect(palot.checkOpenCodeRelease).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole("alert")).toBeNull();
   });
@@ -343,8 +343,8 @@ describe("OpenCodeReleaseSettings", () => {
       new Error("Cannot read local settings"),
     );
     render(<OpenCodeReleaseSettings />);
-    await user.click(await screen.findByRole("button", { name: "Retry release action" }));
-    expect(await screen.findByRole("combobox", { name: "Preferred channel" })).toBeTruthy();
+    await user.click(await screen.findByRole("button", { name: "重试发布操作" }));
+    expect(await screen.findByRole("combobox", { name: "首选通道" })).toBeTruthy();
     expect(palot.openCodeReleaseStatus).toHaveBeenCalledTimes(2);
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
   });
@@ -353,13 +353,13 @@ describe("OpenCodeReleaseSettings", () => {
     const user = userEvent.setup();
     vi.mocked(palot.prepareOpenCodeRelease).mockRejectedValueOnce(new Error("Download failed"));
     render(<OpenCodeReleaseSettings />);
-    await user.click(await screen.findByRole("button", { name: "Check for release" }));
-    await user.click(screen.getByRole("button", { name: "Download Palot fallback 2.1.0-beta.1" }));
-    await user.click(screen.getByRole("button", { name: "Continue and prepare" }));
-    expect(screen.getByText("2.0.24 (bundled)")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Retry release action" }));
+    await user.click(await screen.findByRole("button", { name: "检查发布版本" }));
+    await user.click(screen.getByRole("button", { name: "下载 Palot 回退 2.1.0-beta.1" }));
+    await user.click(screen.getByRole("button", { name: "继续并准备" }));
+    expect(screen.getByText("2.0.24（内置）")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "重试发布操作" }));
     expect(screen.getByRole("alertdialog")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "取消" }));
     expect(palot.prepareOpenCodeRelease).toHaveBeenCalledOnce();
   });
 
@@ -376,18 +376,18 @@ describe("OpenCodeReleaseSettings", () => {
       }),
     );
     render(<OpenCodeReleaseSettings />);
-    await user.dblClick(await screen.findByRole("button", { name: "Check for release" }));
+    await user.dblClick(await screen.findByRole("button", { name: "检查发布版本" }));
     expect(palot.checkOpenCodeRelease).toHaveBeenCalledOnce();
     expect(
-      (screen.getByRole("combobox", { name: "Preferred channel" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("combobox", { name: "首选通道" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(
-      (screen.getByRole("button", { name: "Reset to bundled 2.0.24" }) as HTMLButtonElement)
+      (screen.getByRole("button", { name: "重置为内置 2.0.24" }) as HTMLButtonElement)
         .disabled,
     ).toBe(true);
     await act(async () => resolve(offered));
     expect(
-      (screen.getByRole("button", { name: "Check for release" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "检查发布版本" }) as HTMLButtonElement).disabled,
     ).toBe(false);
   });
 
@@ -395,11 +395,11 @@ describe("OpenCodeReleaseSettings", () => {
     const user = userEvent.setup();
     render(<OpenCodeReleaseSetup />);
     expect(palot.openCodeReleaseStatus).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "OpenCode release settings" }));
-    expect(screen.getByRole("dialog", { name: "Set up local OpenCode" })).toBeTruthy();
-    expect(await screen.findByText("Not connected")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "OpenCode 发布设置" }));
+    expect(screen.getByRole("dialog", { name: "设置本地 OpenCode" })).toBeTruthy();
+    expect(await screen.findByText("未连接")).toBeTruthy();
     expect(palot.openCodeReleaseStatus).toHaveBeenCalledTimes(2);
-    expect(await screen.findByRole("combobox", { name: "Runtime source" })).toBeTruthy();
+    expect(await screen.findByRole("combobox", { name: "运行时来源" })).toBeTruthy();
     expect(palot.inspectOpenCodeInstallations).toHaveBeenCalledOnce();
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
     await user.keyboard("{Escape}");

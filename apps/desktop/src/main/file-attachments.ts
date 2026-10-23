@@ -230,7 +230,7 @@ export async function inspectPickedFiles(filePaths: string[]): Promise<PalotFile
         return {
           file: null,
           error:
-            error instanceof Error ? error.message : `${path.basename(filePath)}: invalid file.`,
+            error instanceof Error ? error.message : `${path.basename(filePath)}：无效文件。`,
         };
       }
     }),

@@ -23,7 +23,7 @@ it("copies the full value and announces the result", async () => {
   expect(screen.getByRole("group", { name: "Worktree path" })).toBeTruthy();
   expect(screen.getByText(value).getAttribute("title")).toBe(value);
 
-  await user.click(screen.getByRole("button", { name: "Copy Worktree path" }));
+  await user.click(screen.getByRole("button", { name: "复制 Worktree path" }));
   expect(clipboard).toHaveBeenCalledWith(value);
   await waitFor(() => expect(onCopy).toHaveBeenCalledOnce());
   expect(screen.getByText("Copied")).toBeTruthy();
@@ -33,10 +33,10 @@ it("conceals a secret until revealed and still copies the real value", async () 
   const user = userEvent.setup();
   render(<CopyField label="API key" value="sk-secret-123" secret />);
   expect(screen.queryByText("sk-secret-123")).toBeNull();
-  const reveal = screen.getByRole("button", { name: "Show API key" });
+  const reveal = screen.getByRole("button", { name: "显示 API key" });
   expect(reveal.getAttribute("aria-pressed")).toBe("false");
 
-  await user.click(screen.getByRole("button", { name: "Copy API key" }));
+  await user.click(screen.getByRole("button", { name: "复制 API key" }));
   expect(clipboard).toHaveBeenCalledWith("sk-secret-123");
 
   await user.click(reveal);

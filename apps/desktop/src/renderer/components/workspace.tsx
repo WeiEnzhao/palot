@@ -766,7 +766,7 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
         <Empty>
           <EmptyHeader>
             <EmptyTitle role="heading" aria-level={1}>
-              {mismatch ? "OpenCode version mismatch" : "Could not connect to OpenCode"}
+              {mismatch ? "OpenCode 版本不匹配" : "无法连接到 OpenCode"}
             </EmptyTitle>
             <EmptyDescription>
               {mismatch
@@ -1032,7 +1032,7 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
           railRef={railRef}
           left={NAVIGATION_RAIL_WIDTH}
           width={Math.min(paneGeometry.navigation, SIDEBAR_PEEK_MAX_WIDTH)}
-          label={navigationPeek.view === "project" ? "Projects preview" : "Inbox preview"}
+          label={navigationPeek.view === "project" ? "项目预览" : "收件箱预览"}
         >
           <WorkspaceSidebar
             open
@@ -1051,8 +1051,8 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
             className="p-0"
             style={{ width: Math.min(paneGeometry.navigation, 360) }}
           >
-            <SheetTitle className="sr-only">Task navigation</SheetTitle>
-            <SheetDescription className="sr-only">Projects, tasks, and settings</SheetDescription>
+            <SheetTitle className="sr-only">任务导航</SheetTitle>
+            <SheetDescription className="sr-only">项目、任务和设置</SheetDescription>
             <WorkspaceSidebar
               open={navigationSheetOpen}
               onNewSession={startNewTask}
@@ -1062,7 +1062,7 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
         </Sheet>
         <div className="window-chrome-cluster pointer-events-none fixed top-0 z-40 flex h-(--shell-header-height) items-center gap-2">
           <IconButton
-            label={navigationVisible ? "Hide navigation" : "Show navigation"}
+            label={navigationVisible ? "隐藏导航" : "显示导航"}
             appIcon="sidebarLeading"
             size="icon-sm"
             aria-pressed={navigationVisible}
@@ -1092,7 +1092,7 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
         </div>
         <div className="window-trailing-controls pointer-events-none fixed top-0 right-3 z-40 flex h-(--shell-header-height) items-center gap-1">
           <IconButton
-            label={bottomRequestedOpen ? "Hide bottom workbench" : "Show terminal"}
+            label={bottomRequestedOpen ? "隐藏底部工作台" : "显示终端"}
             appIcon="panelBottom"
             size="icon-sm"
             aria-pressed={bottomRequestedOpen}
@@ -1106,7 +1106,7 @@ export function Workspace({ content }: { content: ReactNode; children?: ReactNod
             onClick={toggleBottom}
           />
           <IconButton
-            label={rightRequestedOpen ? "Hide right workbench" : "Show changes"}
+            label={rightRequestedOpen ? "隐藏右侧工作台" : "显示更改"}
             appIcon="sidebarTrailing"
             size="icon-sm"
             aria-pressed={rightRequestedOpen}

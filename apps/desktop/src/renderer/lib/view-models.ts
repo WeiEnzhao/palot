@@ -336,7 +336,7 @@ function inputView(value: SessionInboxUser, index: number): PendingRequestView {
   return {
     id: value.id || `input-${index}`,
     type: "input",
-    title: "Pending input",
+    title: "等待输入",
     detail: value.payload.text || undefined,
     resources: [],
     savePatterns: [],

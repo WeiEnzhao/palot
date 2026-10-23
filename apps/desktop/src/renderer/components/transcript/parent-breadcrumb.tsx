@@ -27,7 +27,7 @@ export function ParentTaskBreadcrumb({
 
   return (
     <Breadcrumb
-      aria-label="Task breadcrumb"
+      aria-label="任务导航"
       className="window-no-drag min-w-0"
       data-palot-parent-breadcrumb={parentID}
     >
@@ -36,7 +36,7 @@ export function ParentTaskBreadcrumb({
           <button
             type="button"
             className="block max-w-64 min-w-0 truncate rounded-sm px-0.5 py-1 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={`Open parent task: ${parentTitle}`}
+            aria-label={`打开父任务：${parentTitle}`}
             title={parentTitle}
             onClick={() => void openSession(parentID)}
           >

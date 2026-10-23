@@ -107,12 +107,12 @@ function ProjectSettingsScope({
             <AlertDescription>
               {query.error.message}
               <Button variant="ghost" onClick={() => void query.refetch()}>
-                Retry
+                重试
               </Button>
             </AlertDescription>
           </Alert>
         ) : (
-          <p role="status">Loading project settings…</p>
+          <p role="status">正在加载项目设置…</p>
         )}
       </SettingsSection>
     );
@@ -194,7 +194,7 @@ function ProjectSettingsScope({
         ) : null}
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={pending || Object.keys(edits).length === 0}>
-            {pending ? "Saving…" : "Save project"}
+            {pending ? "正在保存…" : "保存项目"}
           </Button>
           <Button
             type="button"

@@ -382,12 +382,12 @@ function shellPart(message: PalotMessage): PalotMessageContent {
         ? {
             error:
               status === "timeout"
-                ? { type: "ShellTimeoutError", message: "Shell command timed out" }
+                ? { type: "ShellTimeoutError", message: "Shell 命令超时" }
                 : status === "killed"
-                  ? { type: "ShellKilledError", message: "Shell command was killed" }
+                  ? { type: "ShellKilledError", message: "Shell 命令被终止" }
                   : {
                       type: "ShellExitError",
-                      message: `Shell command exited with code ${exit ?? "unknown"}`,
+                      message: `Shell 命令退出，代码为 ${exit ?? "unknown"}`,
                     },
           }
         : {}),

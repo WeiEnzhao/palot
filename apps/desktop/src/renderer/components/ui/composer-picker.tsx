@@ -724,7 +724,7 @@ function ComposerPickerRowView<T>({
           type="button"
           tabIndex={-1}
           aria-hidden="true"
-          title={option.favorite ? "Remove from favorites" : "Add to favorites"}
+          title={option.favorite ? "取消收藏" : "添加收藏"}
           data-favorite={option.favorite ? "true" : undefined}
           className="-my-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground opacity-0 group-hover/picker-row:opacity-100 group-data-highlighted/picker-row:opacity-100 hover:text-foreground data-[favorite=true]:text-warning data-[favorite=true]:opacity-100"
           onClick={(event) => {

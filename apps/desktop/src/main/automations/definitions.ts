@@ -142,7 +142,7 @@ export class AutomationDefinitionRegistry {
       } catch (error) {
         errors.push({
           id: entry.name,
-          message: error instanceof Error ? error.message : "Invalid automation definition",
+          message: error instanceof Error ? error.message : "无效的自动化定义",
         });
       }
     }

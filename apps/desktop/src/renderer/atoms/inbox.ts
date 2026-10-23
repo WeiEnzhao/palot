@@ -30,7 +30,7 @@ export const dispatchSessionTriageAtom = atom(
       if (get(runtimeAtom)?.profileID === profileID) set(sessionTriageSnapshotAtom, snapshot);
       return snapshot;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not save inbox state";
+      const message = error instanceof Error ? error.message : "无法保存收件箱状态";
       set(sessionTriageErrorAtom, message);
       throw error;
     }

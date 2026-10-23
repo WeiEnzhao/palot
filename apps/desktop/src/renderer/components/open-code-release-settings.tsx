@@ -73,7 +73,7 @@ export function OpenCodeReleaseSettings({
       setNotice(message ?? null);
     } catch (cause) {
       if (current === generation.current)
-        setError(cause instanceof Error ? cause.message : "OpenCode release action failed.");
+        setError(cause instanceof Error ? cause.message : "OpenCode 发布操作失败。");
     } finally {
       if (current === generation.current) {
         locked.current = false;
@@ -100,7 +100,7 @@ export function OpenCodeReleaseSettings({
           }
         })
         .catch(() => {
-          if (current === generation.current) setError("Could not refresh local release settings.");
+          if (current === generation.current) setError("无法刷新本地发布设置。");
         });
     };
     window.addEventListener("palot:opencode-release-changed", refresh);
@@ -127,7 +127,7 @@ export function OpenCodeReleaseSettings({
           version: offer.version,
           ...(allowUntested ? { allowUntested: true } : {}),
         }),
-      `Palot runtime ${offer.version} is prepared as a fallback or for the Palot runtime source. The existing service is unchanged.`,
+      `Palot 运行时 ${offer.version} 已作为回退或 Palot 运行时源准备好。现有服务不变。`,
       () => prepare(offer),
     );
   }
@@ -138,8 +138,8 @@ export function OpenCodeReleaseSettings({
   const channelDisabled = disabled || consent !== null || (busy !== null && busy !== "channel");
   return (
     <SettingsSection
-      title="OpenCode release"
-      description="Choose the update channel and download an optional OpenCode fallback directly from opencode.ai, separately from app updates."
+      title="OpenCode 发布版本"
+      description="选择更新通道，并可从 opencode.ai 下载可选的 OpenCode 回退版本，与应用更新独立。"
     >
       <SettingsGroup>
         <div className="@container/release min-w-0 space-y-4 p-4">
@@ -147,7 +147,7 @@ export function OpenCodeReleaseSettings({
             <>
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor={id}>Preferred channel</FieldLabel>
+                  <FieldLabel htmlFor={id}>首选通道</FieldLabel>
                   <Select
                     value={status.channel}
                     disabled={channelDisabled}
@@ -157,7 +157,7 @@ export function OpenCodeReleaseSettings({
                       void run(
                         "channel",
                         () => palot.setOpenCodeReleaseChannel(channel),
-                        "Channel saved. Your prepared runtime is unchanged. Check for a release when ready.",
+                        "通道已保存。已准备好的运行时不变。准备好后可检查发布版本。",
                       );
                     }}
                   >
@@ -174,40 +174,40 @@ export function OpenCodeReleaseSettings({
                     </SelectContent>
                   </Select>
                   <FieldDescription id={`${id}-help`}>
-                    Stable is the default. Beta is an experimental channel and may lag behind
-                    Stable. Stable 2.x is supported; features added in a later release may require
-                    that release. Changing channels does not download or replace a runtime.
+                    Stable 为默认通道。Beta 为实验通道，可能滞后于
+                    Stable。已支持 Stable 2.x；后续版本中添加的功能可能需要
+                    该版本。切换通道不会下载或替换运行时。
                   </FieldDescription>
                 </Field>
               </FieldGroup>
               <dl className="grid min-w-0 gap-3 text-sm @md/release:grid-cols-2">
                 <div className="min-w-0">
                   <dt className="text-meta text-muted-foreground">
-                    Currently running service version
+                    当前运行的服务版本
                   </dt>
                   <dd className="mt-1 wrap-anywhere">
-                    {runtime?.connected ? (runtime.version ?? "Unknown") : "Not connected"}
+                    {runtime?.connected ? (runtime.version ?? "未知") : "未连接"}
                     {runtime?.connected && runtime.source === "network-server"
-                      ? " (remote service)"
+                      ? "（远程服务）"
                       : ""}
                   </dd>
                 </div>
                 <div className="min-w-0">
-                  <dt className="text-meta text-muted-foreground">Prepared Palot runtime</dt>
+                  <dt className="text-meta text-muted-foreground">已准备好的 Palot 运行时</dt>
                   <dd className="mt-1 wrap-anywhere">
-                    {status.preparedVersion ?? status.bundledVersion ?? "Not downloaded"}
+                    {status.preparedVersion ?? status.bundledVersion ?? "未下载"}
                     {status.preparedVersion
-                      ? " (downloaded)"
+                      ? "（已下载）"
                       : status.bundledVersion
-                        ? " (bundled)"
+                        ? "（内置）"
                         : ""}
                   </dd>
                 </div>
               </dl>
               <p className="text-compact leading-relaxed text-muted-foreground">
-                Preparation and reset never start, stop, or change the shared service. An installed
-                OpenCode is preferred by default. This runtime is used only as a fallback or when
-                you select Palot runtime, on a separate confirmed start or restart.
+                准备和重置不会启动、停止或更改共享服务。默认优先使用已安装的
+                OpenCode。此运行时仅在回退或您选择 Palot 运行时使用，
+                需在确认后才启动或重启。
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -217,7 +217,7 @@ export function OpenCodeReleaseSettings({
                   disabled={blocked}
                   onClick={() => void run("check", () => palot.checkOpenCodeRelease())}
                 >
-                  {busy === "check" ? "Checking…" : "Check for release"}
+                  {busy === "check" ? "检查中…" : "检查发布版本"}
                 </Button>
                 <Button
                   type="button"
@@ -229,26 +229,26 @@ export function OpenCodeReleaseSettings({
                       "reset",
                       () => palot.resetOpenCodeRelease(),
                       status.bundledVersion
-                        ? `Bundled OpenCode ${status.bundledVersion} is the Palot fallback again. The installed CLI and existing service are unchanged.`
-                        : "No downloaded runtime is selected. The installed CLI and existing service are unchanged.",
+                        ? `内置 OpenCode ${status.bundledVersion} 重新成为 Palot 回退。已安装的 CLI 和现有服务不变。`
+                        : "未选择已下载的运行时。已安装的 CLI 和现有服务不变。",
                     )
                   }
                 >
                   {status.bundledVersion
-                    ? `Reset to bundled ${status.bundledVersion}`
-                    : "Reset prepared runtime"}
+                    ? `重置为内置 ${status.bundledVersion}`
+                    : "重置已准备的运行时"}
                 </Button>
               </div>
               {status.offer ? (
                 <div className="space-y-2">
                   <p className="text-compact wrap-anywhere">
-                    {status.offer.channel === "beta" ? "Beta" : "Stable"} offers OpenCode{" "}
+                    {status.offer.channel === "beta" ? "Beta" : "Stable"} 提供 OpenCode{" "}
                     {status.offer.version} ·{" "}
                     {status.offer.tested
-                      ? "Tested with Palot"
+                      ? "已通过 Palot 测试"
                       : status.offer.requiresConfirmation
-                        ? "Compatibility unverified · not tested with Palot"
-                        : "Compatible · not yet tested with this Palot build"}{" "}
+                        ? "兼容性未验证 · 未经 Palot 测试"
+                        : "兼容 · 尚未在此 Palot 版本测试"}{" "}
                     · {(status.offer.size / 1024 / 1024).toFixed(1)} MB
                   </p>
                   <Button
@@ -258,26 +258,26 @@ export function OpenCodeReleaseSettings({
                     onClick={() => status.offer && prepare(status.offer)}
                   >
                     {busy === "prepare"
-                      ? "Preparing…"
-                      : `Download Palot fallback ${status.offer.version}`}
+                      ? "准备中…"
+                      : `下载 Palot 回退 ${status.offer.version}`}
                   </Button>
                 </div>
               ) : status.checkedAt ? (
                 <p className="text-compact text-muted-foreground">
                   {status.channel === "beta"
-                    ? "No compatible Beta available. The official Beta release is older than Palot supports. Check Stable or try again later."
-                    : "No compatible Stable release available. The official Stable release is older than Palot supports. Try again later."}
+                    ? "没有兼容的 Beta 可用。官方 Beta 版本早于 Palot 支持的范围。请检查 Stable 或稍后重试。"
+                    : "没有兼容的 Stable 可用。官方 Stable 版本早于 Palot 支持的范围。请稍后重试。"}
                 </p>
               ) : null}
               <p className="text-meta text-muted-foreground">
                 {status.checkedAt
-                  ? `Last checked: ${new Date(status.checkedAt).toLocaleString()}`
-                  : "Not checked yet. Releases are checked only when you ask."}
+                  ? `上次检查：${new Date(status.checkedAt).toLocaleString()}`
+                  : "尚未检查。仅在您请求时才检查发布版本。"}
               </p>
             </>
           ) : busy ? (
             <p role="status" className="text-compact text-muted-foreground">
-              Loading local release settings…
+              正在加载本地发布设置…
             </p>
           ) : null}
           {notice ? (
@@ -287,7 +287,7 @@ export function OpenCodeReleaseSettings({
           ) : null}
           {error ? (
             <Alert variant="destructive">
-              <AlertTitle>Could not update OpenCode release settings</AlertTitle>
+              <AlertTitle>无法更新 OpenCode 发布版本设置</AlertTitle>
               <AlertDescription>
                 <p className="wrap-anywhere">{error}</p>
                 <Button
@@ -297,7 +297,7 @@ export function OpenCodeReleaseSettings({
                   disabled={blocked}
                   onClick={() => retry.current?.()}
                 >
-                  Retry release action
+                  重试发布操作
                 </Button>
               </AlertDescription>
             </Alert>
@@ -307,22 +307,22 @@ export function OpenCodeReleaseSettings({
       <AlertDialog open={consent !== null} onOpenChange={(open) => !open && setConsent(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Prepare untested OpenCode {consent?.version}?</AlertDialogTitle>
+            <AlertDialogTitle>准备未经测试的 OpenCode {consent?.version}？</AlertDialogTitle>
             <AlertDialogDescription>
-              This {consent?.channel === "beta" ? "Beta" : "Stable"} release has not been tested
-              with Palot. The current API has no feature manifest, so compatibility is not
-              guaranteed and some features may fail. Downloading prepares it for a later confirmed
-              start or restart; it does not change the running service. To change versions later,
-              choose an installed runtime or check the Stable channel and prepare that release.
+              此 {consent?.channel === "beta" ? "Beta" : "Stable"} 版本尚未
+              在 Palot 中测试。当前 API 没有功能清单，因此不保证兼容性，
+              部分功能可能失败。下载后将其作为稍后确认启动或重启的回退；
+              不会更改运行中的服务。如需稍后更改版本，请选择已安装的运行时
+              或检查 Stable 通道并准备该版本。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               disabled={disabled || busy !== null}
               onClick={() => consent && prepare(consent, true)}
             >
-              Continue and prepare
+              继续并准备
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -343,14 +343,14 @@ export function OpenCodeReleaseSetup() {
       }}
     >
       <DialogTrigger render={<Button type="button" variant="outline" size="sm" />}>
-        OpenCode release settings
+        OpenCode 发布设置
       </DialogTrigger>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Set up local OpenCode</DialogTitle>
+          <DialogTitle>设置本地 OpenCode</DialogTitle>
           <DialogDescription>
-            Manage installed OpenCode or prepare a fallback without changing the shared service.
-            Close this dialog to use the separate confirmed start or restart action.
+            管理已安装的 OpenCode 或准备回退，而不更改共享服务。
+            关闭此对话框以使用单独的确认启动或重启操作。
           </DialogDescription>
         </DialogHeader>
         {open ? <LocalOpenCodeRuntimeSettings onBusyChange={setBusy} /> : null}

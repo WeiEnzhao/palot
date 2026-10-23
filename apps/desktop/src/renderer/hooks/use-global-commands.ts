@@ -203,8 +203,8 @@ export function useGlobalCommands({
     return [
       {
         id: "task.files.open",
-        title: "Open file",
-        description: "Search this task's files and open one in the workbench",
+        title: "打开文件",
+        description: "搜索此任务的文件并在工作台中打开",
         group: "actions",
         icon: FileSearch,
         keywords: ["go to file", "quick open", "find file", "workspace", "/open"],
@@ -214,8 +214,8 @@ export function useGlobalCommands({
       },
       {
         id: "task.fork",
-        title: "Fork task",
-        description: "Continue this task's history in a new task",
+        title: "分叉任务",
+        description: "在新任务中继续此任务的历史",
         group: "actions",
         icon: GitFork,
         keywords: ["branch", "duplicate", "copy", "/fork"],
@@ -224,14 +224,14 @@ export function useGlobalCommands({
           try {
             await forkSession({ sessionID: id });
           } catch (error) {
-            showErrorToast("Could not fork task", error);
+            showErrorToast("无法分叉任务", error);
           }
         },
       },
       {
         id: "task.export",
-        title: "Export task",
-        description: "Save this task's transcript to a file",
+        title: "导出任务",
+        description: "将此任务的记录保存到文件",
         group: "actions",
         icon: Download,
         keywords: ["save", "download", "transcript", "json", "/export"],
@@ -239,16 +239,16 @@ export function useGlobalCommands({
         run: async () => {
           try {
             const path = await palot.exportSession(id, selectedSession?.title, connectionID);
-            if (path) toast.add({ type: "success", title: "Task exported", description: path });
+            if (path) toast.add({ type: "success", title: "任务已导出", description: path });
           } catch (error) {
-            showErrorToast("Could not export task", error);
+            showErrorToast("无法导出任务", error);
           }
         },
       },
       {
         id: "task.compact",
-        title: "Compact task",
-        description: "Summarize the conversation history to free context space",
+        title: "压缩任务",
+        description: "总结对话历史以释放上下文空间",
         group: "actions",
         icon: Shrink,
         keywords: ["summarize", "context", "tokens", "/compact"],
@@ -257,14 +257,14 @@ export function useGlobalCommands({
           try {
             await palot.compactSession(id);
           } catch (error) {
-            showErrorToast("Compaction failed", error);
+            showErrorToast("压缩失败", error);
           }
         },
       },
       {
         id: "task.undo",
-        title: "Undo last step",
-        description: "Revert the last conversation step and its file changes",
+        title: "撤销上一步",
+        description: "撤销上一步对话及其文件更改",
         group: "actions",
         icon: Undo2,
         keywords: ["revert", "rollback", "/undo"],
@@ -274,37 +274,37 @@ export function useGlobalCommands({
       },
       {
         id: "task.redo",
-        title: "Redo step",
-        description: "Redo one staged conversation step",
+        title: "重做步骤",
+        description: "重做一步已暂存的对话",
         group: "actions",
         icon: Redo2,
         keywords: ["restore", "/redo"],
         kind: "action",
-        disabledReason: selectedSession && !selectedSession.revert ? "Nothing to redo" : undefined,
+        disabledReason: selectedSession && !selectedSession.revert ? "没有可重做的" : undefined,
         runAfterClose: true,
         run: () => composerAction("redo"),
       },
       {
         id: "task.background",
-        title: "Move work to background",
-        description: "Let running subagents and shells continue without blocking the task",
+        title: "将工作移至后台",
+        description: "让运行中的子代理和 shell 继续运行，不阻塞任务",
         group: "actions",
         icon: Layers2,
         keywords: ["subagent", "shell", "detach", "unblock"],
         kind: "action",
-        disabledReason: sessionRunning(id) ? undefined : "Nothing is running",
+        disabledReason: sessionRunning(id) ? undefined : "没有正在运行的工作",
         run: async () => {
           try {
             await palot.backgroundSession(id);
           } catch (error) {
-            showErrorToast("Could not move work to the background", error);
+            showErrorToast("无法将工作移至后台", error);
           }
         },
       },
       {
         id: "task.model",
-        title: "Change model",
-        description: "Choose this task's model",
+        title: "更改模型",
+        description: "选择此任务的模型",
         group: "actions",
         icon: Cpu,
         keywords: ["provider", "llm", "switch", "/model"],
@@ -318,8 +318,8 @@ export function useGlobalCommands({
       },
       {
         id: "task.agent",
-        title: "Change agent",
-        description: "Choose this task's primary agent",
+        title: "更改代理",
+        description: "选择此任务的主代理",
         group: "actions",
         icon: Bot,
         keywords: ["build", "plan", "mode", "switch", "/agent"],
@@ -365,7 +365,7 @@ export function useGlobalCommands({
     commands.push(
       {
         id: "navigation.toggle",
-        title: navigationOpen ? "Hide navigation" : "Show navigation",
+        title: navigationOpen ? "隐藏导航栏" : "显示导航栏",
         group: "actions",
         icon: navigationOpen ? PanelLeftClose : PanelLeftOpen,
         keywords: ["sidebar", "panel", "projects", "inbox"],
@@ -376,11 +376,11 @@ export function useGlobalCommands({
       },
       {
         id: "sidebar.mode.toggle",
-        title: sidebarMode === "inbox" ? "Show projects" : "Show inbox",
+        title: sidebarMode === "inbox" ? "显示项目" : "显示收件箱",
         description:
           sidebarMode === "inbox"
-            ? "Switch the sidebar to projects"
-            : "Switch the sidebar to inbox",
+            ? "将侧边栏切换到项目"
+            : "将侧边栏切换到收件箱",
         group: "actions",
         icon: sidebarMode === "inbox" ? FolderTree : Inbox,
         keywords: ["sidebar", "tasks", "attention"],
@@ -395,8 +395,8 @@ export function useGlobalCommands({
     if (selectedSession && runtime?.capabilities?.localPathActions === true) {
       commands.push({
         id: "task.openExternal",
-        title: "Open checkout in preferred app",
-        description: "Open this task's checkout in your preferred editor",
+        title: "在首选应用中打开检出",
+        description: "在首选编辑器中打开此任务的检出",
         group: "actions",
         icon: Code2,
         keywords: ["editor", "IDE", "Cursor", "VS Code", "Zed", "Finder"],
@@ -415,10 +415,10 @@ export function useGlobalCommands({
     commands.push(
       {
         id: "task.changes.toggle",
-        title: changesOpen ? "Hide changes" : "Show changes",
+        title: changesOpen ? "隐藏变更" : "显示变更",
         description: changesOpen
-          ? "Close the task changes panel"
-          : "Open files changed by this task",
+          ? "关闭任务变更面板"
+          : "打开此任务修改的文件",
         group: "actions",
         icon: changesOpen ? PanelRightClose : PanelRightOpen,
         keywords: ["diff", "files", "inspector"],
@@ -445,10 +445,10 @@ export function useGlobalCommands({
       },
       {
         id: "task.terminal.toggle",
-        title: terminalOpen ? "Hide terminal" : "Show terminal",
+        title: terminalOpen ? "隐藏终端" : "显示终端",
         description: terminalOpen
-          ? "Close the terminal pane without stopping its OpenCode PTY"
-          : "Open an interactive OpenCode terminal",
+          ? "关闭终端面板但不停止其 OpenCode PTY"
+          : "打开交互式 OpenCode 终端",
         group: "actions",
         icon: terminalOpen ? PanelBottomClose : PanelBottomOpen,
         keywords: ["terminal", "shell", "pty", "bottom panel"],
@@ -476,8 +476,8 @@ export function useGlobalCommands({
       },
       {
         id: "task.find",
-        title: "Find in task",
-        description: "Search this task's messages",
+        title: "在任务中查找",
+        description: "搜索此任务的消息",
         group: "actions",
         icon: TextSearch,
         keywords: ["search", "find", "transcript", "messages"],
@@ -489,7 +489,7 @@ export function useGlobalCommands({
       ...taskActionCommands(sessionID),
       {
         id: "task.copyId",
-        title: "Copy task ID",
+        title: "复制任务 ID",
         description: sessionID,
         group: "actions",
         icon: Copy,
@@ -497,7 +497,7 @@ export function useGlobalCommands({
         kind: "action",
         run: async () => {
           await writeClipboardText(sessionID);
-          toast.add({ type: "success", title: "Task ID copied" });
+          toast.add({ type: "success", title: "任务 ID 已复制" });
         },
       },
     );
@@ -506,8 +506,8 @@ export function useGlobalCommands({
   if (workspaceRoute) {
     commands.push({
       id: "task.focusComposer",
-      title: "Focus composer",
-      description: "Move the cursor to the message input",
+      title: "聚焦输入框",
+      description: "将光标移到消息输入框",
       group: "actions",
       icon: TextCursorInput,
       keywords: ["prompt", "message", "input", "write"],
@@ -522,8 +522,8 @@ export function useGlobalCommands({
   commands.push(
     {
       id: "onboarding.open",
-      title: "Open welcome guide",
-      description: "Review projects, provider connections, and how Palot presents OpenCode work",
+      title: "打开欢迎指南",
+      description: "查看项目、服务器连接以及 Palot 如何展示 OpenCode 工作",
       group: "actions",
       icon: Sparkles,
       keywords: ["onboarding", "setup", "getting started", "providers"],
@@ -532,8 +532,8 @@ export function useGlobalCommands({
     },
     {
       id: "usage.open",
-      title: "Usage",
-      description: "View local OpenCode activity, model cost, and tool reliability",
+      title: "用量",
+      description: "查看本地 OpenCode 活动、模型开销和工具可靠性",
       group: "actions",
       icon: BarChart3,
       keywords: ["tokens", "cost", "models", "statistics", "activity"],
@@ -543,8 +543,8 @@ export function useGlobalCommands({
     },
     {
       id: "pull-requests.open",
-      title: "Pull requests",
-      description: "Review requested, authored, and recently merged GitHub pull requests",
+      title: "拉取请求",
+      description: "查看被请求评审、自己创建和最近合并的 GitHub 拉取请求",
       group: "actions",
       icon: GitPullRequest,
       keywords: ["github", "pr", "review", "merge"],
@@ -580,13 +580,13 @@ export function useGlobalCommands({
     {
       id: "diagnostics.overlay.toggle",
       title: diagnosticsPreferences.overlayVisible
-        ? "Hide diagnostics overlay"
-        : "Show diagnostics overlay",
-      description: "Toggle live CPU, memory, frame, long-task, and streaming signals",
+        ? "隐藏诊断覆盖层"
+        : "显示诊断覆盖层",
+      description: "切换实时 CPU、内存、帧、长任务和流式信号",
       group: "diagnostics",
       icon: Activity,
       keywords: ["performance", "hud", "fps", "memory", "cpu"],
-      trailing: diagnosticsPreferences.overlayVisible ? "On" : "Off",
+      trailing: diagnosticsPreferences.overlayVisible ? "开启" : "关闭",
       defaultVisible: true,
       kind: "action",
       run: () => {
@@ -597,8 +597,8 @@ export function useGlobalCommands({
     },
     {
       id: "diagnostics.capture",
-      title: "Capture diagnostics now",
-      description: "Refresh the current Electron process and GPU snapshot",
+      title: "立即采集诊断",
+      description: "刷新当前 Electron 进程和 GPU 快照",
       group: "diagnostics",
       icon: RotateCw,
       keywords: ["refresh", "sample", "performance"],
@@ -606,13 +606,13 @@ export function useGlobalCommands({
       run: async () => {
         const diagnostics = await loadDiagnosticsController();
         await diagnostics.captureNow();
-        toast.add({ type: "success", title: "Diagnostics refreshed" });
+        toast.add({ type: "success", title: "诊断已刷新" });
       },
     },
     {
       id: "diagnostics.copy",
-      title: "Copy diagnostics report",
-      description: "Copy an allowlisted report without task content, paths, or credentials",
+      title: "复制诊断报告",
+      description: "复制不含任务内容、路径或凭据的安全报告",
       group: "diagnostics",
       icon: Copy,
       keywords: ["support", "clipboard", "export", "report"],
@@ -620,13 +620,13 @@ export function useGlobalCommands({
       run: async () => {
         const diagnostics = await loadDiagnosticsController();
         await diagnostics.copySafeReport(runtimeSummary);
-        toast.add({ type: "success", title: "Diagnostics copied" });
+        toast.add({ type: "success", title: "诊断已复制" });
       },
     },
     {
       id: "diagnostics.history.clear",
-      title: "Clear diagnostics history",
-      description: "Discard the bounded in-memory history",
+      title: "清除诊断历史",
+      description: "丢弃有界的内存历史记录",
       group: "diagnostics",
       icon: Trash2,
       keywords: ["reset", "samples"],
@@ -634,17 +634,17 @@ export function useGlobalCommands({
       run: async () => {
         const diagnostics = await loadDiagnosticsController();
         diagnostics.clearHistory();
-        toast.add({ type: "success", title: "Diagnostic history cleared" });
+        toast.add({ type: "success", title: "诊断历史已清除" });
       },
     },
     {
       id: "diagnostics.reactScan.toggle",
-      title: reactScanEnabled ? "Disable React Scan and reload" : "Enable React Scan and reload",
-      description: "Toggle component render outlines",
+      title: reactScanEnabled ? "禁用 React Scan 并重新加载" : "启用 React Scan 并重新加载",
+      description: "切换组件渲染轮廓",
       group: "diagnostics",
       icon: ScanSearch,
       keywords: ["react", "renders", "profiler", "instrumentation"],
-      trailing: reactScanEnabled ? "On" : "Off",
+      trailing: reactScanEnabled ? "开启" : "关闭",
       kind: "action",
       run: () => {
         updateDiagnosticsPreferences({ reactScanEnabled: !reactScanEnabled });
@@ -656,8 +656,8 @@ export function useGlobalCommands({
   if (palotBuild.channel !== "stable") {
     commands.push({
       id: "app.restart",
-      title: "Restart Palot",
-      description: "Restart the development app",
+      title: "重启 Palot",
+      description: "重启开发应用",
       group: "development",
       icon: RotateCw,
       keywords: ["reload", "development"],
@@ -665,8 +665,8 @@ export function useGlobalCommands({
       kind: "action",
       run: () =>
         palot
-          .restartApp("Restart requested from the command palette")
-          .catch((error) => showErrorToast("Could not restart Palot", error)),
+          .restartApp("从命令面板请求的重启")
+          .catch((error) => showErrorToast("无法重启 Palot", error)),
     });
   }
 

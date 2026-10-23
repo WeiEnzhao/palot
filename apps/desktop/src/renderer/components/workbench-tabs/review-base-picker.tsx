@@ -38,17 +38,17 @@ export function ReviewBasePicker({
             variant="ghost"
             size="sm"
             className="min-w-0 max-w-full"
-            aria-label={`Review base: ${label}`}
+            aria-label={`评审基准：${label}`}
           />
         }
       >
-        <span className="truncate">Base: {label}</span>
+        <span className="truncate">基准：{label}</span>
         <ChevronDown aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 max-w-[calc(100vw-2rem)] gap-1 p-1.5">
         <PopoverHeader className="px-2 py-1">
-          <PopoverTitle>Review base</PopoverTitle>
-          <PopoverDescription>Compare this branch against a branch or Git ref.</PopoverDescription>
+          <PopoverTitle>评审基准</PopoverTitle>
+          <PopoverDescription>将此分支与另一个分支或 Git 引用进行比较。</PopoverDescription>
         </PopoverHeader>
         <Button
           variant="ghost"
@@ -61,8 +61,8 @@ export function ReviewBasePicker({
         </Button>
         <ReviewBaseStatus base={base} />
         <Input
-          aria-label="Search branches or enter a ref"
-          placeholder="Search branches or enter a ref"
+          aria-label="搜索分支或输入引用"
+          placeholder="搜索分支或输入引用"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           onKeyDown={(event) => {

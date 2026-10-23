@@ -459,7 +459,7 @@ export class PullRequestService {
         if (request.priority === "interactive") throw error;
         return;
       }
-      const message = error instanceof Error ? error.message : "GitHub read failed";
+      const message = error instanceof Error ? error.message : "GitHub 读取失败";
       for (const members of groups)
         for (const link of members) await this.failRead(link, message, now, touch);
       if (request.priority === "interactive") throw error;

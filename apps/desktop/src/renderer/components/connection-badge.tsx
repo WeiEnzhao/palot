@@ -28,7 +28,7 @@ export function ConnectionBadge({
   compact?: boolean;
   iconOnly?: boolean;
 }) {
-  const label = `${connectionDescription(profile)} · ${connected ? "Connected" : "Disconnected"}`;
+  const label = `${connectionDescription(profile)} · ${connected ? "已连接" : "未连接"}`;
   const Icon = !connected ? CloudOff : profile.kind === "local" ? Monitor : Cloud;
   const badge = (
     <span

@@ -44,7 +44,7 @@ async function withProfileClient<T>(
     .listRuntimes()
     .find((candidate) => candidate.profileID === profileID && candidate.connected);
   if (!runtime)
-    throw new SourceControlError("not-connected", "Connect to the task's OpenCode server first.");
+    throw new SourceControlError("not-connected", "请先连接到任务的 OpenCode 服务器。");
   return openCodeRuntime.scopedConnection(runtime.connectionID).withClient(operation);
 }
 

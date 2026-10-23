@@ -94,14 +94,14 @@ describe("welcome project creation ownership", () => {
     );
     expect(releaseStatus).not.toHaveBeenCalled();
     await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: "OpenCode release settings" })),
+      fireEvent.click(screen.getByRole("button", { name: "OpenCode 发布设置" })),
     );
-    expect(screen.getByRole("combobox", { name: "Preferred channel" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "首选通道" })).toBeTruthy();
     expect(check).not.toHaveBeenCalled();
     expect(connect).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭" }));
     act(() => store.set(runtimeAtom, { ...runtime, source: "network-server" }));
-    expect(screen.queryByRole("button", { name: "OpenCode release settings" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "OpenCode 发布设置" })).toBeNull();
   });
 
   it.each(["picker", "creation", "unmount", "unchanged"] as const)(

@@ -123,14 +123,14 @@ export function GuideTour({
           variant={railOpen ? "secondary" : "ghost"}
           size="icon-sm"
           className="@min-[46rem]/pr-guide:hidden"
-          aria-label={railOpen ? "Hide stops" : "Show stops"}
+          aria-label={railOpen ? "隐藏站点" : "显示站点"}
           aria-pressed={railOpen}
           onClick={() => setRailOpen((value) => !value)}
         >
           <ListOrdered aria-hidden="true" />
         </Button>
         <NavButton
-          label="Previous stop"
+          label="上一个站点"
           keys="ArrowLeft k"
           hint="← or K"
           disabled={position === 0}
@@ -139,7 +139,7 @@ export function GuideTour({
           <ChevronLeft />
         </NavButton>
         <NavButton
-          label="Next stop"
+          label="下一个站点"
           keys="ArrowRight j"
           hint="→ or J"
           disabled={position >= stopCount - 1}
@@ -163,7 +163,7 @@ export function GuideTour({
       </div>
       <div className="relative grid min-h-0 flex-1 grid-cols-1 overflow-hidden @min-[46rem]/pr-guide:grid-cols-[16rem_minmax(0,1fr)]">
         <aside
-          aria-label="Guide stops"
+          aria-label="导览站点"
           className={cn(
             "absolute inset-0 z-10 min-h-0 flex-col border-r border-border bg-background @min-[46rem]/pr-guide:static @min-[46rem]/pr-guide:z-auto @min-[46rem]/pr-guide:flex",
             railOpen ? "flex" : "hidden",
@@ -179,7 +179,7 @@ export function GuideTour({
               variant="ghost"
               size="icon-xs"
               className="ml-auto @min-[46rem]/pr-guide:hidden"
-              aria-label="Close stops"
+              aria-label="关闭站点"
               onClick={() => setRailOpen(false)}
             >
               <X />
@@ -217,10 +217,10 @@ export function GuideTour({
                       {candidate.attention ? (
                         <span
                           className="size-1.5 shrink-0 rounded-full bg-warning"
-                          title="Look closely"
+                          title="仔细观察"
                         />
                       ) : null}
-                      {candidate.attention ? <span className="sr-only">Look closely, </span> : null}
+                      {candidate.attention ? <span className="sr-only">仔细观察， </span> : null}
                       {stopSubline(candidate)}
                     </span>
                   </span>
@@ -248,7 +248,7 @@ export function GuideTour({
               onFinish={() => setReviewOpen(true)}
             />
           ) : (
-            <p className="p-4 text-sm text-muted-foreground">This guide has no stops.</p>
+            <p className="p-4 text-sm text-muted-foreground">本导览没有站点。</p>
           )}
         </div>
       </div>

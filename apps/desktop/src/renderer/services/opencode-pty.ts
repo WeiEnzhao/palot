@@ -36,7 +36,7 @@ export async function createPty(
       await openCodeClient(connectionID).pty.create({
         location: location(value),
         cwd: value.directory,
-        title: "Terminal",
+        title: "终端",
       })
     ).data,
   );

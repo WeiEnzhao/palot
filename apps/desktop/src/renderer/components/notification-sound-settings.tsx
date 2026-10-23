@@ -43,14 +43,14 @@ export function NotificationSoundSettings({
       title="声音"
       description={
         desktopSettings?.turnCompletion === "unfocused"
-          ? "Play a short sound when tasks finish or need you. Turn sounds play only while Palot is in the background, like turn completion notifications."
-          : "Play a short sound when tasks finish or need you."
+          ? "任务完成或需要您时播放简短提示音。仅在 Palot 处于后台时播放，与任务完成通知一致。"
+          : "任务完成或需要您时播放简短提示音。"
       }
       icon={Volume2}
     >
       {alertsOff && notificationSoundsEnabled(preferences) ? (
         <p role="note" className="text-compact text-muted-foreground">
-          macOS alerts are off for Palot, so these events only play a sound.
+          macOS 已关闭 Palot 的通知提醒，因此这些事件仅播放声音。
         </p>
       ) : null}
       <SettingsGroup>
@@ -74,12 +74,12 @@ export function NotificationSoundSettings({
                   >
                     <SelectTrigger
                       className="w-full @lg/settings:w-32"
-                      aria-label={`${event.label} sound`}
+                      aria-label={`${event.label} 声音`}
                     >
                       <SelectValue>{SOUND_LABELS[choice]}</SelectValue>
                     </SelectTrigger>
                     <SelectContent align="end">
-                      <SelectItem value="off">Off</SelectItem>
+                      <SelectItem value="off">关闭</SelectItem>
                       {NOTIFICATION_SOUND_OPTIONS.map((option) => (
                         <SelectItem key={option.id} value={option.id}>
                           {option.label}
@@ -91,7 +91,7 @@ export function NotificationSoundSettings({
                     type="button"
                     size="icon-sm"
                     variant="ghost"
-                    aria-label={`Play ${event.label.toLowerCase()} sound`}
+                    aria-label={`播放 ${event.label.toLowerCase()} 声音`}
                     title="播放声音"
                     disabled={choice === "off"}
                     onClick={() => {

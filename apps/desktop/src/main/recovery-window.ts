@@ -28,7 +28,7 @@ export async function showRecoveryWindow(failure: unknown): Promise<BrowserWindo
   }
 
   const window = new BrowserWindow({
-    title: "Palot Recovery",
+    title: "Palot 恢复",
     width: 760,
     height: 720,
     minWidth: 640,
@@ -166,23 +166,23 @@ function recoveryHtml({
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; navigate-to palot-recovery:">
-<title>Palot Recovery</title><style>
+<title>Palot 恢复</title><style>
 :root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111214;color:#f4f4f5}body{margin:0;padding:40px}main{max-width:680px;margin:auto}h1{font-size:28px;margin:0 0 8px}h2{font-size:14px;margin:28px 0 10px;color:#d4d4d8}p{color:#a1a1aa;line-height:1.5}.error,.notice,.boundary{border:1px solid #3f3f46;background:#18181b;border-radius:10px;padding:14px}.error{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;color:#fca5a5;overflow-wrap:anywhere}.notice{color:#bbf7d0;border-color:#166534}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.button{display:block;padding:11px 13px;border:1px solid #52525b;border-radius:8px;color:#fafafa;text-decoration:none;background:#27272a;font-size:13px;font-weight:600}.button:hover{background:#3f3f46}.button.primary{background:#f4f4f5;color:#18181b}.button.danger{border-color:#7f1d1d;color:#fecaca}.button.disabled{pointer-events:none;opacity:.45}.locations{font:12px ui-monospace,SFMono-Regular,monospace;color:#a1a1aa;overflow-wrap:anywhere}.boundary strong{color:#f4f4f5}@media(max-width:640px){body{padding:24px}.actions{grid-template-columns:1fr}}
 </style></head><body><main>
-<h1>Palot could not start</h1><p>Your OpenCode data has not been changed. Use the options below to recover Palot's own local state.</p>
+<h1>Palot 无法启动</h1><p>您的 OpenCode 数据未被改动。请使用以下选项恢复 Palot 自身的本地状态。</p>
 ${notice ? `<div class="notice">${escapeHtml(notice)}</div>` : ""}
 <div class="error">${escapeHtml(failure)}</div>
-<h2>Recovery</h2><div class="actions">
-<a class="button primary" href="palot-recovery:retry">Retry startup</a>
-<a class="button" href="palot-recovery:reveal-data">Reveal Palot data folder</a>
-<a class="button ${backupAvailable ? "" : "disabled"}" href="palot-recovery:restore">Restore latest database backup</a>
-<a class="button" href="palot-recovery:reset-settings">Reset Palot settings</a>
-<a class="button" href="palot-recovery:support">Export redacted support bundle</a>
-<a class="button" href="palot-recovery:reveal-logs">Reveal logs folder</a>
+<h2>恢复</h2><div class="actions">
+<a class="button primary" href="palot-recovery:retry">重试启动</a>
+<a class="button" href="palot-recovery:reveal-data">打开 Palot 数据目录</a>
+<a class="button ${backupAvailable ? "" : "disabled"}" href="palot-recovery:restore">恢复最近的数据库备份</a>
+<a class="button" href="palot-recovery:reset-settings">重置 Palot 设置</a>
+<a class="button" href="palot-recovery:support">导出脱敏支持包</a>
+<a class="button" href="palot-recovery:reveal-logs">打开日志目录</a>
 </div>
-<h2>Locations</h2><p class="locations">Data: ${escapeHtml(locations.data)}<br>Logs: ${escapeHtml(locations.logs)}<br>Backups: ${escapeHtml(locations.backups)}</p>
-<div class="boundary"><strong>OpenCode ownership boundary</strong><p>Reset and removal actions only target Palot's application data. They do not delete OpenCode sessions, provider auth, configuration, projects, worktrees, or service storage.</p></div>
-<h2>Start over</h2><a class="button danger" href="palot-recovery:delete-data">Remove all Palot-owned data</a>
+<h2>路径</h2><p class="locations">数据: ${escapeHtml(locations.data)}<br>日志: ${escapeHtml(locations.logs)}<br>备份: ${escapeHtml(locations.backups)}</p>
+<div class="boundary"><strong>OpenCode 数据边界</strong><p>重置和删除操作仅针对 Palot 的应用数据，不会删除 OpenCode 的会话、Provider 认证、配置、项目、工作树或服务存储。</p></div>
+<h2>重新开始</h2><a class="button danger" href="palot-recovery:delete-data">删除所有 Palot 数据</a>
 </main></body></html>`;
 }
 

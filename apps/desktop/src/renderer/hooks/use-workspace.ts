@@ -553,7 +553,7 @@ export function useWorkspaceController(selectedSessionID: string | null) {
           // Preserve the connection error when runtime status is unavailable too.
         }
         if (!isCurrent()) return;
-        setError(error instanceof Error ? error.message : "Could not connect to OpenCode");
+        setError(error instanceof Error ? error.message : "无法连接到 OpenCode");
         setAttentionSyncState("error");
         if (!workspaceReady) setPhase("error");
       }

@@ -685,8 +685,8 @@ export function normalizeGuide(
     stops.push({
       title: SKIM_STOP_TITLE,
       summary:
-        `Changed files the tour does not otherwise cover.` +
-        (more > 0 ? ` ${more} more ${more === 1 ? "file is" : "files are"} not listed here.` : ""),
+        `导览未涵盖的变更文件。` +
+        (more > 0 ? ` 另有 ${more} 个${more === 1 ? "文件未" : "文件未"}在此列出。` : ""),
       attention: null,
       excerpts: [],
       files: listed.map((path) => ({ path })),

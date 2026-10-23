@@ -138,7 +138,7 @@ describe("AutomationEditor run navigation", () => {
             : draft,
       });
       const memory = screen.queryByText(
-        /Standalone runs on this server do not share a memory file/,
+        /此服务器上的独立运行不共享记忆文件/,
       );
       if (destination === "standalone") expect(memory).toBeTruthy();
       else expect(memory).toBeNull();
@@ -174,7 +174,7 @@ describe("AutomationEditor run navigation", () => {
       runs: [activeRun],
     });
 
-    const openButtons = screen.getAllByRole("button", { name: "Open current run" });
+    const openButtons = screen.getAllByRole("button", { name: "打开当前运行" });
     await userEvent.click(openButtons.at(-1)!);
     expect(onRunAction).toHaveBeenCalledWith(activeRun, "open");
   });

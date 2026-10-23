@@ -25,14 +25,14 @@ function renderSounds(deliveryStatus: DesktopNotificationDeliveryStatus | null =
 
 it("chooses and previews a sound per event", async () => {
   const { store, play, user } = renderSounds();
-  const preview = screen.getByRole("button", { name: "Play turn completed sound" });
+  const preview = screen.getByRole("button", { name: "播放 轮次完成 声音" });
   expect((preview as HTMLButtonElement).disabled).toBe(true);
 
-  await user.click(screen.getByRole("combobox", { name: "Turn completed sound" }));
-  await user.click(await screen.findByRole("option", { name: "Bell" }));
+  await user.click(screen.getByRole("combobox", { name: "轮次完成 声音" }));
+  await user.click(await screen.findByRole("option", { name: "钟铃" }));
 
   expect(store.get(notificationSoundPreferencesAtom).turnCompleted).toBe("bell");
-  await user.click(screen.getByRole("button", { name: "Play turn completed sound" }));
+  await user.click(screen.getByRole("button", { name: "播放 轮次完成 声音" }));
   expect(play).toHaveBeenCalledWith("bell");
 });
 
@@ -50,5 +50,5 @@ it("explains that only sounds arrive while macOS alerts are off", () => {
       <NotificationSoundSettings deliveryStatus={status} />
     </Provider>,
   );
-  expect(screen.getByRole("note").textContent).toMatch(/only play a sound/);
+  expect(screen.getByRole("note").textContent).toMatch(/仅播放声音/);
 });

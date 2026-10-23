@@ -142,19 +142,19 @@ describe("SSH prompts", () => {
     render(<SshPrompts />);
     act(() => emit(state("new")));
     await act(async () => hydrate(null));
-    expect(screen.getByLabelText("SSH answer")).toBeTruthy();
+    expect(screen.getByLabelText("SSH 应答")).toBeTruthy();
   });
 
   it("conceals answers and clears them on prompt changes and close", async () => {
     render(<SshPrompts />);
     act(() => emit(state("first")));
-    const input = screen.getByLabelText("SSH answer") as HTMLInputElement;
+    const input = screen.getByLabelText("SSH 应答") as HTMLInputElement;
     expect(input.type).toBe("password");
     fireEvent.change(input, { target: { value: "secret" } });
     act(() => emit(state("second")));
-    expect((screen.getByLabelText("SSH answer") as HTMLInputElement).value).toBe("");
-    fireEvent.change(screen.getByLabelText("SSH answer"), { target: { value: "new-secret" } });
-    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect((screen.getByLabelText("SSH 应答") as HTMLInputElement).value).toBe("");
+    fireEvent.change(screen.getByLabelText("SSH 应答"), { target: { value: "new-secret" } });
+    fireEvent.click(screen.getByRole("button", { name: "继续" }));
     await waitFor(() =>
       expect(palot.respondSshPrompt).toHaveBeenCalledWith({
         operationID: "op-1",
@@ -162,10 +162,10 @@ describe("SSH prompts", () => {
         value: "new-secret",
       }),
     );
-    expect((screen.getByLabelText("SSH answer") as HTMLInputElement).value).toBe("");
+    expect((screen.getByLabelText("SSH 应答") as HTMLInputElement).value).toBe("");
     act(() => emit(null));
     act(() => emit(state("third")));
-    expect((screen.getByLabelText("SSH answer") as HTMLInputElement).value).toBe("");
+    expect((screen.getByLabelText("SSH 应答") as HTMLInputElement).value).toBe("");
   });
 
   it.each(["install", "start", "replace"] as const)(
@@ -179,7 +179,7 @@ describe("SSH prompts", () => {
         }),
       );
       expect(palot.respondSshPrompt).not.toHaveBeenCalled();
-      fireEvent.click(screen.getByRole("button", { name: `Allow ${action}` }));
+      fireEvent.click(screen.getByRole("button", { name: `允许${action}` }));
       await waitFor(() =>
         expect(palot.respondSshPrompt).toHaveBeenCalledWith({
           operationID: "op-1",
@@ -193,7 +193,7 @@ describe("SSH prompts", () => {
   it("cancels the operation without sending consent", async () => {
     render(<SshPrompts />);
     act(() => emit(state("auth")));
-    fireEvent.click(screen.getByRole("button", { name: "Cancel connection" }));
+    fireEvent.click(screen.getByRole("button", { name: "取消连接" }));
     await waitFor(() => expect(palot.cancelSshConnection).toHaveBeenCalledWith("op-1"));
     expect(palot.respondSshPrompt).not.toHaveBeenCalled();
   });
@@ -210,9 +210,9 @@ describe("SSH prompts", () => {
     vi.mocked(palot.onSshConnectionState).mockReturnValue(unsubscribe);
     const view = render(<SshPrompts />);
     await screen.findByText("Trust this host key?");
-    expect(screen.queryByLabelText("SSH answer")).toBeNull();
+    expect(screen.queryByLabelText("SSH 应答")).toBeNull();
     expect(palot.respondSshPrompt).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    fireEvent.click(screen.getByRole("button", { name: "确认" }));
     await waitFor(() =>
       expect(palot.respondSshPrompt).toHaveBeenCalledWith({
         operationID: "op-1",

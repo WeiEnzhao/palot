@@ -267,7 +267,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
   const run = async (item: OwnedItem, action: () => Promise<unknown>) => {
     const key = rowKey(item);
     setBusy((current) => new Set(current).add(key));
-    await attempt(`Could not update task on ${item.connection.profile.name}`, action);
+    await attempt(`无法更新 ${item.connection.profile.name} 上的任务`, action);
     setBusy((current) => {
       const next = new Set(current);
       next.delete(key);
@@ -302,7 +302,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           });
           return { profileID, sessionIDs: group.map((item) => item.session.id) };
         } catch (error) {
-          showErrorToast(`Could not settle tasks on ${group[0]!.connection.profile.name}`, error);
+          showErrorToast(`无法结算 ${group[0]!.connection.profile.name} 上的任务`, error);
           return null;
         }
       }),
@@ -332,7 +332,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
       dispatch(item, { type, sessionID: session.id, at: Date.now() });
     const selected = selectedID === session.id && runtime?.profileID === connection.profile.id;
     const openTask = () =>
-      void attempt("Could not open task", () =>
+      void attempt("无法打开任务", () =>
         navigation.openSession(session.id, { profileID: connection.profile.id }),
       );
     const preload = () => {
@@ -370,7 +370,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
               variant="ghost"
               size="icon-sm"
               className={mode === "inbox" ? INBOX_CARD_ACTION_BUTTON_CLASS : undefined}
-              aria-label={`Actions for ${session.title} on ${connectionDescription(connection.profile)}`}
+              aria-label={`${connectionDescription(connection.profile)} 上 ${session.title} 的操作`}
             />
           }
         >
@@ -945,12 +945,12 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              aria-label={`New task in ${projectName(project)} on ${connectionDescription(connection.profile)}`}
+                              aria-label={`${connectionDescription(connection.profile)} 上 ${projectName(project)} 的新任务`}
                               disabled={
                                 !connection.runtime?.connected || connection.phase !== "ready"
                               }
                               onClick={() =>
-                                void attempt("Could not open new task", () =>
+                                void attempt("无法打开新任务", () =>
                                   navigation.openNewTask(project.id, connection.profile.id),
                                 )
                               }
@@ -984,7 +984,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename task</DialogTitle>
+            <DialogTitle>重命名任务</DialogTitle>
             <DialogDescription>
               {renameItem ? connectionDescription(renameItem.connection.profile) : ""}
             </DialogDescription>
@@ -1018,7 +1018,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
             />
             <DialogFooter>
               <Button type="submit" disabled={saving || !title.trim() || !canRename}>
-                Save
+                保存
               </Button>
             </DialogFooter>
           </form>

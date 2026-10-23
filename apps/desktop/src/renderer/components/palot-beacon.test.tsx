@@ -60,7 +60,7 @@ function installAnimationFrames() {
 
 function setup() {
   const view = render(<PalotBeacon />);
-  const button = screen.getByRole<HTMLButtonElement>("button", { name: "Say hello to Palot" });
+  const button = screen.getByRole<HTMLButtonElement>("button", { name: "向 Palot 问好" });
   vi.spyOn(button, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 100, 64, 64));
   return { ...view, button };
 }

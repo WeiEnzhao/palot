@@ -359,14 +359,14 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
       <AlertDialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {deleting?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>删除 {deleting?.name}？</AlertDialogTitle>
             <AlertDialogDescription>
-              This removes the connection profile and its encrypted credential from Palot. It does
-              not delete the OpenCode server, sessions, auth, configuration, or projects.
+              将从 Palot 中移除此连接配置及其加密凭据。不会
+              删除 OpenCode 服务器、会话、认证、配置或项目。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busyID !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={busyID !== null}>取消</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={busyID !== null}
@@ -377,7 +377,7 @@ export function ConnectionSettings({ tab }: { tab: ConnectionTab }) {
                 void removeProfile(profile);
               }}
             >
-              Delete connection
+              删除连接
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -802,7 +802,7 @@ function EditServerDialog({
                 <SelectContent>
                   <SelectItem value="none">无身份验证</SelectItem>
                   <SelectItem value="basic">用户名和密码</SelectItem>
-                  <SelectItem value="bearer">Bearer token</SelectItem>
+                  <SelectItem value="bearer">Bearer 令牌</SelectItem>
                 </SelectContent>
               </Select>
               {auth === "basic" ? (
@@ -947,7 +947,7 @@ function AddServerDialog({
             <SelectContent>
               <SelectItem value="none">无身份验证</SelectItem>
               <SelectItem value="basic">用户名和密码</SelectItem>
-              <SelectItem value="bearer">Bearer token</SelectItem>
+              <SelectItem value="bearer">Bearer 令牌</SelectItem>
             </SelectContent>
           </Select>
           {auth === "basic" ? (

@@ -90,7 +90,7 @@ export function DefaultShellSetting() {
               <SelectValue>{currentLabel}</SelectValue>
             </SelectTrigger>
             <SelectContent align="end">
-              <SelectItem value={AUTO}>Auto</SelectItem>
+              <SelectItem value={AUTO}>自动</SelectItem>
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

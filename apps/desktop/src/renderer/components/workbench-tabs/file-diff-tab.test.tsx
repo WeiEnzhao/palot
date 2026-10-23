@@ -54,7 +54,7 @@ it("explains null inference instead of displaying an endless diff spinner and pe
   render(<FileDiffTab tab={tab} />);
   expect(screen.getByRole("status").textContent).toContain("No unambiguous base");
   expect(screen.queryByText("正在加载 diff")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Review base: Choose base" }));
+  fireEvent.click(screen.getByRole("button", { name: "评审基准：Choose base" }));
   fireEvent.click(await screen.findByRole("button", { name: "release" }));
   expect(mocks.setManual).toHaveBeenCalledWith("release");
 });
@@ -88,7 +88,7 @@ it("keeps the picker available through diff loading, request failure, missing fi
   mocks.query.data = [{ file: "a.txt", patch: "selected base patch", additions: 1, deletions: 0 }];
   rerender(<FileDiffTab tab={tab} />);
   expect(screen.getByText("selected base patch")).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Review base: release" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "评审基准：release" })).toBeTruthy();
 });
 
 it("does not gate working diffs on branch inference", () => {

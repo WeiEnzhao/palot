@@ -1065,7 +1065,7 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
   registerFocusedNative(IPC_CHANNELS.pickDirectory, async () => {
     requireRuntimeCapability("localPathActions");
     const result = await openDesktopDialog("project", {
-      title: "Choose a project folder",
+      title: "选择项目文件夹",
       properties: ["openDirectory", "createDirectory"],
     });
     return result.canceled ? null : (result.filePaths[0] ?? null);
@@ -1149,7 +1149,7 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
     requireRuntimeCapability("localFileAttachments");
     return withAttachmentRequest(event, input, async () => {
       const result = await openDesktopDialog("attachment", {
-        title: "Attach files",
+        title: "附加文件",
         properties: ["openFile", "multiSelections"],
         filters: ATTACHMENT_DIALOG_FILTERS,
       });
@@ -1171,7 +1171,7 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
       .replaceAll(/[^A-Za-z0-9._-]+/g, "-")
       .replace(/^-+|-+$/g, "");
     const result = await dialog.showSaveDialog({
-      title: "Export task",
+      title: "导出任务",
       defaultPath: safeName.endsWith(".json") ? safeName : `${safeName || "palot-task"}.json`,
       filters: [{ name: "Palot task", extensions: ["json"] }],
     });
@@ -1182,7 +1182,7 @@ export function registerIpcHandlers(options: NonNullable<typeof ipcTrust>): void
   register(IPC_CHANNELS.pickSessionImport, async (event) => {
     assertTrustedMainFrame(event);
     const result = await openDesktopDialog("import", {
-      title: "Import task",
+      title: "导入任务",
       properties: ["openFile"],
       filters: [{ name: "Palot task", extensions: ["json"] }],
     });

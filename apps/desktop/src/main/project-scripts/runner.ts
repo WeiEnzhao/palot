@@ -87,7 +87,7 @@ export function runScriptProcess(input: ScriptProcessInput): Promise<ScriptProce
         signal: null,
         output: "",
         outputTruncated: false,
-        error: error instanceof Error ? error.message : "The script could not start.",
+        error: error instanceof Error ? error.message : "脚本无法启动。",
       });
       return;
     }

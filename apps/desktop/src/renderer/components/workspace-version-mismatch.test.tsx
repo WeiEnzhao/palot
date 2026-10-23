@@ -41,29 +41,29 @@ describe("Workspace version mismatch", () => {
     const mismatchRuntime = store.get(runtimeAtom)!;
     renderWithRouter(<Workspace content={null} />, store);
 
-    expect(screen.getByRole("heading", { name: "OpenCode version mismatch" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "OpenCode 版本不匹配" })).toBeTruthy();
     expect(
       screen.getByText(
         /Palot was tested with OpenCode 0.0.0-beta-19425, but the running service is 0.0.0-beta-17794\./,
       ),
     ).toBeTruthy();
     expect(screen.getByRole("button", { name: "Continue with existing service" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Use selected runtime" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Use selected runtime" }));
-    expect(screen.getByText(/Your installed OpenCode is preferred by default/)).toBeTruthy();
-    expect(screen.getByText(/may interrupt other OpenCode clients/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "使用选定的运行时" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "使用选定的运行时" }));
+    expect(screen.getByText(/默认优先使用已安装的 OpenCode/)).toBeTruthy();
+    expect(screen.getByText(/可能中断其他 OpenCode 客户端/)).toBeTruthy();
     expect(run).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
     expect(run).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Use selected runtime" }));
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Replace service" })));
+    fireEvent.click(screen.getByRole("button", { name: "使用选定的运行时" }));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "替换服务" })));
     expect(run).toHaveBeenCalledWith({ versionMismatch: "replace" });
     act(() => {
       store.set(phaseAtom, "error");
       store.set(runtimeAtom, { ...mismatchRuntime, source: "network-server" });
     });
-    expect(screen.queryByRole("button", { name: "Use selected runtime" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "OpenCode release settings" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "使用选定的运行时" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "OpenCode 发布设置" })).toBeNull();
     expect(screen.getByRole("button", { name: "Continue with existing service" })).toBeTruthy();
     await act(async () =>
       fireEvent.click(screen.getByRole("button", { name: "Continue with existing service" })),
@@ -112,26 +112,26 @@ describe("Workspace version mismatch", () => {
     renderWithRouter(<Workspace content={null} />, store);
     expect(releaseStatus).not.toHaveBeenCalled();
     await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: "OpenCode release settings" })),
+      fireEvent.click(screen.getByRole("button", { name: "OpenCode 发布设置" })),
     );
-    expect(screen.getByRole("combobox", { name: "Preferred channel" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "首选通道" })).toBeTruthy();
     expect(releaseStatus).toHaveBeenCalled();
     expect(inspectInstallations).toHaveBeenCalledOnce();
     expect(checkRelease).not.toHaveBeenCalled();
     expect(run).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭" }));
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Try again" })));
     expect(run).toHaveBeenLastCalledWith(undefined);
     run.mockClear();
-    fireEvent.click(screen.getByRole("button", { name: "Start OpenCode" }));
+    fireEvent.click(screen.getByRole("button", { name: "启动 OpenCode" }));
     expect(
-      screen.getByRole("alertdialog", { name: "Start or recover shared OpenCode?" }),
+      screen.getByRole("alertdialog", { name: "启动或恢复共享 OpenCode？" }),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
     expect(run).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Start OpenCode" }));
+    fireEvent.click(screen.getByRole("button", { name: "启动 OpenCode" }));
     await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: "Start or recover" })),
+      fireEvent.click(screen.getByRole("button", { name: "启动或恢复" })),
     );
     expect(run).toHaveBeenCalledExactlyOnceWith({ startLocalService: true });
     act(() =>
@@ -141,6 +141,6 @@ describe("Workspace version mismatch", () => {
         canStartLocalService: false,
       }),
     );
-    expect(screen.queryByRole("button", { name: "Start OpenCode" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "启动 OpenCode" })).toBeNull();
   });
 });

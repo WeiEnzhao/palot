@@ -14,16 +14,16 @@ function errorCode(value: object): string | undefined {
 function objectMessage(value: object): string {
   if ("message" in value && typeof value.message === "string") return value.message;
   if ("status" in value && typeof value.status === "number") return `HTTP status ${value.status}`;
-  return "Unknown error";
+  return "未知错误";
 }
 
 export function errorDiagnostic(error: unknown, depth = 0): ErrorDiagnostic {
-  if (depth >= 5) return { name: "Error", message: "Cause chain truncated" };
+  if (depth >= 5) return { name: "Error", message: "原因链已截断" };
   if (error instanceof Error) {
     const code = errorCode(error);
     return {
       name: error.name || "Error",
-      message: error.message || "Unknown error",
+      message: error.message || "未知错误",
       ...(code ? { code } : {}),
       ...(error.cause !== undefined ? { cause: errorDiagnostic(error.cause, depth + 1) } : {}),
     };

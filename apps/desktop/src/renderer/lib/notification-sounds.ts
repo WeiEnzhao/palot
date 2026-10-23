@@ -14,17 +14,17 @@ export const NOTIFICATION_SOUND_EVENTS: readonly {
   label: string;
   description: string;
 }[] = [
-  { id: "turnCompleted", label: "Turn completed", description: "A task finished its turn." },
-  { id: "turnFailed", label: "Turn failed", description: "A turn stopped with an error." },
-  { id: "permission", label: "Permission request", description: "A task needs permission." },
-  { id: "question", label: "Question or form", description: "A task needs your answer." },
+  { id: "turnCompleted", label: "轮次完成", description: "任务完成了一轮。" },
+  { id: "turnFailed", label: "轮次失败", description: "一轮因错误而停止。" },
+  { id: "permission", label: "权限请求", description: "任务需要授权。" },
+  { id: "question", label: "问题或表单", description: "任务需要你的回答。" },
 ];
 
 export const NOTIFICATION_SOUND_OPTIONS: readonly { id: NotificationSoundID; label: string }[] = [
-  { id: "chime", label: "Chime" },
-  { id: "pop", label: "Pop" },
-  { id: "bell", label: "Bell" },
-  { id: "ripple", label: "Ripple" },
+  { id: "chime", label: "铃声" },
+  { id: "pop", label: "气泡" },
+  { id: "bell", label: "钟铃" },
+  { id: "ripple", label: "涟漪" },
 ];
 
 export const DEFAULT_NOTIFICATION_SOUND_PREFERENCES: NotificationSoundPreferences = {

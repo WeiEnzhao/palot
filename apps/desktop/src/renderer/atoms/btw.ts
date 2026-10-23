@@ -62,11 +62,11 @@ function createManager(store: Store) {
           { signal: controller.signal },
         );
         const answer = result.text.trim();
-        if (!answer) throw new Error("No answer was returned. Try again.");
+        if (!answer) throw new Error("未返回回答，请重试。");
         update({ answer });
       } catch (error) {
         update({
-          error: error instanceof Error ? error.message : "Could not answer this question.",
+          error: error instanceof Error ? error.message : "无法回答此问题。",
         });
       } finally {
         if (requests.get(key) === request) {

@@ -166,7 +166,7 @@ export class OpenCodeLoginAutostart {
   private async change(args: string[]) {
     if ((await this.query(args)).code !== 0) {
       throw new Error(
-        `Could not ${args[0]} the OpenCode login service. Check your ${this.linux ? "systemd user manager" : "launchd GUI session"} and retry. No unmanaged service was started.`,
+        `无法${args[0]} OpenCode 登录服务。请检查你的 ${this.linux ? "systemd 用户管理器" : "launchd GUI 会话"}后重试。未启动任何不受管理的服务。`,
       );
     }
   }

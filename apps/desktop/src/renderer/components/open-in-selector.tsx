@@ -98,7 +98,9 @@ export function OpenInSelector({ sessionID }: { sessionID: string }) {
         aria-label={`在 ${preferred.label} 中打开检出`}
       >
         <TargetIcon target={preferred} />
-        <span className="hidden @[430px]/thread-header:inline">{preferred.label}</span>
+        <span className="hidden @[430px]/thread-header:inline">
+          {preferred.kind === "file-manager" ? preferred.label : `在 ${preferred.label} 中打开`}
+        </span>
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger

@@ -133,14 +133,14 @@ describe("TerminalTab", () => {
       );
       await waitFor(() => expect(palot.startPty).toHaveBeenCalledWith("owner-socket"));
       act(() => events[0]!({ connectionID: "owner-socket", type: "open" }));
-      fireEvent.click(view.getByRole("button", { name: "End terminal" }));
+      fireEvent.click(view.getByRole("button", { name: "结束终端" }));
       expect(remove).toHaveBeenCalledWith(
         descriptor.resource.location,
         descriptor.resource.ptyID,
         "legacy",
         "owner",
       );
-      expect(view.getByRole("button", { name: "End terminal" }).hasAttribute("disabled")).toBe(
+      expect(view.getByRole("button", { name: "结束终端" }).hasAttribute("disabled")).toBe(
         true,
       );
       if (transition === "unmount") {
@@ -157,11 +157,11 @@ describe("TerminalTab", () => {
         );
         await waitFor(() => expect(palot.startPty).toHaveBeenCalledWith("replacement-socket"));
         act(() => events[1]!({ connectionID: "replacement-socket", type: "open" }));
-        expect(view.getByRole("button", { name: "End terminal" }).hasAttribute("disabled")).toBe(
+        expect(view.getByRole("button", { name: "结束终端" }).hasAttribute("disabled")).toBe(
           false,
         );
         // An old finally callback must not clear this replacement's pending action either.
-        fireEvent.click(view.getByRole("button", { name: "End terminal" }));
+        fireEvent.click(view.getByRole("button", { name: "结束终端" }));
       }
       await act(async () => {
         if (outcome === "success") removals[0]!.resolve();
@@ -173,8 +173,8 @@ describe("TerminalTab", () => {
           expect(view.getByText("exited")).toBeTruthy();
         } else {
           expect(controllers[0]!.exit).not.toHaveBeenCalled();
-          expect(view.getByRole("button", { name: "Reconnect terminal" })).toBeTruthy();
-          expect(view.getByRole("button", { name: "End terminal" }).hasAttribute("disabled")).toBe(
+          expect(view.getByRole("button", { name: "重新连接终端" })).toBeTruthy();
+          expect(view.getByRole("button", { name: "结束终端" }).hasAttribute("disabled")).toBe(
             false,
           );
         }
@@ -182,9 +182,9 @@ describe("TerminalTab", () => {
         for (const controller of controllers) expect(controller.exit).not.toHaveBeenCalled();
         if (transition !== "unmount") {
           expect(detach).not.toHaveBeenCalledWith("replacement-socket");
-          expect(view.queryByRole("button", { name: "Reconnect terminal" })).toBeNull();
+          expect(view.queryByRole("button", { name: "重新连接终端" })).toBeNull();
           expect(view.queryByText("exited")).toBeNull();
-          expect(view.getByRole("button", { name: "End terminal" }).hasAttribute("disabled")).toBe(
+          expect(view.getByRole("button", { name: "结束终端" }).hasAttribute("disabled")).toBe(
             true,
           );
           await act(async () => removals[1]!.resolve());
@@ -451,7 +451,7 @@ describe("TerminalTab", () => {
     expect(palot.writePty).not.toHaveBeenCalled();
     expect(palot.resizePty).not.toHaveBeenCalled();
     act(() => ptyEvents[0]?.({ connectionID: "observer", type: "open" }));
-    fireEvent.click(view.getByRole("button", { name: "Take control" }));
+    fireEvent.click(view.getByRole("button", { name: "接管控制" }));
     await waitFor(() => expect(palot.startPty).toHaveBeenCalledWith("controller"));
     expect(palot.disconnectPty).toHaveBeenCalledWith("observer");
     expect(palot.connectPty).toHaveBeenLastCalledWith(
@@ -464,7 +464,7 @@ describe("TerminalTab", () => {
     );
     const confirm = vi.fn().mockReturnValue(false);
     vi.stubGlobal("confirm", confirm);
-    fireEvent.click(view.getByRole("button", { name: "End terminal" }));
+    fireEvent.click(view.getByRole("button", { name: "结束终端" }));
     expect(confirm).toHaveBeenCalledOnce();
     expect(palot.removePty).not.toHaveBeenCalled();
     act(() =>
@@ -480,10 +480,10 @@ describe("TerminalTab", () => {
       "replacement",
     );
     act(() => store.set(runtimeAtom, { connected: false, profileID: "profile-1" } as never));
-    expect(view.getByRole("button", { name: "End terminal" }).hasAttribute("disabled")).toBe(true);
+    expect(view.getByRole("button", { name: "结束终端" }).hasAttribute("disabled")).toBe(true);
     expect(palot.disconnectPty).toHaveBeenCalledWith("controller");
     act(() => store.set(runtimeAtom, { connected: true, profileID: "other-profile" } as never));
-    expect(view.getByRole("button", { name: "End terminal" }).hasAttribute("disabled")).toBe(true);
+    expect(view.getByRole("button", { name: "结束终端" }).hasAttribute("disabled")).toBe(true);
     expect(palot.connectPty).toHaveBeenCalledTimes(3);
     view.unmount();
     expect(palot.removePty).not.toHaveBeenCalled();

@@ -298,7 +298,7 @@ describe("pendingRequestViews", () => {
       {
         id: "msg_1",
         type: "input",
-        title: "Pending input",
+        title: "等待输入",
         detail: "Run the full test suite after this change",
         resources: [],
         savePatterns: [],

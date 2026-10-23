@@ -77,7 +77,7 @@ it("keeps an explicitly approved installed beta eligible for the next update", a
   expect(
     await screen.findByRole("button", { name: "Update installed OpenCode to 2.0.3" }),
   ).toBeTruthy();
-  expect(screen.queryByText("No compatible selected installation is available.")).toBeNull();
+  expect(screen.queryByText("所选安装不兼容，当前不可用。")).toBeNull();
 });
 afterEach(() => {
   cleanup();
@@ -98,15 +98,15 @@ describe("OpenCodeInstallationSettings", () => {
     expect(screen.queryByText(/SECRET/)).toBeNull();
     expect(palot.inspectOpenCodeInstallations).toHaveBeenCalledOnce();
     await user.click(screen.getByRole("button", { name: "Refresh installations" }));
-    expect(await screen.findByRole("combobox", { name: "Runtime source" })).toBeTruthy();
+    expect(await screen.findByRole("combobox", { name: "运行时来源" })).toBeTruthy();
     expect(palot.inspectOpenCodeInstallations).toHaveBeenCalledTimes(2);
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
     expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
   });
   it("prefers installed OpenCode and inspects locally without checking, downloading or upgrading", async () => {
     render(<OpenCodeInstallationSettings />);
-    expect((await screen.findByRole("combobox", { name: "Runtime source" })).textContent).toContain(
-      "Installed OpenCode (recommended)",
+    expect((await screen.findByRole("combobox", { name: "运行时来源" })).textContent).toContain(
+      "已安装的 OpenCode（推荐）",
     );
     expect(screen.getByText(installation.version)).toBeTruthy();
     expect(screen.getByText(installation.path)).toBeTruthy();
@@ -128,11 +128,11 @@ describe("OpenCodeInstallationSettings", () => {
       const user = userEvent.setup();
       render(<OpenCodeInstallationSettings />);
       expect(
-        await screen.findByText(/download a fallback in OpenCode release settings/),
+        await screen.findByText(/在下方 OpenCode 版本设置中下载备用版本/),
       ).toBeTruthy();
       expect(
         screen
-          .getByRole("link", { name: "Official OpenCode installation instructions" })
+          .getByRole("link", { name: "OpenCode 官方安装说明" })
           .getAttribute("href"),
       ).toBe("https://opencode.ai/v2/docs/");
       expect(screen.queryByRole("button", { name: /Update installed/ })).toBeNull();
@@ -147,26 +147,26 @@ describe("OpenCodeInstallationSettings", () => {
     async (method) => {
       const user = userEvent.setup();
       render(<OpenCodeInstallationSettings />);
-      await user.click(await screen.findByRole("button", { name: "Check for updates" }));
+      await user.click(await screen.findByRole("button", { name: "检查更新" }));
       await user.click(screen.getByRole("button", { name: "Update installed OpenCode to 2.0.3" }));
       const dialog = screen.getByRole("alertdialog");
       expect(dialog.textContent).toContain(installation.path);
-      expect(dialog.textContent).toContain("from 2.0.2 to 2.0.3");
-      expect(dialog.textContent).toContain("not specific to an installation prefix");
-      expect(dialog.textContent).not.toContain("Compatibility is not guaranteed");
+      expect(dialog.textContent).toContain("从 2.0.2 升至 2.0.3");
+      expect(dialog.textContent).toContain("不针对特定安装路径");
+      expect(dialog.textContent).not.toContain("不保证兼容性");
       expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
       if (method !== "auto") {
         await user.click(screen.getByRole("combobox", { name: "Install method" }));
         await user.click(screen.getByRole("option", { name: method }));
       }
-      await user.click(screen.getByRole("button", { name: "Confirm installed update" }));
+      await user.click(screen.getByRole("button", { name: "确认更新已安装的版本" }));
       expect(palot.upgradeOpenCodeInstallation).toHaveBeenCalledExactlyOnceWith({
         id: installation.id,
         currentVersion: installation.version,
         version: "2.0.3",
         method,
       });
-      expect(await screen.findByText(/Installed OpenCode update completed/)).toBeTruthy();
+      expect(await screen.findByText(/已安装的 OpenCode 更新完成/)).toBeTruthy();
     },
   );
 
@@ -176,7 +176,7 @@ describe("OpenCodeInstallationSettings", () => {
       offer: { ...offered.offer!, version: installation.version },
     });
     render(<OpenCodeInstallationSettings />);
-    expect(await screen.findByText("Installed OpenCode is up to date")).toBeTruthy();
+    expect(await screen.findByText("已安装的 OpenCode 是最新版本")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Update installed OpenCode/ })).toBeNull();
     expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
   });
@@ -193,8 +193,8 @@ describe("OpenCodeInstallationSettings", () => {
       installations: [{ ...installation, version: "2.0.4" }],
     });
     await act(async () => window.dispatchEvent(new Event("palot:opencode-release-changed")));
-    expect(screen.getByRole("alertdialog").textContent).toContain("from 2.0.2 to 2.0.3");
-    await user.click(screen.getByRole("button", { name: "Confirm installed update" }));
+    expect(screen.getByRole("alertdialog").textContent).toContain("从 2.0.2 升至 2.0.3");
+    await user.click(screen.getByRole("button", { name: "确认更新已安装的版本" }));
     expect(palot.upgradeOpenCodeInstallation).toHaveBeenCalledExactlyOnceWith({
       id: installation.id,
       currentVersion: installation.version,
@@ -220,14 +220,14 @@ describe("OpenCodeInstallationSettings", () => {
       await screen.findByRole("button", { name: "Update installed OpenCode to 2.1.0-beta.1" }),
     );
     expect(screen.getByRole("alertdialog").textContent).toContain(
-      "Compatibility is not guaranteed",
+      "不保证兼容性",
     );
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
     await user.click(
       screen.getByRole("button", { name: "Update installed OpenCode to 2.1.0-beta.1" }),
     );
-    await user.click(screen.getByRole("button", { name: "Confirm installed update" }));
+    await user.click(screen.getByRole("button", { name: "确认更新已安装的版本" }));
     expect(palot.upgradeOpenCodeInstallation).toHaveBeenCalledExactlyOnceWith({
       id: installation.id,
       currentVersion: installation.version,
@@ -249,7 +249,7 @@ describe("OpenCodeInstallationSettings", () => {
           <button type="button">Other settings</button>
         </>,
       );
-      const source = await screen.findByRole("combobox", { name: "Runtime source" });
+      const source = await screen.findByRole("combobox", { name: "运行时来源" });
       source.focus();
       await user.keyboard("{Enter}{End}{Enter}");
       expect(palot.setOpenCodeRuntimePreference).toHaveBeenCalledExactlyOnceWith("palot");
@@ -270,7 +270,7 @@ describe("OpenCodeInstallationSettings", () => {
       );
       expect(screen.queryByText(/sensitive process output/)).toBeNull();
       expect(source.textContent).toContain(
-        outcome === "failure" ? "Installed OpenCode (recommended)" : "Palot runtime",
+        outcome === "failure" ? "已安装的 OpenCode（推荐）" : "Palot 运行时",
       );
       expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
     },
@@ -302,20 +302,20 @@ describe("OpenCodeInstallationSettings", () => {
   it("refreshes sibling release checks and channel changes with cached local getters only", async () => {
     const user = userEvent.setup();
     render(<LocalOpenCodeRuntimeSettings />);
-    await screen.findByRole("combobox", { name: "Runtime source" });
+    await screen.findByRole("combobox", { name: "运行时来源" });
     vi.mocked(palot.openCodeReleaseStatus).mockResolvedValue(offered);
     await act(async () => window.dispatchEvent(new Event("palot:opencode-release-changed")));
     expect(
       await screen.findByRole("button", { name: "Update installed OpenCode to 2.0.3" }),
     ).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Download Palot fallback 2.0.3" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "下载 Palot 回退 2.0.3" })).toBeTruthy();
     vi.mocked(palot.openCodeReleaseStatus).mockResolvedValue({ ...release, channel: "beta" });
     await act(async () => window.dispatchEvent(new Event("palot:opencode-release-changed")));
     expect(screen.queryByRole("button", { name: "Update installed OpenCode to 2.0.3" })).toBeNull();
-    expect(screen.getByRole("combobox", { name: "Preferred channel" }).textContent).toContain(
+    expect(screen.getByRole("combobox", { name: "首选通道" }).textContent).toContain(
       "Beta",
     );
-    expect(screen.getByText(/shared preferred channel: Beta/)).toBeTruthy();
+    expect(screen.getByText(/共享的首选频道.*Beta/)).toBeTruthy();
     expect(palot.inspectOpenCodeInstallations).toHaveBeenCalledOnce();
     expect(palot.openCodeInstallationStatus).toHaveBeenCalledTimes(2);
     expect(palot.checkOpenCodeRelease).not.toHaveBeenCalled();
@@ -333,7 +333,7 @@ describe("OpenCodeInstallationSettings", () => {
     await user.click(
       await screen.findByRole("button", { name: "Update installed OpenCode to 2.0.3" }),
     );
-    await user.click(screen.getByRole("button", { name: "Confirm installed update" }));
+    await user.click(screen.getByRole("button", { name: "确认更新已安装的版本" }));
     expect(await screen.findByRole("alert")).toBeTruthy();
     expect(screen.queryByText(/SECRET/)).toBeNull();
     await user.click(screen.getByRole("button", { name: "Update installed OpenCode to 2.0.3" }));

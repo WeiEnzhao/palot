@@ -52,7 +52,7 @@ export async function createShowcaseBackdrop(
 ): Promise<BrowserWindow> {
   const backdrop = new BrowserWindow({
     ...configuration.canvas,
-    title: "Palot showcase backdrop",
+    title: "Palot 展示窗口背景",
     frame: false,
     show: false,
     focusable: false,

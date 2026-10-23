@@ -109,7 +109,7 @@ export function useInboxController(): void {
         }
       })
       .catch((error) => {
-        if (active) setError(error instanceof Error ? error.message : "Could not load inbox state");
+        if (active) setError(error instanceof Error ? error.message : "无法加载收件箱状态");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -148,7 +148,7 @@ export function useInboxController(): void {
   }, [dispatch, inbox.inbox, inbox.pinned, snapshot]);
 }
 
-/** A quiet toast per settled task, e.g. "Settled Fix login after #12 merged". */
+/** A quiet toast per settled task, e.g. "已处理 Fix login，#12 已合入". */
 async function announceSettled(
   event: Extract<SourceControlChangedEvent, { type: "pull-requests" }>,
   findSession: (sessionID: string) => Pick<PalotSession, "title"> | undefined,
@@ -167,7 +167,7 @@ async function announceSettled(
       const outcome = link.pullRequest.state === "merged" ? "merged" : "closed";
       toast.add({
         type: "info",
-        title: `Settled ${title} after #${link.pullRequest.number} ${outcome}`,
+        title: `已处理 ${title}，#${link.pullRequest.number} ${outcome}`,
       });
     } catch {
       // The inbox already moved; a missing toast is not worth an error.

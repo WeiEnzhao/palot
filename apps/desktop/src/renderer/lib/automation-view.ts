@@ -83,10 +83,10 @@ export function latestAutomationRun(runs: AutomationRun[]): AutomationRun | null
 
 export function automationRunActionLabel(run: AutomationRun): string {
   if (run.state === "needs-attention") {
-    return run.attention?.type === "configuration" ? "View setup issue" : "Resolve latest run";
+    return run.attention?.type === "configuration" ? "查看配置问题" : "处理最近一次运行";
   }
-  if (runIsActive(run)) return "Open current run";
-  return automationRunOpenTarget(run).type === "details" ? "View latest run" : "Open latest run";
+  if (runIsActive(run)) return "打开当前运行";
+  return automationRunOpenTarget(run).type === "details" ? "查看最近一次运行" : "打开最近一次运行";
 }
 
 export function runIsActive(run: AutomationRun): boolean {

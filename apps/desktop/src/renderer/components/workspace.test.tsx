@@ -109,14 +109,14 @@ describe("Workspace pane visibility", () => {
     const store = createStore();
     renderWithRouter(<Workspace content={null} />, store);
 
-    expect(screen.getByLabelText("Loading Palot")).toBeTruthy();
+    expect(screen.getByLabelText("正在加载 Palot")).toBeTruthy();
     expect(screen.getByText("Palot", { exact: true })).toBeTruthy();
     expect(screen.getByText("Preparing your workspace")).toBeTruthy();
 
     act(() => store.set(phaseAtom, "ready"));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Hide navigation" }).querySelector("svg")).not.toBe(
+      expect(screen.getByRole("button", { name: "隐藏导航" }).querySelector("svg")).not.toBe(
         null,
       );
       expect(screen.getAllByRole("button", { name: "显示项目" })[0]!.querySelector("svg")).not.toBe(
@@ -144,18 +144,18 @@ describe("Workspace pane visibility", () => {
     fireEvent.pointerEnter(projects, { pointerType: "mouse" });
     fireEvent.pointerLeave(projects, { pointerType: "mouse" });
     await new Promise((resolve) => setTimeout(resolve, 300));
-    expect(screen.queryByRole("complementary", { name: "Projects preview" })).toBeNull();
+    expect(screen.queryByRole("complementary", { name: "项目预览" })).toBeNull();
 
     // Resting on a view peeks that view; Escape dismisses it.
     fireEvent.pointerEnter(inbox, { pointerType: "mouse" });
-    expect(await screen.findByRole("complementary", { name: "Inbox preview" })).toBeTruthy();
+    expect(await screen.findByRole("complementary", { name: "收件箱预览" })).toBeTruthy();
     expect(inbox.getAttribute("aria-pressed")).toBe("false");
     fireEvent.keyDown(document, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
 
     // Hovering the other view peeks it; leaving both rail and overlay closes it.
     fireEvent.pointerEnter(projects, { pointerType: "mouse" });
-    expect(await screen.findByRole("complementary", { name: "Projects preview" })).toBeTruthy();
+    expect(await screen.findByRole("complementary", { name: "项目预览" })).toBeTruthy();
     expect(store.get(sidebarModeAtom)).toBe("inbox");
     fireEvent.pointerMove(document, { clientX: 900, clientY: 400 });
     await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
@@ -174,7 +174,7 @@ describe("Workspace pane visibility", () => {
     store.set(navigationOpenAtom, true);
     renderWithRouter(<Workspace content={null} />, store, "/pull-requests");
 
-    const toggle = await screen.findByRole("button", { name: "Show navigation" });
+    const toggle = await screen.findByRole("button", { name: "显示导航" });
     await waitFor(() =>
       expect(screen.getByTestId("navigation-panel").getAttribute("data-collapsed")).toBe("true"),
     );
@@ -202,7 +202,7 @@ describe("Workspace pane visibility", () => {
       versionMismatch: null,
     });
     renderWithRouter(<Workspace content={null} />, store);
-    expect(screen.getByRole("status", { name: "Loading Palot" }).getAttribute("aria-busy")).toBe(
+    expect(screen.getByRole("status", { name: "正在加载 Palot" }).getAttribute("aria-busy")).toBe(
       "true",
     );
     expect(screen.getByText("Starting OpenCode")).toBeTruthy();

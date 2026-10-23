@@ -1355,7 +1355,7 @@ function ComposerView({
         }
       } catch (error) {
         if (activeDraftScopeRef.current === draftScope) {
-          setAttachmentErrors([error instanceof Error ? error.message : "Redo failed"]);
+          setAttachmentErrors([error instanceof Error ? error.message : "重做失败"]);
         }
       } finally {
         setSending(false);

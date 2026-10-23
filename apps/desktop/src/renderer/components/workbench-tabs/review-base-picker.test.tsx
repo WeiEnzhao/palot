@@ -32,8 +32,8 @@ afterEach(() => {
 });
 async function open() {
   render(<ReviewBasePicker location={{ directory: "/repo" }} />);
-  fireEvent.click(screen.getByRole("button", { name: /Review base:/ }));
-  await screen.findByRole("textbox", { name: "Search branches or enter a ref" });
+  fireEvent.click(screen.getByRole("button", { name: /基准：/ }));
+  await screen.findByRole("textbox", { name: "搜索分支或输入引用" });
 }
 it("explains null inference and accepts an explicit ref by keyboard", async () => {
   await open();
@@ -47,7 +47,7 @@ it("selects branches and resets to inference", async () => {
   await open();
   fireEvent.click(screen.getByRole("button", { name: "release" }));
   expect(state.setManual).toHaveBeenCalledWith("release");
-  fireEvent.click(screen.getByRole("button", { name: /Review base:/ }));
+  fireEvent.click(screen.getByRole("button", { name: /基准：/ }));
   fireEvent.click(await screen.findByRole("button", { name: "Use inferred base" }));
   expect(state.setManual).toHaveBeenLastCalledWith(null);
 });

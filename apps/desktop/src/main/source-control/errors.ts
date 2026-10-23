@@ -44,7 +44,7 @@ export function toSourceControlFailure(error: unknown): SourceControlFailure {
     };
   return {
     code: "internal",
-    message: error instanceof Error ? error.message : "Source control failed unexpectedly.",
+    message: error instanceof Error ? error.message : "源代码管理意外失败。",
   };
 }
 

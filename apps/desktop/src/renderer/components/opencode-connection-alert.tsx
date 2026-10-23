@@ -40,10 +40,10 @@ export function SharedOpenCodeAction({
   const [open, setOpen] = useState(false);
   const label =
     action === "start"
-      ? "Start OpenCode"
+      ? "启动 OpenCode"
       : action === "restart"
-        ? "Restart service"
-        : "Use selected runtime";
+        ? "重启服务"
+        : "使用选定的运行时";
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
@@ -55,22 +55,21 @@ export function SharedOpenCodeAction({
         <AlertDialogHeader>
           <AlertDialogTitle>
             {action === "start"
-              ? "Start or recover shared OpenCode?"
+              ? "启动或恢复共享 OpenCode？"
               : action === "restart"
-                ? "Restart shared OpenCode?"
-                : "Replace shared OpenCode?"}
+                ? "重启共享 OpenCode？"
+                : "替换共享 OpenCode？"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This uses the runtime selected in local OpenCode settings. Your installed OpenCode is
-            preferred by default; an explicitly downloaded Palot runtime is the fallback. The
-            selected runtime may be untested.{" "}
+            使用本地 OpenCode 设置中选定的运行时。默认优先使用已安装的 OpenCode；
+            明确下载的 Palot 运行时作为回退。选定的运行时可能未经测试。{" "}
             {action === "start"
-              ? "This may restart an unresponsive shared service and interrupt other OpenCode clients and their running tasks."
-              : "This will restart the shared service and may interrupt other OpenCode clients and their running tasks."}
+              ? "这可能会重启无响应的共享服务，并中断其他 OpenCode 客户端及其运行中的任务。"
+              : "这将重启共享服务，可能中断其他 OpenCode 客户端及其运行中的任务。"}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>取消</AlertDialogCancel>
           <AlertDialogAction
             disabled={disabled}
             onClick={() => {
@@ -79,10 +78,10 @@ export function SharedOpenCodeAction({
             }}
           >
             {action === "start"
-              ? "Start or recover"
+              ? "启动或恢复"
               : action === "restart"
-                ? "Restart"
-                : "Replace service"}
+                ? "重启"
+                : "替换服务"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -129,10 +128,10 @@ function DisconnectedOpenCodeAlert({ runtime }: { runtime: OpenCodeRuntimeStatus
     <Alert className="mb-2 has-data-[slot=alert-action]:pr-2" role="status">
       {reconnecting ? <Spinner aria-hidden="true" /> : <WifiOff aria-hidden="true" />}
       <AlertTitle>
-        {reconnecting ? "Reconnecting to OpenCode" : "OpenCode is unavailable"}
+        {reconnecting ? "正在重新连接 OpenCode" : "OpenCode 不可用"}
       </AlertTitle>
       <AlertDescription>
-        Sending is temporarily unavailable. Your conversation is safe.
+        发送暂时不可用。您的对话是安全的。
       </AlertDescription>
       <AlertAction className="static col-start-2 row-auto flex flex-wrap items-center gap-1 justify-self-start">
         {runtime.canStartLocalService ? (
@@ -146,25 +145,25 @@ function DisconnectedOpenCodeAlert({ runtime }: { runtime: OpenCodeRuntimeStatus
         ) : null}
         <Dialog>
           <DialogTrigger render={<Button type="button" variant="ghost" size="xs" />}>
-            Details
+            详情
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>OpenCode connection details</DialogTitle>
+              <DialogTitle>OpenCode 连接详情</DialogTitle>
               <DialogDescription>
-                Technical details for diagnosing the Palot to OpenCode connection.
+                用于诊断 Palot 到 OpenCode 连接的技术详情。
               </DialogDescription>
             </DialogHeader>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
-              <dt className="text-muted-foreground">Phase</dt>
+              <dt className="text-muted-foreground">阶段</dt>
               <dd>{runtime.phase}</dd>
-              <dt className="text-muted-foreground">Version</dt>
-              <dd>{runtime.version ?? "Unknown"}</dd>
-              <dt className="text-muted-foreground">Process</dt>
-              <dd>{runtime.pid ?? "Not running"}</dd>
-              <dt className="text-muted-foreground">Error</dt>
+              <dt className="text-muted-foreground">版本</dt>
+              <dd>{runtime.version ?? "未知"}</dd>
+              <dt className="text-muted-foreground">进程</dt>
+              <dd>{runtime.pid ?? "未运行"}</dd>
+              <dt className="text-muted-foreground">错误</dt>
               <dd className="min-w-0 break-words font-mono">
-                {runtime.error ?? "No error reported"}
+                {runtime.error ?? "无错误报告"}
               </dd>
             </dl>
           </DialogContent>
@@ -181,7 +180,7 @@ function DisconnectedOpenCodeAlert({ runtime }: { runtime: OpenCodeRuntimeStatus
           ) : (
             <RotateCw data-icon="inline-start" aria-hidden="true" />
           )}
-          Retry
+          重试
         </Button>
       </AlertAction>
     </Alert>

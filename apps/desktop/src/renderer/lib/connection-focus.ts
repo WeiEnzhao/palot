@@ -72,7 +72,7 @@ export function focusConnection(
         ...cached.runtime,
         connected: false,
         phase: "error",
-        error: error instanceof Error ? error.message : "Connection unavailable",
+        error: error instanceof Error ? error.message : "连接不可用",
       };
     }
     signal?.throwIfAborted();

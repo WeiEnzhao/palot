@@ -84,7 +84,7 @@ export function CopyField({
           {concealed ? (
             <>
               <span aria-hidden="true">{MASK.repeat(Math.min(Math.max(value.length, 8), 24))}</span>
-              <span className="sr-only">Hidden</span>
+              <span className="sr-only">已隐藏</span>
             </>
           ) : (
             value
@@ -97,7 +97,7 @@ export function CopyField({
             size="icon-sm"
             disabled={disabled}
             aria-pressed={revealed}
-            aria-label={`Show ${name}`}
+            aria-label={`显示 ${name}`}
             onClick={() => setRevealed((current) => !current)}
             className="text-muted-foreground"
           >
@@ -109,7 +109,7 @@ export function CopyField({
           variant="ghost"
           size="icon-sm"
           disabled={disabled}
-          aria-label={`Copy ${name}`}
+          aria-label={`复制 ${name}`}
           onClick={() => {
             void copy(value).then((ok) => {
               if (ok) onCopy?.();

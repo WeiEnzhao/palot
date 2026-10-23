@@ -206,7 +206,7 @@ describe("independent settings server", () => {
     expect(projectReads).toEqual(["connection-a", "connection-b"]);
     expect(store.get(runtimeAtom)?.connectionID).toBe("connection-a");
     act(() => store.set(includedProfileIDsAtom, ["a"]));
-    expect(screen.getByText(/Disabled · Settings are read-only/)).toBeTruthy();
+    expect(screen.getByText(/已禁用 · Settings are read-only/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "刷新设置" }).hasAttribute("disabled")).toBe(
       true,
     );
@@ -230,7 +230,7 @@ describe("independent settings server", () => {
     const user = userEvent.setup();
     await user.clear(name);
     await user.type(name, "Edited on A");
-    await user.click(screen.getByRole("button", { name: "Save project" }));
+    await user.click(screen.getByRole("button", { name: "保存项目" }));
     await waitFor(() =>
       expect(projectUpdates).toHaveBeenCalledWith("connection-a", {
         projectID: "shared-project",
@@ -252,7 +252,7 @@ describe("independent settings server", () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole("combobox", { name: "配置服务器" }));
     await user.click(screen.getByRole("option", { name: "Server B" }));
-    expect(screen.getByText(/Offline · Settings are read-only/)).toBeTruthy();
+    expect(screen.getByText(/离线 · Settings are read-only/)).toBeTruthy();
     expect(screen.queryByText("Secondary")).toBeNull();
     expect(load.mock.calls.every(([input]) => input.connectionID === "connection-a")).toBe(true);
     expect(projectReads).toEqual(["connection-a"]);

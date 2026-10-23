@@ -114,8 +114,8 @@ describe("Project settings", () => {
     const input = await screen.findByLabelText("主检出目录");
     await user.clear(input);
     await user.type(input, "/new");
-    await user.click(screen.getByRole("button", { name: "Save project" }));
-    expect((screen.getByRole("button", { name: "Saving…" }) as HTMLButtonElement).disabled).toBe(
+    await user.click(screen.getByRole("button", { name: "保存项目" }));
+    expect((screen.getByRole("button", { name: "正在保存…" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
     switchProject();
@@ -146,10 +146,10 @@ describe("Project settings", () => {
     const input = await screen.findByLabelText("项目名称");
     await user.clear(input);
     await user.type(input, "Edited");
-    await user.click(screen.getByRole("button", { name: "Save project" }));
+    await user.click(screen.getByRole("button", { name: "保存项目" }));
     expect(await screen.findByText("Permission denied")).toBeTruthy();
     expect((input as HTMLInputElement).value).toBe("Edited");
-    await user.click(screen.getByRole("button", { name: "Save project" }));
+    await user.click(screen.getByRole("button", { name: "保存项目" }));
     expect(await screen.findByText("Project settings saved.")).toBeTruthy();
     expect(update).toHaveBeenLastCalledWith(
       { projectID: "first", name: "Edited" },
@@ -170,7 +170,7 @@ describe("Project settings", () => {
       expect((screen.getByLabelText("项目名称") as HTMLInputElement).value).toBe("Second"),
     );
     expect(
-      (screen.getByRole("button", { name: "Save project" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "保存项目" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(update).not.toHaveBeenCalled();
   });
@@ -178,13 +178,13 @@ describe("Project settings", () => {
     const user = userEvent.setup();
     const api = installScripts();
     setup();
-    await user.click(await screen.findByRole("button", { name: "Add script" }));
-    await user.type(screen.getByLabelText("Script name"), "Clean");
-    await user.type(screen.getByLabelText("Command"), "cargo clean && rm -rf dist");
+    await user.click(await screen.findByRole("button", { name: "添加脚本" }));
+    await user.type(screen.getByLabelText("脚本名称"), "Clean");
+    await user.type(screen.getByLabelText("命令"), "cargo clean && rm -rf dist");
     expect(
-      screen.getByRole("switch", { name: "When a task settles" }).getAttribute("aria-checked"),
+      screen.getByRole("switch", { name: "当任务结束时" }).getAttribute("aria-checked"),
     ).toBe("true");
-    await user.click(screen.getByRole("button", { name: "Save script" }));
+    await user.click(screen.getByRole("button", { name: "保存脚本" }));
     expect(api.save).toHaveBeenCalledWith({
       profileID: "local-default",
       projectID: "first",
@@ -195,21 +195,21 @@ describe("Project settings", () => {
         timeoutSeconds: 600,
       },
     });
-    const command = await screen.findByRole("group", { name: "Command" });
+    const command = await screen.findByRole("group", { name: "命令" });
     expect(command.textContent).toContain("cargo clean && rm -rf dist");
-    expect(screen.getByRole("button", { name: "Copy Clean command" })).toBeTruthy();
-    expect(screen.getByText("Runs when a task settles · stops after 10 min")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "复制 Clean 命令" })).toBeTruthy();
+    expect(screen.getByText("当任务结束时运行 · 10 分钟后停止")).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: "Edit Clean" }));
-    const timeout = screen.getByLabelText("Timeout in seconds");
+    await user.click(screen.getByRole("button", { name: "编辑 Clean" }));
+    const timeout = screen.getByLabelText("超时时间（秒）");
     await user.clear(timeout);
     await user.type(timeout, "2");
     expect(
-      (screen.getByRole("button", { name: "Save script" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "保存脚本" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     await user.type(timeout, "0");
-    await user.click(screen.getByRole("switch", { name: "When a task settles" }));
-    await user.click(screen.getByRole("button", { name: "Save script" }));
+    await user.click(screen.getByRole("switch", { name: "当任务结束时" }));
+    await user.click(screen.getByRole("button", { name: "保存脚本" }));
     expect(api.save).toHaveBeenLastCalledWith(
       expect.objectContaining({
         script: expect.objectContaining({ id: "script-1", runOnSettle: false, timeoutSeconds: 20 }),
@@ -218,9 +218,9 @@ describe("Project settings", () => {
     expect(await screen.findByText("Off · no trigger selected")).toBeTruthy();
 
     // Removing confirms in place.
-    await user.click(screen.getByRole("button", { name: "Remove Clean" }));
+    await user.click(screen.getByRole("button", { name: "删除 Clean" }));
     expect(api.remove).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Confirm removing Clean" }));
+    await user.click(screen.getByRole("button", { name: "确认删除 Clean" }));
     await waitFor(() =>
       expect(api.remove).toHaveBeenCalledWith({
         profileID: "local-default",
@@ -235,6 +235,6 @@ describe("Project settings", () => {
     installScripts({ supported: false, reason: "Scripts run on this computer." });
     setup();
     expect(await screen.findByText("Scripts run on this computer.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Add script" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "添加脚本" })).toBeNull();
   });
 });

@@ -1008,8 +1008,8 @@ function PaletteFooter({
       data-slot="command-palette-footer"
       className="flex h-9 shrink-0 items-center gap-4 border-t border-(--command-border) px-4 text-micro text-muted-foreground"
     >
-      <FooterHint keys={[["ArrowUp"], ["ArrowDown"]]}>Navigate</FooterHint>
-      {tabs ? <FooterHint keys={[["ArrowLeft"], ["ArrowRight"]]}>Switch tab</FooterHint> : null}
+      <FooterHint keys={[["ArrowUp"], ["ArrowDown"]]}>导航</FooterHint>
+      {tabs ? <FooterHint keys={[["ArrowLeft"], ["ArrowRight"]]}>切换标签页</FooterHint> : null}
       <FooterHint keys={[["Escape"]]}>{escapeLabel}</FooterHint>
       {/* Trailing, so its changing width never moves the other hints. */}
       {action ? (

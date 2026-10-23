@@ -923,7 +923,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   palot: {
     id: "palot",
     name: "Palot",
-    description: "Quiet neutral chrome with clear blue focus and balanced status colors.",
+    description: "沉静的中性界面，清晰的蓝色焦点，均衡的状态色。",
     light: {
       codeTheme: "pierre-light-soft",
       nativeBackground: "#f9fafb",
@@ -994,14 +994,14 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   macos: {
     id: "macos",
     name: "macOS",
-    description: "Native macOS semantic colors, accent color, and system contrast behavior.",
+    description: "原生 macOS 语义色、强调色与系统对比度行为。",
     light: macOSVariant("light"),
     dark: macOSVariant("dark"),
   },
   opencode: {
     id: "opencode",
     name: "OpenCode",
-    description: "OpenCode's warm primary colors, neutral surfaces, and syntax palette.",
+    description: "OpenCode 暖色主色调、中性底色与语法配色。",
     light: {
       codeTheme: "opencode-light",
       nativeBackground: "#ffffff",
@@ -1072,7 +1072,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   tanstack: {
     id: "tanstack",
     name: "TanStack",
-    description: "Inspired by TanStack's warm neutrals, cyan actions, and category colors.",
+    description: "灵感来自 TanStack 的暖色中性调、青色操作色与分类色。",
     light: {
       codeTheme: "tanstack-light",
       nativeBackground: "#ffffff",
@@ -1177,7 +1177,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   absolutely: {
     id: "absolutely",
     name: "Absolutely",
-    description: "Warm ivory and charcoal surfaces with a soft terracotta accent.",
+    description: "暖象牙与炭灰底色，搭配柔和赤陶强调色。",
     light: paletteVariant("light", {
       surface: "#f9f9f7",
       ink: "#2d2d2b",
@@ -1204,7 +1204,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   ayu: {
     id: "ayu",
     name: "Ayu",
-    description: "Deep blue-gray surfaces with warm amber accents and muted ink.",
+    description: "深蓝灰底色，配暖琥珀强调色与柔和墨色。",
     dark: paletteVariant("dark", {
       surface: "#10141c",
       ink: "#bfbdb6",
@@ -1220,7 +1220,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   catppuccin: {
     id: "catppuccin",
     name: "Catppuccin",
-    description: "Pastel lavender accents across creamy Latte and dark Mocha surfaces.",
+    description: "奶油 Latte 与深 Mocha 底色上，点缀淡紫薰衣草强调色。",
     light: paletteVariant("light", {
       surface: "#eff1f5",
       ink: "#4c4f69",
@@ -1247,7 +1247,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   codex: {
     id: "codex",
     name: "Codex",
-    description: "Neutral surfaces, blue focus, and softly translucent sidebar treatments.",
+    description: "中性底色、蓝色焦点与柔和半透明侧边栏效果。",
     light: paletteVariant("light", {
       surface: "#ffffff",
       ink: "#0d0d0d",
@@ -1338,7 +1338,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   dracula: {
     id: "dracula",
     name: "Dracula",
-    description: "Dark violet-gray surfaces with vivid pink, green, and purple highlights.",
+    description: "深紫灰底色，搭配鲜明的粉、绿、紫高亮。",
     dark: paletteVariant("dark", {
       surface: "#282a36",
       ink: "#f8f8f2",
@@ -1354,7 +1354,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   everforest: {
     id: "everforest",
     name: "Everforest",
-    description: "Cream and forest-gray surfaces with soft green accents.",
+    description: "奶油与森林灰底色，搭配柔和绿色强调。",
     light: paletteVariant("light", {
       surface: "#fdf6e3",
       ink: "#5c6a72",
@@ -1381,7 +1381,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   gruvbox: {
     id: "gruvbox",
     name: "Gruvbox",
-    description: "Warm cream and charcoal surfaces with muted teal accents.",
+    description: "暖奶油与炭灰底色，搭配柔和蓝绿强调色。",
     light: paletteVariant("light", {
       surface: "#fbf1c7",
       ink: "#3c3836",
@@ -1435,7 +1435,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   lobster: {
     id: "lobster",
     name: "Lobster",
-    description: "Deep navy surfaces with bright coral accents and green status colors.",
+    description: "深海军蓝底色，搭配明亮珊瑚强调色与绿色状态色。",
     dark: paletteVariant("dark", {
       surface: "#111827",
       ink: "#e4e4e7",
@@ -1451,7 +1451,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   material: {
     id: "material",
     name: "Material",
-    description: "Charcoal surfaces with pale teal accents and lavender highlights.",
+    description: "炭灰底色，搭配淡蓝绿强调色与薰衣草紫高亮。",
     dark: paletteVariant("dark", {
       surface: "#212121",
       ink: "#eeffff",
@@ -1467,7 +1467,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   matrix: {
     id: "matrix",
     name: "Matrix",
-    description: "Near-black green surfaces with luminous green accents and ink.",
+    description: "近黑绿色底色，搭配明亮绿色强调与墨色。",
     dark: paletteVariant("dark", {
       surface: "#040805",
       ink: "#b8ffca",
@@ -1483,7 +1483,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   monokai: {
     id: "monokai",
     name: "Monokai",
-    description: "Warm charcoal surfaces with olive-gray accents and colorful syntax.",
+    description: "暖炭灰底色，搭配橄榄灰强调色与多彩语法色。",
     dark: paletteVariant("dark", {
       surface: "#272822",
       ink: "#f8f8f2",
@@ -1499,7 +1499,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   "night-owl": {
     id: "night-owl",
     name: "Night Owl",
-    description: "Midnight blue surfaces with subdued blue-gray accents and pale ink.",
+    description: "午夜蓝底色，搭配沉稳蓝灰强调色与淡墨色。",
     dark: paletteVariant("dark", {
       surface: "#011627",
       ink: "#d6deeb",
@@ -1515,7 +1515,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   nord: {
     id: "nord",
     name: "Nord",
-    description: "Cool slate surfaces with frost-blue accents and soft pastel status colors.",
+    description: "冷调岩灰底色，搭配霜蓝强调色与柔和粉彩状态色。",
     dark: paletteVariant("dark", {
       surface: "#2e3440",
       ink: "#d8dee9",
@@ -1531,7 +1531,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   notion: {
     id: "notion",
     name: "Notion",
-    description: "Clean white and charcoal surfaces with warm neutral ink and blue accents.",
+    description: "洁净白与炭灰底色，搭配暖中性墨色与蓝色强调。",
     light: paletteVariant("light", {
       surface: "#ffffff",
       ink: "#37352f",
@@ -1558,7 +1558,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   one: {
     id: "one",
     name: "One",
-    description: "Balanced near-white and slate surfaces with blue accents.",
+    description: "均衡的近白与岩灰底色，搭配蓝色强调。",
     light: paletteVariant("light", {
       surface: "#fafafa",
       ink: "#383a42",
@@ -1585,7 +1585,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   oscurange: {
     id: "oscurange",
     name: "Oscurange",
-    description: "Near-black surfaces with soft peach accents and blue highlights.",
+    description: "近黑底色，搭配柔和桃色强调与蓝色高亮。",
     dark: paletteVariant("dark", {
       surface: "#0b0b0f",
       ink: "#e6e6e6",
@@ -1601,7 +1601,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   proof: {
     id: "proof",
     name: "Proof",
-    description: "Warm paper surfaces with dark olive ink and restrained green accents.",
+    description: "暖纸色底色，搭配深橄榄墨色与克制的绿色强调。",
     light: paletteVariant("light", {
       surface: "#f5f3ed",
       ink: "#2f312d",
@@ -1644,7 +1644,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   "rose-pine": {
     id: "rose-pine",
     name: "Rose Pine",
-    description: "Warm Dawn and muted Moon surfaces with rose accents and lavender ink.",
+    description: "暖 Dawn 与柔 Moon 底色，搭配玫瑰强调与薰衣草墨色。",
     light: paletteVariant("light", {
       surface: "#faf4ed",
       ink: "#575279",
@@ -1671,7 +1671,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   sentry: {
     id: "sentry",
     name: "Sentry",
-    description: "Deep plum surfaces with violet accents and mint status colors.",
+    description: "深李子色底色，搭配紫罗兰强调与薄荷状态色。",
     dark: paletteVariant("dark", {
       surface: "#2d2935",
       ink: "#e6dff9",
@@ -1687,7 +1687,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   solarized: {
     id: "solarized",
     name: "Solarized",
-    description: "Cream and deep teal surfaces with muted ink and warm accents.",
+    description: "奶油与深青色底色，搭配柔和墨色与暖调强调。",
     light: paletteVariant("light", {
       surface: "#fdf6e3",
       ink: "#657b83",
@@ -1730,7 +1730,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   "tokyo-night": {
     id: "tokyo-night",
     name: "Tokyo Night",
-    description: "Dark indigo surfaces with muted blue accents and lavender ink.",
+    description: "深靛蓝底色，搭配柔和蓝色强调与薰衣草墨色。",
     dark: paletteVariant("dark", {
       surface: "#1a1b26",
       ink: "#a9b1d6",
@@ -1746,7 +1746,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   "vscode-plus": {
     id: "vscode-plus",
     name: "VS Code Plus",
-    description: "Classic white and charcoal editor surfaces with blue accents.",
+    description: "经典白与炭灰编辑器底色，搭配蓝色强调。",
     light: paletteVariant("light", {
       surface: "#ffffff",
       ink: "#000000",
@@ -1773,7 +1773,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   xcode: {
     id: "xcode",
     name: "Xcode",
-    description: "White and dark graphite surfaces with vivid blue accents.",
+    description: "白与深石墨底色，搭配鲜明蓝色强调。",
     light: paletteVariant("light", {
       surface: "#ffffff",
       ink: "#000000",
@@ -1800,7 +1800,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   vercel: {
     id: "vercel",
     name: "Vercel",
-    description: "Minimal white and black surfaces with bright blue accents.",
+    description: "极简白与黑底色，搭配明亮蓝色强调。",
     light: paletteVariant("light", {
       surface: "#ffffff",
       ink: "#171717",
@@ -1827,7 +1827,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   pierre: {
     id: "pierre",
     name: "Pierre",
-    description: "Soft violet neutrals tuned for file trees and dense code review.",
+    description: "柔和紫罗兰中性调，专为文件树与密集代码审查调校。",
     light: {
       codeTheme: "pierre-light-soft",
       nativeBackground: "#faf9fc",
@@ -1894,7 +1894,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   github: {
     id: "github",
     name: "GitHub",
-    description: "Clean white and dark gray surfaces with familiar blue accents.",
+    description: "洁净白与深灰底色，搭配熟悉的蓝色强调。",
     light: paletteVariant("light", {
       surface: "#ffffff",
       ink: "#1f2328",
@@ -1921,7 +1921,7 @@ export const APPEARANCE_THEMES: Readonly<Record<AppearanceThemeID, AppearanceThe
   grok: {
     id: "grok",
     name: "Grok",
-    description: "Grok Bot's high-contrast Sand interface with opaque layered surfaces.",
+    description: "Grok Bot 的高对比度 Sand 界面，不透明分层底色。",
     light: grokVariant("light"),
     dark: grokVariant("dark"),
   },

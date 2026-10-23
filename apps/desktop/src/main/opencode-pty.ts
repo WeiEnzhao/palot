@@ -38,7 +38,7 @@ export async function createSessionPty(
       const response = await client.pty.create({
         location: location(input.location),
         cwd: input.location.directory,
-        title: "Terminal",
+        title: "终端",
       });
       return {
         id: response.data.id,
@@ -51,7 +51,7 @@ export async function createSessionPty(
       const pty = await client.experimental.persistentPty.create({
         sessionID: input.sessionID,
         cwd: input.location.directory,
-        title: "Terminal",
+        title: "终端",
         // Omitting command lets OpenCode select the remote host's shell.
         ...(remote
           ? { args: [], env: {} }
@@ -245,7 +245,7 @@ export class PtyTransport {
       this.send(sender, {
         connectionID,
         type: "error",
-        message: "Terminal connection failed",
+        message: "终端连接失败",
       });
     });
     socket.addEventListener("close", (event) => {

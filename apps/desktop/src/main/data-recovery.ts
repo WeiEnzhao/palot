@@ -138,7 +138,7 @@ export async function exportSupportBundle(
   locations = palotDataLocations(),
 ): Promise<string | null> {
   const result = await dialog.showSaveDialog({
-    title: "Export Palot support bundle",
+    title: "导出 Palot 支持包",
     defaultPath: `palot-support-${new Date().toISOString().slice(0, 10)}.json`,
     filters: [{ name: "JSON", extensions: ["json"] }],
   });

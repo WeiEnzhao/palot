@@ -272,15 +272,15 @@ function ZoomableImage({ src, alt, onError }: { src: string; alt: string; onErro
       />
       <div
         role="toolbar"
-        aria-label="Image zoom"
+        aria-label="图像缩放"
         className="palot-promoted-blur absolute top-2 right-2 flex items-center gap-0.5 rounded-lg border bg-popover/95 p-0.5 shadow-sm backdrop-blur-sm"
       >
         <Button
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Zoom out"
-          title="Zoom out"
+          aria-label="缩小"
+          title="缩小"
           disabled={!zoom.zoomed}
           onClick={() => zoom.zoomBy(1 / IMAGE_ZOOM_STEP)}
         >
@@ -296,8 +296,8 @@ function ZoomableImage({ src, alt, onError }: { src: string; alt: string; onErro
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Zoom in"
-          title="Zoom in (Ctrl+scroll or pinch)"
+          aria-label="放大"
+          title="放大（Ctrl + 滚动或捏合）"
           disabled={!zoom.canZoomIn}
           onClick={() => zoom.zoomBy(IMAGE_ZOOM_STEP)}
         >
@@ -307,8 +307,8 @@ function ZoomableImage({ src, alt, onError }: { src: string; alt: string; onErro
           type="button"
           variant="ghost"
           size="xs"
-          aria-label="Fit image to pane"
-          title="Fit image to pane"
+          aria-label="图像适应窗格"
+          title="图像适应窗格"
           disabled={!zoom.zoomed}
           onClick={zoom.fit}
         >

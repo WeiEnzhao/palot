@@ -68,8 +68,8 @@ export function OpenCodeInstallationSettings({
       if (current === generation.current)
         setError(
           operation === "upgrade"
-            ? "The installed OpenCode update could not be completed. Refresh installations to verify the version, or update manually using the official instructions."
-            : "Could not read or save OpenCode settings. Try again when ready.",
+            ? "已安装的 OpenCode 更新未能完成。请刷新安装列表以确认版本，或使用官方说明手动更新。"
+            : "无法读取或保存 OpenCode 设置。准备好后请重试。",
         );
     } finally {
       if (current === generation.current) {
@@ -91,7 +91,7 @@ export function OpenCodeInstallationSettings({
         })
         .catch(() => {
           if (current === generation.current)
-            setError("Could not read the preferred release channel. Check for updates when ready.");
+            setError("无法读取首选发布频道。准备好后请检查更新。");
         });
     };
     // Local --version scans and cached release metadata only; no network on mount.
@@ -116,7 +116,7 @@ export function OpenCodeInstallationSettings({
         .catch(() => {
           if (current === generation.current)
             setError(
-              "Could not refresh local installation settings. Refresh installations when ready.",
+              "无法刷新本地安装设置。准备好后请刷新安装列表。",
             );
         });
     };
@@ -140,8 +140,8 @@ export function OpenCodeInstallationSettings({
 
   return (
     <SettingsSection
-      title="Local OpenCode runtime"
-      description="Use your installed OpenCode, or explicitly download a separate runtime for Palot."
+      title="本地 OpenCode 运行时"
+      description="使用已安装的 OpenCode，或为 Palot 单独下载运行时。"
     >
       <SettingsGroup>
         <div className="min-w-0 space-y-4 p-4">
@@ -149,7 +149,7 @@ export function OpenCodeInstallationSettings({
             <>
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor={`${id}-source`}>Runtime source</FieldLabel>
+                  <FieldLabel htmlFor={`${id}-source`}>运行时来源</FieldLabel>
                   <Select
                     value={status.preference}
                     disabled={selectionDisabled("preference")}
@@ -159,7 +159,7 @@ export function OpenCodeInstallationSettings({
                       void run("preference", async () => {
                         setStatus(await palot.setOpenCodeRuntimePreference(preference));
                         setNotice(
-                          "Runtime source saved. Nothing was downloaded or restarted. Start or restart the service separately to apply a change.",
+                          "运行时来源已保存。未下载或重启任何内容。请单独启动或重启服务以应用更改。",
                         );
                       });
                     }}
@@ -171,23 +171,23 @@ export function OpenCodeInstallationSettings({
                     >
                       <SelectValue>
                         {status.preference === "installed"
-                          ? "Installed OpenCode (recommended)"
-                          : "Palot runtime"}
+                          ? "已安装的 OpenCode（推荐）"
+                          : "Palot 运行时"}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="installed">Installed OpenCode (recommended)</SelectItem>
-                      <SelectItem value="palot">Palot runtime</SelectItem>
+                      <SelectItem value="installed">已安装的 OpenCode（推荐）</SelectItem>
+                      <SelectItem value="palot">Palot 运行时</SelectItem>
                     </SelectContent>
                   </Select>
                   <FieldDescription id={`${id}-source-help`}>
-                    This selects the runtime for a separate confirmed start or restart. It never
-                    changes a running service or installs OpenCode globally.
+                    此处选择的是单独确认启动或重启时使用的运行时。
+                    不会更改正在运行的服务，也不会全局安装 OpenCode。
                   </FieldDescription>
                 </Field>
                 {status.installations.length > 1 ? (
                   <Field>
-                    <FieldLabel htmlFor={`${id}-installation`}>Installed OpenCode</FieldLabel>
+                    <FieldLabel htmlFor={`${id}-installation`}>已安装的 OpenCode</FieldLabel>
                     <Select
                       value={selected?.id ?? ""}
                       disabled={selectionDisabled("selection")}
@@ -196,7 +196,7 @@ export function OpenCodeInstallationSettings({
                         if (!value) return;
                         void run("selection", async () => {
                           setStatus(await palot.selectOpenCodeInstallation(value));
-                          setNotice("Installation selected. The running service is unchanged.");
+                          setNotice("已选择安装。当前运行的服务未变。");
                         });
                       }}
                     >
@@ -209,7 +209,7 @@ export function OpenCodeInstallationSettings({
                           <span className="truncate">
                             {selected
                               ? `${selected.version} · ${selected.path}`
-                              : "Select installation"}
+                              : "选择安装"}
                           </span>
                         </SelectValue>
                       </SelectTrigger>
@@ -227,7 +227,7 @@ export function OpenCodeInstallationSettings({
               {selected ? (
                 <dl className="space-y-2 text-sm">
                   <div>
-                    <dt className="text-meta text-muted-foreground">Installed CLI version</dt>
+                    <dt className="text-meta text-muted-foreground">已安装的 CLI 版本</dt>
                     <dd className="wrap-anywhere">
                       {selected.version}
                       {selected.compatible
@@ -238,7 +238,7 @@ export function OpenCodeInstallationSettings({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-meta text-muted-foreground">Installed CLI path</dt>
+                    <dt className="text-meta text-muted-foreground">已安装的 CLI 路径</dt>
                     <dd className="text-code-compact wrap-anywhere">{selected.path}</dd>
                   </div>
                 </dl>
@@ -246,23 +246,21 @@ export function OpenCodeInstallationSettings({
               {!selectedUsable ? (
                 <p className="text-compact text-muted-foreground">
                   {selected
-                    ? "No compatible selected installation is available."
-                    : "No installed OpenCode was found."}{" "}
-                  Install OpenCode using the official instructions, then refresh installations, or
-                  download a fallback in OpenCode release settings below. Palot does not install
-                  OpenCode globally automatically.
+                    ? "所选安装不兼容，当前不可用。"
+                    : "未找到已安装的 OpenCode。"}{" "}
+                  请使用官方说明安装 OpenCode，然后刷新安装列表，
+                  或在下方 OpenCode 版本设置中下载备用版本。Palot 不会自动全局安装 OpenCode。
                 </p>
               ) : null}
               {status.error ? (
                 <p role="alert" className="text-compact text-muted-foreground">
-                  Some installations could not be inspected. Refresh installations or follow the
-                  official instructions.
+                  部分安装未能检查。请刷新安装列表或参照官方说明。
                 </p>
               ) : null}
             </>
           ) : busy === "inspect" ? (
             <p role="status" className="text-compact text-muted-foreground">
-              Inspecting local OpenCode installations…
+              正在检查本地 OpenCode 安装…
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2">
@@ -290,18 +288,18 @@ export function OpenCodeInstallationSettings({
                 })
               }
             >
-              {busy === "check" ? "Checking…" : "Check for updates"}
+              {busy === "check" ? "检查中…" : "检查更新"}
             </Button>
           </div>
           <p className="text-meta text-muted-foreground">
-            Updates use the shared preferred channel
-            {release ? `: ${release.channel === "beta" ? "Beta" : "Stable"}` : ""}. Change it in
-            OpenCode release below. Checks happen only when you ask.
+            更新使用共享的首选频道
+            {release ? `：${release.channel === "beta" ? "Beta" : "Stable"}` : ""}。可在下方
+            OpenCode 版本中更改。仅在你主动检查时才会执行。
           </p>
           {release?.offer && selected && selectedUsable ? (
             selected.version === release.offer.version ? (
               <p role="status" className="text-compact text-muted-foreground">
-                Installed OpenCode is up to date
+                已安装的 OpenCode 是最新版本
               </p>
             ) : (
               <Button
@@ -331,7 +329,7 @@ export function OpenCodeInstallationSettings({
           ) : null}
           {error ? (
             <Alert variant="destructive">
-              <AlertTitle>OpenCode installation action failed</AlertTitle>
+              <AlertTitle>OpenCode 安装操作失败</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
@@ -341,7 +339,7 @@ export function OpenCodeInstallationSettings({
             rel="noreferrer"
             className="text-compact underline underline-offset-4"
           >
-            Official OpenCode installation instructions
+            OpenCode 官方安装说明
           </a>
         </div>
       </SettingsGroup>
@@ -354,28 +352,28 @@ export function OpenCodeInstallationSettings({
         <AlertDialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Update installed OpenCode to {consent?.offer.version}?
+              将已安装的 OpenCode 更新到 {consent?.offer.version}？
             </AlertDialogTitle>
             <AlertDialogDescription className="wrap-anywhere">
-              Run the official CLI upgrade for {consent?.installation.path}, from{" "}
-              {consent?.installation.version} to {consent?.offer.version}. This changes an
-              installation outside Palot and can take several minutes. It does not restart the
-              shared service. Restart separately to apply the service change.
+              将为 {consent?.installation.path} 运行官方 CLI 升级，从{" "}
+              {consent?.installation.version} 升至 {consent?.offer.version}。此操作会更改
+              Palot 之外的安装，可能耗时数分钟。不会重启共享服务。
+              请单独重启以应用更改。
             </AlertDialogDescription>
           </AlertDialogHeader>
           {consent?.offer.requiresConfirmation ? (
             <Alert>
-              <AlertTitle>Untested release</AlertTitle>
+              <AlertTitle>未经测试的发布版本</AlertTitle>
               <AlertDescription>
-                This {consent.offer.channel === "beta" ? "Beta" : "Stable"} release has not been
-                tested with Palot. Compatibility is not guaranteed and some features may fail.
-                Confirm only if you accept that risk.
+                此 {consent.offer.channel === "beta" ? "Beta" : "Stable"} 版本尚未
+                在 Palot 中测试。不保证兼容性，部分功能可能无法正常工作。
+                仅在你能接受此风险时确认。
               </AlertDescription>
             </Alert>
           ) : null}
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor={`${id}-method`}>Install method</FieldLabel>
+              <FieldLabel htmlFor={`${id}-method`}>安装方式</FieldLabel>
               <Select
                 value={method}
                 onValueChange={(value) => {
@@ -384,27 +382,26 @@ export function OpenCodeInstallationSettings({
               >
                 <SelectTrigger id={`${id}-method`} aria-describedby={`${id}-method-help`}>
                   <SelectValue>
-                    {method === "auto" ? "Auto (official CLI detects)" : method}
+                    {method === "auto" ? "自动（官方 CLI 检测）" : method}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {methods.map((value) => (
                     <SelectItem key={value} value={value}>
-                      {value === "auto" ? "Auto (official CLI detects)" : value}
+                      {value === "auto" ? "自动（官方 CLI 检测）" : value}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <FieldDescription id={`${id}-method-help`}>
-                Auto uses the official CLI's package-manager detection, which is not specific to an
-                installation prefix. With multiple installations it may update a different
-                installation. Override the method if needed, or update manually using the official
-                instructions.
+                自动模式使用官方 CLI 的包管理器检测，不针对特定安装路径。
+                如果存在多个安装，可能会更新到其他安装。
+                如需可更改此方式，或使用官方说明手动更新。
               </FieldDescription>
             </Field>
           </FieldGroup>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               disabled={disabled || busy !== null}
               onClick={() => {
@@ -421,12 +418,12 @@ export function OpenCodeInstallationSettings({
                   });
                   setStatus(result);
                   setNotice(
-                    "Installed OpenCode update completed. The running service is unchanged. Restart it separately to apply the service change.",
+                    "已安装的 OpenCode 更新完成。当前运行的服务未变。请单独重启以应用更改。",
                   );
                 });
               }}
             >
-              Confirm installed update
+              确认更新已安装的版本
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

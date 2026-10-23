@@ -103,7 +103,7 @@ export function PalotBeacon({ className }: { className?: string }) {
     <button
       ref={ref}
       type="button"
-      aria-label="Say hello to Palot"
+      aria-label="向 Palot 问好"
       disabled={!enabled}
       data-palot-beacon
       data-gesture={enabled ? gesture : "idle"}

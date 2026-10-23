@@ -146,7 +146,7 @@ describe("attentionInventory", () => {
         type: "form",
         count: 3,
         types: ["form", "permission", "question"],
-        title: "3 requests need attention",
+        title: "3 个请求需要关注",
       },
     ]);
   });

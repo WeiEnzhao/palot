@@ -45,15 +45,15 @@ it("starts as an empty browser tab: a focused address field, tools, and no empty
   mount({ autoFocus: true });
   const address = screen.getByRole("textbox", { name: "浏览器地址" });
   expect(address).toBe(document.activeElement);
-  expect(address.getAttribute("placeholder")).toBe("Search or enter a URL");
-  expect(screen.getByRole("button", { name: "Browser back" }).hasAttribute("disabled")).toBe(true);
-  const grid = screen.getByRole("group", { name: "Tools" });
+  expect(address.getAttribute("placeholder")).toBe("搜索或输入网址");
+  expect(screen.getByRole("button", { name: "浏览器后退" }).hasAttribute("disabled")).toBe(true);
+  const grid = screen.getByRole("group", { name: "工具" });
   expect(
     within(grid)
       .getAllByRole("button")
       .map((tile) => tile.textContent),
   ).toEqual([expect.stringContaining("Changes"), "Files", "Side chat", "Context"]);
-  expect(screen.queryByRole("heading", { name: "Suggested" })).toBeNull();
+  expect(screen.queryByRole("heading", { name: "推荐" })).toBeNull();
 });
 
 it("navigates the tab when an address is entered", async () => {
@@ -101,14 +101,14 @@ it("asks a side question from the Side chat tool", async () => {
   const tile = screen.getByRole("button", { name: "Side chat" });
   fireEvent.click(tile);
   expect(tile.getAttribute("aria-expanded")).toBe("true");
-  const field = screen.getByRole("textbox", { name: "Ask a side question" });
+  const field = screen.getByRole("textbox", { name: "发起侧边提问" });
   await userEvent.type(field, "why is CI slow?{Enter}");
   expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Connect first");
   await userEvent.click(screen.getByRole("button", { name: "Ask" }));
   expect(ask).toHaveBeenLastCalledWith("why is CI slow?");
   field.focus();
   await userEvent.keyboard("{Escape}");
-  expect(screen.queryByRole("textbox", { name: "Ask a side question" })).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "发起侧边提问" })).toBeNull();
 });
 
 it("reveals more tools on demand", () => {
@@ -131,10 +131,10 @@ it("suggests recent sites and opens them in this tab", () => {
     ],
     onClearSuggestions: clear,
   });
-  const grid = screen.getByRole("group", { name: "Suggested sites" });
+  const grid = screen.getByRole("group", { name: "推荐站点" });
   fireEvent.click(within(grid).getByRole("button", { name: "localhost:3000" }));
   expect(navigate).toHaveBeenCalledWith("http://localhost:3000/");
-  fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+  fireEvent.click(screen.getByRole("button", { name: "清除" }));
   expect(clear).toHaveBeenCalledOnce();
 });
 

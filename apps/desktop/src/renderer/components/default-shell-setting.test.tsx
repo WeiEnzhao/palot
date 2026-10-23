@@ -70,7 +70,7 @@ it("shows the global shell, lists server shells, and saves a choice", async () =
   await waitFor(() => expect(get).toHaveBeenCalledTimes(2));
 
   await user.click(trigger);
-  await user.click(await screen.findByRole("option", { name: "Auto" }));
+  await user.click(await screen.findByRole("option", { name: "自动" }));
   expect(update).toHaveBeenLastCalledWith({ shell: null }, expect.anything());
 });
 

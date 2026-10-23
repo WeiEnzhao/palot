@@ -167,7 +167,7 @@ function snippet(body: string): string {
 
 function listed<T>(items: T[], line: (item: T) => string): string[] {
   const lines = items.slice(0, LISTED_ITEMS).map(line);
-  if (items.length > LISTED_ITEMS) lines.push(`  - and ${items.length - LISTED_ITEMS} more`);
+  if (items.length > LISTED_ITEMS) lines.push(`  - 还有 ${items.length - LISTED_ITEMS} 项`);
   return lines;
 }
 

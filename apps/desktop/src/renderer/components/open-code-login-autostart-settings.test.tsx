@@ -51,15 +51,15 @@ describe("OpenCodeLoginAutostartSettings", () => {
     expect(palot.getOpenCodeLoginStatus).toHaveBeenCalledOnce();
     expect(palot.inspectOpenCodeInstallations).not.toHaveBeenCalled();
     expect(palot.updateOpenCodeLogin).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText(installation.path)).toBeTruthy();
     expect(within(dialog).getByText(`OpenCode ${installation.version}`)).toBeTruthy();
     expect(onBusyChange).toHaveBeenLastCalledWith(true);
-    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    await user.click(within(dialog).getByRole("button", { name: "取消" }));
     expect(palot.updateOpenCodeLogin).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
     expect(palot.updateOpenCodeLogin).toHaveBeenCalledExactlyOnceWith({
       enabled: true,
       installationID: installation.id,
@@ -91,9 +91,9 @@ describe("OpenCodeLoginAutostartSettings", () => {
     const connect = vi.spyOn(palot, "connectOpenCode");
     const user = userEvent.setup();
     render(<OpenCodeLoginAutostartSettings />);
-    await user.click(await screen.findByRole("button", { name: "Disable login startup" }));
+    await user.click(await screen.findByRole("button", { name: "禁用登录自启动" }));
     expect(palot.updateOpenCodeLogin).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Confirm disable" }));
+    await user.click(screen.getByRole("button", { name: "确认禁用" }));
     expect(palot.updateOpenCodeLogin).toHaveBeenCalledExactlyOnceWith({ enabled: false });
     expect(await screen.findByRole("status")).toHaveProperty(
       "textContent",
@@ -128,12 +128,12 @@ describe("OpenCodeLoginAutostartSettings", () => {
       expect(
         (
           screen.getByRole("button", {
-            name: /^(Enable|Disable) login startup$/,
+            name: /^(启用登录自启动|禁用登录自启动)$/,
           }) as HTMLButtonElement
         ).disabled,
       ).toBe(true);
       expect(
-        (screen.getByRole("button", { name: "Refresh status" }) as HTMLButtonElement).disabled,
+        (screen.getByRole("button", { name: "刷新状态" }) as HTMLButtonElement).disabled,
       ).toBe(false);
       expect(palot.updateOpenCodeLogin).not.toHaveBeenCalled();
     },
@@ -149,7 +149,7 @@ describe("OpenCodeLoginAutostartSettings", () => {
       "Check that your user service manager is available",
     );
     expect(screen.queryByText(/private process output/)).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Refresh status" }));
+    await user.click(screen.getByRole("button", { name: "刷新状态" }));
     await screen.findByText("Disabled");
     expect(palot.getOpenCodeLoginStatus).toHaveBeenCalledTimes(2);
     expect(palot.inspectOpenCodeInstallations).not.toHaveBeenCalled();
@@ -176,12 +176,12 @@ describe("OpenCodeLoginAutostartSettings", () => {
     const user = userEvent.setup();
     render(<OpenCodeLoginAutostartSettings />);
     await screen.findByText("Disabled");
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
     await user.click(screen.getByRole("combobox", { name: "OpenCode 安装" }));
     expect(screen.queryByRole("option", { name: /1.0.0/ })).toBeNull();
     await user.click(screen.getByRole("option", { name: /2.0.0-beta.100/ }));
     expect(within(screen.getByRole("alertdialog")).getByText(approved.launchPath)).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
     expect(palot.updateOpenCodeLogin).toHaveBeenCalledExactlyOnceWith({
       enabled: true,
       installationID: approved.id,
@@ -196,25 +196,25 @@ describe("OpenCodeLoginAutostartSettings", () => {
     const user = userEvent.setup();
     render(<OpenCodeLoginAutostartSettings />);
     await screen.findByText("Disabled");
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
       "Refresh status and review the installation again",
     );
     expect(screen.queryByText(/password=private/)).toBeNull();
     expect(
-      (screen.getByRole("button", { name: "Enable login startup" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "启用登录自启动" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     vi.mocked(palot.inspectOpenCodeInstallations).mockResolvedValue({
       preference: "installed",
       selectedID: installation.id,
       installations: [{ ...installation, version: "2.0.3" }],
     });
-    await user.click(screen.getByRole("button", { name: "Refresh status" }));
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
+    await user.click(screen.getByRole("button", { name: "刷新状态" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
     expect(screen.getByText("OpenCode 2.0.3")).toBeTruthy();
     expect(palot.updateOpenCodeLogin).toHaveBeenCalledTimes(1);
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
     expect(palot.updateOpenCodeLogin).toHaveBeenLastCalledWith({
       enabled: true,
       installationID: installation.id,
@@ -231,8 +231,8 @@ describe("OpenCodeLoginAutostartSettings", () => {
     const user = userEvent.setup();
     render(<OpenCodeLoginAutostartSettings />);
     await screen.findByText("Disabled");
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
     expect(await screen.findByText(/Could not verify the login startup change/)).toBeTruthy();
     expect(screen.queryByRole("status")).toBeNull();
   });
@@ -247,20 +247,20 @@ describe("OpenCodeLoginAutostartSettings", () => {
     const onBusyChange = vi.fn();
     render(<OpenCodeLoginAutostartSettings onBusyChange={onBusyChange} />);
     await screen.findByText("Disabled");
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
     expect(screen.getByText(/No compatible or approved installed CLI/)).toBeTruthy();
     expect(
-      (screen.getByRole("button", { name: "Confirm enable" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "确认启用" }) as HTMLButtonElement).disabled,
     ).toBe(true);
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "取消" }));
     const pending = Promise.withResolvers<OpenCodeLoginStatus>();
     vi.mocked(palot.updateOpenCodeLogin).mockReturnValue(pending.promise);
-    await user.click(screen.getByRole("button", { name: "Enable login startup" }));
-    await user.click(screen.getByRole("button", { name: "Confirm enable" }));
-    expect((screen.getByRole("button", { name: "Saving…" }) as HTMLButtonElement).disabled).toBe(
+    await user.click(screen.getByRole("button", { name: "启用登录自启动" }));
+    await user.click(screen.getByRole("button", { name: "确认启用" }));
+    expect((screen.getByRole("button", { name: "保存中…" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
-    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "取消" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
     expect(onBusyChange).toHaveBeenLastCalledWith(true);

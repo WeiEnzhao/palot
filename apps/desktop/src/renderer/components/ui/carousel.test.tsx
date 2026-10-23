@@ -55,9 +55,9 @@ describe("Carousel", () => {
 
     expect(setApi).toHaveBeenCalledWith(embla.api);
     expect(
-      (screen.getByRole("button", { name: "Previous slide" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "上一张" }) as HTMLButtonElement).disabled,
     ).toBe(true);
-    expect((screen.getByRole("button", { name: "Next slide" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "下一张" }) as HTMLButtonElement).disabled).toBe(
       false,
     );
 
@@ -68,9 +68,9 @@ describe("Carousel", () => {
     });
 
     expect(
-      (screen.getByRole("button", { name: "Previous slide" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "上一张" }) as HTMLButtonElement).disabled,
     ).toBe(false);
-    expect((screen.getByRole("button", { name: "Next slide" }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole("button", { name: "下一张" }) as HTMLButtonElement).disabled).toBe(
       true,
     );
 

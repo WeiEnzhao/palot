@@ -79,8 +79,8 @@ describe("pull request summary", () => {
       "通过的检查",
     ]);
     expect(within(groups[0]!).getByText("必需")).toBeTruthy();
-    expect(groups[0]!.textContent).toContain("Failed · 3 秒");
-    expect(groups[2]!.textContent).toContain("Passed · 1 分 05 秒");
+    expect(groups[0]!.textContent).toContain("失败 · 3 秒");
+    expect(groups[2]!.textContent).toContain("通过 · 1 分 05 秒");
     expect(within(checks).getByText("1 失败, 1 运行中, 1 通过")).toBeTruthy();
     expect(within(checks).getByText(/此列表不完整/)).toBeTruthy();
   });
@@ -94,8 +94,8 @@ describe("pull request summary", () => {
       assignees: [person("bob")],
     });
     const reviewers = await screen.findByRole("region", { name: "评审人" });
-    expect(within(reviewers).getByText("Approved")).toBeTruthy();
-    expect(within(reviewers).getByText("Awaiting review")).toBeTruthy();
+    expect(within(reviewers).getByText("已通过")).toBeTruthy();
+    expect(within(reviewers).getByText("等待评审")).toBeTruthy();
     await userEvent.click(within(reviewers).getByRole("button", { name: "请求评审" }));
     await userEvent.click(await screen.findByRole("button", { name: "bob" }));
     await userEvent.type(screen.getByRole("textbox", { name: "评审人用户名或团队" }), "@carol");
@@ -109,10 +109,10 @@ describe("pull request summary", () => {
   });
 
   it.each([
-    [{ state: "draft", mergeState: "draft" }, "still a draft"],
-    [{ mergeState: "blocked" }, "blocked until required reviews and checks pass"],
-    [{ mergeState: "behind" }, "out of date with main"],
-    [{ mergeState: "dirty", mergeable: "conflicting" }, "conflicts with main"],
+    [{ state: "draft", mergeState: "draft" }, "此拉取请求仍是草稿"],
+    [{ mergeState: "blocked" }, "合入被阻止"],
+    [{ mergeState: "behind" }, "此分支落后"],
+    [{ mergeState: "dirty", mergeable: "conflicting" }, "存在冲突"],
     [
       {
         viewer: {
@@ -123,12 +123,12 @@ describe("pull request summary", () => {
           reviewState: null,
         },
       },
-      "don't have permission",
+      "没有合入此仓库的权限",
     ],
   ] as const)("disables merging with a clear reason (%o)", async (detail, reason) => {
     renderDetail(detail as Partial<PullRequestDetail>);
     const merge = await screen.findByRole("region", { name: "合并" });
-    const button = within(merge).getByRole("button", { name: /merge/i }) as HTMLButtonElement;
+    const button = within(merge).getByRole("button", { name: "创建合并提交" }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     expect(within(merge).getByText(new RegExp(reason))).toBeTruthy();
   });
@@ -136,9 +136,9 @@ describe("pull request summary", () => {
   it("warns about unstable checks without blocking", async () => {
     renderDetail({ mergeState: "unstable" });
     const merge = await screen.findByRole("region", { name: "合并" });
-    expect(within(merge).getByText(/Some checks are failing/)).toBeTruthy();
+    expect(within(merge).getByText(/部分检查失败/)).toBeTruthy();
     expect(
-      (within(merge).getByRole("button", { name: "Create a merge commit" }) as HTMLButtonElement)
+      (within(merge).getByRole("button", { name: "创建合并提交" }) as HTMLButtonElement)
         .disabled,
     ).toBe(false);
   });
@@ -153,9 +153,9 @@ describe("pull request summary", () => {
     );
     const merge = await screen.findByRole("region", { name: "合并" });
     expect(within(merge).getByText(/自动合并已开启/)).toBeTruthy();
-    await userEvent.click(within(merge).getByRole("button", { name: "Rebase and merge" }));
+    await userEvent.click(within(merge).getByRole("button", { name: "变基并合入" }));
     expect(api.mergePullRequest).not.toHaveBeenCalled();
-    await userEvent.click(within(merge).getByRole("button", { name: "确认rebase and merge" }));
+    await userEvent.click(within(merge).getByRole("button", { name: "确认变基并合入" }));
     await waitFor(() =>
       expect(api.mergePullRequest).toHaveBeenCalledWith({
         ...ref,
@@ -176,12 +176,12 @@ describe("pull request summary", () => {
       },
     );
     const merge = await screen.findByRole("region", { name: "合并" });
-    await userEvent.click(within(merge).getByRole("button", { name: "Create a merge commit" }));
+    await userEvent.click(within(merge).getByRole("button", { name: "创建合并提交" }));
     await userEvent.click(
-      within(merge).getByRole("button", { name: "确认create a merge commit" }),
+      within(merge).getByRole("button", { name: "确认创建合并提交" }),
     );
     expect((await within(merge).findByRole("alert")).textContent).toContain(
-      "New commits were pushed since you loaded this pull request",
+      "加载此拉取请求后有新的提交",
     );
   });
 
@@ -269,7 +269,7 @@ describe("pull request header", () => {
     });
     renderPullRequestsPage({ pr: "github.com/acme/web/7" });
     expect((await screen.findByRole("alert")).textContent).toContain(
-      "GitHub could not find this pull request",
+      "GitHub 未找到此拉取请求",
     );
   });
 });

@@ -100,13 +100,13 @@ export const FileAttachment = memo(
           </AttachmentContent>
           {image && previewUrl ? (
             <AttachmentTrigger
-              aria-label={`Open preview of ${file.name}`}
+              aria-label={`打开 ${file.name} 的预览`}
               onClick={() => setOpen(true)}
             />
           ) : null}
           {onRemove ? (
             <AttachmentActions>
-              <AttachmentAction aria-label={`Remove ${file.name}`} onClick={onRemove}>
+              <AttachmentAction aria-label={`移除 ${file.name}`} onClick={onRemove}>
                 <X aria-hidden="true" />
               </AttachmentAction>
             </AttachmentActions>

@@ -126,7 +126,7 @@ export class ProjectScriptsService {
       try {
         directory = await resolveScriptDirectory(task.directory, project);
       } catch (error) {
-        rejection = error instanceof Error ? error.message : "The task's directory was rejected.";
+        rejection = error instanceof Error ? error.message : "任务的目录被拒绝。";
       }
       if (event.batch) {
         if (directory === null) return skip(`batch settle: ${rejection}`);

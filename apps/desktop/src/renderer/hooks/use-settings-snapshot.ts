@@ -98,7 +98,7 @@ export function useCheckPlugins(
                   ? [
                       {
                         capability: "plugins",
-                        label: "Plugins",
+                        label: "插件",
                         message: plugin.state.error,
                         ...(plugin.state.ref ? { reference: plugin.state.ref } : {}),
                       },

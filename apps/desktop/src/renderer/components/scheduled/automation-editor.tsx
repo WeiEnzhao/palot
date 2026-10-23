@@ -447,11 +447,11 @@ export function AutomationEditor({
                             (model) =>
                               model.modelID === draft.action.model?.id &&
                               model.providerID === draft.action.model.providerID,
-                          )?.name ?? "Project default"}
+                          )?.name ?? "项目默认"}
                         </SelectValue>
                       </EditorSelect>
                       <SelectContent align="end">
-                        <SelectItem value="default">Project default</SelectItem>
+                        <SelectItem value="default">项目默认</SelectItem>
                         {models.map((model) => (
                           <SelectItem key={model.id} value={`${model.providerID}:${model.modelID}`}>
                             {model.name}
@@ -549,27 +549,26 @@ export function AutomationEditor({
           </div>
 
           <section className="rounded-xl border bg-muted/20 px-3 py-3 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">Run-time safety</p>
+            <p className="font-medium text-foreground">运行时安全</p>
             <p className="mt-1">
               {draft.destination.type === "session"
-                ? "This prompt queues behind existing work and keeps that task's model, agent, and location."
+                ? "此提示会排在现有工作之后，并沿用该任务的模型、Agent 和位置。"
                 : draft.destination.workspace.type === "new-worktree"
-                  ? "Each run starts in a new OpenCode-managed worktree. Worktree creation failure stops the run."
+                  ? "每次运行在全新的 OpenCode 管理的 worktree 中启动。Worktree 创建失败会中止运行。"
                   : draft.destination.workspace.type === "current"
-                    ? "This run can modify the checkout you are using."
-                    : "This run uses the selected existing worktree."}
+                    ? "此次运行可能会修改你正在使用的工作副本。"
+                    : "此次运行使用选定的已有 worktree。"}
             </p>
             {standaloneDestination && runtime?.capabilities?.localPathActions === false ? (
               <p className="mt-1">
-                Standalone runs on this server do not share a memory file. Use an existing task for
-                transcript continuity.
+                此服务器上的独立运行不共享记忆文件。如需对话连续性，请使用已有任务。
               </p>
             ) : null}
             <p className="mt-1">
               {selectedAgent
-                ? `${selectedAgent.permissions.filter((rule) => rule.effect === "ask").length} agent permission rules ask before continuing. `
-                : "Project-default permissions apply. "}
-              Future tool choices may still require approval; Palot never auto-approves them.
+                ? `${selectedAgent.permissions.filter((rule) => rule.effect === "ask").length} 条 Agent 权限规则会在继续前询问。`
+                : "应用项目默认权限。"}
+              后续的工具选择可能仍需审批；Palot 不会自动批准。
             </p>
           </section>
 
@@ -791,22 +790,22 @@ export function AutomationEditor({
                               <DropdownMenuItem onClick={() => onRunAction(run, "open")}>
                                 {target.type === "details" ? <CircleAlert /> : <ExternalLink />}
                                 {target.type === "request"
-                                  ? "Resolve input"
+                                  ? "处理输入"
                                   : target.type === "details"
-                                    ? "View run details"
-                                    : "Open task"}
+                                    ? "查看运行详情"
+                                    : "打开任务"}
                               </DropdownMenuItem>
                               {runIsActive(run) ? (
                                 <DropdownMenuItem onClick={() => onRunAction(run, "cancel")}>
-                                  <X /> Cancel run
+                                  <X /> 取消运行
                                 </DropdownMenuItem>
                               ) : null}
                               <DropdownMenuItem onClick={() => onRunAction(run, "read")}>
-                                <Bell /> Mark {run.readAt === null ? "read" : "unread"}
+                                <Bell /> 标记为{run.readAt === null ? "已读" : "未读"}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => onRunAction(run, "archive")}>
                                 {run.archivedAt ? <RotateCcw /> : <Archive />}
-                                {run.archivedAt ? "Unarchive" : "Archive"}
+                                {run.archivedAt ? "取消归档" : "归档"}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -816,7 +815,7 @@ export function AutomationEditor({
                             <p className="text-muted-foreground">
                               {run.attention?.message ??
                                 run.error?.message ??
-                                "This run did not create an OpenCode task."}
+                                "此次运行未创建 OpenCode 任务。"}
                             </p>
                             {run.attention?.type === "configuration" ? (
                               <Button
@@ -835,7 +834,7 @@ export function AutomationEditor({
                     );
                   })
                 ) : (
-                  <p className="py-4 text-xs text-muted-foreground">This task has not run yet.</p>
+                  <p className="py-4 text-xs text-muted-foreground">此任务尚未运行。</p>
                 )}
               </div>
             </section>
@@ -864,7 +863,7 @@ export function AutomationEditor({
             onClick={() => (activeRun ? onRunAction(activeRun, "open") : void onAction("run-now"))}
           >
             {activeRun ? <ExternalLink aria-hidden="true" /> : <Play aria-hidden="true" />}
-            {activeRun ? "Open current run" : "Test now"}
+            {activeRun ? "打开当前运行" : "立即测试"}
           </Button>
         ) : null}
       </footer>
@@ -914,18 +913,18 @@ function frequencyFor(trigger: AutomationTrigger): Frequency {
 
 function frequencyLabel(frequency: Frequency): string {
   return frequency === "once"
-    ? "Once"
+    ? "一次"
     : frequency === "hourly"
-      ? "Hourly"
+      ? "每小时"
       : frequency === "daily"
-        ? "Daily"
+        ? "每天"
         : frequency === "weekdays"
-          ? "Weekdays"
+          ? "工作日"
           : frequency === "weekly"
-            ? "Weekly"
+            ? "每周"
             : frequency === "monthly"
-              ? "Monthly"
-              : "Custom";
+              ? "每月"
+              : "自定义";
 }
 
 export function triggerDate(trigger: AutomationTrigger): string {

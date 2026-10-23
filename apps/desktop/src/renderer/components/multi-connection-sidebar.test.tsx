@@ -278,8 +278,8 @@ describe("MultiConnectionSidebar", () => {
       "收件箱选项",
     ])
       expect(screen.getByRole("button", { name })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /^Pinned/ })).toBeNull();
-    expect(screen.queryByRole("button", { name: /^Snoozed/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^置顶/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^已延后/ })).toBeNull();
     expect(screen.getByRole("button", { name: "收件箱 2" }).getAttribute("aria-expanded")).toBe(
       "true",
     );
@@ -347,16 +347,16 @@ describe("MultiConnectionSidebar", () => {
     expect(row.closest("[data-inbox-card]")).toBeNull();
     expect(within(row).getByText("Same task")).toBeTruthy();
     expect(within(row).queryByText("Same project")).toBeNull();
-    expect(within(row).queryByText("Needs input · 2")).toBeNull();
+    expect(within(row).queryByText("需要输入 · 2")).toBeNull();
     expect(within(row).getByLabelText("需要关注")).toBeTruthy();
     // The project + server badge move up to the group header.
     expect(
-      screen.getByRole("img", { name: "Same server · beta.example · Connected" }),
+      screen.getByRole("img", { name: "Same server · beta.example · 已连接" }),
     ).toBeTruthy();
     const wrapper = row.closest("div")!;
     expect(
       within(wrapper).getByRole("button", {
-        name: "Actions for Same task on Same server · beta.example",
+        name: "Same server · beta.example 上 Same task 的操作",
       }),
     ).toBeTruthy();
   });
@@ -420,7 +420,7 @@ describe("MultiConnectionSidebar", () => {
       .closest("div")!;
     await userEvent.click(
       within(wrapper).getByRole("button", {
-        name: "Actions for Same task on Same server · beta.example",
+        name: "Same server · beta.example 上 Same task 的操作",
       }),
     );
     await userEvent.click(screen.getByRole("menuitem", { name: "暂停到" }));
@@ -445,7 +445,7 @@ describe("MultiConnectionSidebar", () => {
     expect(mocks.openSession).toHaveBeenNthCalledWith(1, "same-session", { profileID: "alpha" });
     expect(mocks.openSession).toHaveBeenNthCalledWith(2, "same-session", { profileID: "beta" });
     await userEvent.click(
-      screen.getByRole("button", { name: "Actions for Same task on Same server · beta.example" }),
+      screen.getByRole("button", { name: "Same server · beta.example 上 Same task 的操作" }),
     );
     await userEvent.click(screen.getByRole("menuitem", { name: "置顶" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
@@ -464,7 +464,7 @@ describe("MultiConnectionSidebar", () => {
     expect(screen.getAllByText("Same project")).toHaveLength(2);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "New task in Same project on Same server · beta.example",
+        name: "Same server · beta.example 上 Same project 的新任务",
       }),
     );
     expect(mocks.openNewTask).toHaveBeenCalledWith("same-project", "beta");
@@ -513,7 +513,7 @@ describe("MultiConnectionSidebar", () => {
     expect(document.activeElement).toBe(settle);
     await userEvent.tab();
     const actions = screen.getByRole("button", {
-      name: "Actions for Same task on Same server · beta.example",
+      name: "Same server · beta.example 上 Same task 的操作",
     });
     expect(document.activeElement).toBe(actions);
     await userEvent.keyboard("{Enter}");
@@ -560,7 +560,7 @@ describe("MultiConnectionSidebar", () => {
       name: "Same project 1 · Same server · beta.example",
     });
     const action = screen.getByRole("button", {
-      name: "New task in Same project on Same server · beta.example",
+      name: "Same server · beta.example 上 Same project 的新任务",
     });
     expect(trigger.contains(action)).toBe(false);
     await userEvent.click(action);
@@ -604,9 +604,9 @@ describe("MultiConnectionSidebar", () => {
   it("does not let collapsed projects consume the global mounted row budget", async () => {
     overview.connections = [connection("alpha", 65), connection("beta", 65)];
     renderSidebar("project");
-    const rows = () => screen.getAllByRole("button", { name: /^Actions for/ });
+    const rows = () => screen.getAllByRole("button", { name: /的操作$/ });
     expect(rows()).toHaveLength(40);
-    expect(rows().every((row) => row.getAttribute("aria-label")?.endsWith("alpha.example"))).toBe(
+    expect(rows().every((row) => row.getAttribute("aria-label")?.includes("alpha.example"))).toBe(
       true,
     );
     const trigger = screen.getByRole("button", {
@@ -614,25 +614,25 @@ describe("MultiConnectionSidebar", () => {
     });
     await userEvent.click(trigger);
     expect(rows()).toHaveLength(40);
-    expect(rows().every((row) => row.getAttribute("aria-label")?.endsWith("beta.example"))).toBe(
+    expect(rows().every((row) => row.getAttribute("aria-label")?.includes("beta.example"))).toBe(
       true,
     );
     await userEvent.click(trigger);
     expect(rows()).toHaveLength(40);
-    expect(rows().every((row) => row.getAttribute("aria-label")?.endsWith("alpha.example"))).toBe(
+    expect(rows().every((row) => row.getAttribute("aria-label")?.includes("alpha.example"))).toBe(
       true,
     );
   });
 
   it("renames and settles a duplicate ID on its explicit owner", async () => {
     renderSidebar();
-    const actionName = "Actions for Same task on Same server · beta.example";
+    const actionName = "Same server · beta.example 上 Same task 的操作";
     await userEvent.click(screen.getByRole("button", { name: actionName }));
     await userEvent.click(screen.getByRole("menuitem", { name: "重命名" }));
     fireEvent.change(screen.getByRole("textbox", { name: "任务标题" }), {
       target: { value: "Renamed remotely" },
     });
-    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await userEvent.click(screen.getByRole("button", { name: "保存" }));
     expect(overview.rename).toHaveBeenCalledWith("beta", "same-session", "Renamed remotely");
     await userEvent.click(screen.getByRole("button", { name: actionName }));
     await userEvent.click(screen.getByRole("menuitem", { name: "归档" }));
@@ -664,7 +664,7 @@ describe("MultiConnectionSidebar", () => {
     await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "已启用的服务器" }));
     await userEvent.click(
-      await screen.findByRole("menuitemcheckbox", { name: "Enable Same server · beta.example" }),
+      await screen.findByRole("menuitemcheckbox", { name: "启用 Same server · beta.example" }),
     );
     expect(overview.setIncludedProfileIDs).toHaveBeenCalledWith(["alpha"]);
   });
@@ -682,7 +682,7 @@ describe("MultiConnectionSidebar", () => {
     );
     expect(overview.connect).toHaveBeenCalledWith("beta");
     await userEvent.click(
-      screen.getByRole("button", { name: "Actions for Same task on Same server · beta.example" }),
+      screen.getByRole("button", { name: "Same server · beta.example 上 Same task 的操作" }),
     );
     expect(screen.getByRole("menuitem", { name: "置顶" }).getAttribute("aria-disabled")).toBe(
       "true",
@@ -697,9 +697,9 @@ describe("MultiConnectionSidebar", () => {
     const { container } = renderSidebar("inbox", store);
     const order = () =>
       screen
-        .getAllByRole("button", { name: /^Actions for/ })
-        .map((button) => button.getAttribute("aria-label")?.split(" on ")[0]);
-    expect(order()).toEqual(["Actions for Same task", "Actions for Task 1"]);
+        .getAllByRole("button", { name: /的操作$/ })
+        .map((button) => button.getAttribute("aria-label")?.split(" 上 ")[1]?.replace(" 的操作", ""));
+    expect(order()).toEqual(["Same task", "Task 1"]);
 
     const list = container.querySelector<HTMLElement>('[data-sidebar="content"]')!;
     fireEvent.pointerEnter(list);
@@ -724,10 +724,10 @@ describe("MultiConnectionSidebar", () => {
     act(() =>
       store.set(inboxShelvesAtom, { pinned: true, inbox: true, snoozed: true, settled: true }),
     );
-    expect(order()).toEqual(["Actions for Same task", "Actions for Task 1"]);
+    expect(order()).toEqual(["Same task", "Task 1"]);
 
     fireEvent.pointerLeave(list);
-    expect(order()).toEqual(["Actions for Task 1", "Actions for Same task"]);
+    expect(order()).toEqual(["Task 1", "Same task"]);
   });
 
   it("bounds mounted task rows and scopes pagination to each connection", async () => {
@@ -735,13 +735,13 @@ describe("MultiConnectionSidebar", () => {
     renderSidebar();
     expect(
       screen.getAllByRole("button", {
-        name: /^Actions for/,
+        name: /的操作$/,
       }),
     ).toHaveLength(40);
     fireEvent.click(screen.getByRole("button", { name: "显示更多任务" }));
     expect(
       screen.getAllByRole("button", {
-        name: /^Actions for/,
+        name: /的操作$/,
       }),
     ).toHaveLength(80);
     await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));

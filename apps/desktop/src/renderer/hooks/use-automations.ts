@@ -44,7 +44,7 @@ export function useAutomations(synchronize = true) {
       if (versions.get(profileID) === generation)
         store.set(automationErrorsByProfileAtom, (current) => ({
           ...current,
-          [profileID]: cause instanceof Error ? cause.message : "Could not load scheduled tasks",
+          [profileID]: cause instanceof Error ? cause.message : "无法加载定时任务",
         }));
       return null;
     } finally {

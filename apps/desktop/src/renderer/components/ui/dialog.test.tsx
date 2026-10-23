@@ -28,7 +28,7 @@ it("keeps its slots and unmounts after the exit motion", async () => {
   expect(dialog.className).toContain("sm:max-w-md");
   expect(document.querySelector('[data-slot="dialog-overlay"]')).toBeTruthy();
 
-  await user.click(screen.getByRole("button", { name: "Close" }));
+  await user.click(screen.getByRole("button", { name: "关闭" }));
   await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   expect(document.querySelector('[data-slot="dialog-overlay"]')).toBeNull();
 });

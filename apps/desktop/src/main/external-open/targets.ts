@@ -28,7 +28,7 @@ export const EXTERNAL_OPEN_TARGETS: readonly ExternalOpenTargetDefinition[] = [
   },
   {
     id: "vscode",
-    label: "Visual Studio Code",
+    label: "VS Code",
     kind: "editor",
     bundleIDs: ["com.microsoft.VSCode"],
     knownAppPaths: applications("Visual Studio Code"),
@@ -36,7 +36,7 @@ export const EXTERNAL_OPEN_TARGETS: readonly ExternalOpenTargetDefinition[] = [
   },
   {
     id: "vscode-insiders",
-    label: "Visual Studio Code Insiders",
+    label: "VS Code Insiders",
     kind: "editor",
     bundleIDs: ["com.microsoft.VSCodeInsiders"],
     knownAppPaths: applications("Visual Studio Code - Insiders"),
@@ -140,7 +140,7 @@ export const EXTERNAL_OPEN_TARGETS: readonly ExternalOpenTargetDefinition[] = [
   },
   {
     id: "finder",
-    label: "Reveal in Finder",
+    label: "在访达中显示",
     kind: "file-manager",
     bundleIDs: ["com.apple.finder"],
     knownAppPaths: ["/System/Library/CoreServices/Finder.app"],

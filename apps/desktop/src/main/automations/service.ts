@@ -178,7 +178,7 @@ export class AutomationService {
       !this.destinationSupported(command.profileID, command.draft)
     ) {
       throw new AutomationConfigurationError(
-        "This scheduled task uses a workspace mode that is unavailable for the active OpenCode server.",
+        "此定时任务使用的工作区模式在当前 OpenCode 服务器上不可用。",
       );
     }
     if (command.type === "create") await this.create(command.profileID, command.draft);
@@ -296,8 +296,8 @@ export class AutomationService {
       this.repository.finishRun(run.id, id, {
         state: "cancelled",
         completedAt: Date.now(),
-        summary: "The automation was deleted before this run started.",
-        error: { code: "automation_deleted", message: "The automation was deleted." },
+        summary: "自动化在运行开始前被删除。",
+        error: { code: "automation_deleted", message: "自动化已被删除。" },
       });
     }
     const retained = this.repository.run(current.activeRunID);
@@ -308,7 +308,7 @@ export class AutomationService {
     const record = this.requiredAutomation(id, profileID);
     if (!this.destinationSupported(profileID, record)) {
       throw new AutomationConfigurationError(
-        "This scheduled task uses a workspace mode that is unavailable for the active OpenCode server.",
+        "此定时任务使用的工作区模式在当前 OpenCode 服务器上不可用。",
       );
     }
     if (record.activeRunID) return;
@@ -389,14 +389,14 @@ export class AutomationService {
           state: expiredOneTime ? "unknown" : "skipped",
           completedAt: now,
           summary: expiredOneTime
-            ? "This one-time run expired while Palot was unavailable."
+            ? "此一次性运行在 Palot 不可用时已过期。"
             : overdueOccurrenceCount(definitionValue.trigger, scheduledFor, now) > 1
-              ? "Missed occurrences were skipped."
-              : "The missed occurrence was skipped.",
+              ? "已跳过多个错过的事件。"
+              : "已跳过错过的事件。",
           error: expiredOneTime
             ? {
                 code: "missed_one_time_run",
-                message: "Review or run this task manually; it was more than seven days late.",
+                message: "请手动审查或运行此任务；它已延迟超过七天。",
               }
             : null,
         });

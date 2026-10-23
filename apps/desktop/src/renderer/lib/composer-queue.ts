@@ -33,7 +33,7 @@ export function composerQueuePreview(
   const text = request.detail?.replace(/\s+/g, " ").trim();
   const count = files?.length ?? 0;
   if (text) return { label: text, attachments: count };
-  if (count === 0) return { label: "Pending message", attachments: 0 };
+  if (count === 0) return { label: "待发送消息", attachments: 0 };
   const first = files![0]!.name;
   return { label: count > 1 ? `${first}（还有 ${count - 1} 条）` : first, attachments: 0 };
 }

@@ -452,7 +452,7 @@ export function createBrowserPane() {
           if (entries.get(entry.id) === entry)
             publishState(
               entry,
-              error instanceof Error ? error.message : "Browser popup could not open",
+              error instanceof Error ? error.message : "浏览器弹窗无法打开",
             );
           return rejected;
         }

@@ -81,7 +81,7 @@ export function KeyboardShortcutsSettings() {
     }
     if (bare && (event.key === "Backspace" || event.key === "Delete")) {
       if (shortcut.required) {
-        setProblem({ id: shortcut.id, message: `${shortcut.label} needs a shortcut.` });
+        setProblem({ id: shortcut.id, message: `${shortcut.label} 需要设置快捷键。` });
         return;
       }
       save(shortcut.id, null);
@@ -255,8 +255,8 @@ function ShortcutRow({
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label={`Reset ${shortcut.label} to ${formatShortcut(shortcut.keys)}`}
-                  title={`Reset to ${formatShortcut(shortcut.keys)}`}
+                  aria-label={`重置 ${shortcut.label} 为 ${formatShortcut(shortcut.keys)}`}
+                  title={`重置为 ${formatShortcut(shortcut.keys)}`}
                   onClick={onReset}
                 >
                   <RotateCcw aria-hidden="true" />
@@ -295,7 +295,7 @@ function ShortcutRow({
                 ) : keys.length > 0 ? (
                   <ShortcutKbd keys={keys} />
                 ) : (
-                  <span className="text-meta text-muted-foreground">Not set</span>
+                  <span className="text-meta text-muted-foreground">未设置</span>
                 )}
               </Button>
             </>

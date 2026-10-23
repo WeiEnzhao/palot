@@ -462,7 +462,7 @@ function MarkdownFileLink({
     <a
       href={fileHref}
       title={workspaceFileLabel(reference)}
-      aria-label={`Open ${workspaceFileLabel(reference)}`}
+      aria-label={`打开 ${workspaceFileLabel(reference)}`}
       onClick={(event) => {
         event.preventDefault();
         if (event.metaKey || event.ctrlKey) {
@@ -629,7 +629,7 @@ function WorkspaceMarkdownImage({
     <button
       type="button"
       title={image.path}
-      aria-label={`Open image ${image.path}`}
+      aria-label={`打开图片 ${image.path}`}
       onClick={(event) => openFile({ path: image.path }, event)}
       className="cursor-pointer text-[var(--link-foreground)] underline-offset-4 outline-none hover:underline focus-visible:rounded-[2px] focus-visible:ring-2 focus-visible:ring-ring"
     >

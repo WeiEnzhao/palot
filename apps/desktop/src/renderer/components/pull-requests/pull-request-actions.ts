@@ -113,7 +113,7 @@ export function useQuickAction() {
       if (!method)
         throw new SourceControlError({
           code: "invalid-input",
-          message: "This repository allows no merge method.",
+          message: "此仓库不允许任何合并方式。",
         });
       await merge.mutateAsync({ ...ref, method, expectedHeadOid: detail.headOid });
     },

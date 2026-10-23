@@ -28,7 +28,7 @@ describe("FileAttachment", () => {
     attachmentPreview.mockResolvedValue(null);
     const view = render(<FileAttachment file={{ ...file, previewGrant: "expired" }} />);
     await waitFor(() => expect(view.container.querySelector("svg")).toBeTruthy());
-    expect(screen.queryByRole("button", { name: "Open preview of screenshot.png" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "打开 screenshot.png 的预览" })).toBeNull();
     expect(URL.createObjectURL).not.toHaveBeenCalled();
   });
 
@@ -47,7 +47,7 @@ describe("FileAttachment", () => {
     expect(view.container.querySelector("img")?.getAttribute("src")).toBe(
       "data:image/png;base64,AAAA",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Open preview of screenshot.png" }));
+    fireEvent.click(screen.getByRole("button", { name: "打开 screenshot.png 的预览" }));
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByRole("img", { name: "screenshot.png" }).getAttribute("src")).toBe(
       "data:image/png;base64,AAAA",
@@ -60,7 +60,7 @@ describe("FileAttachment", () => {
   it("retains grant previews and revokes their object URLs when replaced or unmounted", async () => {
     attachmentPreview.mockResolvedValue({ mime: "image/png", data: new ArrayBuffer(3) });
     const view = render(<FileAttachment file={{ ...file, previewGrant: "grant" }} />);
-    await screen.findByRole("button", { name: "Open preview of screenshot.png" });
+    await screen.findByRole("button", { name: "打开 screenshot.png 的预览" });
     expect(attachmentPreview).toHaveBeenCalledWith("grant", undefined);
     view.rerender(
       <FileAttachment file={{ ...file, previewDataUrl: "data:image/png;base64,AAAA" }} />,
@@ -92,8 +92,8 @@ describe("FileAttachment", () => {
   it("keeps non-previewable files removable without reading their paths", () => {
     const onRemove = vi.fn();
     render(<FileAttachment file={file} onRemove={onRemove} />);
-    expect(screen.queryByRole("button", { name: "Open preview of screenshot.png" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Remove screenshot.png" }));
+    expect(screen.queryByRole("button", { name: "打开 screenshot.png 的预览" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "移除 screenshot.png" }));
     expect(onRemove).toHaveBeenCalledOnce();
     expect(attachmentPreview).not.toHaveBeenCalled();
   });
@@ -103,7 +103,7 @@ describe("FileAttachment", () => {
       <FileAttachment file={{ ...file, previewDataUrl: "data:image/png;base64,AAAA" }} />,
     );
     fireEvent.error(view.container.querySelector("img")!);
-    expect(screen.queryByRole("button", { name: "Open preview of screenshot.png" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "打开 screenshot.png 的预览" })).toBeNull();
     expect(screen.getByText("screenshot.png")).toBeTruthy();
   });
 });

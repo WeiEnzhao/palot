@@ -18,7 +18,7 @@ export function PalotLoading({ children }: { children: ReactNode }) {
   return (
     <main
       className="flex size-full flex-col items-center justify-center gap-5 text-center"
-      aria-label="Loading Palot"
+      aria-label="正在加载 Palot"
       role="status"
       aria-live="polite"
       aria-busy="true"

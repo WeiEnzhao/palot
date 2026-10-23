@@ -94,7 +94,7 @@ describe("useInboxController", () => {
     await waitFor(() =>
       expect(add).toHaveBeenCalledWith({
         type: "info",
-        title: "Settled Fix login after #42 merged",
+        title: "已处理 Fix login，#42 merged",
       }),
     );
   });

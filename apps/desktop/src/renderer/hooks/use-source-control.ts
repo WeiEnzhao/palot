@@ -63,7 +63,7 @@ function bridge(): PalotSourceControlApi {
   if (!api)
     throw new SourceControlError({
       code: "unsupported-connection",
-      message: "Source control is only available in the Palot desktop app.",
+      message: "源代码管理仅在 Palot 桌面应用中可用。",
     });
   return api;
 }
@@ -329,7 +329,7 @@ function useProfileResolver() {
     if (!profileID)
       throw new SourceControlError({
         code: "unknown-profile",
-        message: "Connect to an OpenCode server first.",
+        message: "请先连接到 OpenCode 服务器。",
       });
     return { ...input, profileID };
   };

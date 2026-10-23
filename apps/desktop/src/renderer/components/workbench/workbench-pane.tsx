@@ -291,7 +291,7 @@ export function WorkbenchPane({
   return (
     <section
       className="palot-workbench-surface @container/workbench flex size-full min-h-0 min-w-0 flex-col bg-background"
-      aria-label={pane === "right" ? "Right workbench" : "Bottom workbench"}
+      aria-label={pane === "right" ? "右侧工作台" : "底部工作台"}
       data-workbench-pane={pane}
       data-shell-surface={pane}
       ref={sectionRef}
@@ -367,8 +367,8 @@ export function WorkbenchPane({
             variant="ghost"
             size="icon-sm"
             className="window-no-drag ml-1 size-7 shrink-0 [&_svg]:size-4"
-            aria-label="New tab"
-            title="New tab"
+            aria-label="新标签页"
+            title="新标签页"
             onClick={openNewTab}
           >
             <Plus aria-hidden="true" />
@@ -391,7 +391,7 @@ export function WorkbenchPane({
               variant="ghost"
               size="icon-sm"
               className="window-no-drag ml-1 size-7 shrink-0 [&_svg]:size-4"
-              aria-label={expanded ? "Restore right workbench" : "Expand right workbench"}
+              aria-label={expanded ? "收起右侧工作台" : "展开右侧工作台"}
               aria-pressed={expanded}
               onClick={onToggleExpanded}
             >
@@ -632,7 +632,7 @@ function WorkbenchTabItem({
         {/* The active tab keeps its close button visible; others reveal it on hover or focus. */}
         <button
           type="button"
-          aria-label={`Close ${title}`}
+          aria-label={`关闭 ${title}`}
           className={cn(
             "absolute right-1 z-10 flex size-5 items-center justify-center rounded-sm text-muted-foreground transition-opacity hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring",
             active
@@ -649,15 +649,15 @@ function WorkbenchTabItem({
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuGroup>
-          <ContextMenuItem onClick={closeTab}>Close</ContextMenuItem>
-          <ContextMenuItem onClick={closeOtherTabs}>Close others</ContextMenuItem>
+          <ContextMenuItem onClick={closeTab}>关闭</ContextMenuItem>
+          <ContextMenuItem onClick={closeOtherTabs}>关闭其他</ContextMenuItem>
           <ContextMenuItem disabled={!hasTabsBefore} onClick={closeTabsToStart}>
-            Close to the left
+            关闭左侧
           </ContextMenuItem>
           <ContextMenuItem disabled={!hasTabsAfter} onClick={closeTabsToEnd}>
-            Close to the right
+            关闭右侧
           </ContextMenuItem>
-          <ContextMenuItem onClick={closeAllTabs}>Close all</ContextMenuItem>
+          <ContextMenuItem onClick={closeAllTabs}>全部关闭</ContextMenuItem>
         </ContextMenuGroup>
         <ContextMenuSeparator />
         <ContextMenuGroup>
@@ -726,7 +726,7 @@ function WorkbenchTabContent({
     ) : (
       <Empty className="min-h-0 flex-1">
         <EmptyHeader>
-          <EmptyTitle>Connecting to browser…</EmptyTitle>
+          <EmptyTitle>正在连接浏览器…</EmptyTitle>
         </EmptyHeader>
       </Empty>
     );
@@ -857,42 +857,42 @@ function WorkbenchNewTab({
   const tools: NewTabTool[] = [
     {
       id: "changes",
-      label: "Changes",
+      label: "变更",
       icon: GitCompareArrows,
       shortcut: "task.changes.toggle",
-      description: "Review working changes in this workspace",
+      description: "查看当前工作区的文件变更",
       onSelect: () => openers.openChanges(tabID),
     },
     {
       id: "terminal",
-      label: "Terminal",
+      label: "终端",
       icon: SquareTerminal,
       shortcut: "task.terminal.toggle",
-      description: "Start a shell in this workspace",
+      description: "在当前工作区启动一个终端",
       onSelect: () =>
         void openers
           .openTerminal(tabID)
-          .catch((error) => showErrorToast("Could not open terminal", error)),
+          .catch((error) => showErrorToast("无法打开终端", error)),
     },
     {
       id: "files",
-      label: "Files",
+      label: "文件",
       icon: Files,
-      description: "Browse and search workspace files",
+      description: "浏览和搜索工作区文件",
       onSelect: () => openers.openFiles(tabID),
     },
     {
       id: "side-chat",
-      label: "Side chat",
+      label: "侧边提问",
       icon: MessageCircleQuestion,
-      description: "Ask a side question (/btw) without adding it to the conversation",
+      description: "发起一个不影响当前对话的侧边提问 (/btw)",
       onSelect: () => undefined,
     },
     {
       id: "context",
-      label: "Context",
+      label: "上下文",
       icon: Gauge,
-      description: "Inspect context usage and what the model sees",
+      description: "查看上下文使用情况及模型所见",
       onSelect: () => openers.openContext(tabID),
     },
     ...(pullRequest
@@ -910,12 +910,12 @@ function WorkbenchNewTab({
   const moreTools: NewTabTool[] = [
     {
       id: "scheduled",
-      label: "Scheduled",
+      label: "定时任务",
       icon: CalendarClock,
       onSelect: () => void openScheduled(),
     },
-    { id: "usage", label: "Usage", icon: ChartNoAxesColumn, onSelect: () => void openUsage() },
-    { id: "worktrees", label: "Worktrees", icon: FolderGit2, onSelect: () => void openWorktrees() },
+    { id: "usage", label: "用量", icon: ChartNoAxesColumn, onSelect: () => void openUsage() },
+    { id: "worktrees", label: "工作树", icon: FolderGit2, onSelect: () => void openWorktrees() },
   ];
   return (
     <NewTabPage
@@ -978,7 +978,7 @@ class WorkbenchTabBoundary extends Component<
     return (
       <Empty className="rounded-none p-5">
         <EmptyHeader>
-          <EmptyTitle>Tab unavailable</EmptyTitle>
+          <EmptyTitle>标签页不可用</EmptyTitle>
           <EmptyDescription>{this.state.error.message}</EmptyDescription>
         </EmptyHeader>
         <div className="flex gap-2">

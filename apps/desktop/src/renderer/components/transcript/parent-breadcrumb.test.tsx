@@ -60,14 +60,14 @@ describe("ParentTaskBreadcrumb", () => {
     });
     renderBreadcrumb(child, [parent, child]);
 
-    const navigation = screen.getByRole("navigation", { name: "Task breadcrumb" });
+    const navigation = screen.getByRole("navigation", { name: "任务导航" });
     expect(navigation.textContent).toContain("Ship the release");
     expect(navigation.querySelector('[aria-current="page"]')?.textContent).toBe(
       "Explore · Map the timeline",
     );
 
     await userEvent.tab();
-    const parentCrumb = screen.getByRole("button", { name: "Open parent task: Ship the release" });
+    const parentCrumb = screen.getByRole("button", { name: "打开父任务：Ship the release" });
     expect(document.activeElement).toBe(parentCrumb);
     await userEvent.keyboard("{Enter}");
     expect(mocks.openSession).toHaveBeenCalledWith("parent");
@@ -77,7 +77,7 @@ describe("ParentTaskBreadcrumb", () => {
     const child = session({ id: "child", parentID: "parent", title: "Review (@general subagent)" });
     const { onRename } = renderBreadcrumb(child, [child]);
 
-    await userEvent.click(screen.getByRole("button", { name: "Open parent task: Parent task" }));
+    await userEvent.click(screen.getByRole("button", { name: "打开父任务：Parent task" }));
     expect(mocks.openSession).toHaveBeenCalledWith("parent");
     await userEvent.dblClick(screen.getByText("General · Review"));
     expect(onRename).toHaveBeenCalledTimes(1);
@@ -86,6 +86,6 @@ describe("ParentTaskBreadcrumb", () => {
   it("renders nothing for a root task", () => {
     const root = session({ id: "root", title: "Root" });
     renderBreadcrumb(root, [root]);
-    expect(screen.queryByRole("navigation", { name: "Task breadcrumb" })).toBeNull();
+    expect(screen.queryByRole("navigation", { name: "任务导航" })).toBeNull();
   });
 });

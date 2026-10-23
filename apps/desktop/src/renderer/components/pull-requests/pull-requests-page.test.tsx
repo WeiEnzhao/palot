@@ -92,16 +92,16 @@ describe("PullRequestsPage list", () => {
         expect.objectContaining({ list: "authored", query: "repo:acme/web draft:false" }),
       ),
     );
-    const chips = screen.getByRole("list", { name: "Active filters" });
-    await userEvent.click(within(chips).getByRole("button", { name: "Remove filter acme/web" }));
+    const chips = screen.getByRole("list", { name: "当前筛选条件" });
+    await userEvent.click(within(chips).getByRole("button", { name: "移除筛选器 acme/web" }));
     await waitFor(() =>
       expect(api.searchPullRequests).toHaveBeenCalledWith(
         expect.objectContaining({ list: "authored", query: "draft:false" }),
       ),
     );
-    await userEvent.click(within(chips).getByRole("button", { name: "Remove filter No drafts" }));
+    await userEvent.click(within(chips).getByRole("button", { name: "移除筛选器 No drafts" }));
     expect(store.get(pullRequestFiltersAtom)).toEqual(EMPTY_PULL_REQUEST_FILTERS);
-    expect(screen.queryByRole("list", { name: "Active filters" })).toBeNull();
+    expect(screen.queryByRole("list", { name: "当前筛选条件" })).toBeNull();
   });
 
   it("resizes the list from its border and keeps the width", async () => {
@@ -236,7 +236,7 @@ describe("PullRequestsPage list", () => {
     expect((await screen.findByRole("status")).textContent).toContain("GitHub 速率限制已达");
     await waitFor(() =>
       expect(
-        screen.getAllByText(`GitHub rate limit reached. Try again after ${time}.`),
+        screen.getAllByText(`GitHub 已达到速率限制。请在 ${time} 后重试。`),
       ).toHaveLength(5),
     );
   });

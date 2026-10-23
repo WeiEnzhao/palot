@@ -134,7 +134,7 @@ describe("buildNativeContextMenuTemplate", () => {
     expect(build({ linkURL: "javascript:alert(1)" }).template).toEqual([]);
 
     const { actions, template } = build({ linkURL: "https://example.com/docs" });
-    expect(template.map((item) => item.label)).toEqual(["Open Link", "Copy Link Address"]);
+    expect(template.map((item) => item.label)).toEqual(["打开链接", "复制链接地址"]);
 
     template[0]?.click?.({} as Electron.MenuItem, undefined, {} as Electron.KeyboardEvent);
     template[1]?.click?.({} as Electron.MenuItem, undefined, {} as Electron.KeyboardEvent);
@@ -148,9 +148,9 @@ describe("buildNativeContextMenuTemplate", () => {
       { preferredEditorLabel: "Cursor" },
     );
     expect(template.map((item) => item.label)).toEqual([
-      "Open in Cursor",
-      process.platform === "darwin" ? "Reveal in Finder" : "Show in File Manager",
-      "Copy File Path",
+      "在 Cursor 中打开",
+      process.platform === "darwin" ? "在访达中显示" : "在文件管理器中显示",
+      "复制文件路径",
     ]);
 
     template[0]?.click?.({} as Electron.MenuItem, undefined, {} as Electron.KeyboardEvent);
@@ -165,9 +165,9 @@ describe("buildNativeContextMenuTemplate", () => {
   it("builds file items for plain absolute paths with line numbers", () => {
     const { actions, template } = build({ linkURL: "/tmp/report.txt:15" });
     expect(template.map((item) => item.label)).toEqual([
-      "Open in Editor",
-      process.platform === "darwin" ? "Reveal in Finder" : "Show in File Manager",
-      "Copy File Path",
+      "在编辑器中打开",
+      process.platform === "darwin" ? "在访达中显示" : "在文件管理器中显示",
+      "复制文件路径",
     ]);
 
     template[0]?.click?.({} as Electron.MenuItem, undefined, {} as Electron.KeyboardEvent);
@@ -225,7 +225,7 @@ describe("installNativeContextMenu", () => {
       fileWindow(profileID);
       const template = electronMocks.buildFromTemplate.mock
         .calls[0]![0] as Electron.MenuItemConstructorOptions[];
-      expect(template.map((item) => item.label)).toEqual(["Copy File Path"]);
+      expect(template.map((item) => item.label)).toEqual(["复制文件路径"]);
       expect(electronMocks.getPreferredTargetInfo).not.toHaveBeenCalled();
       expect(electronMocks.openFile).not.toHaveBeenCalled();
     },
@@ -254,7 +254,7 @@ describe("installNativeContextMenu", () => {
     fileWindow("remote");
     const template = electronMocks.buildFromTemplate.mock
       .calls[0]![0] as Electron.MenuItemConstructorOptions[];
-    expect(template.map((item) => item.label)).toEqual(["Copy File Path"]);
+    expect(template.map((item) => item.label)).toEqual(["复制文件路径"]);
   });
 
   it.each(["focus", "route"])(

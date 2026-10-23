@@ -664,7 +664,7 @@ describe("MarkdownContent", () => {
       const read = vi.spyOn(palot, "readWorkspaceFile");
       const { openFile } = renderInTask("![Log](/tmp/elsewhere/shot.png)");
 
-      fireEvent.click(screen.getByRole("button", { name: "Open image /tmp/elsewhere/shot.png" }));
+      fireEvent.click(screen.getByRole("button", { name: "打开图片 /tmp/elsewhere/shot.png" }));
 
       expect(openFile).toHaveBeenCalledWith({ path: "/tmp/elsewhere/shot.png" }, expect.anything());
       expect(read).not.toHaveBeenCalled();
@@ -701,7 +701,7 @@ describe("MarkdownContent", () => {
     );
 
     const fileLink = screen.getByRole("link", {
-      name: "Open apps/desktop/src/renderer/components/thread.tsx (line 58)",
+      name: "打开 apps/desktop/src/renderer/components/thread.tsx (line 58)",
     });
     fireEvent.click(fileLink);
 
@@ -722,9 +722,9 @@ describe("MarkdownContent", () => {
       </MarkdownWorkspaceProvider>,
     );
 
-    fireEvent.click(screen.getByRole("link", { name: "Open diagram.png" }));
-    fireEvent.click(screen.getByRole("link", { name: "Open guide.pdf" }));
-    fireEvent.click(screen.getByRole("link", { name: "Open tone.wav" }));
+    fireEvent.click(screen.getByRole("link", { name: "打开 diagram.png" }));
+    fireEvent.click(screen.getByRole("link", { name: "打开 guide.pdf" }));
+    fireEvent.click(screen.getByRole("link", { name: "打开 tone.wav" }));
 
     expect(openFile).toHaveBeenNthCalledWith(1, { path: "diagram.png" });
     expect(openFile).toHaveBeenNthCalledWith(2, { path: "guide.pdf" });
@@ -739,7 +739,7 @@ describe("MarkdownContent", () => {
       </MarkdownWorkspaceProvider>,
     );
 
-    fireEvent.click(screen.getByRole("link", { name: "Open README.md (line 3)" }));
+    fireEvent.click(screen.getByRole("link", { name: "打开 README.md (line 3)" }));
 
     expect(openFile).toHaveBeenCalledWith({ path: "README.md", line: 3 });
     expect(screen.getByRole("link", { name: "Docs" }).getAttribute("href")).toBe(
@@ -767,13 +767,13 @@ describe("MarkdownContent", () => {
       </MarkdownWorkspaceProvider>,
     );
 
-    const logLink = screen.getByRole("link", { name: "Open /tmp/build.log (line 25)" });
+    const logLink = screen.getByRole("link", { name: "打开 /tmp/build.log (line 25)" });
     expect(logLink.getAttribute("href")).toBe("file:///tmp/build.log#L25");
     fireEvent.click(logLink);
     expect(openFile).toHaveBeenCalledWith({ path: "/tmp/build.log", line: 25 });
 
     const codeLink = screen.getByRole("link", {
-      name: "Open /Users/example/project/src/index.ts (line 42)",
+      name: "打开 /Users/example/project/src/index.ts (line 42)",
     });
     expect(codeLink.getAttribute("href")).toBe("file:///Users/example/project/src/index.ts#L42");
     fireEvent.click(codeLink);
@@ -798,7 +798,7 @@ describe("MarkdownContent", () => {
       </MarkdownWorkspaceProvider>,
     );
 
-    const link = screen.getByRole("link", { name: "Open src/main.ts (line 10)" });
+    const link = screen.getByRole("link", { name: "打开 src/main.ts (line 10)" });
     expect(link.getAttribute("href")).toBe("file:///Users/example/project/src/main.ts#L10");
   });
 
@@ -834,7 +834,7 @@ describe("MarkdownContent", () => {
     expect(openExternal).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("link", { name: "Outside" }));
     expect(openExternal).toHaveBeenCalledExactlyOnceWith("https://outside.example.com");
-    fireEvent.click(screen.getByRole("link", { name: "Open README.md" }));
+    fireEvent.click(screen.getByRole("link", { name: "打开 README.md" }));
     expect(openFile).toHaveBeenCalledExactlyOnceWith({ path: "README.md" });
     expect(openWebLink).toHaveBeenCalledTimes(1);
   });

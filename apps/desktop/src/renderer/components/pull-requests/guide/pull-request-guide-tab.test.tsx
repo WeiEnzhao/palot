@@ -97,7 +97,7 @@ async function openGuide() {
 async function writeGuide() {
   await openGuide();
   generate.mockResolvedValueOnce(reply);
-  await userEvent.click(await screen.findByRole("button", { name: "Write guide" }));
+  await userEvent.click(await screen.findByRole("button", { name: "编写指南" }));
   return screen.findByRole("heading", { name: "The new two" });
 }
 
@@ -119,35 +119,35 @@ describe("pull request guide", () => {
   it("explains guides, writes one on request, and tours its stops by keyboard", async () => {
     render();
     await openGuide();
-    expect(await screen.findByText("No review guide yet")).toBeTruthy();
-    expect(screen.getByText(/short tour of the change/)).toBeTruthy();
+    expect(await screen.findByText("暂无评审指南")).toBeTruthy();
+    expect(screen.getByText(/简短导览/)).toBeTruthy();
 
     let finish: (text: string) => void = () => {};
     generate.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
-    await userEvent.click(screen.getByRole("button", { name: "Write guide" }));
-    expect(await screen.findByText("Writing guide… this can take a minute.")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "编写指南" }));
+    expect(await screen.findByText("正在编写指南……这可能需要一分钟。")).toBeTruthy();
     expect(generate.mock.calls[0]![0].model).toEqual({ id: "sonnet", providerID: "anthropic" });
     await act(async () => finish(reply));
 
     expect(await screen.findByRole("heading", { name: "The new two" })).toBeTruthy();
-    const rail = screen.getByRole("complementary", { name: "Guide stops" });
+    const rail = screen.getByRole("complementary", { name: "导览站点" });
     const stops = within(rail)
       .getAllByRole("listitem")
       .map((item) => within(item).getByRole("button"));
     expect(stops.map((stop) => stop.textContent)).toEqual([
-      "1Stop 1: The new twoLook closely, 1 file",
+      "1Stop 1: The new two仔细观察， 1 file",
       "2Stop 2: Skim the rest1 file",
     ]);
     expect(stops[0]!.getAttribute("aria-current")).toBe("step");
     // The one call to make at this stop.
-    expect(screen.getByRole("note").textContent).toContain("Look closely · contract");
+    expect(screen.getByRole("note").textContent).toContain("仔细查看 · contract");
     expect(screen.getByRole("note").textContent).toContain("Callers now see the new value.");
     expect(screen.getAllByText("Why two").length).toBeGreaterThan(0);
 
     fireEvent.keyDown(document.body, { key: "ArrowRight" });
     expect(await screen.findByRole("heading", { name: "Skim the rest" })).toBeTruthy();
     expect(screen.getAllByText("Stop 2 of 2").length).toBeGreaterThan(0);
-    const skimFiles = screen.getByRole("region", { name: "Files in this stop" });
+    const skimFiles = screen.getByRole("region", { name: "此站点的文件" });
     expect(within(skimFiles).getByText("src/b.ts")).toBeTruthy();
     fireEvent.keyDown(document.body, { key: "k" });
     expect(await screen.findByRole("heading", { name: "The new two" })).toBeTruthy();
@@ -192,7 +192,7 @@ describe("pull request guide", () => {
   it("asks about a stop in a new task with the pull request and the stop's code", async () => {
     render();
     await writeGuide();
-    await userEvent.click(screen.getByRole("button", { name: "Ask: Why not keep the old two?" }));
+    await userEvent.click(screen.getByRole("button", { name: "提问：Why not keep the old two?" }));
     expect(startTask).toHaveBeenCalledWith(
       "detail",
       expect.objectContaining({ url: URL }),
@@ -228,12 +228,12 @@ describe("pull request guide", () => {
     render();
     await openGuide();
     expect(await screen.findByRole("heading", { name: "Old tour" })).toBeTruthy();
-    expect(screen.getByText("Written before the latest push")).toBeTruthy();
+    expect(screen.getByText("写于最近一次推送之前")).toBeTruthy();
 
     generate.mockResolvedValueOnce(reply);
     await userEvent.click(screen.getByRole("button", { name: "Rewrite" }));
     expect(await screen.findByRole("heading", { name: "The new two" })).toBeTruthy();
-    expect(screen.queryByText("Written before the latest push")).toBeNull();
+    expect(screen.queryByText("写于最近一次推送之前")).toBeNull();
   });
 
   it("writes or rewrites from the pull request menu", async () => {
@@ -241,25 +241,25 @@ describe("pull request guide", () => {
     await screen.findByRole("tab", { name: /Guide/ });
     generate.mockResolvedValueOnce(reply);
     await userEvent.click(screen.getByRole("button", { name: "拉取请求操作" }));
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Write guide" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "编写指南" }));
     expect(await screen.findByRole("heading", { name: "The new two" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Guide/ }).getAttribute("aria-selected")).toBe("true");
 
     await userEvent.click(screen.getByRole("button", { name: "拉取请求操作" }));
-    expect(await screen.findByRole("menuitem", { name: "Rewrite guide" })).toBeTruthy();
+    expect(await screen.findByRole("menuitem", { name: "重写指南" })).toBeTruthy();
   });
 
   it("shows generation errors inline and can try again", async () => {
     render();
     await openGuide();
     generate.mockRejectedValueOnce(new Error("Provider is overloaded"));
-    await userEvent.click(await screen.findByRole("button", { name: "Write guide" }));
+    await userEvent.click(await screen.findByRole("button", { name: "编写指南" }));
     const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("Could not write the guide");
+    expect(alert.textContent).toContain("无法编写导览");
     expect(alert.textContent).toContain("Provider is overloaded");
 
     generate.mockResolvedValueOnce(reply);
-    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await userEvent.click(screen.getByRole("button", { name: "重试" }));
     expect(await screen.findByRole("heading", { name: "The new two" })).toBeTruthy();
   });
 
@@ -267,7 +267,7 @@ describe("pull request guide", () => {
     catalog = { defaultModel: null, models: [] };
     render();
     await openGuide();
-    const write = await screen.findByRole("button", { name: "Write guide" });
+    const write = await screen.findByRole("button", { name: "编写指南" });
     expect(write.hasAttribute("disabled")).toBe(true);
     expect(screen.getByText("No model is available. Connect a provider in Settings.")).toBeTruthy();
   });

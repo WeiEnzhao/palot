@@ -119,9 +119,9 @@ function fileItems(
   if (!fileTarget) return [];
 
   const editorLabel = options.preferredEditorLabel
-    ? `Open in ${options.preferredEditorLabel}`
-    : "Open in Editor";
-  const revealLabel = process.platform === "darwin" ? "Reveal in Finder" : "Show in File Manager";
+    ? `在 ${options.preferredEditorLabel} 中打开`
+    : "在编辑器中打开";
+  const revealLabel = process.platform === "darwin" ? "在访达中显示" : "在文件管理器中显示";
 
   return [
     ...(options.actions.openFile
@@ -142,7 +142,7 @@ function fileItems(
         ]
       : []),
     {
-      label: "Copy File Path",
+      label: "复制文件路径",
       click: () => {
         if (options.actions.copyText) {
           options.actions.copyText(fileTarget.path);
@@ -162,11 +162,11 @@ function linkItems(
   if (!url) return [];
   return [
     {
-      label: "Open Link",
+      label: "打开链接",
       click: () => options.actions.openLink(url),
     },
     {
-      label: "Copy Link Address",
+      label: "复制链接地址",
       click: () => options.actions.copyLinkAddress(url),
     },
   ];
