@@ -1013,7 +1013,9 @@ export const palot = {
     connectionID?: string,
   ) {
     if (!apiAvailable()) return { data: [], cursor: { previous: null, next: null } };
-    const limit = 100;
+    // 每页 20 条（用户口径：100 条一次插进来会卡）。页小 ⇒ 单次的投影/挂载更轻，
+    // 「不用反复划」由「还有一两屏就发请求」+「一页修完自动续页」来保证，不靠大页换。
+    const limit = 20;
     return loadOpenCodeMessages({ sessionID, cursor, limit }, true, requestSignal, connectionID);
   },
 

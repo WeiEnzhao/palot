@@ -470,7 +470,7 @@ describe("palot over the official OpenCode client", () => {
     await palot.loadOlder(session.id, "older");
 
     expect(list).toHaveBeenCalledWith(
-      { sessionID: session.id, cursor: "older", limit: 100 },
+      { sessionID: session.id, cursor: "older", limit: 20 },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
