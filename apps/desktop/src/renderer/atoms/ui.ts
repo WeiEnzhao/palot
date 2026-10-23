@@ -92,6 +92,12 @@ export const sidebarModeAtom = persistedAtom({
   initialValue: "inbox" as SidebarMode,
   validate: (value): value is SidebarMode => value === "project" || value === "inbox",
 });
+export const sidebarProjectOrderAtom = persistedAtom({
+  key: "ui.sidebar-project-order",
+  initialValue: [] as string[],
+  validate: (value): value is string[] =>
+    Array.isArray(value) && value.every((item): item is string => typeof item === "string"),
+});
 export const defaultSidebarModeAtom = persistedAtom({
   key: "ui.default-sidebar-mode",
   // Boot forces sidebar mode to this value (routes/__root.tsx) — default to the project

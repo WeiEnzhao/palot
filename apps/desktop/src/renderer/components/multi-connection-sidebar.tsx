@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useEffectEvent, useState, type ReactElement, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
 import { BellRing, Check, Ellipsis, Folder, PinOff, Plus, Server, Undo2 } from "lucide-react";
@@ -12,6 +12,7 @@ import {
   inboxShelvesAtom,
   inboxViewPreferencesAtom,
   sidebarModeAtom,
+  sidebarProjectOrderAtom,
 } from "../atoms/ui";
 import { runtimeAtom } from "../atoms/workspace";
 import { overviewProjectFilterAtom, overviewProjectSectionsAtom } from "../atoms/connections";
@@ -96,6 +97,16 @@ const pageSize = 40;
 const rowKey = (item: OwnedItem) => JSON.stringify([item.connection.profile.id, item.session.id]);
 const sectionRowKey = (item: OwnedItem) => `${item.section}:${rowKey(item)}`;
 
+const projectGroupKey = (profileID: string, projectID: string) =>
+  JSON.stringify([profileID, projectID]);
+const reconcileProjectOrder = (persisted: string[], currentKeys: string[]): string[] => {
+  const currentSet = new Set(currentKeys);
+  const kept = persisted.filter((key) => currentSet.has(key));
+  const keptSet = new Set(kept);
+  const missing = currentKeys.filter((key) => !keptSet.has(key));
+  return [...kept, ...missing];
+};
+
 /** The same interaction layer owns every row density, with an explicit server. */
 function OwnedSessionInteractions({
   item,
@@ -157,6 +168,8 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<Set<string>>(new Set());
+  const [projectOrder, setProjectOrder] = useAtom(sidebarProjectOrderAtom);
+  const dragProjectKey = useRef<string | null>(null);
   const renameConnection = overview.connections.find(
     (connection) => connection.profile.id === renameItem?.connection.profile.id,
   );
@@ -176,6 +189,68 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
   const visible = included.filter(
     (c) => overview.visibleProfileIDs === null || overview.visibleProfileIDs.includes(c.profile.id),
   );
+  const allProjectKeys = included.flatMap((connection) =>
+    connection.projects.map((project) => projectGroupKey(connection.profile.id, project.id)),
+  );
+  const reconciledProjectOrder = reconcileProjectOrder(projectOrder, allProjectKeys);
+  useEffect(() => {
+    if (reconciledProjectOrder.length !== projectOrder.length) {
+      setProjectOrder(reconciledProjectOrder);
+    }
+  }, [reconciledProjectOrder.join("\u0001")]);
+  const onProjectDragStart = (key: string, event: React.DragEvent) => {
+    dragProjectKey.current = key;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", key);
+    const target = event.currentTarget as HTMLElement;
+    requestAnimationFrame(() => target.classList.add("opacity-40"));
+  };
+  const onProjectDragEnd = (event: React.DragEvent) => {
+    const target = event.currentTarget as HTMLElement;
+    target.classList.remove("opacity-40");
+    dragProjectKey.current = null;
+    const container = target.closest<HTMLElement>('[data-sidebar="content"]') ?? target.parentElement;
+    container
+      ?.querySelectorAll<HTMLElement>("[data-drag-over]")
+      .forEach((element) => element.removeAttribute("data-drag-over"));
+  };
+  const onProjectDragOver = (key: string, event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    if (dragProjectKey.current === key) return;
+    const target = event.currentTarget as HTMLElement;
+    const container = target.closest<HTMLElement>('[data-sidebar="content"]') ?? target.parentElement;
+    container
+      ?.querySelectorAll<HTMLElement>("[data-drag-over]")
+      .forEach((element) => element.removeAttribute("data-drag-over"));
+    target.setAttribute("data-drag-over", "true");
+  };
+  const onProjectDrop = (targetKey: string, event: React.DragEvent) => {
+    event.preventDefault();
+    const sourceKey = dragProjectKey.current;
+    if (!sourceKey || sourceKey === targetKey) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const hasPosition = typeof event.clientY === "number" && rect.height > 0;
+    const insertBefore = hasPosition ? event.clientY < rect.top + rect.height / 2 : true;
+    setProjectOrder((previous) => {
+      const reconciled = reconcileProjectOrder(previous, allProjectKeys);
+      const next = reconciled.filter((key) => key !== sourceKey);
+      const targetIndex = next.indexOf(targetKey);
+      if (targetIndex === -1) return reconciled;
+      next.splice(insertBefore ? targetIndex : targetIndex + 1, 0, sourceKey);
+      return next;
+    });
+  };
+  const sortProjectSections = <T extends { key: string }>(sections: T[]): T[] => {
+    return [...sections].sort((a, b) => {
+      const ai = reconciledProjectOrder.indexOf(a.key);
+      const bi = reconciledProjectOrder.indexOf(b.key);
+      return (
+        (ai === -1 ? reconciledProjectOrder.length : ai) -
+        (bi === -1 ? reconciledProjectOrder.length : bi)
+      );
+    });
+  };
   const projects = included.flatMap((connection) =>
     connection.projects.map((project) => ({
       ...project,
@@ -849,8 +924,25 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                   : "space-y-px pb-2"
                               }
                             >
-                              {boundedInboxGroups(rows).map(({ group, badge, rows: elements }) => (
-                                <Fragment key={group.key}>
+                              {sortProjectSections(
+                                boundedInboxGroups(rows).map(({ group, badge, rows: elements }) => {
+                                  const [profileID, projectID] = group.key.split("\u0000");
+                                  const key =
+                                    profileID && projectID
+                                      ? projectGroupKey(profileID, projectID)
+                                      : group.key;
+                                  return { key, group, badge, elements };
+                                }),
+                              ).map(({ key, group, badge, elements }) => (
+                                <div
+                                  key={group.key}
+                                  draggable
+                                  aria-label={`拖动排序：${group.label}`}
+                                  onDragStart={(event) => onProjectDragStart(key, event)}
+                                  onDragEnd={onProjectDragEnd}
+                                  onDragOver={(event) => onProjectDragOver(key, event)}
+                                  onDrop={(event) => onProjectDrop(key, event)}
+                                >
                                   <div
                                     className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-base font-semibold text-sidebar-foreground"
                                   >
@@ -875,7 +967,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                   >
                                     {elements}
                                   </div>
-                                </Fragment>
+                                </div>
                               ))}
                             </SidebarFluidList>
                           ) : section === "inbox" ? (
@@ -896,19 +988,32 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                     </Collapsible>
                   );
                 })
-              : visible.flatMap((connection) =>
-                  connection.projects
-                    .filter((project) => {
-                      const rows = stableRows.filter(inProject(connection, project.id));
-                      return rows.length > 0;
-                    })
-                    .map((project) => {
-                    const key = JSON.stringify([connection.profile.id, project.id]);
+              : sortProjectSections(
+                  visible.flatMap((connection) =>
+                    connection.projects
+                      .filter((project) => {
+                        const rows = stableRows.filter(inProject(connection, project.id));
+                        return rows.length > 0;
+                      })
+                      .map((project) => {
+                        const key = projectGroupKey(connection.profile.id, project.id);
+                        const rows = stableRows.filter(inProject(connection, project.id));
+                        return { key, connection, project, rows };
+                      }),
+                  ),
+                ).map(({ key, connection, project, rows }) => {
                     const open = projectSections[key] ?? true;
-                    const rows = stableRows.filter(inProject(connection, project.id));
                     return (
-                      <Collapsible
+                      <div
                         key={key}
+                        draggable
+                        aria-label={`拖动排序：${projectName(project)}`}
+                        onDragStart={(event) => onProjectDragStart(key, event)}
+                        onDragEnd={onProjectDragEnd}
+                        onDragOver={(event) => onProjectDragOver(key, event)}
+                        onDrop={(event) => onProjectDrop(key, event)}
+                      >
+                      <Collapsible
                         data-project-section
                         data-profile-id={connection.profile.id}
                         data-project-id={project.id}
@@ -965,9 +1070,10 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                           ) : null}
                         </CollapsibleContent>
                       </Collapsible>
+                      </div>
                     );
-                  }),
-                )}
+                  })
+                }
             {items.length > limit ? (
               <Button variant="ghost" size="sm" onClick={() => setLimit((n) => n + pageSize)}>
                 显示更多任务

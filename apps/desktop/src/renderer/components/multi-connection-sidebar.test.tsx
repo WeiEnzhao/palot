@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OpenCodeRuntimeStatus, PalotSession } from "../../shared";
-import { inboxShelvesAtom, sidebarModeAtom } from "../atoms/ui";
+import { inboxShelvesAtom, sidebarModeAtom, sidebarProjectOrderAtom } from "../atoms/ui";
 import { overviewProjectFilterAtom, overviewProjectSectionsAtom } from "../atoms/connections";
 import { runtimeAtom } from "../atoms/workspace";
 import type { useConnectionOverview } from "../hooks/use-connection-overview";
@@ -747,5 +747,111 @@ describe("MultiConnectionSidebar", () => {
     await userEvent.click(screen.getByRole("button", { name: "收件箱选项" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "加载更早的任务" }));
     expect(overview.loadMore).toHaveBeenCalledWith("beta");
+  });
+
+  it("reorders project groups via drag-and-drop and persists the new order", () => {
+    const projectA = {
+      id: "project-a",
+      name: "Alpha",
+      canonical: "/repo-a",
+      sandboxes: [],
+      vcs: null,
+      updatedAt: 1,
+    };
+    const projectB = {
+      id: "project-b",
+      name: "Beta",
+      canonical: "/repo-b",
+      sandboxes: [],
+      vcs: null,
+      updatedAt: 1,
+    };
+    const sessionA: PalotSession = {
+      id: "session-a",
+      parentID: null,
+      projectID: projectA.id,
+      title: "Task A",
+      agent: null,
+      model: null,
+      location: { directory: "/repo-a" },
+      createdAt: 1,
+      updatedAt: 1,
+      archivedAt: null,
+      cost: null,
+      tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+    };
+    const sessionB: PalotSession = {
+      id: "session-b",
+      parentID: null,
+      projectID: projectB.id,
+      title: "Task B",
+      agent: null,
+      model: null,
+      location: { directory: "/repo-b" },
+      createdAt: 1,
+      updatedAt: 1,
+      archivedAt: null,
+      cost: null,
+      tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+    };
+    const owner: Overview["connections"][number] = {
+      profile: {
+        id: "gamma",
+        kind: "remote",
+        name: "Server",
+        urls: ["https://gamma.example"],
+        credentialID: null,
+        allowPlainHttp: false,
+        lastSuccessfulUrl: null,
+        lastConnectedAt: null,
+      },
+      runtime: {
+        profileID: "gamma",
+        connectionID: "connection-gamma",
+        connected: true,
+        phase: "connected",
+      } as OpenCodeRuntimeStatus,
+      phase: "ready",
+      error: null,
+      lastSyncedAt: 1,
+      projects: [projectA, projectB],
+      sessions: [sessionA, sessionB],
+      inbox: projectSessionInbox({
+        sessions: [sessionA, sessionB],
+        projects: [projectA, projectB],
+        requests: new Map(),
+        activeIDs: new Set(),
+        runningSinceBySession: new Map(),
+        triage: { profileID: "gamma", bootstrapThrough: null, sessions: [] },
+        now: 1,
+      }),
+      hasMore: false,
+      loadingMore: false,
+      triageReady: true,
+      attentionState: "ready",
+    };
+    overview.connections = [owner];
+    overview.includedProfileIDs = ["gamma"];
+    const store = createStore();
+    renderSidebar("project", store);
+    const headers = () =>
+      document.querySelectorAll<HTMLElement>("[data-project-section]");
+    expect(headers()).toHaveLength(2);
+    expect(headers()[0]!.getAttribute("data-project-id")).toBe("project-a");
+    expect(headers()[1]!.getAttribute("data-project-id")).toBe("project-b");
+    const dragSource = screen.getByLabelText("拖动排序：Beta");
+    const dropTarget = screen.getByLabelText("拖动排序：Alpha");
+    act(() => {
+      fireEvent.dragStart(dragSource, { dataTransfer: new DataTransfer() });
+      fireEvent.dragOver(dropTarget, { clientY: -1, dataTransfer: new DataTransfer() });
+      fireEvent.drop(dropTarget, { clientY: -1, dataTransfer: new DataTransfer() });
+      fireEvent.dragEnd(dragSource, { dataTransfer: new DataTransfer() });
+    });
+    const updated = headers();
+    expect(updated[0]!.getAttribute("data-project-id")).toBe("project-b");
+    expect(updated[1]!.getAttribute("data-project-id")).toBe("project-a");
+    const keyA = JSON.stringify(["gamma", "project-a"]);
+    const keyB = JSON.stringify(["gamma", "project-b"]);
+    expect(store.get(sidebarProjectOrderAtom)).toEqual([keyB, keyA]);
   });
 });
