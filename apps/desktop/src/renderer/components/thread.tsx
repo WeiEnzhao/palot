@@ -663,8 +663,23 @@ const SessionThreadContents = memo(function SessionThreadContents({
     (index: number) => turnRows[index]?.id ?? index,
     [turnRows],
   );
+  // 每行的真实高度要留住：TanStack 在行卸载后就把测量丢掉，于是长会话里总高度在
+  // 「真实值 ↔ 估值」之间来回跳（实测 29028 → 3928 → 38016 → 169715）。高度一塌，
+  // 浏览器就把 scrollTop 夹住，涨回来时人已经在顶上 —— 上滑加载完「跳到最上边」就是
+  // 这么来的（这条路不经过任何 scrollTop 写入，所以查写入是查不到的）。
+  const measuredTurnHeightsRef = useRef(new Map<string, number>());
+  const measuredHeightsScopeRef = useRef<string | null>(null);
+  if (measuredHeightsScopeRef.current !== session.id) {
+    measuredHeightsScopeRef.current = session.id;
+    measuredTurnHeightsRef.current.clear();
+  }
   const estimateVirtualTurnSize = useCallback(
-    (index: number) => estimateTranscriptTurnSize(turnRows[index]?.turn),
+    (index: number) => {
+      const row = turnRows[index];
+      if (!row) return 60;
+      // 用留住的真实高度当估值：卸载再挂回来，总高度也不会变
+      return measuredTurnHeightsRef.current.get(row.id) ?? estimateTranscriptTurnSize(row.turn);
+    },
     [turnRows],
   );
   const extractVirtualTurnRange = useCallback(
@@ -807,6 +822,19 @@ const SessionThreadContents = memo(function SessionThreadContents({
   virtualizer.shouldAdjustScrollPositionOnItemSizeChange = () => false;
   const virtualItems = virtualizer.getVirtualItems();
   const virtualTranscriptHeight = virtualizer.getTotalSize();
+  // 挂上/卸下每一行时，把它的真实高度记进我们自己的表（TanStack 卸掉行就把测量丢了）
+  const measureTurnElement = useCallback(
+    (element: Element | null) => {
+      if (element) {
+        const index = Number((element as HTMLElement).dataset.index);
+        const row = Number.isFinite(index) ? turnRows[index] : undefined;
+        const height = element.getBoundingClientRect().height;
+        if (row && height > 0) measuredTurnHeightsRef.current.set(row.id, height);
+      }
+      virtualizer.measureElement(element);
+    },
+    [turnRows, virtualizer],
+  );
   const hasVirtualTurns = turnRows.length > 0;
   const saveLayoutRef = useRef<(() => void) | null>(null);
   useLayoutEffect(() => {
@@ -1657,7 +1685,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                           virtualSize={virtualItem.size}
                           isLastTurn={virtualItem.index === turnRows.length - 1}
                           followTail={virtualItem.index === turnRows.length - 1 && bottomLocked}
-                          measureElement={virtualizer.measureElement}
+                          measureElement={measureTurnElement}
                           onInteract={pinVirtualTurn}
                         />
                       );
