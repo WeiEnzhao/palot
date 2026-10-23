@@ -280,6 +280,7 @@ describe("prependAnchorFrame", () => {
   const base = {
     anchorViewportTop: 0,
     anchorTop: 0,
+    anchorRowStart: null,
     viewportTop: 0,
     scrollTop: 5000,
     scrollHeight: 10_000,
@@ -308,6 +309,48 @@ describe("prependAnchorFrame", () => {
     expect(result.done).toBe(false);
     expect(result.scrollTop).toBeNull();
     expect(result.landedAt).toBeNull();
+  });
+
+  it("按虚拟器模型对齐锚点行：行高被反复修正时，屏幕位置不漂", () => {
+    // 新页落地后行高还会被修正多次。以前按「累计新增高度」补偿，每一步都踩在
+    // 还没测准的数字上；收敛窗口一超时就清锚点，半途而废 ⇒ 看起来「一上滑就跳到最上边」。
+    const pageLanded = {
+      ...base,
+      anchorTop: null, // 锚点行已被推出挂载窗口
+      anchorViewportTop: 120, // 记锚点时它在视口顶部下方 120px
+      scrollTop: 5_000,
+      fallbackScrollTop: 5_000,
+      fallbackHeight: 6_000,
+      previousScrollHeight: 6_000,
+      scrollHeight: 7_000,
+    };
+    // 模型说锚点行现在从内容坐标 6_200 开始 ⇒ 要让它回到视口顶部下方 120px
+    const first = prependAnchorFrame({ ...pageLanded, anchorRowStart: 6_200, now: 1_100 });
+    expect(first.scrollTop).toBe(6_080);
+    expect(first.stableFrames).toBe(0);
+    // 后续行高修正把起点推到 6_350：补偿跟着模型走，屏幕位置仍是 120px
+    const second = prependAnchorFrame({
+      ...pageLanded,
+      anchorRowStart: 6_350,
+      scrollTop: 6_080,
+      previousScrollHeight: 7_000,
+      now: 1_116,
+    });
+    expect(second.scrollTop).toBe(6_230);
+    // 收敛：同一帧里 start 与 scrollTop 已经对上，就不再写
+    const third = prependAnchorFrame({
+      ...pageLanded,
+      anchorRowStart: 6_350,
+      scrollTop: 6_230,
+      previousScrollHeight: 7_000,
+      stableFrames: 7,
+      now: 1_132,
+    });
+    expect(third.scrollTop).toBeNull();
+    expect(third.stableFrames).toBe(8);
+    // 对照：拿不到模型时仍是老的按高度差算法（6_000 + 新增 1_000），证明新分支确实接管了
+    const legacy = prependAnchorFrame({ ...pageLanded, anchorRowStart: null, now: 1_100 });
+    expect(legacy.scrollTop).toBe(6_000);
   });
 
   it("gives up only after the wait window", () => {

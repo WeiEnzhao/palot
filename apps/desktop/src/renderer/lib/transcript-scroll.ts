@@ -378,6 +378,8 @@ export interface PrependAnchorFrameInput {
   anchorViewportTop: number;
   /** 锚点行当前的视口顶部；行不在虚拟窗口里时为 null。 */
   anchorTop: number | null;
+  /** 锚点行在内容坐标系中的起点（虚拟器模型给的值，行没挂载也拿得到）。 */
+  anchorRowStart: number | null;
   viewportTop: number;
   scrollTop: number;
   scrollHeight: number;
@@ -431,7 +433,19 @@ export function prependAnchorFrame(input: PrependAnchorFrameInput): PrependAncho
   let stableFrames = input.stableFrames;
   let corrected = false;
 
-  if (input.anchorTop !== null) {
+  if (input.anchorRowStart !== null) {
+    // 位置按虚拟器模型对齐，而不是按「累计新增高度」推算：
+    // 新页的行先按估值占位、随后被真实高度反复修正，用累计差去补偿时
+    // 每一步都踩在还没测准的数字上，收敛窗口一超时就只能停在半途（看起来就是
+    // 「一上滑加载消息就直接跳到最上边」）。模型给的 start 与行实际的 top 同源，
+    // 行在不在挂载窗口里都能算，行高修正时读数跟着模型一起挪，屏幕位置不会漂。
+    const target = snapToDevicePixel(input.anchorRowStart - input.anchorViewportTop);
+    if (Math.abs(target - input.scrollTop) > 0.5) {
+      scrollTop = target;
+      corrected = true;
+    }
+    stableFrames = Math.abs(target - input.scrollTop) <= 0.5 ? stableFrames + 1 : 0;
+  } else if (input.anchorTop !== null) {
     const correction = input.anchorTop - input.viewportTop - input.anchorViewportTop;
     if (Math.abs(correction) > 0.5) {
       scrollTop = snapToDevicePixel(input.scrollTop + correction);

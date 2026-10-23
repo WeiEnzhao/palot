@@ -217,9 +217,9 @@ const INITIAL_TRANSCRIPT_STABLE_FRAMES = 3;
 const MAX_INITIAL_TRANSCRIPT_SETTLE_MS = 250;
 const PREPEND_ANCHOR_STABLE_FRAMES = 8;
 /** 等新一页落地的上限：本地服务通常几十毫秒，远端连接可能久一点。 */
-const MAX_PREPEND_ANCHOR_WAIT_MS = 4_000;
-/** 落地后继续补偿的行高变化（图片、字体、高亮）上限。 */
-const MAX_PREPEND_ANCHOR_SETTLE_MS = 2_500;
+const MAX_PREPEND_ANCHOR_WAIT_MS = 6_000;
+/** 落地后继续补偿的行高变化（图片、字体、高亮、还没测准的行）上限。 */
+const MAX_PREPEND_ANCHOR_SETTLE_MS = 4_000;
 
 function nestedScrollConsumesDelta(root: HTMLElement, target: EventTarget | null, delta: number) {
   let element = target instanceof HTMLElement ? target : null;
@@ -909,10 +909,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
         anchorIndex >= 0
           ? viewport.querySelector<HTMLElement>(`[data-index="${anchorIndex}"]`)
           : null;
+      // 虚拟器模型里锚点行的起点（行没挂载也拿得到，与行实际的 top 同源）
+      const anchorRowStart =
+        anchorIndex >= 0 ? (virtualizer.getOffsetForIndex(anchorIndex, "start")?.[0] ?? null) : null;
       const height = viewport.scrollHeight;
       const result = prependAnchorFrame({
         anchorViewportTop: anchor.viewportTop,
         anchorTop: anchorElement?.getBoundingClientRect().top ?? null,
+        anchorRowStart,
         viewportTop: viewport.getBoundingClientRect().top,
         scrollTop: viewport.scrollTop,
         scrollHeight: height,
