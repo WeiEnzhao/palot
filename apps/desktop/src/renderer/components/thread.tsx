@@ -153,7 +153,6 @@ import { MyMessagesPanel } from "./my-messages-panel";
 import { highlightedMessageIDAtom, myMessagesPanelOpenAtom } from "../atoms/my-messages";
 import { compactionHistory } from "../lib/context-usage";
 import { latestTurnThought } from "./transcript/live-thought";
-import { WorkingTimer } from "./working-timer";
 import { ParentTaskBreadcrumb } from "./transcript/parent-breadcrumb";
 import { PlanCard } from "./transcript/plan-card";
 import { SessionHistoryDialog } from "./session-history-dialog";
@@ -2095,7 +2094,6 @@ const SessionThreadContents = memo(function SessionThreadContents({
             composerRequests={composerRequests}
             pendingInputs={pendingInputs}
             isWorking={isWorking}
-            activeTurn={activeTurnIndex >= 0 ? turnRows[activeTurnIndex]?.turn ?? null : null}
             onMessageAdmitted={handleMessageAdmitted}
             onModelsChange={setModels}
           />
@@ -2236,7 +2234,6 @@ const SessionDockContents = memo(function SessionDockContents({
   composerRequests,
   pendingInputs,
   isWorking,
-  activeTurn,
   onMessageAdmitted,
   onModelsChange,
 }: {
@@ -2250,7 +2247,6 @@ const SessionDockContents = memo(function SessionDockContents({
   composerRequests: PendingRequestView[];
   pendingInputs: PendingRequestView[];
   isWorking: boolean;
-  activeTurn: TranscriptTurn | null;
   onMessageAdmitted(): void;
   onModelsChange(models: PalotModel[]): void;
 }) {
@@ -2264,7 +2260,6 @@ const SessionDockContents = memo(function SessionDockContents({
   );
   return (
     <>
-      <WorkingTimer turn={activeTurn} visible={isWorking} />
       <PendingRequests sessionID={session.id} requests={floatingRequests} />
       <SessionRevertDock session={session} messages={revertMessages} />
       <PlanCard key={session.id} sessionID={session.id} messages={revertMessages} />
@@ -3099,9 +3094,11 @@ export function ActiveTurnMeta({
             <span className="min-w-0 truncate">{activity}</span>
           </>
         ) : null}
-        {/* 时长不在这里重复显示：活动头（`TurnActivityDurationLabel`）已经有同一个
-            计时器，两处各跑一个 `useCurrentTime` 会差 1 秒，屏幕上就是两个「工作中」。
-            时长仍留在 aria-label 里，读屏用户拿得到。 */}
+        {/* 可见时长放这里（2026-10-23 用户拍板：不新开一颗悬浮计时器，就并进
+            这行状态行）。头部 `TurnActivityDurationLabel` 与这里共用
+            `useCurrentTime` 同一个时钟薄，不会各走各的表。 */}
+        <span aria-hidden="true">·</span>
+        <span className="min-w-0 truncate">{duration}</span>
       </span>
       {thought ? (
         // Outside the live region so streaming thoughts do not interrupt screen readers.
