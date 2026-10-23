@@ -5,6 +5,7 @@ import {
   ChevronRight,
   CircleAlert,
   Clock3,
+  GripVertical,
   Paperclip,
   Pause,
   Pencil,
@@ -12,7 +13,7 @@ import {
   Trash2,
   Zap,
 } from "lucide-react";
-import { memo, useEffect, useId, useRef, useState, type ReactElement } from "react";
+import { memo, useEffect, useId, useMemo, useRef, useState, type ReactElement } from "react";
 import type { PalotFileAttachment } from "../../shared";
 import { attentionTargetAtom } from "../atoms/attention";
 import { runtimeAtom } from "../atoms/workspace";
@@ -74,6 +75,87 @@ export function ComposerQueue({
   const [states, setStates] = useState<Record<string, ComposerQueueItemState>>({});
   const inFlight = useRef(new Set<string>());
   const attentionTarget = useAtomValue(attentionTargetAtom);
+
+  // 本地排序顺序：用户拖拽后记住的顺序。外部 requests 变化时合并——保留已有顺序，新条目追加到末尾，已删除的条目移除。
+  const [orderedIDs, setOrderedIDs] = useState<string[]>(() => requests.map((r) => r.id));
+  useEffect(() => {
+    setOrderedIDs((prev) => {
+      const incoming = new Set(requests.map((r) => r.id));
+      // 保留仍在 requests 中的旧顺序
+      const kept = prev.filter((id) => incoming.has(id));
+      const keptSet = new Set(kept);
+      // 新条目追加到末尾
+      const added = requests.map((r) => r.id).filter((id) => !keptSet.has(id));
+      return kept.length + added.length === requests.length &&
+        kept.every((id, i) => id === prev[i]) &&
+        added.length === 0
+        ? prev
+        : [...kept, ...added];
+    });
+  }, [requests]);
+
+  // 按 orderedIDs 排序后的 requests，用于渲染和消费
+  const sortedRequests = useMemo(() => {
+    const byID = new Map(requests.map((r) => [r.id, r]));
+    const ordered = orderedIDs
+      .map((id) => byID.get(id))
+      .filter((r): r is PendingRequestView => r !== undefined);
+    // 若 orderedIDs 与 requests 不一致（理论上 useEffect 已同步），兜底补全
+    if (ordered.length !== requests.length) {
+      const seen = new Set(ordered.map((r) => r.id));
+      for (const r of requests) if (!seen.has(r.id)) ordered.push(r);
+    }
+    return ordered;
+  }, [requests, orderedIDs]);
+
+  // 拖拽状态
+  const dragID = useRef<string | null>(null);
+  const dragOverID = useRef<string | null>(null);
+
+  function onDragStart(id: string, event: React.DragEvent) {
+    dragID.current = id;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", id);
+    // 拖拽时标记行样式
+    const target = event.currentTarget as HTMLElement;
+    requestAnimationFrame(() => target.classList.add("opacity-40"));
+  }
+
+  function onDragEnd(event: React.DragEvent) {
+    const target = event.currentTarget as HTMLElement;
+    target.classList.remove("opacity-40");
+    dragID.current = null;
+    dragOverID.current = null;
+    // 清除所有拖拽样式
+    const section = target.closest("section");
+    section?.querySelectorAll("[data-drag-over]").forEach((el) => el.removeAttribute("data-drag-over"));
+  }
+
+  function onDragOver(id: string, event: React.DragEvent) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    if (dragID.current === id) return;
+    const target = event.currentTarget as HTMLElement;
+    if (dragOverID.current === id) return;
+    // 清除前一个目标的样式
+    const section = target.closest("section");
+    section?.querySelectorAll("[data-drag-over]").forEach((el) => el.removeAttribute("data-drag-over"));
+    target.setAttribute("data-drag-over", "true");
+    dragOverID.current = id;
+  }
+
+  function onDrop(id: string, event: React.DragEvent) {
+    event.preventDefault();
+    const sourceID = dragID.current;
+    if (!sourceID || sourceID === id) return;
+    setOrderedIDs((prev) => {
+      const next = prev.filter((x) => x !== sourceID);
+      const targetIndex = next.indexOf(id);
+      if (targetIndex === -1) return prev;
+      next.splice(targetIndex, 0, sourceID);
+      return next;
+    });
+  }
   const collapsible = requests.length > EXPANDED_LIMIT;
   const targeted =
     attentionTarget?.sessionID === sessionID &&
@@ -139,7 +221,7 @@ export function ComposerQueue({
       className="relative mx-2 -mb-4 min-w-0 rounded-t-2xl border border-b-0 border-foreground/10 bg-muted palot-composer-queue px-1 pt-1 pb-4"
     >
       {paused ? (
-        <PausedQueueRow sessionID={sessionID} requests={requests} onClearFailed={markFailed} />
+        <PausedQueueRow sessionID={sessionID} requests={sortedRequests} onClearFailed={markFailed} />
       ) : null}
       {collapsible ? (
         <button
@@ -163,7 +245,7 @@ export function ComposerQueue({
           id={listID}
           className="palot-native-scrollbar flex max-h-[min(9rem,20cqh)] min-w-0 flex-col overflow-x-hidden overflow-y-auto overscroll-contain"
         >
-          {requests.map((request, index) => (
+          {sortedRequests.map((request, index) => (
             <ComposerQueueItem
               key={request.id}
               sessionID={sessionID}
@@ -174,13 +256,18 @@ export function ComposerQueue({
               editDisabled={editDisabled || !onEdit}
               queuedPosition={
                 request.delivery === "queue"
-                  ? requests
+                  ? sortedRequests
                       .slice(0, index + 1)
                       .filter((candidate) => candidate.delivery === "queue").length
                   : undefined
               }
               queuedCount={queuedCount}
               onAction={run}
+              draggable={queuedCount > 1}
+              onDragStart={onDragStart}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              onDragEnd={onDragEnd}
             />
           ))}
         </div>
@@ -307,6 +394,11 @@ export const ComposerQueueItem = memo(function ComposerQueueItem({
   queuedPosition,
   queuedCount,
   onAction,
+  draggable = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
 }: {
   sessionID: string;
   request: PendingRequestView;
@@ -317,6 +409,11 @@ export const ComposerQueueItem = memo(function ComposerQueueItem({
   queuedPosition?: number;
   queuedCount: number;
   onAction(request: PendingRequestView, action: ComposerQueueAction): void;
+  draggable?: boolean;
+  onDragStart?(id: string, event: React.DragEvent): void;
+  onDragOver?(id: string, event: React.DragEvent): void;
+  onDrop?(id: string, event: React.DragEvent): void;
+  onDragEnd?(event: React.DragEvent): void;
 }) {
   const [attentionTarget, setAttentionTarget] = useAtom(attentionTargetAtom);
   const delivery = request.delivery ?? "steer";
@@ -358,7 +455,20 @@ export const ComposerQueueItem = memo(function ComposerQueueItem({
       data-palot-queue-state={failed ? "failed" : sending ? "sending" : delivery}
       aria-label={`待发送消息操作：${preview.label}`}
       aria-busy={sending}
+      draggable={draggable}
+      onDragStart={(event) => onDragStart?.(request.id, event)}
+      onDragOver={(event) => onDragOver?.(request.id, event)}
+      onDrop={(event) => onDrop?.(request.id, event)}
+      onDragEnd={onDragEnd}
     >
+      {draggable ? (
+        <span
+          className="flex shrink-0 cursor-grab items-center text-foreground/30 active:cursor-grabbing"
+          aria-hidden="true"
+        >
+          <GripVertical className="size-3" />
+        </span>
+      ) : null}
       <span
         className={cn(
           "flex shrink-0 items-center gap-1 font-medium text-foreground/70",

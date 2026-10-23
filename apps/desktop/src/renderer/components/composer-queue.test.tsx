@@ -1,6 +1,6 @@
 import { Provider, createStore } from "jotai";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -260,5 +260,57 @@ describe("ComposerQueue", () => {
     // The refused cancellation stays visible with a retry.
     await waitFor(() => expect(within(row("Second")).getByText("失败")).toBeTruthy());
     expect(within(row("Second")).getByRole("button", { name: "重试" })).toBeTruthy();
+  });
+
+  it("reorders items by drag and changes the resume target", async () => {
+    const user = userEvent.setup();
+    const { update } = inbox();
+    renderQueue(
+      <ComposerQueue
+        sessionID="ses_1"
+        working={false}
+        requests={[
+          pending("a", "First"),
+          pending("b", "Second"),
+          pending("c", "Third"),
+        ]}
+      />,
+      true,
+    );
+
+    // 展开列表（3 条默认折叠）
+    act(() => screen.getByRole("button", { name: "3 个排队中" }).click());
+
+    // 验证初始顺序
+    const rows = screen.getAllByRole("region", { name: /^待发送消息操作/ });
+    expect(rows.map((r) => r.getAttribute("data-palot-request-id"))).toEqual(["a", "b", "c"]);
+
+    // 模拟拖拽：把 "c" 拖到 "a" 的位置（事件直接落在行容器上，行本身带 draggable）
+    const rowC = row("Third");
+    const rowA = row("First");
+
+    // 触发拖拽事件序列
+    act(() => {
+      fireEvent.dragStart(rowC, { dataTransfer: new DataTransfer() });
+      fireEvent.dragOver(rowA, { dataTransfer: new DataTransfer() });
+      fireEvent.drop(rowA, { dataTransfer: new DataTransfer() });
+      fireEvent.dragEnd(rowC, { dataTransfer: new DataTransfer() });
+    });
+
+    // 验证顺序变为 c, a, b
+    const reorderedRows = screen.getAllByRole("region", { name: /^待发送消息操作/ });
+    expect(reorderedRows.map((r) => r.getAttribute("data-palot-request-id"))).toEqual([
+      "c",
+      "a",
+      "b",
+    ]);
+
+    // 点击恢复，应该取用新顺序的第一条（c）
+    await user.click(screen.getByRole("button", { name: "恢复" }));
+    expect(update).toHaveBeenCalledExactlyOnceWith({
+      sessionID: "ses_1",
+      inboxID: "c",
+      delivery: "steer",
+    });
   });
 });
