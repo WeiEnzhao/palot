@@ -51,7 +51,12 @@ electronFuses:
 
 mac:
   icon: resources/icons/stable/icon.icns
-  identity: "-"
+  # ad-hoc（"-"）没有稳定身份：钥匙串 ACL 只能按二进制指纹认人，每重打包一次指纹就换一个
+  # ⇒「Palot Safe Storage」每次重装都要重新问，点「始终允许」也留不住（macOS 15 对未签名
+  # /ad-hoc 的应用更严）。本机自签证书给一个跨构建稳定的签名身份（重建私钥只留在登录钥匙串）。
+  # forceCodeSigning：证书不在时构建直接失败，而不是悄悄退回 ad-hoc（绿色的假签名比没签名更坑）。
+  identity: "Palot Local Code Signing"
+  forceCodeSigning: true
   minimumSystemVersion: "13.0"
   target:
     - dmg
