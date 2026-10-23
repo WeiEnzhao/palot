@@ -686,6 +686,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
   }, [isWorking, startBottomFollow]);
   const [pinnedVirtualTurnIDs, setPinnedVirtualTurnIDs] = useState<string[]>([]);
   const [prependPinnedTurnID, setPrependPinnedTurnID] = useState<string | null>(null);
+  // 记锚点时必须立刻有人逐帧盯着校正：以前校正循环只在「行数/高度变了」之后才启动，
+  // 页一落地就已被后面的重新记锚点改写，等于从来没修过。
+  const [prependAnchorEpoch, setPrependAnchorEpoch] = useState(0);
   const [navigationPinnedTurnID, setNavigationPinnedTurnID] = useState<string | null>(null);
   const [findPinnedTurnID, setFindPinnedTurnID] = useState<string | null>(null);
   const pinVirtualTurn = useCallback((turnID: string) => {
@@ -1054,7 +1057,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
       cancelAnimationFrame(frame);
       viewport.style.overflowAnchor = "";
     };
-  }, [clearPrependAnchor, turnRows, virtualTranscriptHeight]);
+  }, [clearPrependAnchor, prependAnchorEpoch, turnRows, virtualTranscriptHeight]);
   useEffect(() => {
     const clearScrollbarIntent = () => {
       if (scrollIntentRef.current === "scrollbar") scrollIntentRef.current = null;
@@ -1153,6 +1156,12 @@ const SessionThreadContents = memo(function SessionThreadContents({
 
   async function loadOlder() {
     if (!cursor || loadingOlder || olderRequestRef.current) return false;
+    // 上一页的锚点还没修完就接着加载下一页 = 拿「此刻已经在顶上」当新基准，把记对了的
+    // 基准改写掉（实测 1.2 秒内连记 3 次锚点、补偿一次都没跑过）。一页修完再下一页。
+    if (prependAnchorRef.current) {
+      logTranscriptAnchorEvent({ 事件: "上一页还没修完先不加载" });
+      return false;
+    }
     olderRequestRef.current = true;
     try {
       const viewport = scrollRef.current;
@@ -1187,6 +1196,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
           内容高: Math.round(fallbackHeight),
           scrollTop: Math.round(fallbackScrollTop),
         });
+        setPrependAnchorEpoch((epoch) => epoch + 1);
         if (!anchorElement && stableTurnID) {
           await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
           await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
