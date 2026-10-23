@@ -2305,7 +2305,7 @@ export function normalizeAppearancePreferences(value: unknown): AppearancePrefer
     sidebarOpacity: themeNumber(input.sidebarOpacity, 30, 100, 67),
     contentOpacity: number(
       input.contentOpacity,
-      55,
+      10,
       100,
       DEFAULT_APPEARANCE_PREFERENCES.contentOpacity,
     ),

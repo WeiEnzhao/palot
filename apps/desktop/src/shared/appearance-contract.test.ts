@@ -38,7 +38,7 @@ describe("appearance preferences", () => {
       darkTheme: "palot",
       codeFont: "system",
       glassOpacity: 30,
-      contentOpacity: 55,
+      contentOpacity: 10,
       nativeGlassTint: 30,
       lightContrast: 0,
       darkContrast: 100,

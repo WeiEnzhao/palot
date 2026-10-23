@@ -1806,7 +1806,10 @@ function AppearanceSettings() {
   const [source, setSource] = useState<string | null>(null);
   const [backdropBlur, setBackdropBlur] = useState<WallpaperBackdropBlur>("strong");
   useEffect(() => {
-    void window.palot
+    // 防御式（同文件其余 API 均为可选链）：测试环境 window.palot 可能未 stub。
+    const api = window.palot;
+    if (!api?.getWallpaperBackdrop) return;
+    void api
       .getWallpaperBackdrop()
       .then((state) => {
         setSource(state.source);
