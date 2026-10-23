@@ -795,7 +795,13 @@ const SessionThreadContents = memo(function SessionThreadContents({
       scrollToBottomNow("grow");
     },
   });
-  virtualizer.shouldAdjustScrollPositionOnItemSizeChange = bottomLocked ? () => false : undefined;
+  // 补偿只能有一个主人。锚点循环在跑（或底部锁着）时关掉 virtual-core 自己的滚动
+  // 调整：它对「新页落地 / 估值→真实高」这类变化是无视滚动方向一律补的（源码注释：
+  // the estimate→actual delta must be corrected regardless of scroll direction），
+  // 我们的锚点循环补的是同一个量 —— 两边都补，视口就被多推一截，看起来就是
+  // 「加载完历史消息窗口自己往上走」。收成一个主人后，位置只由锚点循环决定。
+  virtualizer.shouldAdjustScrollPositionOnItemSizeChange =
+    bottomLocked || prependAnchorRef.current !== null ? () => false : undefined;
   const virtualItems = virtualizer.getVirtualItems();
   const virtualTranscriptHeight = virtualizer.getTotalSize();
   const hasVirtualTurns = turnRows.length > 0;
