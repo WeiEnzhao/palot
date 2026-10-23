@@ -12,7 +12,10 @@ interface TranscriptInfiniteScrollInput {
   loadOlder(): Promise<boolean>;
 }
 
-const NEAR_TOP_TURN_INDEX = 1;
+// 「快到头」的判据。以前是 1（几乎贴顶才发请求）：数据到达时人已经停在顶上，
+// 用户看到的就是「滑到顶 → 停一下 → 内容才出来」。放宽到 4 行 = 还有一两屏时数据
+// 就在路上，滑到顶时基本已经就位（插入带来的高度变化由翻页锚点负责校正）。
+const NEAR_TOP_TURN_INDEX = 4;
 
 /** Range-driven pagination with one page per explicit upward reading intent. */
 export function useTranscriptInfiniteScroll(input: TranscriptInfiniteScrollInput) {

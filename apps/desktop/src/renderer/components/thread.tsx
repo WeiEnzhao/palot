@@ -215,6 +215,11 @@ const MAX_PINNED_VIRTUAL_TURNS = 16;
 const MAX_BOTTOM_FOLLOW_FRAMES = 120;
 const INITIAL_TRANSCRIPT_STABLE_FRAMES = 3;
 const MAX_INITIAL_TRANSCRIPT_SETTLE_MS = 250;
+/** 离顶不到两屏时，允许「一页修完自动续下一页」。 */
+const AUTO_CONTINUE_NEAR_TOP_PX = 900;
+/** 自动续页的连续上限（他真想看更多自己会继续滑；防止停在顶上时无限往上吃内存）。 */
+const MAX_AUTO_PAGE_CONTINUATIONS = 3;
+
 /**
  * 翻页锚点的现场台账（CDP 读 `window.__palotAnchorLog`）。
  * 排「加载更早之后跳到新批最上边」要用：光看 scrollTop 写入判不出「锚点有没有活着」，
@@ -703,6 +708,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
   } | null>(null);
   // 锚点校正「自己写到」的位置：scrollTop 跟它不一致 = 别人（用户 / 浏览器原生锚定）挪过。
   const anchorWrittenRef = useRef<number | null>(null);
+  // 「一页修完自动续下一页」用：用户停在顶上读旧消息时不该每页都得重新划一下。
+  const continuePagingRef = useRef<() => void>(() => {});
+  const autoChainRef = useRef(0);
   const [navigationPinnedTurnID, setNavigationPinnedTurnID] = useState<string | null>(null);
   const [findPinnedTurnID, setFindPinnedTurnID] = useState<string | null>(null);
   const pinVirtualTurn = useCallback((turnID: string) => {
@@ -1139,6 +1147,25 @@ const SessionThreadContents = memo(function SessionThreadContents({
         viewport.style.overflowAnchor = "";
         prependBaselineRef.current = null;
         clearPrependAnchor();
+        // 校正收工 = 这一页的高度变化已经修干净。人还贴在顶部附近读旧消息时自动续下一页
+        // （以前每页都要他重新划一下才发得出请求，读起来一顿一顿的）。上限 3 页防失控，
+        // 一旦他离开顶部（下一层判据是 scrollTop > 阈值）计数归零。
+        if (
+          viewport.scrollTop <= AUTO_CONTINUE_NEAR_TOP_PX &&
+          autoChainRef.current < MAX_AUTO_PAGE_CONTINUATIONS
+        ) {
+          autoChainRef.current += 1;
+          logTranscriptAnchorEvent({
+            事件: "修完自动续下一页",
+            第几次: autoChainRef.current,
+            scrollTop: Math.round(viewport.scrollTop),
+          });
+          // 推迟一帧：clearPrependAnchor 的 setPrependPinnedTurnID(null) 还没提交，
+          // 这一帧的 blocked 仍然是 true，直接调会被钩子挡回去。
+          requestAnimationFrame(() => continuePagingRef.current());
+        } else if (viewport.scrollTop > AUTO_CONTINUE_NEAR_TOP_PX) {
+          autoChainRef.current = 0;
+        }
         return;
       }
       frame = requestAnimationFrame(restoreAnchor);
@@ -1313,6 +1340,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
             fallbackScrollTop,
           };
           anchorWrittenRef.current = fallbackScrollTop;
+          autoChainRef.current = 0;
           logTranscriptAnchorEvent({
             事件: "存基准",
             行数: turnRows.length,
@@ -1442,6 +1470,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     canLoad: () => !olderRequestRef.current && prependAnchorRef.current === null,
     loadOlder,
   });
+  continuePagingRef.current = () => infiniteScroll.onUpwardIntent();
 
   const openCacheDiagnostic = useCallback(
     (messageID: string) => {

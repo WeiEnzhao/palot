@@ -948,7 +948,9 @@ export const palot = {
         diffs: session.id === "first-shell" ? previewDiffs : [],
       };
     }
-    const messageLimit = 20;
+    // 首屏只给 20 条时，打开会话只有十几行可滚 —— 往上读第一下就撞顶，实测连翻 8 页
+    // 才回到看得见的历史（每页 100 条）。首屏放大到和翻页同量级，打开就能连着滚。
+    const messageLimit = 80;
     const [messages, requests, diffs] = await Promise.all([
       targets.messages
         ? loadTaskResource(session, "Transcript", () =>
@@ -997,7 +999,7 @@ export const palot = {
       };
     }
     return loadOpenCodeMessages(
-      { sessionID: session.id, limit: 20 },
+      { sessionID: session.id, limit: 80 },
       messageMode === "rooted",
       requestSignal,
       connectionID,
