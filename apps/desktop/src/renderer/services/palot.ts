@@ -948,9 +948,9 @@ export const palot = {
         diffs: session.id === "first-shell" ? previewDiffs : [],
       };
     }
-    // 首屏只拿最近 20 条（用户口径）：首屏放大 = 打开时就要投影 + 渲染更多条，
-    // 卡的正是打开那一下。「往上读不用反复划」交给触发阈值与自动续页去解决，不靠加大首屏。
-    const messageLimit = 20;
+    // 首屏只拿最近 10 条（用户口径）：首屏放大 = 打开那一下就要投影 + 渲染更多条，
+    // 卡的正是那里。「往上读不用反复划」交给触发阈值与自动续页解决，不靠加大首屏。
+    const messageLimit = 10;
     const [messages, requests, diffs] = await Promise.all([
       targets.messages
         ? loadTaskResource(session, "Transcript", () =>
@@ -999,7 +999,7 @@ export const palot = {
       };
     }
     return loadOpenCodeMessages(
-      { sessionID: session.id, limit: 20 },
+      { sessionID: session.id, limit: 10 },
       messageMode === "rooted",
       requestSignal,
       connectionID,
@@ -1013,9 +1013,9 @@ export const palot = {
     connectionID?: string,
   ) {
     if (!apiAvailable()) return { data: [], cursor: { previous: null, next: null } };
-    // 每页 20 条（用户口径：100 条一次插进来会卡）。页小 ⇒ 单次的投影/挂载更轻，
-    // 「不用反复划」由「还有一两屏就发请求」+「一页修完自动续页」来保证，不靠大页换。
-    const limit = 20;
+    // 每页 10 条（用户口径：一次插太多会卡）。页小 ⇒ 单次的投影/挂载更轻，代价是页数变多；
+    // 「不用反复划」由「还有一两屏就发请求」+「一页修完自动续页（停在顶时最多连 3 页）」兜住。
+    const limit = 10;
     return loadOpenCodeMessages({ sessionID, cursor, limit }, true, requestSignal, connectionID);
   },
 
