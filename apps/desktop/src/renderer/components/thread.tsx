@@ -215,6 +215,18 @@ const MAX_PINNED_VIRTUAL_TURNS = 16;
 const MAX_BOTTOM_FOLLOW_FRAMES = 120;
 const INITIAL_TRANSCRIPT_STABLE_FRAMES = 3;
 const MAX_INITIAL_TRANSCRIPT_SETTLE_MS = 250;
+/**
+ * 翻页锚点的现场台账（CDP 读 `window.__palotAnchorLog`）。
+ * 排「加载更早之后跳到新批最上边」要用：光看 scrollTop 写入判不出「锚点有没有活着」，
+ * 得知道它什么时候记的、补偿了几次、为什么撒手。只留最近 90 条，不进渲染。
+ */
+function logTranscriptAnchorEvent(entry: Record<string, unknown>) {
+  const store = globalThis as { __palotAnchorLog?: Record<string, unknown>[] };
+  const log = (store.__palotAnchorLog ??= []);
+  log.push({ t: Math.round(performance.now()), ...entry });
+  if (log.length > 90) log.shift();
+}
+
 const PREPEND_ANCHOR_STABLE_FRAMES = 8;
 /** 等新一页落地的上限：本地服务通常几十毫秒，远端连接可能久一点。 */
 const MAX_PREPEND_ANCHOR_WAIT_MS = 6_000;
@@ -566,6 +578,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const scrollToBottom = useCallback(() => {
     scrollIntentRef.current = null;
     // 用户主动要回底部：翻页锚点当场让位（守卫窗再长也不该跟这次点击抢位置）
+    if (prependAnchorRef.current) logTranscriptAnchorEvent({ 事件: "用户回底部让位" });
     prependAnchorRef.current = null;
     setPrependPinnedTurnID(null);
     setBottomLock(true);
@@ -955,6 +968,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const viewport = scrollRef.current;
     const pendingAnchor = prependAnchorRef.current;
     if (!pendingAnchor || !viewport) return;
+    // 这段窗口把「新页插进来时视口别动」交给浏览器自己做（overflow-anchor）：
+    // 它天生就是干这个的，而且它不理会我们自己的程序化写入，两边不会重复补偿。
+    // 我们那一层按锚点行校正照跑，两边都指向「锚点行停在原处」同一个落点。
+    viewport.style.overflowAnchor = "auto";
     let frame = 0;
     let stableFrames = 0;
     let lastHeight = viewport.scrollHeight;
@@ -1005,16 +1022,38 @@ const SessionThreadContents = memo(function SessionThreadContents({
       if (result.scrollTop !== null) {
         scrollIntentRef.current = "anchor";
         viewport.scrollTop = result.scrollTop;
-        previousScrollTopRef.current = viewport.scrollTop;
+        const landed = viewport.scrollTop;
+        previousScrollTopRef.current = landed;
+        logTranscriptAnchorEvent({
+          事件: "补偿",
+          写到: Math.round(result.scrollTop),
+          实际落到: Math.round(landed),
+          被夹住: Math.abs(landed - result.scrollTop) > 0.5,
+          内容高: Math.round(viewport.scrollHeight),
+          行数: turnRows.length,
+          稳定帧: stableFrames,
+        });
       }
       if (result.done) {
+        logTranscriptAnchorEvent({
+          事件: result.landedAt === null ? "没落地就撒手" : "收工",
+          稳定帧: result.stableFrames,
+          落地后ms: result.landedAt === null ? null : Math.round(now - result.landedAt),
+          行数: turnRows.length,
+          内容高: Math.round(viewport.scrollHeight),
+          距底: Math.round(viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop),
+        });
+        viewport.style.overflowAnchor = "";
         clearPrependAnchor();
         return;
       }
       frame = requestAnimationFrame(restoreAnchor);
     };
     restoreAnchor();
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport.style.overflowAnchor = "";
+    };
   }, [clearPrependAnchor, turnRows, virtualTranscriptHeight]);
   useEffect(() => {
     const clearScrollbarIntent = () => {
@@ -1140,6 +1179,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
           fallbackHeight,
           fallbackScrollTop,
         };
+        logTranscriptAnchorEvent({
+          事件: "记锚点",
+          锚点行: stableTurnID ? String(stableTurnID).slice(-6) : "无",
+          锚点行视口偏移: Math.round(prependAnchorRef.current.viewportTop),
+          行数: turnRows.length,
+          内容高: Math.round(fallbackHeight),
+          scrollTop: Math.round(fallbackScrollTop),
+        });
         if (!anchorElement && stableTurnID) {
           await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
           await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
