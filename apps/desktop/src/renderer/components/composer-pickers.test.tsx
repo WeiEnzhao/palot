@@ -124,7 +124,7 @@ describe("ModelPicker", () => {
     expect(groupOptions("OpenAI")).toEqual([
       "Deep200K",
       "Fast新默认200K",
-      "LegacyDeprecated200K",
+      "Legacy已弃用200K",
     ]);
     // Searching drops the shortcut sections so each model appears once.
     await userEvent.type(screen.getByRole("combobox", { name: "选择模型" }), "claude");

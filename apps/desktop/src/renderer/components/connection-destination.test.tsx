@@ -83,9 +83,9 @@ describe("composer connection destination", () => {
     expect(screen.getByText("Build server")).toBeTruthy();
     expect(
       screen
-        .getByRole("img", { name: "Build server · build.example · Connected" })
+        .getByRole("img", { name: "Build server · build.example · 已连接" })
         .getAttribute("title"),
-    ).toBe("Build server · build.example · Connected");
+    ).toBe("Build server · build.example · 已连接");
     expect(screen.queryByText("Run on")).toBeNull();
     expect(screen.queryByRole("button")).toBeNull();
   });

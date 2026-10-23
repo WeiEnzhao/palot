@@ -197,8 +197,8 @@ describe("Project settings", () => {
     });
     const command = await screen.findByRole("group", { name: "命令" });
     expect(command.textContent).toContain("cargo clean && rm -rf dist");
-    expect(screen.getByRole("button", { name: "复制 Clean 命令" })).toBeTruthy();
-    expect(screen.getByText("当任务结束时运行 · 10 分钟后停止")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "复制 Clean command" })).toBeTruthy();
+    expect(screen.getByText("Runs when a task settles · stops after 10 min")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "编辑 Clean" }));
     const timeout = screen.getByLabelText("超时时间（秒）");

@@ -2733,8 +2733,9 @@ export function ActiveTurnMeta({
             <span className="min-w-0 truncate">{activity}</span>
           </>
         ) : null}
-        <span aria-hidden="true">·</span>
-        <span className="shrink-0">{duration}</span>
+        {/* 时长不在这里重复显示：活动头（`TurnActivityDurationLabel`）已经有同一个
+            计时器，两处各跑一个 `useCurrentTime` 会差 1 秒，屏幕上就是两个「工作中」。
+            时长仍留在 aria-label 里，读屏用户拿得到。 */}
       </span>
       {thought ? (
         // Outside the live region so streaming thoughts do not interrupt screen readers.

@@ -140,7 +140,7 @@ describe("PluginSettings", () => {
     expect(refresh).toHaveBeenCalledOnce();
     await user.click(screen.getByRole("button", { name: "更新" }));
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(2));
-    expect(notice).toHaveBeenLastCalledWith({ type: "success", title: "Tools updated" });
+    expect(notice).toHaveBeenLastCalledWith({ type: "success", title: "Tools 已更新" });
   });
 
   it("shows externally running updates and prevents duplicate updates", () => {

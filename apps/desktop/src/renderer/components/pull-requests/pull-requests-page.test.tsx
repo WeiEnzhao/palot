@@ -99,7 +99,7 @@ describe("PullRequestsPage list", () => {
         expect.objectContaining({ list: "authored", query: "draft:false" }),
       ),
     );
-    await userEvent.click(within(chips).getByRole("button", { name: "移除筛选器 No drafts" }));
+    await userEvent.click(within(chips).getByRole("button", { name: "移除筛选器 无草稿" }));
     expect(store.get(pullRequestFiltersAtom)).toEqual(EMPTY_PULL_REQUEST_FILTERS);
     expect(screen.queryByRole("list", { name: "当前筛选条件" })).toBeNull();
   });

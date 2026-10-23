@@ -410,7 +410,7 @@ describe("MultiConnectionSidebar", () => {
     renderSidebar();
     const localRow = screen.getByRole("button", { name: "Same task · Local · Local" });
     expect(within(localRow).queryByRole("img", { name: /Local · Local/ })).toBeNull();
-    expect(screen.getByRole("img", { name: "Same server · beta.example · Connected" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Same server · beta.example · 已连接" })).toBeTruthy();
   });
 
   it("uses the original snooze choices with the clicked row owner", async () => {

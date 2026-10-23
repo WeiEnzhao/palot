@@ -191,7 +191,7 @@ describe("GlobalCommandPalette", () => {
     fireEvent.keyDown(window, { key: "k", metaKey: true });
     await userEvent.type(
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
-      "welcome guide",
+      "欢迎指南",
     );
     await userEvent.click(await screen.findByRole("option", { name: /打开欢迎指南/ }));
 
@@ -293,9 +293,9 @@ describe("GlobalCommandPalette", () => {
 
     await userEvent.type(
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
-      "restart",
+      "重启",
     );
-    const localResult = await screen.findByRole("option", { name: /Restart Palot/ });
+    const localResult = await screen.findByRole("option", { name: /重启 Palot/ });
     await waitFor(() => expect(localResult.hasAttribute("data-highlighted")).toBe(true));
     await waitFor(() => expect(mocks.listRootSessionInfo).toHaveBeenCalled());
 
@@ -421,7 +421,7 @@ describe("GlobalCommandPalette", () => {
 
     fireEvent.keyDown(window, { key: "k", metaKey: true });
     const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
-    await userEvent.type(input, "focus composer");
+    await userEvent.type(input, "聚焦");
     await userEvent.click(screen.getByRole("option", { name: /聚焦输入框/ }));
 
     await waitFor(() => expect(document.activeElement).toBe(composer));
@@ -621,7 +621,7 @@ describe("GlobalCommandPalette", () => {
     const first = setup("/new");
     first.store.set(commandPaletteOpenAtom, true);
     const input = await screen.findByRole("combobox", { name: "搜索任务和命令" });
-    await userEvent.type(input, "compact");
+    await userEvent.type(input, "压缩");
     expect(screen.queryByRole("option", { name: /^压缩任务/ })).toBeNull();
     first.unmount();
 
@@ -631,7 +631,7 @@ describe("GlobalCommandPalette", () => {
     store.set(commandPaletteOpenAtom, true);
     await userEvent.type(
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
-      "compact task",
+      "压缩",
     );
     await userEvent.click(await screen.findByRole("option", { name: /^压缩任务/ }));
     await waitFor(() => expect(mocks.compactSession).toHaveBeenCalledWith("session-1"));
@@ -641,7 +641,7 @@ describe("GlobalCommandPalette", () => {
     store.set(commandPaletteOpenAtom, true);
     await userEvent.type(
       await screen.findByRole("combobox", { name: "搜索任务和命令" }),
-      "undo last",
+      "撤销",
     );
     await userEvent.click(await screen.findByRole("option", { name: /^撤销上一步/ }));
     await waitFor(() =>

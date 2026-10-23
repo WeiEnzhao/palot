@@ -398,7 +398,7 @@ describe("OpenCode login service", () => {
       const h = await harness(platform);
       await h.manager.enable(h.binary);
       h.state.failure = platform === "linux" ? "start" : "bootstrap";
-      await expect(h.manager.control("start", h.binary, null)).rejects.toThrow("Check your");
+      await expect(h.manager.control("start", h.binary, null)).rejects.toThrow("请检查你的");
       await expect(h.manager.control("start", h.binary, null)).rejects.not.toThrow("SECRET");
       expect(h.state.pid).toBe(0);
     },

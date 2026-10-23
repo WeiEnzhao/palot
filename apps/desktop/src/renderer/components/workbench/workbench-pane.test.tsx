@@ -291,15 +291,15 @@ it("reopens the most recently closed tab using the workbench-focused shortcut", 
 it("opens a New tab page from + and turns it into the chosen surface in place", async () => {
   const store = mount();
   fireEvent.click(screen.getByRole("button", { name: "新标签页" }));
-  const tab = await screen.findByRole("tab", { name: "新标签页" });
+  const tab = await screen.findByRole("tab", { name: "New tab" });
   expect(tab.getAttribute("aria-selected")).toBe("true");
   const tools = await screen.findByRole("group", { name: "工具" });
-  fireEvent.click(within(tools).getByRole("button", { name: /Changes/ }));
+  fireEvent.click(within(tools).getByRole("button", { name: /变更/ }));
   await screen.findByRole("tab", { name: /^Changes/ });
   const right = store.get(workbenchStateAtom).scopes[workbenchScopeKey(scope)]!.right;
   expect(right.tabs.map((candidate) => candidate.kind)).toEqual(["browser", "browser", "changes"]);
   expect(right.activeTabID).toBe(right.tabs[2]!.id);
-  expect(screen.queryByRole("tab", { name: "新标签页" })).toBeNull();
+  expect(screen.queryByRole("tab", { name: "New tab" })).toBeNull();
 });
 
 it("navigates a New tab by opening the address as a page in its place", async () => {

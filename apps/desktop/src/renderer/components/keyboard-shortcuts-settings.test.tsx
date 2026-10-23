@@ -116,7 +116,7 @@ describe("KeyboardShortcutsSettings", () => {
     // The palette is the way into every command, so it cannot be cleared.
     await user.click(screen.getByRole("button", { name: /Change shortcut for 搜索任务和命令/ }));
     await user.keyboard("{Backspace}");
-    expect(within(row("palette.open")).getByRole("alert").textContent).toMatch(/needs a shortcut/);
+    expect(within(row("palette.open")).getByRole("alert").textContent).toMatch(/需要设置快捷键/);
     expect(shortcutKeys("palette.open")).toEqual(["Mod", "K"]);
   });
 

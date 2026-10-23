@@ -156,7 +156,7 @@ describe("OpenCodeInstallationSettings", () => {
       expect(dialog.textContent).not.toContain("不保证兼容性");
       expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
       if (method !== "auto") {
-        await user.click(screen.getByRole("combobox", { name: "Install method" }));
+        await user.click(screen.getByRole("combobox", { name: "安装方式" }));
         await user.click(screen.getByRole("option", { name: method }));
       }
       await user.click(screen.getByRole("button", { name: "确认更新已安装的版本" }));
@@ -222,7 +222,7 @@ describe("OpenCodeInstallationSettings", () => {
     expect(screen.getByRole("alertdialog").textContent).toContain(
       "不保证兼容性",
     );
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "取消" }));
     expect(palot.upgradeOpenCodeInstallation).not.toHaveBeenCalled();
     await user.click(
       screen.getByRole("button", { name: "Update installed OpenCode to 2.1.0-beta.1" }),
@@ -288,7 +288,7 @@ describe("OpenCodeInstallationSettings", () => {
     vi.mocked(palot.selectOpenCodeInstallation).mockReturnValue(pending.promise);
     const user = userEvent.setup();
     render(<OpenCodeInstallationSettings />);
-    const picker = await screen.findByRole("combobox", { name: "Installed OpenCode" });
+    const picker = await screen.findByRole("combobox", { name: "已安装的 OpenCode" });
     picker.focus();
     await user.keyboard("{Enter}{End}{Enter}");
     expect(palot.selectOpenCodeInstallation).toHaveBeenCalledExactlyOnceWith(second.id);

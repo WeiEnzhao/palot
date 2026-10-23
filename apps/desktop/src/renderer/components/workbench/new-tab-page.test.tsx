@@ -115,7 +115,7 @@ it("reveals more tools on demand", () => {
   const usage = vi.fn();
   mount({ moreTools: [{ id: "usage", label: "Usage", icon: Gauge, onSelect: usage }] });
   expect(screen.queryByRole("button", { name: "Usage" })).toBeNull();
-  const more = screen.getByRole("button", { name: "More tools…" });
+  const more = screen.getByRole("button", { name: "更多工具…" });
   fireEvent.click(more);
   expect(more.getAttribute("aria-expanded")).toBe("true");
   fireEvent.click(screen.getByRole("button", { name: "Usage" }));

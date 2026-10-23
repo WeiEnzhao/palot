@@ -109,7 +109,7 @@ describe("createSessionPty", () => {
     expect(persistent).toHaveBeenCalledWith({
       sessionID: "remote-task",
       cwd: "/srv/project",
-      title: "Terminal",
+      title: "终端",
       args: [],
       env: {},
     });
@@ -137,7 +137,7 @@ describe("createSessionPty", () => {
       expect.objectContaining({
         sessionID: "session-1",
         cwd: "/repo",
-        title: "Terminal",
+        title: "终端",
         env: expect.objectContaining({ TERM: expect.any(String), COLORTERM: expect.any(String) }),
       }),
     );

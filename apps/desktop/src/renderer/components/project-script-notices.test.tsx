@@ -59,15 +59,15 @@ describe("ProjectScriptNotices", () => {
     expect(add).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "warning",
-        title: "Ran “test” after settling: failed",
-        actionProps: expect.objectContaining({ children: "View output" }),
+        title: "已运行「test」，状态：已失败",
+        actionProps: expect.objectContaining({ children: "查看输出" }),
       }),
     );
     act(() => (add.mock.calls[0]![0].actionProps!.onClick as () => void)());
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("退出码 2 · 2.5 秒")).toBeTruthy();
-    expect(within(dialog).getByLabelText("Script output").textContent).toBe("1 failing\n");
-    expect(within(dialog).getByRole("group", { name: "Command" }).textContent).toContain(
+    expect(within(dialog).getByLabelText("脚本输出").textContent).toBe("1 failing\n");
+    expect(within(dialog).getByRole("group", { name: "命令" }).textContent).toContain(
       "bun test",
     );
   });
