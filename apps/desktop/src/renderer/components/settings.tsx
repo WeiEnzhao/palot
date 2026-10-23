@@ -2045,7 +2045,7 @@ function AppearanceSettings() {
               <AppearanceSlider
                 label="主要内容不透明度"
                 value={preferences.contentOpacity}
-                min={55}
+                min={10}
                 max={100}
                 defaultValue={DEFAULT_APPEARANCE_PREFERENCES.contentOpacity}
                 onChange={(contentOpacity) => update({ contentOpacity })}
