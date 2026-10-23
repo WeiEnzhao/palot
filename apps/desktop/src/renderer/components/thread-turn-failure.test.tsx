@@ -57,7 +57,7 @@ function renderReloaded(execution: SessionExecutionState | null = null) {
 it("keeps a failed turn's error after a reload hydrates the transcript", () => {
   renderReloaded();
   const card = screen.getByRole("alert", { name: "响应失败" });
-  expect(card.textContent).toContain("Rate limited by provider");
+  expect(card.textContent).toContain("请求被限速，请稍后再试");
 });
 
 it("shows one failure card when the live execution error is still known", () => {
