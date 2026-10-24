@@ -1147,6 +1147,17 @@ const SessionThreadContents = memo(function SessionThreadContents({
         anchorWrittenRef.current !== null &&
         Math.abs(viewport.scrollTop - anchorWrittenRef.current) > 0.5
       ) {
+        // 用户已经顶到最上（scrollTop 钉在 0）：锚点的「保持阅读位置」在这里没有意义，
+        // 而它活着会让 canLoad 一直拒绝下一页 —— 探针实测（2026-10-25）：补偿写入与
+        // 用户滚动 1:1 互相抵消、请求发不出去，表现就是「顶死划不动、加载动画也不出现」。
+        // 让位：循环退出、分页链路恢复，下一次上滑手势直接取下一页。
+        if (viewport.scrollTop <= 1) {
+          viewport.style.overflowAnchor = "";
+          anchorWrittenRef.current = null;
+          prependBaselineRef.current = null;
+          clearPrependAnchor("用户已顶到最上");
+          return;
+        }
         const movedIndex = anchor.turnID
           ? turnRows.findIndex((row) => row.id === anchor.turnID)
           : -1;
