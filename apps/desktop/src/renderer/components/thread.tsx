@@ -1140,6 +1140,18 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const restoreAnchor = () => {
       const anchor = prependAnchorRef.current;
       if (!anchor) return;
+      // 用户已经顶到最上（scrollTop 钉在 0）：锚点的「保持阅读位置」在这里没有意义，
+      // 而它活着会让 canLoad 一直拒绝下一页 —— 探针实测（2026-10-25）：补偿写入与
+      // 用户滚动 1:1 互相抵消、请求发不出去，表现就是「顶死划不动、加载动画也不出现」。
+      // 这条必须盖住锚点的所有阶段（含还没落地、一次补偿都没写过的等待期），
+      // 所以放在循环最前面，而不是只在 rebaseline 分支里查。
+      if (viewport.scrollTop <= 1) {
+        viewport.style.overflowAnchor = "";
+        anchorWrittenRef.current = null;
+        prependBaselineRef.current = null;
+        clearPrependAnchor("用户已顶到最上");
+        return;
+      }
       // 校正只对「我们认可的位置之后发生的高度变化」负责。scrollTop 变了却不是我们写的
       // = 用户自己挪的（或浏览器原生锚定挪的）：基准当场挪到此刻，这一帧不写。
       // 以前把他拽回旧基准，就是「继续往上滑动，又回来了」。
@@ -1147,17 +1159,6 @@ const SessionThreadContents = memo(function SessionThreadContents({
         anchorWrittenRef.current !== null &&
         Math.abs(viewport.scrollTop - anchorWrittenRef.current) > 0.5
       ) {
-        // 用户已经顶到最上（scrollTop 钉在 0）：锚点的「保持阅读位置」在这里没有意义，
-        // 而它活着会让 canLoad 一直拒绝下一页 —— 探针实测（2026-10-25）：补偿写入与
-        // 用户滚动 1:1 互相抵消、请求发不出去，表现就是「顶死划不动、加载动画也不出现」。
-        // 让位：循环退出、分页链路恢复，下一次上滑手势直接取下一页。
-        if (viewport.scrollTop <= 1) {
-          viewport.style.overflowAnchor = "";
-          anchorWrittenRef.current = null;
-          prependBaselineRef.current = null;
-          clearPrependAnchor("用户已顶到最上");
-          return;
-        }
         const movedIndex = anchor.turnID
           ? turnRows.findIndex((row) => row.id === anchor.turnID)
           : -1;
