@@ -34,6 +34,31 @@ const location = (input: { directory: string; workspaceID?: string }) => ({
   directory: input.directory,
   ...(input.workspaceID ? { workspace: input.workspaceID } : {}),
 });
+// 服务端用 path.resolve(location.directory, path) + contains 做包含校验，绝对路径
+// 逃出 directory 时直接 Effect.die("Path escapes the location") → HTTP 500
+// （2026-10-24 实锤：win 连接预览 D:/project/tasks/... 而会话目录在 C:\Users\...）。
+// 逃出的绝对路径改传「能包住它」的 location：读文件传文件父目录，列目录传目录自身。
+const isAbsolutePath = (value: string) => value.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(value);
+const normalizeForContainment = (value: string) =>
+  value.replace(/\\/g, "/").replace(/\/+$/, "").toLowerCase();
+const containsPath = (directory: string, target: string) => {
+  const root = normalizeForContainment(directory);
+  const child = normalizeForContainment(target);
+  return child === root || child.startsWith(`${root}/`);
+};
+const parentDirectory = (target: string) => {
+  const normalized = target.replace(/\\/g, "/").replace(/\/+$/, "");
+  const cut = normalized.lastIndexOf("/");
+  return cut <= 0 ? normalized : normalized.slice(0, cut);
+};
+const readLocation = (input: { directory: string; workspaceID?: string }, path: string) =>
+  isAbsolutePath(path) && !containsPath(input.directory, path)
+    ? { directory: parentDirectory(path) }
+    : location(input);
+const listLocation = (input: { directory: string; workspaceID?: string }, path: string) =>
+  isAbsolutePath(path) && !containsPath(input.directory, path)
+    ? { directory: path.replace(/\/+$/, "") }
+    : location(input);
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "未知的 OpenCode 错误";
 
@@ -422,7 +447,7 @@ export async function readWorkspaceFile(
   connectionID?: string,
 ) {
   return openCodeClient(connectionID).file.read(
-    { location: location(input), path: input.path },
+    { location: readLocation(input, input.path), path: input.path },
     { signal: openCodeRequestSignal(requestSignal) },
   );
 }
@@ -434,7 +459,7 @@ export async function listWorkspaceDirectory(
 ) {
   const response = await openCodeClient(connectionID).file.list(
     {
-      location: location(input),
+      location: input.path ? listLocation(input, input.path) : location(input),
       ...(input.path ? { path: input.path } : {}),
     },
     { signal: openCodeRequestSignal(requestSignal) },
