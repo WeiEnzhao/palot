@@ -61,13 +61,27 @@ export function reconcileMessage(
   const runStartedAt = preferred.runStartedAt ?? current.runStartedAt;
   const runCompletedAt = preferred.runCompletedAt ?? current.runCompletedAt;
   const firstTokenAt = preferred.firstTokenAt ?? current.firstTokenAt;
+  // 压缩消息的完成时刻只存在于事件流（session.compaction.ended 的 createdAt），
+  // 服务器快照里没有 —— mapMessage 只能把 completedAt 填回 created（退化值）。
+  // 回填快照时若把 live 侧观测到的真实完成时刻丢掉，分隔条上的「耗时 X」就没了。
+  let compactionCompletedAt: number | null | undefined;
+  if (
+    preferred.type === "compaction" &&
+    current.type === "compaction" &&
+    current.completedAt !== null &&
+    current.completedAt > current.createdAt &&
+    (preferred.completedAt === null || preferred.completedAt <= preferred.createdAt)
+  ) {
+    compactionCompletedAt = current.completedAt;
+  }
   if (
     delivery === preferred.delivery &&
     timelineAt === preferred.timelineAt &&
     promotedAt === preferred.promotedAt &&
     runStartedAt === preferred.runStartedAt &&
     runCompletedAt === preferred.runCompletedAt &&
-    firstTokenAt === preferred.firstTokenAt
+    firstTokenAt === preferred.firstTokenAt &&
+    compactionCompletedAt === undefined
   ) {
     return preferred;
   }
@@ -79,6 +93,7 @@ export function reconcileMessage(
     ...(runStartedAt === undefined ? {} : { runStartedAt }),
     ...(runCompletedAt === undefined ? {} : { runCompletedAt }),
     ...(firstTokenAt === undefined ? {} : { firstTokenAt }),
+    ...(compactionCompletedAt === undefined ? {} : { completedAt: compactionCompletedAt }),
   };
 }
 

@@ -29,6 +29,16 @@ describe("message reconciliation", () => {
     expect(reconcileMessage(persisted, compaction("Live summary"), false)).toBe(persisted);
   });
 
+  it("keeps the live-observed compaction completion time when a snapshot backfills", () => {
+    // 服务器快照只有 time.created（completedAt 退化为与 createdAt 相同）；
+    // live 侧被 session.compaction.ended 事件盖上了真实完成时刻，不能被冲掉。
+    const server: PalotMessage = { ...compaction("Summary"), createdAt: 1_000, completedAt: 1_000 };
+    const live: PalotMessage = { ...compaction("Summary"), createdAt: 1_000, completedAt: 16_000 };
+    expect(reconcileMessage(server, live, false)?.completedAt).toBe(16_000);
+    // 两侧都退化（历史回放没有观测值）时不发明时间。
+    expect(reconcileMessage(server, { ...live, completedAt: 1_000 }, false)).toBe(server);
+  });
+
   it("replaces the live compaction with its hydrated persisted message", () => {
     const merged = mergeMessages(
       [compaction("Persisted summary")],
