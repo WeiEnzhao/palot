@@ -83,7 +83,8 @@ describe("FinalMessageMeta", () => {
     const result = render(<FinalMessageMeta turn={turn} models={[]} sessionID="session" />);
 
     expect(screen.getByTitle("工作耗时 39 秒").textContent).toBe("39 秒");
-    expect(result.container.firstElementChild?.classList.contains("opacity-0")).toBe(true);
+    // 元信息行常显（2026-10-24 用户要求）：不再依赖悬停才浮现。
+    expect(result.container.firstElementChild?.classList.contains("opacity-0")).toBe(false);
   });
 
   it("shows output TPS with one decimal and provider-stream semantics", () => {

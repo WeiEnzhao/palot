@@ -3000,7 +3000,7 @@ export const FinalMessageMeta = memo(
     }).format(completedAt);
 
     return (
-      <div className="mt-1 flex h-6 items-center gap-1.5 text-xs leading-none tabular-nums text-foreground/62 opacity-0 transition-opacity duration-150 ease-out group-focus-within/final-message:opacity-100 group-hover/final-message:opacity-100 motion-reduce:transition-none">
+      <div className="mt-1 flex h-6 items-center gap-1.5 text-xs leading-none tabular-nums text-foreground/62">
         <IconButton
           label={copied ? "已复制回复" : "复制回复"}
           size="icon-sm"
