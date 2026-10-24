@@ -1140,60 +1140,77 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const restoreAnchor = () => {
       const anchor = prependAnchorRef.current;
       if (!anchor) return;
-      // 用户顶到最上（scrollTop 钉在 0）**且这一页已经落地**：锚点任务完成，立即收工。
-      // 不收工它会把 canLoad 锁死 —— 用户继续上滑时下一页永远请求不出（探针实测
-      // 2026-10-25：补偿与滚动 1:1 互抵、无「取数完成」、转圈不渲染，顶死划不动）。
-      // ⚠️ 「已落地」是前提：等待落地期间视口钉在 0 是正常状态，此时撒手会让新页
-      // 插入时没人保持阅读位置，每页都在用户眼前跳变（v2 实测 = 「拉一次疯狂加载」）。
-      const landedNow =
-        turnRows.length > anchor.turnCount || viewport.scrollHeight > anchor.fallbackHeight;
-      if (landedNow && viewport.scrollTop <= 1) {
-        viewport.style.overflowAnchor = "";
-        anchorWrittenRef.current = null;
-        prependBaselineRef.current = null;
-        clearPrependAnchor("用户已顶到最上");
-        return;
-      }
       // 校正只对「我们认可的位置之后发生的高度变化」负责。scrollTop 变了却不是我们写的
       // = 用户自己挪的（或浏览器原生锚定挪的）：基准当场挪到此刻，这一帧不写。
       // 以前把他拽回旧基准，就是「继续往上滑动，又回来了」。
+      //
+      // 🔴 基准必须用虚拟器模型反算，**不能依赖锚点行的 DOM**（2026-10-25 探针实测的
+      // 死锁根因）：锚点行滑出虚拟窗口（overscan=1）或 turnID 为空时拿不到 element，
+      // 旧代码把整个分支跳过 ⇒ 继续按「让锚点行回原视口位置」每帧补偿 ⇒ 用户滚 225px、
+      // 锚点补回 285px，1:1 互抵 ⇒ stableFrames 永远 0 ⇒ done 只能等 16s guard，而
+      // loadOlder 的 `if (prependAnchorRef.current) return false` 把请求全挡回去：
+      // 用户看到的就是「顶死划不动、加载圈也不出现」。getOffsetForIndex 给的是与行
+      // 实际 top 同源的模型值，行在不在挂载窗口里都能算。
       if (
         anchorWrittenRef.current !== null &&
         Math.abs(viewport.scrollTop - anchorWrittenRef.current) > 0.5
       ) {
+        const userScrolledPx = Math.abs(viewport.scrollTop - anchorWrittenRef.current);
         const movedIndex = anchor.turnID
           ? turnRows.findIndex((row) => row.id === anchor.turnID)
           : -1;
-        const movedElement =
+        const movedRowStart =
           movedIndex >= 0
-            ? viewport.querySelector<HTMLElement>(`[data-index="${movedIndex}"]`)
+            ? (virtualizer.getOffsetForIndex(movedIndex, "start")?.[0] ?? null)
             : null;
-        if (movedElement) {
-          anchor.viewportTop =
-            movedElement.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
-          anchor.fallbackHeight = viewport.scrollHeight;
-          anchor.fallbackScrollTop = viewport.scrollTop;
-          anchor.turnCount = turnRows.length;
-          const backup = prependBaselineRef.current;
-          if (backup) {
-            backup.viewportTop = anchor.viewportTop;
-            backup.fallbackHeight = anchor.fallbackHeight;
-            backup.fallbackScrollTop = anchor.fallbackScrollTop;
-            backup.turnCount = turnRows.length;
-          }
-          anchorWrittenRef.current = viewport.scrollTop;
-          landedAt = null;
-          stableFrames = 0;
-          lastHeight = viewport.scrollHeight;
-          if (performance.now() - rebaselineLoggedAt > 500) {
-            rebaselineLoggedAt = performance.now();
-            logTranscriptAnchorEvent({
-              事件: "用户自己挪了基准挪到此刻",
-              scrollTop: Math.round(viewport.scrollTop),
-              锚点行视口偏移: Math.round(anchor.viewportTop),
-              行数: turnRows.length,
-            });
-          }
+        // 「已落地」要在改写基准之前判定，改写后就看不出来了。
+        const landedNow =
+          turnRows.length > anchor.turnCount || viewport.scrollHeight > anchor.fallbackHeight;
+        if (movedRowStart !== null) {
+          // 锚点行此刻真正的视口偏移 = 模型起点 − 当前 scrollTop。下一帧的补偿目标
+          // 正好等于此刻位置 ⇒ 锚点不再跟用户抢滚动量。
+          anchor.viewportTop = movedRowStart - viewport.scrollTop;
+        }
+        anchor.fallbackHeight = viewport.scrollHeight;
+        anchor.fallbackScrollTop = viewport.scrollTop;
+        anchor.turnCount = turnRows.length;
+        const backup = prependBaselineRef.current;
+        if (backup) {
+          backup.viewportTop = anchor.viewportTop;
+          backup.fallbackHeight = anchor.fallbackHeight;
+          backup.fallbackScrollTop = anchor.fallbackScrollTop;
+          backup.turnCount = turnRows.length;
+        }
+        anchorWrittenRef.current = viewport.scrollTop;
+        landedAt = null;
+        stableFrames = 0;
+        lastHeight = viewport.scrollHeight;
+        if (performance.now() - rebaselineLoggedAt > 500) {
+          rebaselineLoggedAt = performance.now();
+          logTranscriptAnchorEvent({
+            事件: "用户自己挪了基准挪到此刻",
+            scrollTop: Math.round(viewport.scrollTop),
+            锚点行视口偏移: Math.round(anchor.viewportTop),
+            行数: turnRows.length,
+          });
+        }
+        // 已经落地 + 用户真的把视口滚动走了（>24px，手指微动/原生锚定不算）：
+        // 位置此刻由用户掌控，锚点再挂着只会挡住 canLoad（下一页请求发不出去）。
+        // ⚠️ 撒手的判据必须是「用户自己接管了位置」，不能是「scrollTop 接近 0」——
+        // 后者在新页落地的那一帧就成立（视口本来就贴着顶），会在没人保住阅读位置
+        // 的情况下撒手：视口停在新内容顶部，用户在读的那行被推下去 = 用户实测的
+        // 「加载后跳了」。用户没滚时走下面的正常补偿，把锚点行放回原位再收工。
+        if (landedNow && userScrolledPx > 24) {
+          viewport.style.overflowAnchor = "";
+          anchorWrittenRef.current = null;
+          prependBaselineRef.current = null;
+          logTranscriptAnchorEvent({
+            事件: "用户自己接管位置，锚点撒手",
+            滚动量: Math.round(userScrolledPx),
+            scrollTop: Math.round(viewport.scrollTop),
+          });
+          clearPrependAnchor("用户自己接管位置");
+          return;
         }
         frame = requestAnimationFrame(restoreAnchor);
         return;
