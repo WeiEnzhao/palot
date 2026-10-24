@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { net } from "electron";
 import { OpenCode, type OpenCodeClient, type OpenCodeEvent } from "@opencode/client";
 import { Service, type Endpoint, type StopOptions } from "@opencode/client/service";
 import { actionableErrorMessage, errorDiagnostic } from "../shared/diagnostics";
@@ -124,9 +125,13 @@ export const openCodeRuntimeLifecycleAdapter: OpenCodeRuntimeLifecycleAdapter = 
     OpenCode.make({
       baseUrl: endpoint.url,
       headers: headers ?? Service.headers(endpoint),
-      fetch: observedOpenCodeFetch((input, init) =>
-        globalThis.fetch(input, rejectRedirects ? { ...init, redirect: "error" } : init),
-      ),
+      fetch: observedOpenCodeFetch((input, init) => {
+        // 走 Electron net（Chromium 网络栈）：信任 macOS 钥匙串里的自签 CA。
+        // Node 的 globalThis.fetch（undici）只认进程启动时的 NODE_EXTRA_CA_CERTS，
+        // 运行时改环境变量无效，无法支持局域网自签 HTTPS 服务器。
+        const options = rejectRedirects ? { ...init, redirect: "error" as const } : init;
+        return net.fetch(input, options) as unknown as Promise<Response>;
+      }),
     }),
   discoverBinary: discoverSelectedOpenCodeBinary,
   wait,

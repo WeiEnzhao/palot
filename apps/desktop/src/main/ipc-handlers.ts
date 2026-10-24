@@ -9,6 +9,7 @@ import {
   ipcMain,
   nativeImage,
   nativeTheme,
+  net,
   shell,
   webContents,
   type WebContents,
@@ -102,7 +103,9 @@ import { shutdownSourceControlService, sourceControlService } from "./source-con
 let performanceTraceActive = false;
 const requestProxy = new OpenCodeRequestProxy({
   connection: (target) => openCodeRuntime.requestConnection(target),
-  fetch: (input, init) => globalThis.fetch(input, { ...init, redirect: "error" }),
+  // 走 Electron net（Chromium 网络栈），信任钥匙串里的自签 CA（Node fetch 不认）。
+  fetch: (input, init) =>
+    net.fetch(input, { ...init, redirect: "error" }) as unknown as Promise<Response>,
 });
 const observedRequestSenders = new WeakSet<WebContents>();
 const nativeSymbolCache = new Map<string, string | null>();
