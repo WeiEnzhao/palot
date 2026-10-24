@@ -31,6 +31,22 @@ describe("transcript layout cache", () => {
     expect(cache.get("unknown", snapshot.layoutKey, rows)).toBeNull();
   });
 
+  it("passes the bottom-lock flag through and keeps it alongside completeness", () => {
+    const cache = new TranscriptLayoutCache();
+    cache.set("owner", { ...snapshot, scrollLocked: true });
+    const changed = rows.map((row) => (row.id === "b" ? { ...row, token: {} } : row));
+    const restored = cache.get("owner", snapshot.layoutKey, changed);
+    expect(restored?.complete).toBe(false);
+    // 流式期间重挂载：快照不完整也带着贴底标志 —— initialOffset 兜底要靠它。
+    expect(restored?.scrollLocked).toBe(true);
+  });
+
+  it("leaves scrollLocked undefined when the snapshot predates the flag", () => {
+    const cache = new TranscriptLayoutCache();
+    cache.set("owner", snapshot);
+    expect(cache.get("owner", snapshot.layoutKey, rows)?.scrollLocked).toBeUndefined();
+  });
+
   it("treats unchanged data with a sparse measured snapshot as complete", () => {
     const cache = new TranscriptLayoutCache();
     cache.set("owner", { ...snapshot, measurements: measurements.slice(1, 2) });

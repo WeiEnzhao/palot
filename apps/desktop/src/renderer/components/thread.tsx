@@ -870,9 +870,12 @@ const SessionThreadContents = memo(function SessionThreadContents({
     initialMeasurementsCache: restoredLayout?.measurements,
     initialRect: restoredLayout?.viewport,
     initialOffset:
-      restoredLayout?.complete &&
+      restoredLayout &&
       restoredLayout.composerHeight === composerDockHeight &&
-      restoredLayout.viewport.height === layoutHeight
+      restoredLayout.viewport.height === layoutHeight &&
+      // 布局完整 = 照旧按快照落位；不完整但卸载时贴底（流式中重挂载的常态）也直接
+      // 从底位起跳 —— 贴底锁会接着接管跟随，总比「先钳到顶再拉回」的肉眼闪跳好。
+      (restoredLayout.complete || restoredLayout.scrollLocked === true)
         ? Math.max(0, restoredLayout.totalSize - restoredLayout.viewport.height)
         : 0,
     useFlushSync: false,
@@ -974,6 +977,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
         viewport: { width: viewport.clientWidth, height: viewport.clientHeight },
         totalSize: virtualizer.getTotalSize(),
         composerHeight: composerDockHeight,
+        // 卸载瞬间的贴底状态：重挂载时贴底就直接从底位起跳（流式期间快照常不完整，
+        // 不带这个标志的话 initialOffset 会回 0，视口先被钳到顶再拉回底 = 闪跳）。
+        scrollLocked: bottomLockedRef.current,
       });
     };
   });

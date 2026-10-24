@@ -16,6 +16,12 @@ export interface TranscriptLayoutSnapshot {
   viewport: { width: number; height: number };
   totalSize: number;
   composerHeight: number;
+  /**
+   * 卸载瞬间用户是否贴底。流式期间行数会变，快照常常「不完整」（complete=false），
+   * 重挂载时若还按 complete 才恢复偏移，视口会先被钳到顶部再拉回底 = 一记肉眼可见的
+   * 上下闪跳。带上贴底标志，重挂载时贴底的情况可以不经 complete 直接从底位起跳。
+   */
+  scrollLocked?: boolean;
 }
 
 export interface RetainedTranscriptLayout {
@@ -25,6 +31,8 @@ export interface RetainedTranscriptLayout {
   composerHeight: number;
   /** Same ordered data, even when takeSnapshot() measured only some rows. */
   complete: boolean;
+  /** 卸载瞬间用户是否贴底；快照没记录时为 undefined（不等于明确 false）。 */
+  scrollLocked?: boolean;
 }
 
 export class TranscriptLayoutCache {
@@ -67,6 +75,7 @@ export class TranscriptLayoutCache {
         saved.rows.every(
           (row, index) => row.id === rows[index]?.id && row.token === rows[index]?.token,
         ),
+      scrollLocked: saved.scrollLocked,
     };
   }
 
