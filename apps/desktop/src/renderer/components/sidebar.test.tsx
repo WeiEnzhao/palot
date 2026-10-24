@@ -227,6 +227,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("moves the hover highlight with keyboard focus so focus and hover agree", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const second = { ...session, id: "session-2", title: "Second session", updatedAt: 3 };
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session, second] });
@@ -269,6 +270,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("routes a click in the gap beside a lit task row to that row's primary action only", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const second = { ...session, id: "session-2", title: "Second session", updatedAt: 3 };
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session, second] });
@@ -352,6 +354,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("preloads hovered sessions without selecting them", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const second = { ...session, id: "session-2", title: "Second session", updatedAt: 3 };
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session, second] });
@@ -376,6 +379,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("offers Settle from session context menus", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     store.set(runtimeAtom, {
       connectionID: "disconnected",
       profileID: "local-default",
@@ -545,6 +549,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("snoozes sessions from a nested context menu", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     store.set(runtimeAtom, {
       connectionID: "disconnected",
       profileID: "local-default",
@@ -599,6 +604,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("uses one reserved state slot for idle unread activity", () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session] });
     markUnread(queryClient, session);
@@ -622,6 +628,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("does not show unread activity for the selected session", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session] });
     markUnread(queryClient, session);
@@ -646,6 +653,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("shows running instead of unread while keeping the recent timestamp", () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session] });
     markUnread(queryClient, session);
@@ -677,6 +685,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("shows the clicked session as active before navigation commits", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const second = { ...session, id: "session-2", title: "Second session", updatedAt: 3 };
     const queryClient = createRendererQueryClient();
     seedCatalog(queryClient, { sessions: [session, second] });
@@ -703,6 +712,7 @@ describe("ProjectSidebarContent attention", () => {
 
   it("drops an optimistic selection when navigation moves from another origin", async () => {
     const store = createStore();
+    store.set(sidebarSectionsAtom, { attention: false, recents: true, projects: true });
     const second = { ...session, id: "session-2", title: "Second session", updatedAt: 3 };
     const third = { ...session, id: "session-3", title: "Third session", updatedAt: 4 };
     const queryClient = createRendererQueryClient();
