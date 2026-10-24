@@ -362,7 +362,20 @@ export interface TranscriptBottomLockInput {
   previousScrollTop: number | null;
   intent: TranscriptScrollIntent;
   threshold?: number;
+  /** 最近一次用户手势（滚轮/键盘/触摸/滚动条按下）的时刻；null = 最近没有。 */
+  userGestureAt?: number | null;
+  /** 判定时刻，用来判断 userGestureAt 是否新鲜。 */
+  now?: number;
 }
+
+/**
+ * 贴底跟随是低速爬行：解锁后它已排定的帧仍会写一两笔 scrollTop。这笔写落在
+ * 近底区时按「scrollTop ≥ 上次」就会被读回成"用户在往下滑"，把刚解开的锁
+ * 又挂回去（2026-10-24 真机 lock 台账：距上滑=1ms、写 moves=+96、锁定仍=1，
+ * 用户体感就是滚动区上下闪动）。所以未锁定时的再上锁只认 700ms 内的
+ * 真人手势时间戳；程序写（爬行器收尾、补偿、虚拟器修正）一律不予采信。
+ */
+export const RELOCK_GESTURE_WINDOW_MS = 700;
 
 /** Read geometry only when a scroll event can change the reader's bottom lock. */
 export function readTranscriptScrollUpdate(
@@ -387,6 +400,10 @@ export function nextTranscriptBottomLock(input: TranscriptBottomLockInput): bool
   }
   if (transcriptDistanceFromBottom(input.metrics) <= threshold) {
     if (input.current || input.previousScrollTop === null) return true;
+    // 程序写（爬行器收尾帧等）不带手势时间戳：它永远不应把用户刚解开的锁挂回去。
+    const stamp = input.userGestureAt ?? null;
+    if (stamp === null) return false;
+    if ((input.now ?? 0) - stamp > RELOCK_GESTURE_WINDOW_MS) return false;
     return input.metrics.scrollTop >= input.previousScrollTop;
   }
   return input.current;

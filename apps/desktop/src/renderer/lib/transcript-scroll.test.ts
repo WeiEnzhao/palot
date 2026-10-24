@@ -126,8 +126,31 @@ describe("transcript bottom lock", () => {
         metrics: { ...metrics, scrollTop: 580 },
         previousScrollTop: 500,
         intent: null,
+        userGestureAt: 1_000,
+        now: 1_400,
       }),
     ).toEqual({ locked: true, scrollTop: 580 });
+  });
+
+  it("a programmatic downward write near the bottom does not re-arm the lock", () => {
+    expect(
+      nextTranscriptBottomLock({
+        current: false,
+        metrics: { scrollTop: 580, scrollHeight: 1_000, clientHeight: 400 },
+        previousScrollTop: 500,
+        intent: null,
+      }),
+    ).toBe(false);
+    expect(
+      nextTranscriptBottomLock({
+        current: false,
+        metrics: { scrollTop: 580, scrollHeight: 1_000, clientHeight: 400 },
+        previousScrollTop: 500,
+        intent: null,
+        userGestureAt: 1_000,
+        now: 2_400,
+      }),
+    ).toBe(false);
   });
 
   it("stays locked when layout growth moves the viewport away without user input", () => {
@@ -181,6 +204,8 @@ describe("transcript bottom lock", () => {
         metrics: { scrollTop: 565, scrollHeight: 1_000, clientHeight: 400 },
         previousScrollTop: 500,
         intent: null,
+        userGestureAt: 1_000,
+        now: 1_200,
       }),
     ).toBe(true);
   });

@@ -381,6 +381,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
   const navigationGeometryRef = useRef<(() => void) | null>(null);
   const scrollIntentRef = useRef<TranscriptScrollIntent>(null);
   const previousScrollTopRef = useRef<number | null>(null);
+  // 用户最后一次滚动信息的时刻（滚轮/键盘/触摸/滚动条按下都要盖章）。
+  // 未锁定时的再上锁只认它的新鲜度，程序写不许喂「用户在往下」这条判定。
+  const userGestureAtRef = useRef<number | null>(null);
   // 底边跟随的「内容增长速率」：由虚拟列表每次测量时更新，跨批次延续，
   // 让 16px 一行、每秒 5 行的增长被摊成匀速滑动，而不是每行一次猛冲。
   const followRateRef = useRef(0);
@@ -1817,6 +1820,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                   !nestedScrollConsumesDelta(event.currentTarget, event.target, delta)
                 ) {
                   navigation.cancel();
+                  userGestureAtRef.current = performance.now();
                   if (delta > 0) infiniteScroll.clearIntent();
                 }
                 const scrollable =
@@ -1845,6 +1849,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                   )
                 ) {
                   navigation.cancel();
+                  userGestureAtRef.current = performance.now();
                   if (touchYRef.current !== null && y < touchYRef.current)
                     infiniteScroll.clearIntent();
                 }
@@ -1877,6 +1882,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                   !nestedScrollConsumesDelta(event.currentTarget, event.target, delta)
                 ) {
                   navigation.cancel();
+                  userGestureAtRef.current = performance.now();
                   if (delta < 0) {
                     infiniteScroll.onUpwardIntent();
                     if (event.currentTarget.scrollHeight - event.currentTarget.clientHeight > 1)
@@ -1896,6 +1902,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                   // Idle bottom-follow scroll events deliberately skip geometry reads.
                   // Start drag direction tracking from the actual browser offset.
                   previousScrollTopRef.current = event.currentTarget.scrollTop;
+                  userGestureAtRef.current = performance.now();
                   scrollIntentRef.current = "scrollbar";
                   navigation.cancel();
                 }
@@ -1914,6 +1921,8 @@ const SessionThreadContents = memo(function SessionThreadContents({
                   metrics: viewport,
                   previousScrollTop: previousScrollTopRef.current,
                   intent,
+                  userGestureAt: userGestureAtRef.current,
+                  now: performance.now(),
                 });
                 if (!update) return;
                 if (
