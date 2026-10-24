@@ -373,6 +373,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
     fallbackScrollTop: number;
   } | null>(null);
   const bottomLockedRef = useRef(true);
+  // 到场稳定窗截止时刻：重挂载后虚拟列表的估值会先虚胖再塌回（后台有活动的会话
+  // 尤其明显，trap 实测 3230→1849），期间原生 clamp 会把 scrollTop 猛拽上去、
+  // 平滑跟随再慢慢滑回来 —— 一组肉眼「上下闪动」。窗口内贴底写一律直接落位。
+  const arrivalSettleUntilRef = useRef(0);
   const bottomFollowFrameRef = useRef<number | null>(null);
   const bottomFollowLoopRef = useRef<number | null>(null);
   const lastFollowedVirtualHeightRef = useRef<number | null>(null);
@@ -483,7 +487,13 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // 底边跟随：一个常驻的逐帧循环，速度是状态、逐帧低通。流式期间一直跑，
   // 不流时才在贴底后自停 —— 批次之间不再重启循环（重启那一帧就是「顿一下」）。
   const startBottomFollow = useCallback(() => {
-    if (bottomFollowLoopRef.current !== null) return;
+    if (bottomFollowLoopRef.current !== null) {
+      return;
+    }
+    // 新起步（循环不在跑 = 换会话/重挂载后的第一轮）时开一个稳定窗：
+    // 这期间高度塌陷引发的原生 clamp 是「到场抖动」而不是「用户在读被顶走」，
+    // 后续跟随直接落位补回，不走平滑滑回（那一下就是肉眼的上跳+滑回）。
+    arrivalSettleUntilRef.current = performance.now() + 800;
     const step = () => {
       bottomFollowLoopRef.current = null;
       const viewport = scrollRef.current;
@@ -522,6 +532,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
       const dt = now - (followFrameAtRef.current || now - 16.7);
       followFrameAtRef.current = now;
       const streaming = streamingRef.current;
+      // 到场稳定窗内（重挂载后 800ms）：高度虚胖→塌回引发的原生 clamp 把视口
+      // 拽离底部后，平滑跟随要用 ~170ms 滑回来，加上拽上去那一闪就是「上下闪动」。
+      // 窗口内改为直接落位 —— 和塌陷同帧写平，肉眼只有一次不到一帧的位置修正。
+      const arrivalSettling = now < arrivalSettleUntilRef.current;
       const frame = smoothBottomFollow({
         current: viewport.scrollTop,
         target,
@@ -531,6 +545,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
         streaming,
         devicePixelRatio: window.devicePixelRatio,
         previousTarget,
+        // 正常流式跟随不受影响：smoothBottomFollow 只在「距离超 snapBeyond 或
+        // 布局跳变」时用 snapBeyondPx 之外的路径，这里把落位阈值临时降为 0，
+        // 等价于「稳定窗内一律落位」。非稳定窗传 undefined 走默认 1500px。
+        snapBeyondPx: arrivalSettling ? 0 : undefined,
       });
       followSpeedRef.current = frame.speedPxPerSecond;
       let moved = false;

@@ -141,7 +141,13 @@ export function smoothBottomFollow(input: {
   // 流式期间只认「距离超 1500px」这一种落位：代码块/表格在一帧里落地也会跳
   // 100~500px，但那时用户正在读屏幕上的字，瞬移会把他甩离阅读位置，平滑滑动
   // （12px/帧）反而更接近「滚动」而不是「跳」。
-  const layoutGap = streaming ? snapBeyond : Math.max(0.5, settle);
+  // 调用方显式传 snapBeyondPx（含 0）= 到场稳定窗：距离超过它就落位，不滑。
+  const layoutGap =
+    input.snapBeyondPx !== undefined
+      ? snapBeyond
+      : streaming
+        ? snapBeyond
+        : Math.max(0.5, settle);
   const layoutJump = !streaming && targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX;
   if (distance > layoutGap || layoutJump) {
     return {
