@@ -699,7 +699,12 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
     return rows.map(renderRow);
   };
   const boundedInboxGroups = (list: OwnedItem[]) => {
-    const chunks: Array<{ group: InboxProjectGroup<OwnedItem>; badge: ReactNode; rows: ReactElement[] }> = [];
+    const chunks: Array<{
+      group: InboxProjectGroup<OwnedItem>;
+      badge: ReactNode;
+      newTaskButton: ReactNode;
+      rows: ReactElement[];
+    }> = [];
     for (const group of groupInboxByProject(list, (row) => row.connection.profile.id)) {
       const take = group.items.slice(0, remaining);
       remaining -= take.length;
@@ -709,7 +714,25 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           connection.profile.kind === "local" || !connection.runtime ? null : (
             <ConnectionBadge profile={connection.profile} connected={connection.runtime.connected === true} compact />
           );
-        chunks.push({ group, badge, rows: take.map(renderRow) });
+        // 收件箱分组头也带「+ 新任务」（2026-10-24 用户要求），与任务视图分组头一致。
+        const newTaskButton = (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`${connectionDescription(connection.profile)} 上 ${group.label} 的新任务`}
+            disabled={!connection.runtime?.connected || connection.phase !== "ready"}
+            onClick={() => {
+              const projectID =
+                group.items[0]?.session.projectID ?? group.key.split("\u0000")[1];
+              void attempt("无法打开新任务", () =>
+                navigation.openNewTask(projectID || undefined, connection.profile.id),
+              );
+            }}
+          >
+            <Plus aria-hidden="true" />
+          </Button>
+        );
+        chunks.push({ group, badge, newTaskButton, rows: take.map(renderRow) });
       }
     }
     return chunks;
@@ -925,15 +948,15 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                               }
                             >
                               {sortProjectSections(
-                                boundedInboxGroups(rows).map(({ group, badge, rows: elements }) => {
+                                boundedInboxGroups(rows).map(({ group, badge, newTaskButton, rows: elements }) => {
                                   const [profileID, projectID] = group.key.split("\u0000");
                                   const key =
                                     profileID && projectID
                                       ? projectGroupKey(profileID, projectID)
                                       : group.key;
-                                  return { key, group, badge, elements };
+                                  return { key, group, badge, newTaskButton, elements };
                                 }),
-                              ).map(({ key, group, badge, elements }) => (
+                              ).map(({ key, group, badge, newTaskButton, elements }) => (
                                 <div
                                   key={group.key}
                                   draggable
@@ -953,6 +976,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                     <span className="truncate">{group.label}</span>
                                     <span className="ml-auto flex shrink-0 items-center gap-1.5">
                                       {badge}
+                                      {newTaskButton}
                                       <span className="tabular-nums opacity-70">
                                         {group.items.length}
                                       </span>
