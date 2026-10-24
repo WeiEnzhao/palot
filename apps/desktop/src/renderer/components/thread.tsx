@@ -1012,6 +1012,10 @@ const SessionThreadContents = memo(function SessionThreadContents({
   }, []);
   useLayoutEffect(() => {
     if (submissionScrollRequest === 0) return;
+    // 2026-10-24 用户要求：发消息不顶走当前浏览位置 —— 本来就贴底跟随时才回底；
+    // 用户翻上去读历史时发消息，视口原地不动，翻页锚点继续保位置（也不清除它，
+    // 清了之后翻页落地会把位置带走）。
+    if (!bottomLockedRef.current) return;
     // An explicit new submission supersedes an in-flight history prepend.
     prependBaselineRef.current = null;
     clearPrependAnchor("发出了新消息");
