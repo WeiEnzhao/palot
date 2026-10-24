@@ -8,6 +8,7 @@ import {
   CompactionBoundary,
   CompactionTranscriptContext,
   type CompactionTranscriptActions,
+  compactionLabel,
 } from "./compaction-row";
 
 function compaction(
@@ -51,14 +52,14 @@ describe("CompactionBoundary", () => {
         group={compaction({ status: "completed", reason: "auto" }, "completed")}
       />,
     );
-    expect(screen.getByText("上下文已自动压缩 · 耗时 0 秒")).toBeTruthy();
+    expect(screen.getByText(/上下文已自动压缩 · \d{2}:\d{2} · 耗时 0 秒/)).toBeTruthy();
     view.rerender(
       <CompactionBoundary
         group={compaction({ status: "completed", reason: "manual" }, "completed")}
       />,
     );
-    expect(screen.getByText("上下文已压缩 · 耗时 0 秒")).toBeTruthy();
-    expect(screen.queryByText("上下文已自动压缩 · 耗时 0 秒")).toBeNull();
+    expect(screen.getByText(/上下文已压缩 · \d{2}:\d{2} · 耗时 0 秒/)).toBeTruthy();
+    expect(screen.queryByText(/上下文已自动压缩/)).toBeNull();
   });
 
   it("adds a duration hint after ten seconds of compacting", () => {
@@ -122,7 +123,7 @@ describe("CompactionBoundary", () => {
     expect(row?.getAttribute("data-palot-compaction-reason")).toBe("auto");
     expect(boundary.queryByText(/→/)).toBeNull();
 
-    await user.click(boundary.getByRole("button", { name: "上下文已自动压缩 · 耗时 0 秒" }));
+    await user.click(boundary.getByRole("button", { name: /上下文已自动压缩 · \d{2}:\d{2} · 耗时 0 秒/ }));
 
     // Without measured steps around it, the row estimates from the compaction request.
     expect(boundary.getByText("上下文：约 120k → 2.1k 个 token")).toBeTruthy();
@@ -147,7 +148,7 @@ describe("CompactionBoundary", () => {
       </CompactionTranscriptContext.Provider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "上下文已压缩 · 耗时 0 秒" }));
+    await user.click(screen.getByRole("button", { name: /上下文已压缩 · \d{2}:\d{2} · 耗时 0 秒/ }));
     expect(screen.getByText("上下文：152k → 18k 个 token")).toBeTruthy();
   });
 
@@ -204,6 +205,17 @@ describe("CompactionBoundary", () => {
       completedAt,
     };
     render(<CompactionBoundary group={group} />);
-    expect(screen.getByText("上下文已自动压缩 · 耗时 15 秒")).toBeTruthy();
+    expect(screen.getByText(/上下文已自动压缩 · \d{2}:\d{2} · 耗时 15 秒/)).toBeTruthy();
+  });
+
+  it("falls back to the part's created time for restored history without group times", () => {
+    // 历史消息回放时 group 没有 startedAt/completedAt，用部件创建时间显示钟点。
+    const label = compactionLabel(
+      { reason: "manual", time: { created: new Date("2026-10-24T06:32:00Z").getTime() } },
+      "completed",
+      undefined,
+      undefined,
+    );
+    expect(label).toMatch(/^上下文已压缩 · \d{2}:\d{2}$/);
   });
 });
