@@ -57,7 +57,7 @@ import { createShowcaseBackdrop, resolveShowcaseConfiguration } from "./showcase
 import { installNativeContextMenu } from "./native-context-menu";
 import { linuxDesktopDiagnostics, windowManagerOwnsClose } from "./linux-desktop";
 import { WINDOW_MANAGER_OWNS_CLOSE_ARGUMENT } from "../shared/window-chrome";
-import { configureSecureStorage } from "./secure-storage";
+import { configureKeychainPolicy, configureSecureStorage } from "./secure-storage";
 import { DESKTOP_HELP, parseDesktopLaunch } from "./desktop-launch";
 import { stat } from "node:fs/promises";
 
@@ -86,6 +86,8 @@ if (isDevelopment) {
   );
 }
 if (process.env.PALOT_E2E_USER_DATA) app.commandLine.appendSwitch("use-mock-keychain");
+// macOS 自签构建的钥匙串授权按 cdhash 走（重装一次就失效）⇒ 彻底不用系统钥匙串。
+configureKeychainPolicy(app.commandLine);
 configureSecureStorage(app.commandLine);
 
 app.setName(buildIdentity.displayName);
