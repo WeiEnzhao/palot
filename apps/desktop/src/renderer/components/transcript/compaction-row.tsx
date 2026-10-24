@@ -36,14 +36,6 @@ export interface CompactionTranscriptActions {
 
 export const CompactionTranscriptContext = createContext<CompactionTranscriptActions | null>(null);
 
-/** 分隔条上的钟点（几点几分），与 my-messages-panel 的时刻格式保持一致。 */
-function formatClockCn(at: number): string {
-  return new Date(at).toLocaleTimeString("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export function compactionLabel(
   part: Pick<PalotMessageContent, "reason" | "time"> | undefined,
   status: TurnActivityGroup["status"],
@@ -54,11 +46,7 @@ export function compactionLabel(
   if (status === "running" || status === "pending") return "正在压缩上下文";
   const base = part?.reason === "auto" ? "上下文已自动压缩" : "上下文已压缩";
   const pieces = [base];
-  // 完成时刻的钟点：优先分组完成时间，历史消息退化到部件创建时间。
-  const finishedAt = completedAt ?? part?.time?.created;
-  if (finishedAt !== undefined && Number.isFinite(finishedAt)) {
-    pieces.push(formatClockCn(finishedAt));
-  }
+  // 展示压缩耗时；历史回放没有起止时间时只剩基础文案。
   if (startedAt !== undefined && completedAt !== undefined && completedAt > startedAt) {
     const durationSeconds = (completedAt - startedAt) / 1000;
     pieces.push(`耗时 ${formatDurationCn(durationSeconds, { hideZeroSeconds: true })}`);
