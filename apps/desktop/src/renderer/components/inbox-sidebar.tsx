@@ -1154,7 +1154,7 @@ export function SectionTrigger({
           aria-label={label}
           className={cn(
             sidebarSectionTriggerVariants(),
-            // 覆盖层（±等 action）落在外层 wrapper 的 col-start-2，触发行整行跨 3 列即可；
+            // 覆盖层（±/归档等 action）落在外层 wrapper 的 col-start-2，触发行整行跨 3 列即可；
             // 不用 subgrid：它会覆盖基础变体的 flex，28px 行里 16px 文本行高 + py-1
             // 把 chevron 列往下顶 4.2px，和盖层居中的按钮错位（2026-10-23 CDP 实测）。
             action && "col-span-3 col-start-1 row-start-1 flex",
@@ -1168,10 +1168,18 @@ export function SectionTrigger({
         <span className="truncate">{title}</span>
         {badge}
       </span>
-      {action ? <span className="w-7" aria-hidden="true" /> : null}
+      {action ? <span className="w-9" aria-hidden="true" /> : null}
       <span className="ml-auto flex items-center">
         {hideCount ? null : (
-          <span className="ml-auto mr-2 text-micro text-sidebar-foreground/45 tabular-nums transition-colors group-hover/section-label:text-sidebar-foreground/70 group-focus-visible/section-label:text-sidebar-foreground/70">
+          <span
+            className={cn(
+              "ml-auto mr-2 text-micro text-sidebar-foreground/45 tabular-nums transition-colors group-hover/section-label:text-sidebar-foreground/70 group-focus-visible/section-label:text-sidebar-foreground/70",
+              // action 与计数共用「折叠箭头左侧」那一格：悬停/聚焦时计数让位给按钮，
+              // 否则两者叠在同一格里（2026-10-24 CDP 实测 plus 与箭头重叠 16px）。
+              action &&
+                "group-hover/section-row:opacity-0 group-focus-within/section-row:opacity-0",
+            )}
+          >
             {count}
           </span>
         )}
@@ -1190,7 +1198,9 @@ export function SectionTrigger({
     </CollapsibleTrigger>
   );
   return action ? (
-    <div className="group/section-row grid grid-cols-[minmax(0,1fr)_auto_auto] items-center">
+    // 列宽固定：col2 = action 位（28px），col3 = 折叠箭头位（24px）。auto 列在
+    // 跨列触发行里会被算成 0，盖层于是贴到最右、正好压在箭头上。
+    <div className="group/section-row grid grid-cols-[minmax(0,1fr)_1.75rem_1.5rem] items-center">
       {trigger}
       {/* Quiet until the row is hovered or holds focus; never removed from the tab order. */}
       <div className="relative z-10 col-start-2 row-start-1 flex items-center justify-center opacity-0 transition-opacity group-focus-within/section-row:opacity-100 group-hover/section-row:opacity-100">
