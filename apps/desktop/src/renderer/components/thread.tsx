@@ -1140,12 +1140,14 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const restoreAnchor = () => {
       const anchor = prependAnchorRef.current;
       if (!anchor) return;
-      // 用户已经顶到最上（scrollTop 钉在 0）：锚点的「保持阅读位置」在这里没有意义，
-      // 而它活着会让 canLoad 一直拒绝下一页 —— 探针实测（2026-10-25）：补偿写入与
-      // 用户滚动 1:1 互相抵消、请求发不出去，表现就是「顶死划不动、加载动画也不出现」。
-      // 这条必须盖住锚点的所有阶段（含还没落地、一次补偿都没写过的等待期），
-      // 所以放在循环最前面，而不是只在 rebaseline 分支里查。
-      if (viewport.scrollTop <= 1) {
+      // 用户顶到最上（scrollTop 钉在 0）**且这一页已经落地**：锚点任务完成，立即收工。
+      // 不收工它会把 canLoad 锁死 —— 用户继续上滑时下一页永远请求不出（探针实测
+      // 2026-10-25：补偿与滚动 1:1 互抵、无「取数完成」、转圈不渲染，顶死划不动）。
+      // ⚠️ 「已落地」是前提：等待落地期间视口钉在 0 是正常状态，此时撒手会让新页
+      // 插入时没人保持阅读位置，每页都在用户眼前跳变（v2 实测 = 「拉一次疯狂加载」）。
+      const landedNow =
+        turnRows.length > anchor.turnCount || viewport.scrollHeight > anchor.fallbackHeight;
+      if (landedNow && viewport.scrollTop <= 1) {
         viewport.style.overflowAnchor = "";
         anchorWrittenRef.current = null;
         prependBaselineRef.current = null;
