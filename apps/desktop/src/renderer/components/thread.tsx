@@ -922,6 +922,12 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // 跟随，只有人在历史中段读（离底足够远）时把差交还给库 —— 那时没有任何别的主人补它。
   const ESTIMATE_CORRECTION_MIN_LIFT_PX = 120;
   virtualizer.shouldAdjustScrollPositionOnItemSizeChange = () => {
+    // 流式期间一律不接管（2026-10-24 用户实测「阅读时内容持续被往下拽」的根因）：
+    // 人在中段阅读时上方就是那条还在长高的流式大行，库的修正语义是「保持该行
+    // 屏幕位置稳定」⇒ 行每长一行就把视口往下拽同量（60fps 探针：top 与增量
+    // 1:1 滑动、候选行与锁定全静止）。流式的位置只有三个主人：贴底跟随、
+    // 上翻页锚点、顶行补偿，都各自有护栏；这里让位，阅读位置归用户。
+    if (isWorking) return false;
     if (prependAnchorRef.current) return false;
     const viewport = scrollRef.current;
     if (!viewport) return false;
