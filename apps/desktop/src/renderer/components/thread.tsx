@@ -245,11 +245,13 @@ const MAX_PREPEND_ANCHOR_WAIT_MS = 6_000;
 /** 落地后继续补偿的行高变化（图片、字体、高亮、还没测准的行）上限。 */
 const MAX_PREPEND_ANCHOR_SETTLE_MS = 4_000;
 /**
- * 上滑翻页的转圈延迟这么久才出现。一次分页在本地几十毫秒就回来了，立刻闪一个
- * 「Loading earlier messages…」比不显示更像卡了一下（用户口径 2026-10-25：
- * 「为啥还是看到加载进度」）。慢请求仍有反馈，快请求完全无感。
+ * 上滑翻页的转圈至少停留这么久才收起。
+ * 用户口径（2026-10-25）：「应该先转圈再加载」——他要的是**可感知的反馈顺序**：
+ * 先看见转圈（确认请求发出去了），再看见内容长出来。本地一次分页几十毫秒就回来了，
+ * 不做最短停留的话转圈只存在 2~3 帧（人眼抓不到），观感就是「什么都没发生，内容
+ * 突然变多」。内容不做人为延迟（那等于每次翻页都变慢），只让转圈多留一会儿。
  */
-const OLDER_SPINNER_DELAY_MS = 180;
+const OLDER_SPINNER_MIN_VISIBLE_MS = 260;
 
 function nestedScrollConsumesDelta(root: HTMLElement, target: EventTarget | null, delta: number) {
   let element = target instanceof HTMLElement ? target : null;
@@ -367,15 +369,25 @@ const SessionThreadContents = memo(function SessionThreadContents({
     execution?.startedAt ?? null,
   );
   const loadingOlder = transcript.isFetchingNextPage;
-  // 转圈迟 180ms 才显示（见 OLDER_SPINNER_DELAY_MS）：本地分页往往在这之前就回来了，
-  // 于是用户完全看不到它；只有真正慢的请求才会亮起进度。
+  // 转圈：请求一发出就亮（先转圈），加载完至少停留 OLDER_SPINNER_MIN_VISIBLE_MS
+  // 再收（再出现内容），这样「转圈 → 内容」的次序人眼能抓住。
   const [showOlderSpinner, setShowOlderSpinner] = useState(false);
+  const olderSpinnerShownAtRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!loadingOlder) {
+    if (loadingOlder) {
+      olderSpinnerShownAtRef.current = performance.now();
+      setShowOlderSpinner(true);
+      return;
+    }
+    const shownAt = olderSpinnerShownAtRef.current;
+    olderSpinnerShownAtRef.current = null;
+    if (shownAt === null) return;
+    const remaining = OLDER_SPINNER_MIN_VISIBLE_MS - (performance.now() - shownAt);
+    if (remaining <= 0) {
       setShowOlderSpinner(false);
       return;
     }
-    const timer = setTimeout(() => setShowOlderSpinner(true), OLDER_SPINNER_DELAY_MS);
+    const timer = setTimeout(() => setShowOlderSpinner(false), remaining);
     return () => clearTimeout(timer);
   }, [loadingOlder]);
   const olderRequestRef = useRef(false);
