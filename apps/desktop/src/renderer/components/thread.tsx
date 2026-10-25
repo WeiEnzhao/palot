@@ -244,6 +244,12 @@ const PREPEND_ANCHOR_STABLE_FRAMES = 8;
 const MAX_PREPEND_ANCHOR_WAIT_MS = 6_000;
 /** 落地后继续补偿的行高变化（图片、字体、高亮、还没测准的行）上限。 */
 const MAX_PREPEND_ANCHOR_SETTLE_MS = 4_000;
+/**
+ * 上滑翻页的转圈延迟这么久才出现。一次分页在本地几十毫秒就回来了，立刻闪一个
+ * 「Loading earlier messages…」比不显示更像卡了一下（用户口径 2026-10-25：
+ * 「为啥还是看到加载进度」）。慢请求仍有反馈，快请求完全无感。
+ */
+const OLDER_SPINNER_DELAY_MS = 180;
 
 function nestedScrollConsumesDelta(root: HTMLElement, target: EventTarget | null, delta: number) {
   let element = target instanceof HTMLElement ? target : null;
@@ -361,6 +367,17 @@ const SessionThreadContents = memo(function SessionThreadContents({
     execution?.startedAt ?? null,
   );
   const loadingOlder = transcript.isFetchingNextPage;
+  // 转圈迟 180ms 才显示（见 OLDER_SPINNER_DELAY_MS）：本地分页往往在这之前就回来了，
+  // 于是用户完全看不到它；只有真正慢的请求才会亮起进度。
+  const [showOlderSpinner, setShowOlderSpinner] = useState(false);
+  useEffect(() => {
+    if (!loadingOlder) {
+      setShowOlderSpinner(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowOlderSpinner(true), OLDER_SPINNER_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [loadingOlder]);
   const olderRequestRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const transcriptContentRef = useRef<HTMLDivElement>(null);
@@ -2018,7 +2035,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                           <LoadingButton loading={loadingOlder} onClick={() => void loadOlder()}>
                             重试加载更早的消息
                           </LoadingButton>
-                        ) : loadingOlder ? (
+                        ) : showOlderSpinner ? (
                           <span
                             role="status"
                             className="flex items-center gap-2 text-meta text-muted-foreground"
