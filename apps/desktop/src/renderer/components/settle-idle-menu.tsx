@@ -89,7 +89,7 @@ export function announceSettledBatch(input: {
   const tasks = input.count === 1 ? "1 个任务" : `${input.count} 个任务`;
   toast.add({
     type: "success",
-    title: input.title ?? `已归档 ${tasks}`,
+    title: input.title ?? `已结算 ${tasks}`,
     ...(input.description ? { description: input.description } : {}),
     actionProps: {
       children: "撤销",

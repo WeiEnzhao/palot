@@ -8,14 +8,11 @@ import { automationUnreadCountAtom } from "../atoms/automations";
 import { sidebarModeAtom } from "../atoms/ui";
 import { runtimeAtom } from "../atoms/workspace";
 import { usePalotNavigation } from "../hooks/use-navigation";
-import { useSessionInbox } from "../hooks/use-session-inbox";
 import { useConnectionOverview } from "../hooks/use-connection-overview";
 import { MultiConnectionSidebar } from "./multi-connection-sidebar";
 import { cn } from "../lib/cn";
 import { palotBuild } from "../lib/build";
 import { palot } from "../services/palot";
-import { InboxSidebarContent } from "./inbox-sidebar";
-import { ProjectSidebarContent } from "./sidebar";
 import { BuildBadge, PalotMark } from "./branding";
 import { IconButton } from "./ui";
 import {
@@ -73,9 +70,21 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar({
   const scheduledUnreadCount = useAtomValue(automationUnreadCountAtom);
   const runtime = useAtomValue(runtimeAtom);
   const { connections, includedProfileIDs, visibleProfileIDs } = useConnectionOverview();
-  const multiConnection =
-    connections.length > 1 ||
-    connections.some((connection) => !includedProfileIDs.includes(connection.profile.id));
+  // 只有一条渲染路径：连接数 =1 时 MultiConnectionSidebar 自己不显示服务器徽标。
+  const attentionCount = connections
+    .filter(
+      (connection) =>
+        includedProfileIDs.includes(connection.profile.id) &&
+        (visibleProfileIDs === null || visibleProfileIDs.includes(connection.profile.id)),
+    )
+    .reduce(
+      (count, connection) =>
+        count +
+        [...connection.inbox.pinned, ...connection.inbox.inbox].filter(
+          (item) => item.attention || item.failed,
+        ).length,
+      0,
+    );
   const enabledConnections = connections.filter((connection) =>
     includedProfileIDs.includes(connection.profile.id),
   );
@@ -115,27 +124,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar({
             role="group"
             aria-label="侧边栏视图"
           >
-            <InboxModeButton
-              attentionCountOverride={
-                multiConnection
-                  ? connections
-                      .filter(
-                        (connection) =>
-                          includedProfileIDs.includes(connection.profile.id) &&
-                          (visibleProfileIDs === null ||
-                            visibleProfileIDs.includes(connection.profile.id)),
-                      )
-                      .reduce(
-                        (count, connection) =>
-                          count +
-                          [...connection.inbox.pinned, ...connection.inbox.inbox].filter(
-                            (item) => item.attention || item.failed,
-                          ).length,
-                        0,
-                      )
-                  : undefined
-              }
-            />
+            <InboxModeButton attentionCount={attentionCount} />
             <IconButton
               label="显示项目"
               size="icon-sm"
@@ -187,13 +176,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar({
         </SidebarGroup>
       </SidebarHeader>
 
-      {multiConnection ? (
-        <MultiConnectionSidebar mode={mode} />
-      ) : mode === "inbox" ? (
-        <InboxSidebarContent />
-      ) : (
-        <ProjectSidebarContent onNewSession={onNewSession} notifyAttention={!peek} />
-      )}
+      <MultiConnectionSidebar mode={mode} />
 
       <SidebarFooter className="p-2">
         <SidebarMenu>
@@ -347,11 +330,8 @@ function runtimeLabel(runtime: OpenCodeRuntimeStatus | null): string {
   return "OpenCode 已断开";
 }
 
-function InboxModeButton({ attentionCountOverride }: { attentionCountOverride?: number }) {
+function InboxModeButton({ attentionCount }: { attentionCount: number }) {
   const [mode, setMode] = useAtom(sidebarModeAtom);
-  const inbox = useSessionInbox();
-  const attentionCount =
-    attentionCountOverride ?? inbox.inbox.filter((item) => item.attention || item.failed).length;
   return (
     <IconButton
       label={attentionCount > 0 ? `显示收件箱，${attentionCount} 个需要关注` : "显示收件箱"}

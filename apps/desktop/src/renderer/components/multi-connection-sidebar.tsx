@@ -40,7 +40,7 @@ import {
   SectionTrigger,
   InboxCompactRowSurface,
   SnoozeMenuButton,
-} from "./inbox-sidebar";
+} from "./inbox-shared";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 import { sessionSnoozeChoices } from "../lib/session-snooze";
 import { INBOX_CARD_ACTION_BUTTON_CLASS } from "./inbox-card-surface";
@@ -489,7 +489,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                 })
               }
             >
-              归档
+              结算
             </DropdownMenuItem>
           )}
           {item.section === "snoozed" ? (
@@ -529,8 +529,8 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="取消归档"
-          title="取消归档"
+          aria-label="取消结算"
+          title="取消结算"
           disabled={disabled}
           onClick={() => command("inbox")}
         >
@@ -562,8 +562,8 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="归档任务"
-          title="归档"
+          aria-label="结算任务"
+          title="结算"
           disabled={disabled}
           onClick={settle}
         >
@@ -601,7 +601,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={item.section === "snoozed" ? "唤醒任务" : "取消归档"}
+                    aria-label={item.section === "snoozed" ? "唤醒任务" : "取消结算"}
                     disabled={disabled}
                     onClick={() => command(item.section === "snoozed" ? "wake" : "inbox")}
                   >
@@ -687,7 +687,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           </ContextMenuItem>
         ) : (
           <ContextMenuItem disabled={disabled || !item.canSettle} onClick={settle}>
-            归档
+            结算
           </ContextMenuItem>
         )}
         {item.section === "snoozed" ? (

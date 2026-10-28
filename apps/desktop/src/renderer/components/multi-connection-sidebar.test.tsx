@@ -327,7 +327,7 @@ describe("MultiConnectionSidebar", () => {
     const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
     expect(row.closest("[data-inbox-compact-row]")).not.toBeNull();
     expect(row.closest("[data-inbox-card]")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "取消归档" }));
+    fireEvent.click(screen.getByRole("button", { name: "取消结算" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({ type: "inbox", sessionID: "same-session" }),
@@ -366,7 +366,7 @@ describe("MultiConnectionSidebar", () => {
     const wrapper = screen
       .getByRole("button", { name: "Same task · Same server · beta.example" })
       .closest("div")!;
-    fireEvent.click(within(wrapper).getByRole("button", { name: "归档任务" }));
+    fireEvent.click(within(wrapper).getByRole("button", { name: "结算任务" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({ type: "settle", sessionID: "same-session" }),
@@ -507,7 +507,7 @@ describe("MultiConnectionSidebar", () => {
     renderSidebar("project");
     const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
     // Present before any hover: the quiet actions are hidden with opacity only.
-    const settle = within(row.parentElement!).getByRole("button", { name: "归档任务" });
+    const settle = within(row.parentElement!).getByRole("button", { name: "结算任务" });
     act(() => row.focus());
     await userEvent.tab();
     expect(document.activeElement).toBe(settle);
@@ -541,7 +541,7 @@ describe("MultiConnectionSidebar", () => {
   });
 
   it.each([
-    ["settled", "取消归档", "inbox"],
+    ["settled", "取消结算", "inbox"],
     ["snoozed", "唤醒任务", "wake"],
   ] as const)(
     "offers the %s project row's quick action to its owner",
@@ -555,7 +555,7 @@ describe("MultiConnectionSidebar", () => {
       });
       renderSidebar("project");
       const row = screen.getByRole("button", { name: "Same task · Same server · beta.example" });
-      expect(within(row.parentElement!).queryByRole("button", { name: "归档任务" })).toBeNull();
+      expect(within(row.parentElement!).queryByRole("button", { name: "结算任务" })).toBeNull();
       await userEvent.click(within(row.parentElement!).getByRole("button", { name }));
       expect(overview.dispatch).toHaveBeenCalledWith(
         "beta",
@@ -645,7 +645,7 @@ describe("MultiConnectionSidebar", () => {
     await userEvent.click(screen.getByRole("button", { name: "保存" }));
     expect(overview.rename).toHaveBeenCalledWith("beta", "same-session", "Renamed remotely");
     await userEvent.click(screen.getByRole("button", { name: actionName }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "归档" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "结算" }));
     expect(overview.dispatch).toHaveBeenCalledWith(
       "beta",
       expect.objectContaining({

@@ -430,7 +430,7 @@ function AttachedTaskLink({ session }: { session: PalotSession }) {
       >
         <span className="min-w-0 flex-1 truncate">{title}</span>
         {statusLabel ? <Badge variant="secondary">{statusLabel}</Badge> : null}
-        {session.archivedAt !== null ? <Badge variant="outline">已归档</Badge> : null}
+        {session.archivedAt !== null ? <Badge variant="outline">已结算</Badge> : null}
       </Link>
     </li>
   );

@@ -80,8 +80,8 @@ export function useAutoSettle(): void {
           const tasks = candidates.length === 1 ? "1 个闲置任务" : `${candidates.length} 个闲置任务`;
           const where =
             snapshot.length > 1 && connection.profile.name
-              ? `已自动归档 ${connection.profile.name} 的 ${tasks}`
-              : `已自动归档 ${tasks}`;
+              ? `已自动结算 ${connection.profile.name} 的 ${tasks}`
+              : `已自动结算 ${tasks}`;
           announceSettledBatch({
             count: candidates.length,
             title: where,

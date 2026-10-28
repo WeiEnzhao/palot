@@ -143,7 +143,7 @@ describe("WorktreesPage", () => {
       "/sessions/session-1",
     );
     const archivedLink = within(list).getByRole("link", {
-      name: "Archived investigation 已归档",
+      name: "Archived investigation 已结算",
     });
     expect(screen.queryByRole("link", { name: "Other worktree task" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Other project task" })).toBeNull();
