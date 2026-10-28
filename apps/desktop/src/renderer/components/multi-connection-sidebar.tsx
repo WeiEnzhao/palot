@@ -39,6 +39,7 @@ import {
   InboxToolbar,
   SectionTrigger,
   InboxCompactRowSurface,
+  SnoozeMenuButton,
 } from "./inbox-sidebar";
 import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 import { sessionSnoozeChoices } from "../lib/session-snooze";
@@ -433,6 +434,16 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
         at: Date.now(),
         through: item.activityThrough,
       });
+    const snooze = (until: number) =>
+      dispatch(item, {
+        type: "snooze",
+        sessionID: session.id,
+        at: Date.now(),
+        until,
+        through: item.activityThrough,
+      });
+    // 已延后的行不给「暂停」按钮（它的快捷操作已经是「唤醒」）。
+    const snoozable = item.section !== "snoozed";
     const pullRequestLinks = pullRequestsByProfile.get(connection.profile.id)?.get(session.id);
     const badge =
       connection.profile.kind === "local" ? null : (
@@ -490,18 +501,7 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
               <DropdownMenuSubTrigger disabled={disabled}>暂停到</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 {sessionSnoozeChoices.map(([label, resolve]) => (
-                  <DropdownMenuItem
-                    key={label}
-                    onClick={() =>
-                      dispatch(item, {
-                        type: "snooze",
-                        sessionID: session.id,
-                        at: Date.now(),
-                        until: resolve(Date.now()),
-                        through: item.activityThrough,
-                      })
-                    }
-                  >
+                  <DropdownMenuItem key={label} onClick={() => snooze(resolve(Date.now()))}>
                     {label}
                   </DropdownMenuItem>
                 ))}
@@ -639,7 +639,9 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                     "data-active:font-medium data-active:bg-transparent data-active:hover:bg-transparent",
                     "data-active:before:absolute data-active:before:-left-1.5 data-active:before:inset-y-1 data-active:before:w-0.5 data-active:before:rounded-full data-active:before:bg-info",
                     quickAction
-                      ? "group-hover/owned-row:pr-14 group-has-[:focus-visible]/owned-row:pr-14 group-has-[[data-popup-open]]/owned-row:pr-14"
+                      ? snoozable
+                        ? "group-hover/owned-row:pr-24 group-has-[:focus-visible]/owned-row:pr-24 group-has-[[data-popup-open]]/owned-row:pr-24"
+                        : "group-hover/owned-row:pr-14 group-has-[:focus-visible]/owned-row:pr-14 group-has-[[data-popup-open]]/owned-row:pr-14"
                       : "group-hover/owned-row:pr-8 group-has-[:focus-visible]/owned-row:pr-8 group-has-[[data-popup-open]]/owned-row:pr-8",
                     connected && "cursor-grab active:cursor-grabbing",
                   ),
@@ -664,6 +666,9 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                   from the tab order. */}
               <div className="absolute top-1/2 right-0.5 flex -translate-y-1/2 items-center opacity-0 transition-opacity group-hover/owned-row:opacity-100 group-has-[:focus-visible]/owned-row:opacity-100 group-has-[[data-popup-open]]/owned-row:opacity-100">
                 {quickAction}
+                {snoozable ? (
+                  <SnoozeMenuButton disabled={disabled} onSnooze={snooze} />
+                ) : null}
                 {menu}
               </div>
             </div>

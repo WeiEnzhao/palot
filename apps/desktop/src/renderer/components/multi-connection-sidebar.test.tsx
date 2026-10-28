@@ -512,6 +512,16 @@ describe("MultiConnectionSidebar", () => {
     await userEvent.tab();
     expect(document.activeElement).toBe(settle);
     await userEvent.tab();
+    // 行内的「暂停」与单连接侧对齐（原来只能开 ⋯ 菜单或右键才能延后）。
+    const snooze = within(row.parentElement!).getByRole("button", { name: "暂停任务" });
+    expect(document.activeElement).toBe(snooze);
+    await userEvent.keyboard("{Enter}");
+    await userEvent.click(await screen.findByRole("menuitem", { name: /1 小时后/ }));
+    expect(overview.dispatch).toHaveBeenCalledWith(
+      "beta",
+      expect.objectContaining({ type: "snooze", sessionID: "same-session" }),
+    );
+    await userEvent.tab();
     const actions = screen.getByRole("button", {
       name: "Same server · beta.example 上 Same task 的操作",
     });
