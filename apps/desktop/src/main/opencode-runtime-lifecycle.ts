@@ -130,7 +130,8 @@ export const openCodeRuntimeLifecycleAdapter: OpenCodeRuntimeLifecycleAdapter = 
         // Node 的 globalThis.fetch（undici）只认进程启动时的 NODE_EXTRA_CA_CERTS，
         // 运行时改环境变量无效，无法支持局域网自签 HTTPS 服务器。
         const options = rejectRedirects ? { ...init, redirect: "error" as const } : init;
-        return net.fetch(input, options) as unknown as Promise<Response>;
+        // net.fetch 的类型只收 string | Request，而 fetch 回调的 input 还可能是 URL。
+        return net.fetch(input instanceof URL ? input.href : input, options) as unknown as Promise<Response>;
       }),
     }),
   discoverBinary: discoverSelectedOpenCodeBinary,

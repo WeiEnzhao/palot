@@ -104,8 +104,12 @@ let performanceTraceActive = false;
 const requestProxy = new OpenCodeRequestProxy({
   connection: (target) => openCodeRuntime.requestConnection(target),
   // 走 Electron net（Chromium 网络栈），信任钥匙串里的自签 CA（Node fetch 不认）。
+  // net.fetch 的类型只收 string | Request，而 fetch 回调的 input 还可能是 URL。
   fetch: (input, init) =>
-    net.fetch(input, { ...init, redirect: "error" }) as unknown as Promise<Response>,
+    net.fetch(input instanceof URL ? input.href : input, {
+      ...init,
+      redirect: "error",
+    }) as unknown as Promise<Response>,
 });
 const observedRequestSenders = new WeakSet<WebContents>();
 const nativeSymbolCache = new Map<string, string | null>();
