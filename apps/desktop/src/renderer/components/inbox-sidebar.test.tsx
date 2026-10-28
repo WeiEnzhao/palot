@@ -21,6 +21,7 @@ import { toast } from "./ui/toast";
 const navigation = vi.hoisted(() => ({
   openSession: vi.fn(),
   preloadSession: vi.fn(),
+  openNewTask: vi.fn(),
 }));
 const overview = vi.hoisted(() => ({
   connections: [] as {
@@ -77,6 +78,7 @@ beforeEach(() => {
     },
   });
   navigation.openSession.mockResolvedValue(undefined);
+  navigation.openNewTask.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -146,6 +148,45 @@ describe("InboxSidebarContent", () => {
         profileID: "profile-original",
       }),
     );
+  });
+
+  // 单服务器收件箱的项目分组头也要有「+ 新任务」（多服务器侧 2026-10-24 已加，这里补齐）。
+  it("offers a new-task button on each project group header", async () => {
+    const store = createStore();
+    const queryClient = createRendererQueryClient();
+    const item = session("inbox", "Inbox task", 120);
+    seedCatalog(queryClient, {
+      projects: [
+        {
+          id: "project-1",
+          canonical: "/repo",
+          name: "Palot",
+          sandboxes: [],
+          vcs: null,
+          updatedAt: 1,
+        },
+      ],
+      sessions: [item],
+    });
+    store.set(sessionTriageSnapshotAtom, {
+      profileID: "local-default",
+      bootstrapThrough: null,
+      sessions: [],
+    });
+
+    renderWithRouter(
+      <Provider store={store}>
+        <SidebarProvider>
+          <InboxSidebarContent />
+        </SidebarProvider>
+      </Provider>,
+      store,
+      "/new",
+      queryClient,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "在 Palot 中新建任务" }));
+    await vi.waitFor(() => expect(navigation.openNewTask).toHaveBeenCalledWith("project-1"));
   });
 
   it("clears an optimistic selection when navigation finishes without changing routes", async () => {

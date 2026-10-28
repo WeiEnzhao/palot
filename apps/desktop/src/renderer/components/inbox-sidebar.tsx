@@ -13,6 +13,7 @@ import {
   ListFilter,
   LoaderCircle,
   PinOff,
+  Plus,
   SlidersHorizontal,
   Undo2,
 } from "lucide-react";
@@ -827,6 +828,7 @@ function RichSection({
   /** Header action, revealed on hover or focus. */
   action?: ReactNode;
 }) {
+  const navigation = usePalotNavigation();
   if (!items.length && !empty) return null;
   // Group the flat card pile by project, matching the multi-connection sidebar's
   // grouped shelves (folder icon + bold label + count, rows nested beneath) —
@@ -839,7 +841,22 @@ function RichSection({
           <div className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-base font-semibold text-sidebar-foreground">
             <Folder aria-hidden="true" className="size-4 shrink-0 text-sidebar-foreground/60" />
             <span className="truncate">{group.label}</span>
-            <span className="ml-auto shrink-0 tabular-nums opacity-70">{group.items.length}</span>
+            <span className="ml-auto flex shrink-0 items-center gap-1.5">
+              {/* 单服务器收件箱分组头也带「+ 新任务」，与多服务器收件箱/任务视图分组头一致。 */}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`在 ${group.label} 中新建任务`}
+                onClick={() => {
+                  const projectID =
+                    group.items[0]?.session.projectID ?? group.key.split("\u0000")[1];
+                  void navigation.openNewTask(projectID || undefined);
+                }}
+              >
+                <Plus aria-hidden="true" />
+              </Button>
+              <span className="tabular-nums opacity-70">{group.items.length}</span>
+            </span>
           </div>
           <div className="space-y-0.5 pl-6 pt-1">
             {group.items.map((item) => (
