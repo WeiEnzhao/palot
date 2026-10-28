@@ -787,6 +787,15 @@
   background-color: color-mix(in oklch, var(--foreground) 10%, transparent);
 }
 
+/* Translucent: the floating 「滚动到底部」pill is the same solid-light-pill bug (its
+   `secondary` variant paints the opaque --secondary): over the wallpaper wash it reads as
+   a white blob. Same dark-tinted glass as the message bubbles above. */
+:root[data-content-translucent="true"]:not([data-reduced-transparency="true"])
+  .palot-floating-pill {
+  background-color: color-mix(in oklch, var(--foreground) 12%, transparent);
+  backdrop-filter: blur(18px) saturate(1.35);
+}
+
 /* Translucent: inline code chips go from a solid light pill to a glass-like translucent
    pill (the solid --code-background/--muted double-stacks into an opaque white blob).
    The tint rides on --foreground: --muted is itself translucent now, so mixing it

@@ -2151,6 +2151,9 @@ const SessionThreadContents = memo(function SessionThreadContents({
                 <Button
                   variant="secondary"
                   size="sm"
+                  // 透光壁纸下这颗胶囊要走半透明（见 index.css 的 .palot-floating-pill），
+                  // 否则不透明白在渐变壁纸上就是一块白板。
+                  className="palot-floating-pill"
                   onClick={() => {
                     navigation.cancel();
                     infiniteScroll.clearIntent();
