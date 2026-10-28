@@ -1225,7 +1225,59 @@ function groupActivity(
   }
 
   flush();
-  return combineIndividualReadGroups(groups);
+  return settleCompactionCompletions(combineIndividualReadGroups(groups));
+}
+
+function firstTimestamp(group: TurnActivityGroup): number | undefined {
+  const times = [
+    group.startedAt,
+    ...group.entries.map((entry) => entry.message.createdAt),
+    ...(group.messages ?? []).map((message) => message.createdAt),
+  ].filter((value): value is number => typeof value === "number" && value > 0);
+  return times.length ? Math.min(...times) : undefined;
+}
+
+/**
+ * 压缩耗时在历史回放里会丢：wire 契约的 compaction 消息只有 `time.created`（没有 completed），
+ * 真实完成时刻只活在 live 的 `session.compaction.ended` 事件上 —— 断线/重启后重建的投影只能把
+ * completedAt 退化成 createdAt，分隔条上就只剩「上下文已自动压缩」。
+ * 压缩一结束，等待中的那条消息立刻恢复流式，所以用「压缩后第一条消息的时间」当完成时刻
+ * （2026-10-28 实测 win 会话：差 0.2s）。
+ */
+function settleCompactionCompletions(groups: TurnActivityGroup[]): TurnActivityGroup[] {
+  return groups.map((group, index) => {
+    if (group.kind !== "compaction" || group.startedAt === undefined) return group;
+    if (group.completedAt !== undefined && group.completedAt > group.startedAt) return group;
+    const part = group.entries.find((entry) => entry.part.type === "compaction")?.part;
+    if (!part || part.type !== "compaction" || part.status !== "completed") return group;
+    const resumedAt = groups
+      .slice(index + 1)
+      .map(firstTimestamp)
+      .find((value): value is number => value !== undefined && value > group.startedAt!);
+    return resumedAt === undefined ? group : { ...group, completedAt: resumedAt };
+  });
+}
+
+/** 跨轮次版本：压缩常常自成一轮，恢复的那条消息落在下一轮。 */
+function settleCompactionTurn(
+  turn: TranscriptTurn,
+  next: PalotMessage[] | undefined,
+): TranscriptTurn {
+  const index = turn.activity.findIndex((activity) => activity.kind === "compaction");
+  const group = turn.activity[index];
+  if (!group || group.startedAt === undefined) return turn;
+  if (group.completedAt !== undefined && group.completedAt > group.startedAt) return turn;
+  const part = group.entries.find((entry) => entry.part.type === "compaction")?.part;
+  if (!part || part.type !== "compaction" || part.status !== "completed") return turn;
+  const resumed = (next ?? [])
+    .filter((message) => message.createdAt > group.startedAt!)
+    .sort((left, right) => left.createdAt - right.createdAt)[0];
+  // 只有「同一轮继续」的那条消息才算恢复点：下一轮以用户新消息开头时，
+  // 它与压缩之间可能隔了任意长时间，拿来当完成时刻会算出荒唐的耗时。
+  if (!resumed || resumed.type === "user" || resumed.type === "synthetic") return turn;
+  const activity = [...turn.activity];
+  activity[index] = { ...group, completedAt: resumed.createdAt };
+  return { ...turn, activity };
 }
 
 /** Only successful plain file reads can share a compact disclosure. */
@@ -2238,7 +2290,7 @@ class CachedSessionTranscriptProjector implements SessionTranscriptProjector {
           ) ?? null,
       };
       const cached = this.turns.get(group.id);
-      const turn =
+      const projected =
         cached && sameCachedTurn(cached, signature)
           ? cached.turn
           : project(
@@ -2253,6 +2305,7 @@ class CachedSessionTranscriptProjector implements SessionTranscriptProjector {
               policy,
               signature.tokensPerSecond,
             );
+      const turn = settleCompactionTurn(projected, groups[index + 1]?.messages);
       nextTurnCache.set(group.id, { ...signature, turn });
       return turn;
     });
@@ -2396,6 +2449,8 @@ export function sameTurnActivityGroup(left: TurnActivityGroup, right: TurnActivi
     left.showReasoningSummaries !== right.showReasoningSummaries ||
     left.currentAction !== right.currentAction ||
     left.pinned !== right.pinned ||
+    left.startedAt !== right.startedAt ||
+    left.completedAt !== right.completedAt ||
     left.groupSameFileReads !== right.groupSameFileReads ||
     left.categories?.length !== right.categories?.length ||
     left.messages?.length !== right.messages?.length ||

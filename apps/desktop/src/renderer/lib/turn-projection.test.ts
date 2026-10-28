@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { JsonValue, PalotMessage, PalotMessageContent } from "../../shared";
 import type { PendingRequestView } from "./view-models";
+import { compactionLabel } from "../components/transcript/compaction-row";
 import { mergeOptimisticMessages } from "./message-reconcile";
 import {
   createSessionTranscriptProjector,
@@ -223,6 +224,61 @@ describe("projectTranscriptTurns", () => {
       "alpha",
       "beta",
     ]);
+  });
+
+  it("derives a hydrated compaction's completion from the message that resumed after it", () => {
+    const compaction = message({
+      id: "compaction",
+      type: "compaction",
+      createdAt: 1_000,
+      completedAt: 1_000,
+      content: [{ type: "compaction", status: "completed", reason: "auto", text: "Summary" }],
+    });
+    const resumed = message({
+      id: "resumed",
+      type: "assistant",
+      createdAt: 158_000,
+      completedAt: 160_000,
+      finish: "stop",
+      content: [{ type: "text", id: "text", text: "继续" }],
+    });
+    const turns = projectTranscriptTurns([compaction, resumed]);
+    const boundary = turns
+      .flatMap((turn) => turn.activity)
+      .find((group) => group.kind === "compaction");
+
+    expect(boundary?.startedAt).toBe(1_000);
+    expect(boundary?.completedAt).toBe(158_000);
+    expect(
+      compactionLabel(
+        boundary?.entries[0]?.part,
+        "completed",
+        boundary?.startedAt,
+        boundary?.completedAt,
+      ),
+    ).toBe("上下文已自动压缩 · 耗时 2 分 37 秒");
+  });
+
+  it("leaves the compaction duration unknown when the next turn starts with a user prompt", () => {
+    const compaction = message({
+      id: "compaction",
+      type: "compaction",
+      createdAt: 1_000,
+      completedAt: 1_000,
+      content: [{ type: "compaction", status: "completed", reason: "auto", text: "Summary" }],
+    });
+    const nextPrompt = message({
+      id: "user",
+      type: "user",
+      createdAt: 3_600_000,
+      completedAt: 3_600_000,
+      text: "继续",
+    });
+    const boundary = projectTranscriptTurns([compaction, nextPrompt])
+      .flatMap((turn) => turn.activity)
+      .find((group) => group.kind === "compaction");
+
+    expect(boundary?.completedAt).toBe(1_000);
   });
 
   it("projects focused activity as one compact summary", () => {
