@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouterState } from "@tanstack/react-router";
-import { BellRing, Check, Ellipsis, Folder, PinOff, Plus, Server, Undo2 } from "lucide-react";
+import { BellRing, Check, Ellipsis, Folder, PinOff, Server, Undo2 } from "lucide-react";
 import {
   SESSION_TRIAGE_BATCH_LIMIT,
   type SessionTriageCommand,
@@ -44,6 +44,7 @@ import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 import { sessionSnoozeChoices } from "../lib/session-snooze";
 import { INBOX_CARD_ACTION_BUTTON_CLASS } from "./inbox-card-surface";
 import { PullRequestBadge } from "./pull-requests/pull-request-badge";
+import { InboxNewTaskButton, InboxProjectGroupHeader } from "./inbox-group-header";
 import { announceSettledBatch, SettleIdleMenu } from "./settle-idle-menu";
 import { useOwnedPullRequestLinks } from "./pull-requests/use-owned-pull-request-links";
 import { cn } from "../lib/cn";
@@ -716,21 +717,17 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
           );
         // 收件箱分组头也带「+ 新任务」（2026-10-24 用户要求），与任务视图分组头一致。
         const newTaskButton = (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={`${connectionDescription(connection.profile)} 上 ${group.label} 的新任务`}
+          <InboxNewTaskButton
+            label={`${connectionDescription(connection.profile)} 上 ${group.label} 的新任务`}
             disabled={!connection.runtime?.connected || connection.phase !== "ready"}
-            onClick={() => {
+            onOpen={() => {
               const projectID =
                 group.items[0]?.session.projectID ?? group.key.split("\u0000")[1];
               void attempt("无法打开新任务", () =>
                 navigation.openNewTask(projectID || undefined, connection.profile.id),
               );
             }}
-          >
-            <Plus aria-hidden="true" />
-          </Button>
+          />
         );
         chunks.push({ group, badge, newTaskButton, rows: take.map(renderRow) });
       }
@@ -966,22 +963,12 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                                   onDragOver={(event) => onProjectDragOver(key, event)}
                                   onDrop={(event) => onProjectDrop(key, event)}
                                 >
-                                  <div
-                                    className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-base font-semibold text-sidebar-foreground"
-                                  >
-                                    <Folder
-                                      aria-hidden="true"
-                                      className="size-4 shrink-0 text-sidebar-foreground/60"
-                                    />
-                                    <span className="truncate">{group.label}</span>
-                                    <span className="ml-auto flex shrink-0 items-center gap-1.5">
-                                      {badge}
-                                      {newTaskButton}
-                                      <span className="tabular-nums opacity-70">
-                                        {group.items.length}
-                                      </span>
-                                    </span>
-                                  </div>
+                                  <InboxProjectGroupHeader
+                                    label={group.label}
+                                    count={group.items.length}
+                                    badge={badge}
+                                    action={newTaskButton}
+                                  />
                                   <div
                                     className={
                                       section === "pinned" || section === "inbox"
@@ -1071,21 +1058,17 @@ export function MultiConnectionSidebar({ mode: modeOverride }: { mode?: SidebarM
                             ) : null
                           }
                           action={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label={`${connectionDescription(connection.profile)} 上 ${projectName(project)} 的新任务`}
+                            <InboxNewTaskButton
+                              label={`${connectionDescription(connection.profile)} 上 ${projectName(project)} 的新任务`}
                               disabled={
                                 !connection.runtime?.connected || connection.phase !== "ready"
                               }
-                              onClick={() =>
+                              onOpen={() =>
                                 void attempt("无法打开新任务", () =>
                                   navigation.openNewTask(project.id, connection.profile.id),
                                 )
                               }
-                            >
-                              <Plus aria-hidden="true" />
-                            </Button>
+                            />
                           }
                         />
                         <CollapsibleContent>

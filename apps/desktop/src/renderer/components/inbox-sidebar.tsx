@@ -9,11 +9,9 @@ import {
   FolderPlus,
   FolderGit2,
   Ellipsis,
-  Folder,
   ListFilter,
   LoaderCircle,
   PinOff,
-  Plus,
   SlidersHorizontal,
   Undo2,
 } from "lucide-react";
@@ -88,6 +86,7 @@ import type { OpenCodeVcsInfo } from "../services/opencode-vcs";
 import { listRootSessionInfo } from "../services/opencode-catalog";
 import { mapSession } from "../services/opencode-mappers";
 import { AddProjectDialog } from "./add-project-dialog";
+import { InboxNewTaskButton, InboxProjectGroupHeader } from "./inbox-group-header";
 import { ProjectPickerContent } from "./project-picker";
 import { Button } from "./ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
@@ -838,26 +837,20 @@ function RichSection({
     <SidebarFluidList className="space-y-0.5">
       {groups.map((group) => (
         <Fragment key={group.key}>
-          <div className="flex h-7 min-w-0 items-center gap-2 px-1.5 pt-3 pb-1 text-base font-semibold text-sidebar-foreground">
-            <Folder aria-hidden="true" className="size-4 shrink-0 text-sidebar-foreground/60" />
-            <span className="truncate">{group.label}</span>
-            <span className="ml-auto flex shrink-0 items-center gap-1.5">
-              {/* 单服务器收件箱分组头也带「+ 新任务」，与多服务器收件箱/任务视图分组头一致。 */}
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`在 ${group.label} 中新建任务`}
-                onClick={() => {
+          <InboxProjectGroupHeader
+            label={group.label}
+            count={group.items.length}
+            action={
+              <InboxNewTaskButton
+                label={`在 ${group.label} 中新建任务`}
+                onOpen={() => {
                   const projectID =
                     group.items[0]?.session.projectID ?? group.key.split("\u0000")[1];
                   void navigation.openNewTask(projectID || undefined);
                 }}
-              >
-                <Plus aria-hidden="true" />
-              </Button>
-              <span className="tabular-nums opacity-70">{group.items.length}</span>
-            </span>
-          </div>
+              />
+            }
+          />
           <div className="space-y-0.5 pl-6 pt-1">
             {group.items.map((item) => (
               <InboxCard key={item.session.id} item={item} grouped {...props} />
