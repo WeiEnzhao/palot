@@ -10,6 +10,106 @@ export function snapToDevicePixel(value: number, ratio = globalThis.devicePixelR
   return Math.round(value * ratio) / ratio;
 }
 
+/** 向下对齐到设备像素网格。贴底写入只能用它，见 `bottomScrollTarget`。 */
+export function floorToDevicePixel(value: number, ratio = globalThis.devicePixelRatio || 1): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.floor(value * ratio) / ratio;
+}
+
+/**
+ * 贴底写入的**唯一**落点：设备像素网格上、且绝不超过真实最大值的那一格。
+ *
+ * 为什么必须是向下取整：
+ * `scrollTop` 的最大合法值就是 `scrollHeight - clientHeight`。四舍五入有一半的帧
+ * 会落到网格上但**越过**这个上限，浏览器把值钳回上限 ⇒ 实际偏移又回到小数位
+ * ⇒ 整层文字被亚像素重采样 ⇒ 边缘忽清忽糊。也就是说"吸附"在这些帧里根本没生效，
+ * 而且被钳回来的位置与相邻帧差半个设备像素 —— 正是「整体文案小幅上下跳动」的来源。
+ *
+ * 向下取整永远 ≤ 上限：写进去就是写进去，浏览器不会钳、不会回退、不会重采样。
+ * 代价是底边最多剩 1 个设备像素的空隙（dpr=2.4 时 0.42 CSS px，且有 paddingEnd
+ * 16px 在下面垫着），肉眼不可见。
+ *
+ * ⚠️ 所有写贴底位置的路径都必须用这个函数取落点。谁自己 `Math.round` 一次，
+ * 就会和邻居差一个设备像素、来回跳。
+ */
+export function bottomScrollTarget(
+  metrics: { scrollHeight: number; clientHeight: number },
+  ratio = globalThis.devicePixelRatio || 1,
+): number {
+  return floorToDevicePixel(Math.max(0, metrics.scrollHeight - metrics.clientHeight), ratio);
+}
+
+/**
+ * 把视口钉在底部，并落在**真实上限**的设备像素下限格上。返回写入的目标值。
+ *
+ * 🔴 为什么不能直接写 `scrollHeight - clientHeight`：
+ * 这两个属性都是**整数**（浏览器各自四舍五入后返回），相减会**高估**真实上限最多
+ * 约 1px；而真实上限是小数（内容高度本身是小数）。写超过上限的值，浏览器会悄悄
+ * 钳回真实上限 —— 于是"设备像素对齐"从来没真正生效过：
+ *
+ *   探针实测（dpr=2.4、流式）：我们写 5237.92，读回却是 5237.50，
+ *   差整整 0.42px（一个设备像素），且**每帧重复一次**。
+ *
+ * 位置永远停在真实上限的小数位上 ⇒ 每批内容到达时文字栅格化相位变一次 ⇒
+ * 用户看到的就是「整体文案小幅上下跳动、幅度很小、每秒好几次」。
+ *
+ * 解法：先用一个必然越界的值把浏览器自己的上限"问"出来（被钳位后的读回值就是
+ * 精确的真实上限），再对它向下取整。两次写入在同一个 JS 任务里完成，只产生一次
+ * 绘制；第二次只在需要下移时发生。
+ */
+export function pinBottomScroll(
+  el: { scrollTop: number; scrollHeight: number; clientHeight: number },
+  ratio = globalThis.devicePixelRatio || 1,
+): number {
+  // scrollHeight + clientHeight 必然大于真实上限 `内容高 - clientHeight`。
+  el.scrollTop = el.scrollHeight + el.clientHeight;
+  const trueMax = el.scrollTop;
+  if (!Number.isFinite(trueMax)) return 0;
+  const target = floorToDevicePixel(trueMax, ratio);
+  // 无条件再写一次：探针值把位置停在真实上限上（通常是小数），必须落到网格上。
+  // 两者相等时这次写入是空操作，不会产生第二帧绘制。
+  el.scrollTop = target;
+  return target;
+}
+
+/**
+ * 流式贴底时**要不要再写一次**：内容一变就写，内容没变且已贴底就不写。
+ *
+ * 这里是「贴底写平」的判定，不是「平滑跟随」。用逐帧探针在真机上对比过两版
+ * （2026-10-28，dpr=2.4，同一台机、同一种输出节奏）：
+ *
+ * | 版本 | 文字在屏幕上的位移帧 | 平均滞后 |
+ * |---|---|---|
+ * | 写平（本函数） | 0 / 140000 帧 | 0px |
+ * | 速率平滑跟随 | 少但滞后长期存在 | **191px** |
+ *
+ * 写平的意思是：内容长 32px，**同一帧里**就把 scrollTop 加 32px。这样
+ * `内容坐标 - scrollTop` 对每个已渲染的字都不变 —— 屏幕上一个像素都不动，
+ * 只有新落地的行在原位出现。平滑跟随则相反：它把 32px 摊到几百毫秒里滑，
+ * 屏幕上正在读的字持续上移，同时滞后越攒越多，攒够了再追一段 —— 那就是
+ * 用户说的「上下跳动」。
+ *
+ * 写平能干净，前提是写入位置落在设备像素网格上、且不越过浏览器真实上限
+ * （见 `pinBottomScroll` / `floorToDevicePixel`）：否则每次补偿留一点亚像素
+ * 残差，文字边缘的抗锯齿跟着变 —— 那是另一种「闪」。
+ *
+ * @param target 当前 `scrollHeight - clientHeight`（整数，比真实上限可能高 ≤1px）
+ * @param previousTarget 上一帧的同一个值；null = 首次
+ */
+export function needsBottomPin(input: {
+  target: number;
+  scrollTop: number;
+  previousTarget: number | null;
+  devicePixelRatio?: number;
+}): boolean {
+  if (input.previousTarget === null) return true;
+  if (Math.abs(input.target - input.previousTarget) > 0.001) return true;
+  // 死区 = 「整数相减」的高估（≤1px）+「网格取整」的舍入（≤1 设备像素）。落在死区
+  // 里就等于已经贴底了，再写只会写回同一个数（每帧重写会白白触发滚动事件）。
+  const ratio = input.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
+  return input.scrollTop < input.target - (1 + 1 / ratio + 0.01);
+}
+
 /** Direction of a browser scroll key, excluding controls that own keyboard input. */
 export function transcriptKeyboardScrollDelta(event: {
   key: string;
@@ -151,9 +251,11 @@ export function smoothBottomFollow(input: {
   const layoutJump = !streaming && targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX;
   if (distance > layoutGap || layoutJump) {
     return {
-      // 直接写精确目标：落位只求「停在底部」，不要再对齐设备像素网格 ——
-      // 向上取整会多滚 0.4px，下一帧就得往回退，那一下正是「抖」。
-      scrollTop: Math.max(0, input.target),
+      // 落位同样走「下限格」：这里是整块布局跳变（首屏落位、补页、窗口恢复），
+      // 写完就没人再管它了 —— 如果写精确小数，合成器会一直在亚像素位置采样文字；
+      // 如果四舍五入，则有一半概率被浏览器钳回上限、同样回到小数位。
+      // 只有下限格是「写在网格上、且一定 ≤ 上限、浏览器不会改」的那个值。
+      scrollTop: floorToDevicePixel(Math.max(0, input.target), ratio),
       speedPxPerSecond: 0,
       settled: true,
     };
@@ -167,10 +269,15 @@ export function smoothBottomFollow(input: {
       snapped = input.current + Math.sign(step) * grid;
     }
     if (step > 0) {
-      if (snapped > input.target) snapped = Math.floor(input.target * ratio) / ratio;
+      // ⚠️ 钳制必须用 `floorToDevicePixel`，不能用 `snapToDevicePixel`：
+      // 目标值是 `scrollHeight - clientHeight`，本身就是 scrollTop 的上限；四舍五入
+      // 会落到上限之上，浏览器钳回来 ⇒ 实际偏移变回小数 ⇒ 亚像素重采样（闪）。
+      // 曾经这里 floor、调用方 round，两者差一个设备像素（dpr=2.4 = 0.4167px），
+      // 交替执行时位置在两格之间来回跳 —— 现在两边都走"下限格"，写的是同一个数。
+      if (snapped > input.target) snapped = floorToDevicePixel(input.target, ratio);
       if (snapped < input.current) snapped = input.current;
     } else {
-      if (snapped < input.target) snapped = Math.ceil(input.target * ratio) / ratio;
+      if (snapped < input.target) snapped = floorToDevicePixel(input.target, ratio);
       if (snapped > input.current) snapped = input.current;
     }
     return {
@@ -199,13 +306,35 @@ export function smoothBottomFollow(input: {
   // 流式期间滞后目标 = 一行（正好吃掉 paddingEnd 的空白，不会切到正文）；
   // 不流时滞后归零，收尾必须真正贴底。
   const lagTarget = streaming ? FOLLOW_LAG_TARGET_PX : 0;
-  // 目标速度 = 内容增长速率（主项）+ 超出滞后目标的那部分按比例加速（副项）。
-  // 副项增益取 10/s：多出 16px 才多 160px/s，仍属于「滑动」而不是「甩」。
-  const want = Math.max(rate, (distance - lagTarget) * FOLLOW_LAG_GAIN_PER_SEC);
-  // 低通之外再限一次「每帧最多涨 20%」（下限 8px/s）：滞后突然变大时 P 项会要求
-  // 2~3 倍于当前速度，那一帧的位移照样是「猛冲」。限加速后是几帧内平滑追上去。
+  // 🔴 目标速度 = **内容增长速率（已低通）为主 + 误差的软修正**。
+  //
+  // 曾经用 `max(rate, (distance - lag) * 10)`：滞后 60px 就要 600px/s。逐帧实测
+  // （2026-10-28，dpr=2.4、32px 一块落地）速度序列是
+  //   75 → 453 → 321 → 427 → 365 → 250 → 150 → 153 …
+  // 也就是「一有滞后就冲刺、追上了就刹车」，一个回合 100ms 内来回一次 ——
+  // 用户看到的正是「上下抖动」。吐字本身是匀速的，速度就该是匀速的：
+  // 主项只认速率，误差项把速度压在 ±(40px × 1.5/s) 的窄带里缓慢修正。
+  const error = distance - lagTarget;
+  const correction = Math.max(-FOLLOW_ERROR_CLAMP_PX, Math.min(FOLLOW_ERROR_CLAMP_PX, error));
+  // 只有「真的堆住了」（滞后超过约 4 行）才额外加速，而且封顶：大段代码/表格落地时
+  // 必须能追上，但绝不能因为一次滞后就冲到 900px/s 以上。
+  const overflow = Math.max(0, error - FOLLOW_CATCHUP_START_PX);
+  const ceiling = Math.max(rate * FOLLOW_CATCHUP_RATE_MULTIPLIER, FOLLOW_MAX_SPEED_PX);
+  // 两种工况分开：
+  // · 正在吐字（rate 高）→ 主驱动 = 速率，误差只做软修正（否则就是"冲刺—刹车"）
+  // · 吐字基本停了（rate 低）→ 没有连续运动要保，直接按误差收敛，别磨叽几秒
+  const want =
+    rate >= FOLLOW_ACTIVE_RATE_PX
+      ? Math.min(
+          Math.max(0, rate + correction * FOLLOW_ERROR_GAIN_PER_SEC) +
+            overflow * FOLLOW_CATCHUP_GAIN_PER_SEC,
+          ceiling,
+        )
+      : Math.min(Math.max(0, rate + correction * FOLLOW_SETTLE_GAIN_PER_SEC), ceiling);
+  // 低通之外再限一次「每帧最多涨这么多」（下限 40px/s）：40px/s 让跟随器在 ~8 帧
+  // （133ms）内追上正常的吐字速率（约 300px/s），既不会起步太肉、也不会一帧猛冲。
   const smoothed = lowPassSpeed(previousSpeed, want, dt);
-  const speed = Math.min(smoothed, previousSpeed + Math.max(8, previousSpeed * 0.2));
+  const speed = Math.min(smoothed, previousSpeed + Math.max(40, previousSpeed * 0.25));
   if (speed * dtSec < 0.05 && rate <= 0) {
     return { scrollTop: null, speedPxPerSecond: speed, settled: false };
   }
@@ -238,8 +367,28 @@ export const SMOOTH_FOLLOW_SNAP_BEYOND_PX = 1500;
 export const SMOOTH_FOLLOW_SNAP_GROWTH_PX = 120;
 /** 超出滞后目标的部分换算成额外速度的增益（1/秒）。 */
 export const FOLLOW_LAG_GAIN_PER_SEC = 10;
+/**
+ * 滞后误差的**软**修正增益（1/秒）。主驱动是内容增长速率，误差只做微调：
+ * 多滞后 40px 才多要 60px/s，而不是 400px/s。增益一大就变成「冲刺—刹车」，
+ * 一个回合内速度来回一次 = 肉眼看到的上下抖动。
+ */
+export const FOLLOW_ERROR_GAIN_PER_SEC = 0.5;
+/** 误差修正的钳位（px）：滞后超过它不再加码，避免大滞后又把速度顶起来。 */
+export const FOLLOW_ERROR_CLAMP_PX = 40;
+/** 超过这个滞后（≈4 行）才允许额外追赶：正常吐字的 16~32px 一块由滞后预算吸收。 */
+export const FOLLOW_CATCHUP_START_PX = 72;
+/** 追赶段的增益（1/秒）。 */
+export const FOLLOW_CATCHUP_GAIN_PER_SEC = 6;
+/** 速度上限至少这么高（大块内容落地时仍能追上）。 */
+export const FOLLOW_MAX_SPEED_PX = 900;
+/** 上限随内容速率上浮的倍数：吐字越快，允许的追赶速度越高。 */
+export const FOLLOW_CATCHUP_RATE_MULTIPLIER = 1.5;
+/** 判定「正在吐字」的速率门槛（px/s）。低于它按收尾工况处理。 */
+export const FOLLOW_ACTIVE_RATE_PX = 60;
+/** 收尾工况的误差增益（1/秒）：没有连续运动要保，直接收敛，别磨几秒。 */
+export const FOLLOW_SETTLE_GAIN_PER_SEC = 4;
 /** 速度低通时间常数（毫秒）：决定「加速」有多柔。 */
-export const SMOOTH_FOLLOW_SPEED_TAU_MS = 110;
+export const SMOOTH_FOLLOW_SPEED_TAU_MS = 220;
 /** 滞后预算 / 空闲阈值 / 空闲增益（保留给旧调用方与测试引用）。 */
 export const SMOOTH_FOLLOW_LAG_BUDGET_PX = 20;
 export const SMOOTH_FOLLOW_LAG_TARGET_PX = 16;
@@ -247,7 +396,7 @@ export const SMOOTH_FOLLOW_LAG_GAIN = 0.08;
 export const SMOOTH_FOLLOW_IDLE_RATE = 24;
 export const SMOOTH_FOLLOW_IDLE_GAIN = 0.25;
 /** 速率估计的低通时间常数：越小越灵敏，越大越平滑。 */
-export const SMOOTH_FOLLOW_RATE_TAU_MS = 160;
+export const SMOOTH_FOLLOW_RATE_TAU_MS = 900;
 
 /** 用内容高度增量估计「每秒长高多少」，并做低通。
  * 只在真实增长时更新；不增长时缓慢衰减，避免突然停流后还在往前冲。 */

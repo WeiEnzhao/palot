@@ -90,9 +90,11 @@ import { projectToolExecution } from "../lib/tool-executions";
 import { recordStreamingCommit } from "../lib/streaming-latency";
 import {
   anchorScrollCompensation,
+  bottomScrollTarget,
+  pinBottomScroll,
+  needsBottomPin,
   noteGrowthRate,
   smoothBottomFollow,
-  pinnedTranscriptScrollTop,
   prependAnchorFrame,
   prefersReducedMotion,
   readTranscriptScrollUpdate,
@@ -104,7 +106,6 @@ import {
   recordCompensated,
   resetGrowthGate,
   SMOOTH_FOLLOW_SNAP_GROWTH_PX,
-  TRANSCRIPT_BOTTOM_THRESHOLD,
   type TranscriptScrollIntent,
   type GrowthGateState,
 } from "../lib/transcript-scroll";
@@ -218,8 +219,6 @@ const EMPTY_SUBAGENT_PROGRESS = { active: 0, total: 0 };
 const EMPTY_BACKGROUND_WORK: BackgroundWorkItem[] = [];
 const EMPTY_MODELS: PalotModel[] = [];
 const MAX_PINNED_VIRTUAL_TURNS = 16;
-/** 一轮底边缓动最多跑多少帧（≈2 秒），防止目标一直变时无限追。 */
-const MAX_BOTTOM_FOLLOW_FRAMES = 120;
 const INITIAL_TRANSCRIPT_STABLE_FRAMES = 3;
 const MAX_INITIAL_TRANSCRIPT_SETTLE_MS = 250;
 /** 离顶不到两屏时，允许「一页修完自动续下一页」。 */
@@ -513,8 +512,111 @@ const SessionThreadContents = memo(function SessionThreadContents({
     followTargetRef.current = null;
     if (loop !== null) cancelAnimationFrame(loop);
   }, []);
-  // 底边跟随：一个常驻的逐帧循环，速度是状态、逐帧低通。流式期间一直跑，
-  // 不流时才在贴底后自停 —— 批次之间不再重启循环（重启那一帧就是「顿一下」）。
+  // 底边跟随的**唯一写者**：推进一小步（速度是状态、逐帧低通），返回是否还要继续。
+  //
+  // 为什么必须只走这一条路：贴底时"底边立刻写平"和"文字连续移动"在块状输出下是
+  // 互斥的 —— 内容一次落地 32px，写平就是**同一帧里整块文字上跳 32px，然后静止
+  // 100~200ms**（逐帧探针实测：Δsh 与 Δst 恒等，中间全是 0）。用户看到的「抖」
+  // 就是这个台阶。所以这里每次只推进一小步（≈ 速率 × 帧长，几 px），让文字连续
+  // 上滑；代价是最新 0~1 行会短暂落在底边下方（padding 区内，看不到截断）。
+  //
+  // 调用点有两个，都用同一个状态机：
+  //   · rAF 循环（流式期间常驻）
+  //   · virtualizer 的 onChange（TanStack 刚写完 spacer 高度、还在同一个 JS 任务里，
+  //     在这里推进一小步，才不会出现"内容已长高、位置还是旧的"那一帧）
+  // 两处同帧先后调用是安全的：位移由 dt 驱动，1ms + 16ms 两次 ≈ 一次 17ms。
+  const bottomFollowStep = useCallback((): boolean => {
+    const viewport = scrollRef.current;
+    if (
+      !viewport ||
+      !bottomLockedRef.current ||
+      prependAnchorRef.current ||
+      scrollIntentRef.current !== null
+    ) {
+      followSpeedRef.current = 0;
+      return false;
+    }
+    const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+    const distance = target - viewport.scrollTop;
+    const previousTarget = followTargetRef.current;
+    followTargetRef.current = target;
+    const targetJump = previousTarget === null ? 0 : target - previousTarget;
+    // 一整块布局跳变（虚拟列表补测量/首屏落位）不是「内容跑到很远」，
+    // 这时解除锁定会把用户丢在对话中间（打开任务看到的就是开头）。
+    const layoutJump = targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX;
+    // 整屏级别的变化（换会话、整块替换）不拖：解除锁定，让「回到底部」出现。
+    if (!layoutJump && distance > viewport.clientHeight * 1.5) {
+      followSpeedRef.current = 0;
+      setBottomLock(false);
+      return false;
+    }
+    const now = performance.now();
+    const dt = now - (followFrameAtRef.current || now - 16.7);
+    followFrameAtRef.current = now;
+    const streaming = streamingRef.current;
+    // 🔴 流式期：**同帧写平**，不做平滑跟随。
+    //
+    // 判据来自真机逐帧探针（2026-10-28，dpr=2.4，同一台机、同一种输出节奏）：
+    //   · 写平版：14 万帧里「文字在屏幕上发生位移」的帧数 = 0，平均滞后 0px；
+    //   · 平滑跟随版：平均滞后 **191px** —— 最新约 6 行长期待在视口外，攒够了
+    //     再追一段。用户看到的「上下跳动」就是这个，不是抖动，是持续的运动 + 追赶。
+    //
+    // 写平为什么反而「不动」：内容长 32px，同一帧里 scrollTop 也加 32px，
+    // 每个已渲染字的 `内容坐标 - scrollTop` 不变 ⇒ 屏幕上没有任何位移，
+    // 只有新落地的行在原位出现。前提是写入必须落在设备像素网格上且不越过真实
+    // 上限（`pinBottomScroll`），否则每次补偿留亚像素残差 ⇒ 那是另一种「闪」。
+    if (streaming) {
+      followSpeedRef.current = 0;
+      if (
+        !needsBottomPin({
+          target,
+          scrollTop: viewport.scrollTop,
+          previousTarget,
+          devicePixelRatio: window.devicePixelRatio,
+        })
+      ) {
+        // 内容这一帧没变、且已经贴底：什么都不写，循环继续等下一帧。
+        return true;
+      }
+      pinBottomScroll(viewport);
+      previousScrollTopRef.current = viewport.scrollTop;
+      return true;
+    }
+    // 到场稳定窗内（重挂载后 800ms）：高度虚胖→塌回引发的原生 clamp 把视口
+    // 拽离底部后，平滑跟随要用 ~170ms 滑回来，加上拽上去那一闪就是「上下闪动」。
+    // 窗口内改为直接落位 —— 和塌陷同帧写平，肉眼只有一次不到一帧的位置修正。
+    const arrivalSettling = now < arrivalSettleUntilRef.current;
+    const frame = smoothBottomFollow({
+      current: viewport.scrollTop,
+      target,
+      ratePerSecond: followRateRef.current,
+      deltaMs: dt,
+      speedPxPerSecond: followSpeedRef.current,
+      streaming,
+      devicePixelRatio: window.devicePixelRatio,
+      previousTarget: previousTarget ?? undefined,
+      // 正常流式跟随不受影响：smoothBottomFollow 只在「距离超 snapBeyond 或
+      // 布局跳变」时用 snapBeyondPx 之外的路径，这里把落位阈值临时降为 0，
+      // 等价于「稳定窗内一律落位」。非稳定窗传 undefined 走默认 1500px。
+      snapBeyondPx: arrivalSettling ? 0 : undefined,
+    });
+    followSpeedRef.current = frame.speedPxPerSecond;
+    let moved = false;
+    if (frame.scrollTop !== null) {
+      const before = viewport.scrollTop;
+      viewport.scrollTop = frame.scrollTop;
+      previousScrollTopRef.current = viewport.scrollTop;
+      moved = Math.abs(viewport.scrollTop - before) > 0.05;
+    }
+    // 流式期间常驻；流停了才允许在贴底/被钳住时收工。
+    if (!streaming && (frame.settled || !moved)) {
+      followSpeedRef.current = 0;
+      return false;
+    }
+    return true;
+  }, [setBottomLock]);
+  // 常驻的逐帧循环：流式期间一直跑，不流时才在贴底后自停 ——
+  // 批次之间不再重启循环（重启那一帧就是「顿一下」）。
   const startBottomFollow = useCallback(() => {
     if (bottomFollowLoopRef.current !== null) {
       return;
@@ -523,93 +625,13 @@ const SessionThreadContents = memo(function SessionThreadContents({
     // 这期间高度塌陷引发的原生 clamp 是「到场抖动」而不是「用户在读被顶走」，
     // 后续跟随直接落位补回，不走平滑滑回（那一下就是肉眼的上跳+滑回）。
     arrivalSettleUntilRef.current = performance.now() + 800;
-    const step = () => {
+    const loop = () => {
       bottomFollowLoopRef.current = null;
-      const viewport = scrollRef.current;
-      if (
-        !viewport ||
-        !bottomLockedRef.current ||
-        prependAnchorRef.current ||
-        scrollIntentRef.current !== null
-      ) {
-        followSpeedRef.current = 0;
-        // 诊断（探针读）：循环为什么收工
-        (globalThis as { __palotFollowDiag?: unknown }).__palotFollowDiag = {
-          收工: true,
-          锁定: bottomLockedRef.current,
-          锚点: !!prependAnchorRef.current,
-          手势: scrollIntentRef.current ? "有" : "无",
-          时刻: performance.now(),
-        };
-        return;
-      }
-      const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-      const distance = target - viewport.scrollTop;
-      const previousTarget = followTargetRef.current ?? undefined;
-      followTargetRef.current = target;
-      const targetJump = previousTarget === undefined ? 0 : target - previousTarget;
-      // 一整块布局跳变（虚拟列表补测量/首屏落位）不是「内容跑到很远」，
-      // 这时解除锁定会把用户丢在对话中间（打开任务看到的就是开头）。
-      const layoutJump = targetJump > SMOOTH_FOLLOW_SNAP_GROWTH_PX;
-      // 整屏级别的变化（换会话、整块替换）不拖：解除锁定，让「回到底部」出现。
-      if (!layoutJump && distance > viewport.clientHeight * 1.5) {
-        followSpeedRef.current = 0;
-        setBottomLock(false);
-        return;
-      }
-      const now = performance.now();
-      const dt = now - (followFrameAtRef.current || now - 16.7);
-      followFrameAtRef.current = now;
-      const streaming = streamingRef.current;
-      // 到场稳定窗内（重挂载后 800ms）：高度虚胖→塌回引发的原生 clamp 把视口
-      // 拽离底部后，平滑跟随要用 ~170ms 滑回来，加上拽上去那一闪就是「上下闪动」。
-      // 窗口内改为直接落位 —— 和塌陷同帧写平，肉眼只有一次不到一帧的位置修正。
-      const arrivalSettling = now < arrivalSettleUntilRef.current;
-      const frame = smoothBottomFollow({
-        current: viewport.scrollTop,
-        target,
-        ratePerSecond: followRateRef.current,
-        deltaMs: dt,
-        speedPxPerSecond: followSpeedRef.current,
-        streaming,
-        devicePixelRatio: window.devicePixelRatio,
-        previousTarget,
-        // 正常流式跟随不受影响：smoothBottomFollow 只在「距离超 snapBeyond 或
-        // 布局跳变」时用 snapBeyondPx 之外的路径，这里把落位阈值临时降为 0，
-        // 等价于「稳定窗内一律落位」。非稳定窗传 undefined 走默认 1500px。
-        snapBeyondPx: arrivalSettling ? 0 : undefined,
-      });
-      followSpeedRef.current = frame.speedPxPerSecond;
-      let moved = false;
-      if (frame.scrollTop !== null) {
-        const before = viewport.scrollTop;
-        // 诊断（探针读）：这一帧为什么要写到这个位置
-        (globalThis as { __palotFollowDiag?: unknown }).__palotFollowDiag = {
-          收工: false,
-          锁定: bottomLockedRef.current,
-          锚点: !!prependAnchorRef.current,
-          手势: scrollIntentRef.current ? "有" : "无",
-          流式: streaming,
-          目标: Math.round(target),
-          当时: Math.round(before),
-          写到: Math.round(frame.scrollTop),
-          目标跳变: Math.round(targetJump),
-          速率: Math.round(followRateRef.current),
-          时刻: performance.now(),
-        };
-        viewport.scrollTop = frame.scrollTop;
-        previousScrollTopRef.current = viewport.scrollTop;
-        moved = Math.abs(viewport.scrollTop - before) > 0.05;
-      }
-      // 流式期间常驻；流停了才允许在贴底/被钳住时收工。
-      if (!streaming && (frame.settled || !moved)) {
-        followSpeedRef.current = 0;
-        return;
-      }
-      bottomFollowLoopRef.current = requestAnimationFrame(step);
+      if (!bottomFollowStep()) return;
+      bottomFollowLoopRef.current = requestAnimationFrame(loop);
     };
-    bottomFollowLoopRef.current = requestAnimationFrame(step);
-  }, [setBottomLock]);
+    bottomFollowLoopRef.current = requestAnimationFrame(loop);
+  }, [bottomFollowStep]);
   useEffect(() => stopBottomFollow, [stopBottomFollow]);
   const scrollToBottomNow = useCallback((mode: "instant" | "exact" | "grow" = "exact") => {
     const viewport = scrollRef.current;
@@ -624,26 +646,36 @@ const SessionThreadContents = memo(function SessionThreadContents({
     // 其余路径一律交给跟随器：流式期间哪怕一帧瞬移，就是一次肉眼可见的跳。
     if (mode !== "instant" && !prefersReducedMotion()) {
       startBottomFollow();
-      if (mode === "grow") return;
+      if (mode === "grow") {
+        // 「grow」= 内容刚长高的那一帧（rAF / MutationObserver 都排在 paint 之前）。
+        //
+        // 🔴 这里**只推进一小步，绝不写平**。贴底写平会把「内容落地 32px」变成
+        // 「同一帧整块文字上跳 32px，然后静止 100~200ms，再跳一下」—— 逐帧探针实测
+        // Δsh 与 Δst 恒等、中间全是 0，那正是用户说的「抖」。交给同一个写者按速率
+        // 逐帧推进，才是连续上滑（代价：最新 0~1 行短暂压进 padding 区，看不见）。
+        //
+        // 历史上这里写平过一次，理由是「错位已经发生、当场补齐最省事」；也试过
+        // 「小于 4px 不补、留给跟随器慢慢爬」，结果是「慢爬几帧 + 猛补一下」的锯齿。
+        // 两条都不对：块状输出下，「底边永远贴死」与「文字连续移动」物理互斥。
+        bottomFollowStep();
+        return;
+      }
       // 幂等闸：同一次增长只允许一个写者补一次。ResizeObserver 与 rAF 循环都走这条路径，
       // 闸门拦住第二个，避免同一次 +48px 被写两次（距底在 0/48 之间横跳）。
       if (!checkGrowthGate(viewport.scrollHeight, growthGateRef.current)) return;
-      const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+      const target = bottomScrollTarget(viewport);
       // 收尾时残余很小（≤8px）才允许直接写平，肉眼无感。
       if (Math.abs(viewport.scrollTop - target) > 8) return;
       recordCompensated(growthGateRef.current, viewport.scrollHeight);
     }
     stopBottomFollow();
-    // 贴底就是「底边贴住视口底边」：直接写 scrollHeight - clientHeight。
-    // ⚠️ 不要吸附设备像素网格 —— dpr=2.4 时内容坐标本身是小数，取整会留下
-    // 0.2~0.4px 残差，每次增长都重绘一次子像素位置，看起来就是闪。
+    // 贴底就是「底边贴住视口底边」：同样走 `pinBottomScroll`（真实上限的下限格）。
     // 幂等闸：同一次增长只允许一个写者补一次。
     if (!checkGrowthGate(viewport.scrollHeight, growthGateRef.current)) return;
-    const target = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
-    if (Math.abs(viewport.scrollTop - target) > 0.05) viewport.scrollTop = target;
+    pinBottomScroll(viewport);
     previousScrollTopRef.current = viewport.scrollTop;
     recordCompensated(growthGateRef.current, viewport.scrollHeight);
-  }, [startBottomFollow, stopBottomFollow]);
+  }, [bottomFollowStep, startBottomFollow, stopBottomFollow]);
   const scheduleScrollToBottom = useCallback(() => {
     if (!bottomLockedRef.current) return;
     // One coalesced follow-up for explicit navigation, not a per-commit settle loop.
@@ -933,6 +965,13 @@ const SessionThreadContents = memo(function SessionThreadContents({
     directDomUpdatesMode: "position",
     onChange: (instance) => {
       navigationGeometryRef.current?.();
+      // 🔴 必须在任何早退之前补平：onChange 是唯一「TanStack 刚写完 spacer 高度、
+      // 还在同一个 JS 任务内」的钩子。只有同一任务里写 scrollTop，浏览器才会把
+      // 「spacer 变高」和「滚动位置」算进同一次 layout —— 否则会有整整一帧是
+      // 「内容已长高、scrollTop 还是旧的」（探针实测 gap 一帧 69px，下一帧才补）。
+      // 之前这行在下面，被 `height === lastFollowed` 的早退挡在门外：totalSize
+      // 没变但 scrollHeight 变了（spacer 之外的变化）时就漏掉了这一帧。
+      scrollToBottomNow("grow");
       const height = instance.getTotalSize();
       if (height === lastFollowedVirtualHeightRef.current) return;
       lastFollowedVirtualHeightRef.current = height;
@@ -957,7 +996,6 @@ const SessionThreadContents = memo(function SessionThreadContents({
         followGrowthRef.current = { height: scrollHeight, at: now };
       }
       compensateAnchorShift();
-      scrollToBottomNow("grow");
     },
   });
   // 对话滚动区里 virtual-core 永远不许自己动 scrollTop（用户口径：加载历史时窗口不该
@@ -1055,6 +1093,20 @@ const SessionThreadContents = memo(function SessionThreadContents({
     // option changes (e.g. composer padding). Correct before this commit paints.
     scrollToBottomNow("grow");
   }, [composerDockHeight, scrollToBottomNow, turnRows.length, virtualTranscriptHeight]);
+  // 🔴 流式期间：每一个 commit 之后、浏览器 paint 之前都把底边补平（不带依赖列表）。
+  //
+  // 上面那个 effect 依赖 virtualTranscriptHeight(= virtualizer.getTotalSize())，
+  // 但 TanStack 的测量是异步的：内容高度已经变了、totalSize 还没跟上 ⇒ 依赖不变
+  // ⇒ effect 不跑。而 rAF 回调可能排在 paint 之后。两条路都赶不上，于是内容整块
+  // 落地（实测一次 +85px）时会出现**整整一帧**文字被顶离底部（实测 gap=69px），
+  // 下一帧才补回 —— 肉眼就是闪一下。
+  //
+  // 这个 effect 没有任何依赖 ⇒ 每次 render 都同步跑，直接读真实 scrollHeight。
+  // 代价是每次 commit 后一次强制布局，但流式期间本来每帧都要布局。
+  useLayoutEffect(() => {
+    if (!streamingRef.current) return;
+    scrollToBottomNow("grow");
+  });
   useLayoutEffect(() => {
     // A finished turn is the one moment the transcript must sit flush: the last
     // render can shrink the content (markdown re-wrap, dropped placeholder).
@@ -1087,29 +1139,21 @@ const SessionThreadContents = memo(function SessionThreadContents({
   // live edge pinned without animating anything.
   useEffect(() => {
     if (!isWorking) return;
-    const content = transcriptContentRef.current;
-    let dirty = true;
-    const canObserve = content && typeof MutationObserver !== "undefined";
-    const observer = canObserve
-      ? new MutationObserver(() => {
-          dirty = true;
-        })
-      : null;
-    if (content && observer)
-      observer.observe(content, { childList: true, subtree: true, characterData: true });
     let frame = 0;
     let paused = false;
     const pin = () => {
-      // hidden 期 rAF 冻结，积压的 dirty 在切回后会一次性爆发 ⇒ 同一次增长写多次。
-      // 暂停循环，等 visible 时一次性落位。
+      // hidden 期 rAF 冻结，积压的检查在切回后会一次性爆发。暂停循环，等 visible
+      // 时一次性落位。
       if (document.hidden) {
         paused = true;
         return;
       }
       paused = false;
       frame = requestAnimationFrame(pin);
-      if (!dirty) return;
-      dirty = false;
+      // 逐帧比对几何并写平，不依赖 MutationObserver 的「内容变了」通知：
+      // 行高变化并不都来自 DOM 变更 —— 图片/字体解码、异步代码高亮后的 re-wrap、
+      // 虚拟列表补测量都会让 scrollHeight 变而 mutation 不发生。只认 mutation 时
+      // 这些差距会落到被限速的跟随器身上（0.42px/帧慢慢爬）⇒ 底边附近锯齿抖动。
       scrollToBottomNow("grow");
     };
     frame = requestAnimationFrame(pin);
@@ -1124,7 +1168,6 @@ const SessionThreadContents = memo(function SessionThreadContents({
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelAnimationFrame(frame);
-      observer?.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [isWorking, scrollToBottomNow]);
@@ -1397,7 +1440,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
     const settleAtEnd = () => {
       const viewport = scrollRef.current;
       if (viewport && performance.now() - startedAt >= MAX_INITIAL_TRANSCRIPT_SETTLE_MS) {
-        viewport.scrollTop = viewport.scrollHeight;
+        pinBottomScroll(viewport);
         revealTranscript();
         return;
       }
@@ -1416,7 +1459,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
         frame = requestAnimationFrame(settleAtEnd);
         return;
       }
-      viewport.scrollTop = viewport.scrollHeight;
+      pinBottomScroll(viewport);
       const scrollHeight = viewport.scrollHeight;
       const bottomGap = scrollHeight - viewport.clientHeight - Math.max(0, viewport.scrollTop);
       stableFrames = previousScrollHeight === scrollHeight && bottomGap <= 1 ? stableFrames + 1 : 0;
@@ -2056,7 +2099,7 @@ const SessionThreadContents = memo(function SessionThreadContents({
                               className="size-3 animate-spin motion-reduce:animate-none"
                               aria-hidden="true"
                             />
-                            Loading earlier messages…
+                            正在加载更早的消息…
                           </span>
                         ) : null}
                       </div>
