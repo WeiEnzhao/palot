@@ -1,3 +1,48 @@
+## 中文分支说明
+
+> 这是 [ItsWendell/palot](https://github.com/ItsWendell/palot) 的**简体中文分支**，不是官方版本。
+> 界面文案、错误提示、设置项与菜单已翻译为中文，其余功能与上游保持一致。
+
+| 项目 | 说明 |
+| --- | --- |
+| 基线 | 上游 **0.18.0**（`5af56c8`） |
+| 上游现状 | 已发布到 **0.23.0**，本分支**暂未跟进**；是否跟、跟到哪一版在 [Issues](https://github.com/WeiEnzhao/palot/issues) 里讨论 |
+| 改动范围 | 以本地化为主，另有少量体验修复，不改变上游的功能设计 |
+| 兼容性 | 仅按上游 0.18.0 的条件验证；上游 0.19–0.23 的新特性（语音、Guest links、GitLab/Forgejo/Bitbucket 等）**不包含**在此 |
+| 打包 | 与上游一致，macOS 为 ad-hoc 签名（未公证），更新需手动 |
+
+<details>
+<summary>相对上游 0.18.0 的额外修复（点开）</summary>
+
+- **连接横幅不再反复闪动**：把 `discovering / starting / connecting / reconnecting` 归并为「正在连接」一种状态，重连循环每 31 秒不再翻一次图标与文案。
+- **事件流先换流再判死**：半开连接只静默重订一次事件流，不再直接判定断线，避免陷入无限重连。
+- **正在使用的远程连接可编辑**：此前「活动连接」只能看不能改，必须先切走再切回，等于没有入口。
+- **会话区流式输出时的单帧空白**：内容区那一层原本带 `blur()` 的超大 `backdrop-filter`，流式时偶尔赶不上帧截止，整块内容会空白一帧（窗口透明，看起来像「闪一下黑」）；已去掉多余的模糊，只保留饱和度。
+
+</details>
+
+### 欢迎 PR 与翻译
+
+这个分支只有我一个人在维护，任何形式的帮忙都欢迎：
+
+- **翻译修正 / 术语统一 / 漏翻补上**：直接提 PR 到 `main`。
+- **跟进上游版本**：可以按文件或按功能块认领（例如「0.19 语音」「0.22 工作台预览」），先在 Issues 说一声避免撞车。
+- **不想写代码也行**：在 Issues 里贴截图 + 说明界面位置，写「这里中文不对」或「这里没翻译」，我按批次合。
+
+提 PR 前请本地跑一遍：
+
+```bash
+bun install
+bun run typecheck
+bun run test
+```
+
+`test` 目前有 3 个与本地化无关的基线失败（`src/main/database/client.test.ts` 的 `node:sqlite` 环境问题、`scripts/e2e-lifecycle.test.ts` 两例、`global-command-palette.test.tsx` 一例），不是你的改动引起的。
+
+术语约定：产品名与技术专名保留英文原文（Palot、OpenCode、Worktree、MCP、SSE、PR…）；「任务 / 会话 / 工作树 / 连接 / 队列」等沿用界面里的既有译法，改动前先在同目录搜一下同一个词怎么用的，避免同一个概念两种叫法。
+
+---
+
 ![Palot, an independent desktop client for OpenCode 2](docs/assets/palot-banner.svg)
 
 # Palot
